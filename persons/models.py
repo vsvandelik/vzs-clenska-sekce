@@ -12,12 +12,11 @@ class Person(models.Model):
         PARENT = 'rodic', _('rodič')
 
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
     date_of_birth = models.DateField()
-    person_type = models.CharField(
-        max_length=10, choices=Type.choices)
-    features = models.ManyToManyField(
-        'persons.Feature', through='FeatureAssignment')
+    person_type = models.CharField(max_length=10, choices=Type.choices)
+    features = models.ManyToManyField('persons.Feature', through='FeatureAssignment')
     managed_people = models.ManyToManyField('self', symmetrical=False)
 
 
