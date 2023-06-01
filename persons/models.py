@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
@@ -18,6 +19,9 @@ class Person(models.Model):
     person_type = models.CharField(max_length=10, choices=Type.choices)
     features = models.ManyToManyField('persons.Feature', through='FeatureAssignment')
     managed_people = models.ManyToManyField('self', symmetrical=False)
+
+    def get_absolute_url(self):
+        return reverse("persons:detail", kwargs={"pk": self.pk})
 
 
 class Feature(models.Model):
