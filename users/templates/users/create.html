@@ -1,0 +1,29 @@
+<form action="{% url 'users-create' %}" method="post" id="submit-form">
+    {% csrf_token %}
+    {{ creation_form }}
+    <input type="submit" value="Submit">
+</form>
+
+<form action="{% url 'users-create' %}" method="get">
+    {{ search_form }}
+    <input type="submit" value="Search">
+</form>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Select</th>
+    </tr>
+    {% for person in people %}
+    <tr>
+        <td>{{ person.name }}</td>
+        <td>{{ person.email }}</td>
+        <td>
+            <input type="radio" name="person" value="{{ person.id }}" form="submit-form" required>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{{ message }}
