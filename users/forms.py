@@ -7,16 +7,39 @@ from persons.models import Person
 from .models import User
 
 
-class PersonSearchForm(Form):
-    query = forms.CharField(required=False)
-
-
 class NoRenderWidget(Widget):
     def render(self, *args, **kwargs):
         return ''
 
 
+no_render = {'widget': NoRenderWidget, 'label': ''}
+
+
+class PersonSearchForm(Form):
+    query = forms.CharField(required=False)
+    show_all = forms.BooleanField(required=False, **no_render)
+
+    def search_people(self):
+        if not self.is_valid():
+            return []
+
+        userless = Person.objects.filter(user__isnull=True)
+
+        if self.cleaned_data['show_all']:
+            return userless.all()
+
+        query = self.cleaned_data['query']
+
+        if query == '':
+            return []
+
+        return userless.filter(name__contains=query)
+
+
 class UserCreationForm(ModelForm):
+    query = forms.CharField(required=False, widget=forms.HiddenInput)
+    show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
     class Meta:
         model = User
         fields = ['person', 'password']

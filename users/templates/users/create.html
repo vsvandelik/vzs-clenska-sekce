@@ -6,7 +6,8 @@
 
 <form action="{% url 'users-create' %}" method="get">
     {{ search_form }}
-    <input type="submit" value="Search">
+    <button type="submit" name="show_all" value="false">Search</button>
+    <button type="submit" name="show_all" value="true">Display All</button>
 </form>
 
 <table>
