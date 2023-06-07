@@ -5,123 +5,161 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('events', '0001_initial'),
-        ('persons', '0001_initial'),
+        ("events", "0001_initial"),
+        ("persons", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricelistbonus',
-            name='feature',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='persons.feature'),
+            model_name="pricelistbonus",
+            name="feature",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="persons.feature"
+            ),
         ),
         migrations.AddField(
-            model_name='pricelistbonus',
-            name='price_list',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.pricelist'),
+            model_name="pricelistbonus",
+            name="price_list",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="events.pricelist"
+            ),
         ),
         migrations.AddField(
-            model_name='pricelist',
-            name='bonuses',
-            field=models.ManyToManyField(through='events.PriceListBonus', to='persons.feature'),
+            model_name="pricelist",
+            name="bonuses",
+            field=models.ManyToManyField(
+                through="events.PriceListBonus", to="persons.feature"
+            ),
         ),
         migrations.AddField(
-            model_name='eventrequirement',
-            name='event',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.event'),
+            model_name="eventrequirement",
+            name="event",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="events.event"
+            ),
         ),
         migrations.AddField(
-            model_name='eventrequirement',
-            name='feature',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='persons.feature'),
+            model_name="eventrequirement",
+            name="feature",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="persons.feature"
+            ),
         ),
         migrations.AddField(
-            model_name='eventpositionassignment',
-            name='event',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.event'),
+            model_name="eventpositionassignment",
+            name="event",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="events.event"
+            ),
         ),
         migrations.AddField(
-            model_name='eventpositionassignment',
-            name='organizers',
-            field=models.ManyToManyField(through='events.EventOrganization', to='persons.person'),
+            model_name="eventpositionassignment",
+            name="organizers",
+            field=models.ManyToManyField(
+                through="events.EventOrganization", to="persons.person"
+            ),
         ),
         migrations.AddField(
-            model_name='eventpositionassignment',
-            name='position',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.eventposition'),
+            model_name="eventpositionassignment",
+            name="position",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="events.eventposition"
+            ),
         ),
         migrations.AddField(
-            model_name='eventposition',
-            name='required_features',
-            field=models.ManyToManyField(to='persons.feature'),
+            model_name="eventposition",
+            name="required_features",
+            field=models.ManyToManyField(to="persons.feature"),
         ),
         migrations.AddField(
-            model_name='eventparticipation',
-            name='event',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.event'),
+            model_name="eventparticipation",
+            name="event",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="events.event"
+            ),
         ),
         migrations.AddField(
-            model_name='eventparticipation',
-            name='person',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='persons.person'),
+            model_name="eventparticipation",
+            name="person",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="persons.person"
+            ),
         ),
         migrations.AddField(
-            model_name='eventorganization',
-            name='event_position',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='events.eventpositionassignment'),
+            model_name="eventorganization",
+            name="event_position",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="events.eventpositionassignment",
+            ),
         ),
         migrations.AddField(
-            model_name='eventorganization',
-            name='person',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='persons.person'),
+            model_name="eventorganization",
+            name="person",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="persons.person"
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='parent',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='events.event'),
+            model_name="event",
+            name="parent",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="events.event",
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='participants',
-            field=models.ManyToManyField(through='events.EventParticipation', to='persons.person'),
+            model_name="event",
+            name="participants",
+            field=models.ManyToManyField(
+                through="events.EventParticipation", to="persons.person"
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='positions',
-            field=models.ManyToManyField(through='events.EventPositionAssignment', to='events.eventposition'),
+            model_name="event",
+            name="positions",
+            field=models.ManyToManyField(
+                through="events.EventPositionAssignment", to="events.eventposition"
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='price_list',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='events.pricelist'),
+            model_name="event",
+            name="price_list",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="events.pricelist",
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='requirements',
-            field=models.ManyToManyField(through='events.EventRequirement', to='persons.feature'),
+            model_name="event",
+            name="requirements",
+            field=models.ManyToManyField(
+                through="events.EventRequirement", to="persons.feature"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='pricelistbonus',
-            unique_together={('price_list', 'feature')},
+            name="pricelistbonus",
+            unique_together={("price_list", "feature")},
         ),
         migrations.AlterUniqueTogether(
-            name='eventrequirement',
-            unique_together={('event', 'feature')},
+            name="eventrequirement",
+            unique_together={("event", "feature")},
         ),
         migrations.AlterUniqueTogether(
-            name='eventpositionassignment',
-            unique_together={('event', 'position')},
+            name="eventpositionassignment",
+            unique_together={("event", "position")},
         ),
         migrations.AlterUniqueTogether(
-            name='eventparticipation',
-            unique_together={('person', 'event')},
+            name="eventparticipation",
+            unique_together={("person", "event")},
         ),
         migrations.AlterUniqueTogether(
-            name='eventorganization',
-            unique_together={('person', 'event_position')},
+            name="eventorganization",
+            unique_together={("person", "event_position")},
         ),
     ]
