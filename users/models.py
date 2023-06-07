@@ -23,7 +23,7 @@ class User(AbstractUser, PermissionsMixin):
         # which doesn't get handled properly
         # TODO: find out if there is not a better way to do this
 
-        if not hasattr(self, 'person'):
+        if not hasattr(self, "person"):
             return
 
         super().clean()

@@ -9,10 +9,10 @@ from .models import User
 
 class NoRenderWidget(Widget):
     def render(self, *args, **kwargs):
-        return ''
+        return ""
 
 
-no_render = {'widget': NoRenderWidget, 'label': ''}
+no_render = {"widget": NoRenderWidget, "label": ""}
 
 
 class PersonSearchForm(Form):
@@ -25,12 +25,12 @@ class PersonSearchForm(Form):
 
         userless = Person.objects.filter(user__isnull=True)
 
-        if self.cleaned_data['show_all']:
+        if self.cleaned_data["show_all"]:
             return userless.all()
 
-        query = self.cleaned_data['query']
+        query = self.cleaned_data["query"]
 
-        if query == '':
+        if query == "":
             return []
 
         return userless.filter(name__contains=query)
@@ -42,18 +42,13 @@ class UserCreationForm(ModelForm):
 
     class Meta:
         model = User
-        fields = ['person', 'password']
-        widgets = {
-            'person': NoRenderWidget,
-            'password': PasswordInput
-        }
-        labels = {
-            'person': ''
-        }
+        fields = ["person", "password"]
+        widgets = {"person": NoRenderWidget, "password": PasswordInput}
+        labels = {"person": ""}
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password'])
+        user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
         return user
