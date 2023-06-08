@@ -4,79 +4,173 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('description', models.TextField()),
-                ('time_start', models.DateTimeField(null=True)),
-                ('time_end', models.DateTimeField(null=True)),
-                ('capacity', models.PositiveSmallIntegerField(null=True)),
-                ('age_limit', models.PositiveSmallIntegerField(null=True)),
-                ('state', models.CharField(choices=[('neuzavrena', 'neuzavřena'), ('uzavrena', 'uzavřena'), ('schvalena', 'schválena')], max_length=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("description", models.TextField()),
+                ("time_start", models.DateTimeField(null=True)),
+                ("time_end", models.DateTimeField(null=True)),
+                ("capacity", models.PositiveSmallIntegerField(null=True)),
+                ("age_limit", models.PositiveSmallIntegerField(null=True)),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("neuzavrena", "neuzavřena"),
+                            ("uzavrena", "uzavřena"),
+                            ("schvalena", "schválena"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='EventOrganization',
+            name="EventOrganization",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(choices=[('ceka', 'čeká'), ('schvalen', 'schválen'), ('nahradnik', 'nahradník'), ('pritomen', 'přítomen')], max_length=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("ceka", "čeká"),
+                            ("schvalen", "schválen"),
+                            ("nahradnik", "nahradník"),
+                            ("pritomen", "přítomen"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='EventParticipation',
+            name="EventParticipation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(choices=[('ceka', 'čeká'), ('schvalen', 'schválen'), ('nahradnik', 'nahradník'), ('pritomen', 'přítomen')], max_length=10)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("ceka", "čeká"),
+                            ("schvalen", "schválen"),
+                            ("nahradnik", "nahradník"),
+                            ("pritomen", "přítomen"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='EventPosition',
+            name="EventPosition",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
             ],
         ),
         migrations.CreateModel(
-            name='EventPositionAssignment',
+            name="EventPositionAssignment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.PositiveSmallIntegerField(default=1)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.PositiveSmallIntegerField(default=1)),
             ],
         ),
         migrations.CreateModel(
-            name='EventRequirement',
+            name="EventRequirement",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count', models.PositiveSmallIntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("count", models.PositiveSmallIntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='PriceList',
+            name="PriceList",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('salary_base', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("salary_base", models.PositiveIntegerField()),
             ],
         ),
         migrations.CreateModel(
-            name='PriceListBonus',
+            name="PriceListBonus",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('bonus', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("bonus", models.PositiveIntegerField()),
             ],
         ),
     ]
