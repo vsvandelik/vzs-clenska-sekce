@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Installed apps
+    "rest_framework",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
