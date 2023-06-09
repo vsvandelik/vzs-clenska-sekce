@@ -1,32 +1,36 @@
-<form action="{% url 'users:add' %}" method="post" id="submit-form">
-    {% csrf_token %}
-    {{ create_form }}
-    <input type="submit" value="Submit">
-</form>
+{% extends 'base.html' %}
 
-<form action="{% url 'users:add' %}" method="get">
-    {{ search_form }}
-    <button type="submit" name="show_all" value="false">Search</button>
-    <button type="submit" name="show_all" value="true">Display All</button>
-</form>
+{% block content %}
+    <form action="{% url 'users:add' %}" method="post" id="submit-form">
+        {% csrf_token %}
+        {{ create_form }}
+        <input type="submit" value="Submit">
+    </form>
 
-<table>
-    <tr>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Select</th>
-    </tr>
-    {% for person in people %}
-    <tr>
-        <td>{{ person.first_name }}</td>
-        <td>{{ person.last_name }}</td>
-        <td>{{ person.email }}</td>
-        <td>
-            <input type="radio" name="person" value="{{ person.id }}" form="submit-form" required>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <form action="{% url 'users:add' %}" method="get">
+        {{ search_form }}
+        <button type="submit" name="show_all" value="false">Search</button>
+        <button type="submit" name="show_all" value="true">Display All</button>
+    </form>
 
-{{ message }}
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Select</th>
+        </tr>
+        {% for person in people %}
+        <tr>
+            <td>{{ person.first_name }}</td>
+            <td>{{ person.last_name }}</td>
+            <td>{{ person.email }}</td>
+            <td>
+                <input type="radio" name="person" value="{{ person.id }}" form="submit-form" required>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {{ message }}
+{% endblock %}
