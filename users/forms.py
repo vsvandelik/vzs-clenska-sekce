@@ -33,7 +33,9 @@ class PersonSearchForm(Form):
         if query == "":
             return []
 
-        return userless.filter(name__contains=query)
+        return userless.filter(
+            Q(first_name__contains=query) | Q(last_name__contains=query)
+        )
 
 
 class UserCreateForm(ModelForm):
