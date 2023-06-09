@@ -36,11 +36,6 @@ class FeatureAssignmentForm(ModelForm):
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
             ),
         }
-        labels = {
-            "feature": _("Vlastnost"),
-            "date_assigned": _("Datum přiřazení"),
-            "date_expire": _("Datum expirace"),
-        }
 
     def __init__(self, *args, **kwargs):
         feature_type = kwargs.pop("feature_type", None)

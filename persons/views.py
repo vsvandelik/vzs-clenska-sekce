@@ -9,9 +9,36 @@ from .forms import PersonForm, FeatureAssignmentForm
 from .models import Person, FeatureAssignment
 
 FEATURES_TYPES = {
-    "qualifications": ("K", "kvalifikace", "kvalifikaci"),
-    "permissions": ("O", "oprávnění", "oprávnění"),
-    "equipment": ("V", "vybavení", "vybavení"),
+    "qualifications": (
+        "K",
+        "kvalifikace",
+        "kvalifikaci",
+        {
+            "feature": "Název kvalifikace",
+            "date_assigned": "Začátek platnost",
+            "date_expire": "Konec platnosti",
+        },
+    ),
+    "permissions": (
+        "O",
+        "oprávnění",
+        "oprávnění",
+        {
+            "feature": "Název oprávnění",
+            "date_assigned": "Datum přiřazení",
+            "date_expire": "Konec platnosti",
+        },
+    ),
+    "equipment": (
+        "V",
+        "vybavení",
+        "vybavení",
+        {
+            "feature": "Název vybavení",
+            "date_assigned": "Datum zapůjčení",
+            "date_expire": "Datum vrácení",
+        },
+    ),
 }
 
 
@@ -65,6 +92,7 @@ class FeatureAssignMixin(generic.edit.FormMixin):
         self.feature_type = None
         self.feature_type_name_1 = None
         self.feature_type_name_4 = None
+        self.labels = None
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -79,6 +107,14 @@ class FeatureAssignMixin(generic.edit.FormMixin):
             raise Http404(_("Osoba nebyla nalezena."))
 
         return context
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.labels:
+            for field, label in self.labels.items():
+                form.fields[field].label = label
+
+        return form
 
 
 class FeatureAssignAddMixin(FeatureAssignMixin, generic.edit.CreateView):
@@ -180,6 +216,7 @@ class QualificationAssignAddView(FeatureAssignAddMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["qualifications"]
 
 
@@ -190,6 +227,7 @@ class QualificationAssignEditView(FeatureAssignEditMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["qualifications"]
 
 
@@ -200,6 +238,7 @@ class QualificationAssignDeleteView(FeatureAssignDeleteMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["qualifications"]
 
 
@@ -210,6 +249,7 @@ class PermissionAssignAddView(FeatureAssignAddMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["permissions"]
 
 
@@ -220,6 +260,7 @@ class PermissionAssignEditView(FeatureAssignEditMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["permissions"]
 
 
@@ -230,6 +271,7 @@ class PermissionAssignDeleteView(FeatureAssignDeleteMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["permissions"]
 
 
@@ -240,6 +282,7 @@ class EquipmentAssignAddView(FeatureAssignAddMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["equipment"]
 
 
@@ -250,6 +293,7 @@ class EquipmentAssignEditView(FeatureAssignEditMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["equipment"]
 
 
@@ -260,4 +304,5 @@ class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
             self.feature_type,
             self.feature_type_name_1,
             self.feature_type_name_4,
+            self.labels,
         ) = FEATURES_TYPES["equipment"]
