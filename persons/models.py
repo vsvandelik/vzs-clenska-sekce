@@ -44,7 +44,7 @@ class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
     date_assigned = models.DateField()
-    date_expire = models.DateField()
+    date_expire = models.DateField(null=True, blank=True)
 
     class Meta:
         unique_together = ["person", "feature"]
