@@ -1,10 +1,10 @@
-<form action="{% url 'users-create' %}" method="post" id="submit-form">
+<form action="{% url 'users:add' %}" method="post" id="submit-form">
     {% csrf_token %}
-    {{ creation_form }}
+    {{ create_form }}
     <input type="submit" value="Submit">
 </form>
 
-<form action="{% url 'users-create' %}" method="get">
+<form action="{% url 'users:add' %}" method="get">
     {{ search_form }}
     <button type="submit" name="show_all" value="false">Search</button>
     <button type="submit" name="show_all" value="true">Display All</button>

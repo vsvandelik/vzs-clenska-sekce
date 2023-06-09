@@ -1,5 +1,6 @@
 from django.urls import path
 
-from .views import CreateView
+from . import views
 
-urlpatterns = [path("vytvorit/", CreateView.as_view(), name="users-create")]
+app_name = "users"
+urlpatterns = [path("pridat/", views.UserCreateView.as_view(), name="add")]

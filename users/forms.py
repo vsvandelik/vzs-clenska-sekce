@@ -1,9 +1,9 @@
 from django import forms
 from django.forms import Form, ModelForm, PasswordInput, Widget
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.db.models import Q
 
 from persons.models import Person
-
 from .models import User
 
 
@@ -36,7 +36,7 @@ class PersonSearchForm(Form):
         return userless.filter(name__contains=query)
 
 
-class UserCreationForm(ModelForm):
+class UserCreateForm(ModelForm):
     query = forms.CharField(required=False, widget=forms.HiddenInput)
     show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
 
