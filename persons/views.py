@@ -59,13 +59,13 @@ class FeatureAssignAddMixin(generic.edit.CreateView):
 
     def form_valid(self, form):
         form.instance.person = Person.objects.get(
-            id=self.kwargs["pk"]
+            id=self.kwargs["person"]
         )  # TODO: process errors
         # TODO: add some message about success / failure
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse("persons:detail", args=[self.kwargs["pk"]])
+        return reverse("persons:detail", args=[self.kwargs["person"]])
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -75,7 +75,62 @@ class FeatureAssignAddMixin(generic.edit.CreateView):
     def get_context_data(self, **kwargs):
         context = super(FeatureAssignAddMixin, self).get_context_data(**kwargs)
         context["person"] = Person.objects.get(
-            id=self.kwargs["pk"]
+            id=self.kwargs["person"]
+        )  # TODO: process errors
+        context["type"] = self.feature_type_name
+        return context
+
+
+class FeatureAssignEditMixin(generic.edit.UpdateView):
+    model = FeatureAssignment
+    form_class = FeatureAssignmentForm
+    template_name = "persons/features_assignment_edit.html"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = None
+        self.feature_type_name = None
+
+    def form_valid(self, form):
+        form.instance.person = Person.objects.get(
+            id=self.kwargs["person"]
+        )  # TODO: process errors
+        # TODO: add some message about success / failure
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("persons:detail", args=[self.kwargs["person"]])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["feature_type"] = self.feature_type
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(FeatureAssignEditMixin, self).get_context_data(**kwargs)
+        context["person"] = Person.objects.get(
+            id=self.kwargs["person"]
+        )  # TODO: process errors
+        context["type"] = self.feature_type_name
+        return context
+
+
+class FeatureAssignDeleteMixin(generic.edit.DeleteView):
+    model = FeatureAssignment
+    template_name = "persons/features_assignment_delete.html"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = None
+        self.feature_type_name = None
+
+    def get_success_url(self):
+        return reverse("persons:detail", args=[self.kwargs["person"]])
+
+    def get_context_data(self, **kwargs):
+        context = super(FeatureAssignDeleteMixin, self).get_context_data(**kwargs)
+        context["person"] = Person.objects.get(
+            id=self.kwargs["person"]
         )  # TODO: process errors
         context["type"] = self.feature_type_name
         return context
@@ -88,6 +143,20 @@ class QualificationAssignAddView(FeatureAssignAddMixin):
         self.feature_type_name = "kvalifikace"
 
 
+class QualificationAssignEditView(FeatureAssignEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "K"
+        self.feature_type_name = "kvalifikace"
+
+
+class QualificationAssignDeleteView(FeatureAssignDeleteMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "K"
+        self.feature_type_name = "kvalifikaci"
+
+
 class PermissionAssignAddView(FeatureAssignAddMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,7 +164,35 @@ class PermissionAssignAddView(FeatureAssignAddMixin):
         self.feature_type_name = "oprávnění"
 
 
+class PermissionAssignEditView(FeatureAssignEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "O"
+        self.feature_type_name = "oprávnění"
+
+
+class PermissionAssignDeleteView(FeatureAssignDeleteMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "O"
+        self.feature_type_name = "oprávnění"
+
+
 class EquipmentAssignAddView(FeatureAssignAddMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "V"
+        self.feature_type_name = "vybavení"
+
+
+class EquipmentAssignEditView(FeatureAssignEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_type = "V"
+        self.feature_type_name = "vybavení"
+
+
+class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.feature_type = "V"

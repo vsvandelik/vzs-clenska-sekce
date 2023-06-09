@@ -27,6 +27,10 @@
                     <td>{{ qualification.feature.name }}</td>
                     <td>{{ qualification.date_assigned }}</td>
                     <td>{{ qualification.date_expire }}</td>
+                    <td>
+                        <a href="{% url 'persons:qualification-edit' person=person.id pk=qualification.id %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:qualification-delete' person=person.id pk=qualification.id %}">smazat</a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -50,6 +54,10 @@
                     <td>{{ permissions.feature.name }}</td>
                     <td>{{ permissions.date_assigned }}</td>
                     <td>{{ permissions.date_expire }}</td>
+                    <td>
+                        <a href="{% url 'persons:permission-edit' person=person.id pk=permission %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:permission-delete' person=person.id pk=permission.id %}">smazat</a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -73,6 +81,10 @@
                     <td>{{ equipment.feature.name }}</td>
                     <td>{{ equipment.date_assigned }}</td>
                     <td>{{ equipment.date_expire }}</td>
+                    <td>
+                        <a href="{% url 'persons:equipment-edit' person=person.id pk=equipment.id %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:equipment-delete' person=person.id pk=equipment.id %}">smazat</a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
