@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.views import View
 from django.urls import reverse
 from django.views.generic.base import TemplateResponseMixin
+from django.contrib import messages
 
 from persons.models import Person
 
@@ -26,7 +27,6 @@ class UserCreateView(TemplateResponseMixin, View):
                 "create_form": create_form,
                 "search_form": search_form,
                 "people": people,
-                "message": "",
             }
         )
 
@@ -34,19 +34,20 @@ class UserCreateView(TemplateResponseMixin, View):
         search_form = PersonSearchForm(request.POST)
         create_form = UserCreateForm(request.POST)
 
-        message = ""
-
         people = search_form.search_people()
 
         if create_form.is_valid():
             new_user = create_form.save()
-            message = f"A User account for Person `{new_user.person.name}` created."
+            person = new_user.person
+            messages.success(
+                request,
+                f"User for Person {person.first_name} {person.last_name} added.",
+            )
 
         return self.render_to_response(
             {
                 "create_form": create_form,
                 "search_form": search_form,
                 "people": people,
-                "message": message,
             }
         )
