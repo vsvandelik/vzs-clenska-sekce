@@ -36,6 +36,9 @@ class Feature(models.Model):
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)
 
+    def __str__(self):
+        return self.name
+
 
 class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
