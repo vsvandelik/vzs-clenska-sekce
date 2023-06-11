@@ -1,0 +1,13 @@
+<a href="{% url 'events:create_training' %}">Nový trénink</a>
+<hr>
+<table>
+    <th>Name</th>
+    <th>Detail</th>
+    {% for event in events %}
+            <tr>
+                <td>{{ event.name }}</td>
+                <td><a href="{% url 'events:detail' event.id %}">Detail</a></td>
+            </tr>
+        {% endfor %}
+    <tr></tr>
+</table>
