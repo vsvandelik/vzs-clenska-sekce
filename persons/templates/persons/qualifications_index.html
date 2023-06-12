@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Kvalifikace</h1>
+
+    <ul>
+        {% for qualification in qualifications %}
+            <li><a href="{% url 'qualifications:detail' qualification.id %}">{{ qualification.name }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'qualifications:add' %}">Pridat kvalifikaci</a>
+{% endblock %}

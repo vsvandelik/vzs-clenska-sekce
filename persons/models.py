@@ -23,6 +23,9 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
 
 class Feature(models.Model):
     class Type(models.TextChoices):
@@ -31,7 +34,9 @@ class Feature(models.Model):
         PERMIT = "O", _("oprávnění")
 
     feature_type = models.CharField(max_length=1, choices=Type.choices)
-    category = models.CharField(max_length=20)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, default=None, blank=True, null=True
+    )
     name = models.CharField(max_length=50, unique=True)
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)

@@ -1,12 +1,13 @@
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.http import HttpResponseNotFound, Http404
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from .forms import PersonForm, FeatureAssignmentForm
-from .models import Person, FeatureAssignment
+from .forms import PersonForm, FeatureAssignmentForm, FeatureForm
+from .models import Person, FeatureAssignment, Feature
 
 FEATURES_TYPES = {
     "qualifications": (
@@ -17,6 +18,9 @@ FEATURES_TYPES = {
             "feature": "Název kvalifikace",
             "date_assigned": "Začátek platnost",
             "date_expire": "Konec platnosti",
+            "parent": "Nadřazená kategorie",
+            "name": "Název kvalifikace",
+            "never_expires": "Neomezená platnost",
         },
     ),
     "permissions": (
@@ -306,3 +310,68 @@ class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
             self.feature_type_name_4,
             self.labels,
         ) = FEATURES_TYPES["equipment"]
+
+
+class QualificationIndex(generic.ListView):
+    model = Feature
+    template_name = "persons/qualifications_index.html"
+    context_object_name = "qualifications"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(feature_type=FEATURES_TYPES["qualifications"][0])
+        )
+
+
+class QualificationDetail(generic.DetailView):
+    model = Feature
+    template_name = "persons/qualifications_detail.html"
+    context_object_name = "qualification"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(feature_type=FEATURES_TYPES["qualifications"][0])
+        )
+
+
+class QualificationEdit(generic.edit.UpdateView):
+    model = Feature
+    form_class = FeatureForm
+    template_name = "persons/qualifications_edit.html"
+    feature_type, feature_type_name_1, feature_type_name_4, labels = FEATURES_TYPES[
+        "qualifications"
+    ]
+
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return None
+
+    def get_success_url(self):
+        return reverse("qualifications:detail", args=(self.object.pk,))
+
+    def form_valid(self, form):
+        form.instance.feature_type = self.feature_type
+        messages.success(self.request, _("Kvalifikace byla úspěšně uložena."))
+        return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.labels:
+            for field, label in self.labels.items():
+                if field in form.fields:
+                    form.fields[field].label = label
+
+        return form
+
+
+class QualificationDelete(SuccessMessageMixin, generic.edit.DeleteView):
+    model = Feature
+    template_name = "persons/qualifications_delete.html"
+    success_url = reverse_lazy("qualifications:index")
+    success_message = "Kvalifikace byla úspěšně smazána."

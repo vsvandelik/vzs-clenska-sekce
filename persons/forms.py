@@ -63,3 +63,15 @@ class FeatureAssignmentForm(ModelForm):
             raise ValidationError(_("Datum expirace je nižší než datum přiřazení."))
 
         return date_expire_value
+
+
+class FeatureForm(ModelForm):
+    class Meta:
+        model = Feature
+        fields = "__all__"
+        exclude = ["feature_type"]
+
+        labels = {
+            "tier": _("Poplatek"),
+            "name": _("Název"),
+        }
