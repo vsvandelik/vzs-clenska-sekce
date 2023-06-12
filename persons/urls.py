@@ -2,14 +2,13 @@ from django.urls import path
 
 from . import views
 
-qualifications_urls = [
-    path("", views.QualificationIndex.as_view(), name="index"),
-    path("pridat", views.QualificationEdit.as_view(), name="add"),
-    path("<int:pk>", views.QualificationDetail.as_view(), name="detail"),
-    path("<int:pk>/upravit", views.QualificationEdit.as_view(), name="edit"),
-    path("<int:pk>/smazat", views.QualificationDelete.as_view(), name="delete"),
+feature_urls = [
+    path("", views.FeatureIndex.as_view(), name="index"),
+    path("pridat", views.FeatureEdit.as_view(), name="add"),
+    path("<int:pk>", views.FeatureDetail.as_view(), name="detail"),
+    path("<int:pk>/upravit", views.FeatureEdit.as_view(), name="edit"),
+    path("<int:pk>/smazat", views.FeatureDelete.as_view(), name="delete"),
 ]
-
 
 app_name = "persons"
 urlpatterns = [

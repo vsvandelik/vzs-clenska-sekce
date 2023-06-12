@@ -25,8 +25,25 @@ urlpatterns = [
     path(
         "kvalifikace/",
         include(
-            (persons_urls.qualifications_urls, "qualifications"),
+            (persons_urls.feature_urls, "qualifications"),
             namespace="qualifications",
         ),
+        {"feature_type": "qualifications"},
+    ),
+    path(
+        "opravneni/",
+        include(
+            (persons_urls.feature_urls, "permissions"),
+            namespace="permissions",
+        ),
+        {"feature_type": "permissions"},
+    ),
+    path(
+        "vybaveni/",
+        include(
+            (persons_urls.feature_urls, "equipments"),
+            namespace="equipments",
+        ),
+        {"feature_type": "equipments"},
     ),
 ]

@@ -74,4 +74,5 @@ class FeatureForm(ModelForm):
         labels = {
             "tier": _("Poplatek"),
             "name": _("Název"),
+            "parent": _("Nadřazená kategorie"),
         }

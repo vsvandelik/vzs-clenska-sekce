@@ -45,6 +45,66 @@ class Feature(models.Model):
         return self.name
 
 
+class FeatureTypeTextsClass:
+    def __init__(
+        self,
+        feature_type,
+        name_4,
+        form_labels,
+        success_message_save,
+        success_message_delete,
+    ):
+        self.shortcut = feature_type.value
+        self.name_1 = feature_type.label
+        self.name_4 = name_4
+        self.form_labels = form_labels
+        self.success_message_save = success_message_save
+        self.success_message_delete = success_message_delete
+
+
+FeatureTypeTexts = {
+    "qualifications": FeatureTypeTextsClass(
+        Feature.Type.QUALIFICATION,
+        _("kvalifikaci"),
+        {
+            "feature": _("Název kvalifikace"),
+            "date_assigned": _("Začátek platnost"),
+            "date_expire": _("Konec platnosti"),
+            "name": _("Název kvalifikace"),
+            "never_expires": _("Neomezená platnost"),
+        },
+        _("Kvalifikace byla úspěšně uložena."),
+        _("Kvalifikace byla úspěšně odstraněna."),
+    ),
+    "permissions": FeatureTypeTextsClass(
+        Feature.Type.PERMIT,
+        "oprávnění",
+        {
+            "feature": _("Název oprávnění"),
+            "date_assigned": _("Datum přiřazení"),
+            "date_expire": _("Konec platnosti"),
+            "name": _("Název oprávnění"),
+            "never_expires": _("Neomezená platnost"),
+        },
+        _("Oprávnění bylo úspěšně uloženo."),
+        _("Oprávnění bylo úspěšně odstraněno."),
+    ),
+    "equipments": FeatureTypeTextsClass(
+        Feature.Type.POSSESSION,
+        "vybavení",
+        {
+            "feature": _("Název vybavení"),
+            "date_assigned": _("Datum zapůjčení"),
+            "date_expire": _("Datum vrácení"),
+            "name": _("Název vybavení"),
+            "never_expires": _("Časově neomezená zápůjčka"),
+        },
+        _("Vybavení bylo úspěšně uloženo."),
+        _("Vybavení bylo úspěšně odstraněno."),
+    ),
+}
+
+
 class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)

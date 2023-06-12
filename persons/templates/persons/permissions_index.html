@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Opravneni</h1>
+
+    <ul>
+        {% for permission in permissions %}
+            <li><a href="{% url 'permissions:detail' permission.id %}">{{ permission.name }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'permissions:add' %}">Pridat opravneni</a>
+{% endblock %}
