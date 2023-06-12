@@ -60,7 +60,7 @@ class FeatureAssignmentForm(ModelForm):
 
         if feature_value.never_expires and date_expire_value is not None:
             raise ValidationError(
-                _("Je vyplněné datum expirace u kvalifikace s neomezenou platností.")
+                _("Je vyplněné datum expirace u vlastnosti s neomezenou platností.")
             )
 
         return date_expire_value
