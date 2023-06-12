@@ -4,9 +4,7 @@
     <h1>Kvalifikace</h1>
 
     <ul>
-        {% for qualification in qualifications %}
-            <li><a href="{% url 'qualifications:detail' qualification.id %}">{{ qualification.name }}</a></li>
-        {% endfor %}
+        {% include "persons/_features_list_display_recursive.html" with type="qualifications" %}
     </ul>
 
     <a href="{% url 'qualifications:add' %}">Pridat kvalifikaci</a>

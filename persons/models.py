@@ -35,7 +35,12 @@ class Feature(models.Model):
 
     feature_type = models.CharField(max_length=1, choices=Type.choices)
     parent = models.ForeignKey(
-        "self", on_delete=models.CASCADE, default=None, blank=True, null=True
+        "self",
+        on_delete=models.CASCADE,
+        default=None,
+        blank=True,
+        null=True,
+        related_name="children",
     )
     name = models.CharField(max_length=50, unique=True)
     never_expires = models.BooleanField(default=False)

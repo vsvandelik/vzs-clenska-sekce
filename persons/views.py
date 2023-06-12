@@ -237,16 +237,18 @@ class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
 
 class FeatureIndex(generic.ListView):
     model = Feature
+    context_object_name = "features"
 
     def get_template_names(self):
         return f"persons/{self.kwargs['feature_type']}_index.html"
 
-    def get_context_object_name(self, object_list):
-        return self.kwargs["feature_type"]
-
     def get_queryset(self):
         feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
-        return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
+        return (
+            super()
+            .get_queryset()
+            .filter(feature_type=feature_type_params.shortcut, parent=None)
+        )
 
 
 class FeatureDetail(generic.DetailView):

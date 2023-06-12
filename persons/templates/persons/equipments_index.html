@@ -4,9 +4,7 @@
     <h1>Vybaveni</h1>
 
     <ul>
-        {% for permission in permissions %}
-            <li><a href="{% url 'equipments:detail' equipment.id %}">{{ permission.name }}</a></li>
-        {% endfor %}
+        {% include "persons/_features_list_display_recursive.html" with type="equipments" %}
     </ul>
 
     <a href="{% url 'equipments:add' %}">Pridat vybaveni</a>
