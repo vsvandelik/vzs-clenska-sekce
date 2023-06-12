@@ -36,12 +36,15 @@ class Feature(models.Model):
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)
 
+    def __str__(self):
+        return self.name
+
 
 class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
     date_assigned = models.DateField()
-    date_expire = models.DateField()
+    date_expire = models.DateField(null=True, blank=True)
 
     class Meta:
         unique_together = ["person", "feature"]
