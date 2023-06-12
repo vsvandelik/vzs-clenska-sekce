@@ -48,6 +48,16 @@ class FeatureAssignmentForm(ModelForm):
         if self.instance.pk is not None:
             self.fields.pop("feature")
 
+            if self.instance.feature.never_expires is True:
+                self.fields.pop("date_expire")
+
+        if feature_type == Feature.Type.PERMIT:
+            self.fields.pop("issuer")
+            self.fields.pop("code")
+
+        elif feature_type == Feature.Type.POSSESSION:
+            self.fields.pop("issuer")
+
     def _get_feature(self, cleaned_data):
         if self.instance.pk is not None:
             return FeatureAssignment.objects.get(pk=self.instance.pk).feature
@@ -121,10 +131,3 @@ class FeatureForm(ModelForm):
             self.fields["parent"].queryset = Feature.objects.filter(
                 feature_type=feature_type
             )
-
-            if feature_type == Feature.Type.PERMIT:
-                self.fields.pop("issuer")
-                self.fields.pop("code")
-
-            elif feature_type == Feature.Type.POSSESSION:
-                self.fields.pop("issuer")

@@ -51,11 +51,11 @@
             <tbody>
             {% for permission in permissions %}
                 <tr>
-                    <td>{{ permissions.feature.name }}</td>
-                    <td>{{ permissions.date_assigned }}</td>
-                    <td>{{ permissions.date_expire }}</td>
+                    <td>{{ permission.feature.name }}</td>
+                    <td>{{ permission.date_assigned }}</td>
+                    <td>{{ permission.date_expire }}</td>
                     <td>
-                        <a href="{% url 'persons:permission-edit' person=person.id pk=permission %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:permission-edit' person=person.id pk=permission.id %}">upravit</a>&nbsp;
                         <a href="{% url 'persons:permission-delete' person=person.id pk=permission.id %}">smazat</a>
                     </td>
                 </tr>
