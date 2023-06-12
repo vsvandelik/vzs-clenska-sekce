@@ -7,10 +7,13 @@ from django.utils.translation import gettext_lazy as _
 from . import forms
 
 
-# Allows having multiple additional GET forms in one CreateView
-# The purpose is for the GET forms to fill some hidden fields
-# of the main POST form of the CreateView
 class CustomCreateMixin(views.CreateView):
+    """
+    Allows having multiple additional GET forms in one CreateView
+    The purpose is for the GET forms to fill some hidden fields
+    of the main POST form of the CreateView
+    """
+
     get_form_classes = []
 
     def get_initial(self, form_class=None):

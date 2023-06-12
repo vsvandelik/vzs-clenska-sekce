@@ -17,9 +17,12 @@ no_render_field = {"widget": NoRenderWidget, "label": ""}
 userless_people = Person.objects.filter(user__isnull=True)
 
 
-# Renders a representation of the selected model Choice
-# in addition to the hidden input while also retaining the render order
 class CustomModelChoiceInput(forms.HiddenInput):
+    """
+    Renders a representation of the selected model choice
+    in addition to the hidden input while also retaining the render order
+    """
+
     input_type = None
 
     def __init__(self, queryset, *args, **kwargs):
@@ -43,8 +46,11 @@ class CustomModelChoiceInput(forms.HiddenInput):
         return context
 
 
-# ModelChoiceField with CustomModelChoiceInput with the same queryset as its widget
 class CustomModelChoiceField(forms.ModelChoiceField):
+    """
+    ModelChoiceField with CustomModelChoiceInput with the same queryset as its widget
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(
             *args, widget=CustomModelChoiceInput(queryset=kwargs["queryset"]), **kwargs
