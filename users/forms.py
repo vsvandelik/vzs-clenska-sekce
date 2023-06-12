@@ -100,7 +100,7 @@ class PersonSelectForm(Form):
     )
 
     def handle(self, request, context):
-        return
+        pass
 
 
 class UserCreateForm(ModelForm):
