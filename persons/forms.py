@@ -75,6 +75,7 @@ class FeatureForm(ModelForm):
             "tier": _("Poplatek"),
             "name": _("Název"),
             "parent": _("Nadřazená kategorie"),
+            "assignable": _("Přiřaditelné osobě"),
         }
 
     def __init__(self, *args, **kwargs):
@@ -84,3 +85,10 @@ class FeatureForm(ModelForm):
             self.fields["parent"].queryset = Feature.objects.filter(
                 feature_type=feature_type
             )
+
+            if feature_type == Feature.Type.PERMIT:
+                self.fields.pop("issuer")
+                self.fields.pop("code")
+
+            elif feature_type == Feature.Type.POSSESSION:
+                self.fields.pop("issuer")

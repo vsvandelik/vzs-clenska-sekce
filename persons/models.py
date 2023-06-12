@@ -40,6 +40,9 @@ class Feature(models.Model):
     name = models.CharField(max_length=50, unique=True)
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)
+    assignable = models.BooleanField(default=True)
+    issuer = models.CharField(max_length=255, blank=True, null=True)
+    code = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -72,6 +75,8 @@ FeatureTypeTexts = {
             "date_expire": _("Konec platnosti"),
             "name": _("Název kvalifikace"),
             "never_expires": _("Neomezená platnost"),
+            "issuer": _("Vydavatel"),
+            "code": _("Kód osvědčení"),
         },
         _("Kvalifikace byla úspěšně uložena."),
         _("Kvalifikace byla úspěšně odstraněna."),
@@ -98,6 +103,7 @@ FeatureTypeTexts = {
             "date_expire": _("Datum vrácení"),
             "name": _("Název vybavení"),
             "never_expires": _("Časově neomezená zápůjčka"),
+            "code": _("Invertární číslo"),
         },
         _("Vybavení bylo úspěšně uloženo."),
         _("Vybavení bylo úspěšně odstraněno."),
