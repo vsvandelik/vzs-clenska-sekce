@@ -39,19 +39,18 @@ class CustomCreateMixin(views.CreateView):
     def get_context_data(self, **kwargs):
         form_id = self.request.GET.get("form_id")
 
-        for get_form_class in self.get_form_classes:
-            form_meta = get_form_class.Meta
-            form_name = form_meta.name
+        for form_class in self.get_form_classes:
+            form_name = form_class.name
 
-            if form_id == form_name or form_meta.always_bound:
-                form = get_form_class(self.request.GET)
+            if form_id == form_name:
+                form = form_class(self.request.GET)
             else:
-                form = get_form_class(initial=self.get_initial(get_form_class))
+                form = form_class(initial=self.get_initial(form_class))
 
             kwargs[form_name] = form
 
-        for get_form_class in self.get_form_classes:
-            form_name = get_form_class.Meta.name
+        for form_class in self.get_form_classes:
+            form_name = form_class.name
             kwargs[form_name].handle(self.request, kwargs)
 
         return super().get_context_data(**kwargs)

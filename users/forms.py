@@ -58,9 +58,7 @@ class CustomModelChoiceField(forms.ModelChoiceField):
 
 
 class PersonSearchForm(Form):
-    class Meta:
-        name = "person_search_form"
-        always_bound = True
+    name = "person_search_form"
 
     person = forms.ModelChoiceField(
         required=False, queryset=userless_people, widget=forms.HiddenInput
@@ -92,9 +90,7 @@ class PersonSearchForm(Form):
 
 
 class PersonSelectForm(Form):
-    class Meta:
-        name = "person_select_form"
-        always_bound = False
+    name = "person_select_form"
 
     person = forms.ModelChoiceField(
         required=False, queryset=userless_people, **no_render_field
