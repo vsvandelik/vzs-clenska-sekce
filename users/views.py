@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from . import forms
 
 
-class CustomCreateView(views.CreateView):
+class CustomCreateMixin(views.CreateView):
     def get_initial(self, form_class=None):
         if form_class == None:
             form_class = self.form_class
@@ -49,7 +49,7 @@ class CustomCreateView(views.CreateView):
         return super().get_context_data(**kwargs)
 
 
-class UserCreateView(CustomCreateView):
+class UserCreateView(CustomCreateMixin):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
