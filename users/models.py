@@ -27,3 +27,6 @@ class User(AbstractUser, PermissionsMixin):
             return
 
         super().clean()
+
+    def __str__(self):
+        return f'Uživatel pro Osobu "{str(self.person)}"'
