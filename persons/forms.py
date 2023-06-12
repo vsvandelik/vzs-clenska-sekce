@@ -45,9 +45,18 @@ class FeatureAssignmentForm(ModelForm):
                 feature_type=feature_type, assignable=True
             )
 
+        if self.instance.pk is not None:
+            self.fields.pop("feature")
+
+    def _get_feature(self, cleaned_data):
+        if self.instance.pk is not None:
+            return FeatureAssignment.objects.get(pk=self.instance.pk).feature
+        else:
+            return cleaned_data["feature"]
+
     def clean_date_expire(self):
         date_expire_value = self.cleaned_data["date_expire"]
-        feature_value = self.cleaned_data["feature"]
+        feature_value = self._get_feature(self.cleaned_data)
 
         if feature_value.never_expires and date_expire_value is not None:
             raise ValidationError(
@@ -72,7 +81,7 @@ class FeatureAssignmentForm(ModelForm):
 
     def clean_issuer(self):
         issuer = self.cleaned_data["issuer"]
-        feature = self.cleaned_data["feature"]
+        feature = self._get_feature(self.cleaned_data)
 
         if not feature.collect_issuers and issuer is not None:
             raise ValidationError(
@@ -81,7 +90,7 @@ class FeatureAssignmentForm(ModelForm):
 
     def clean_code(self):
         code = self.cleaned_data["code"]
-        feature = self.cleaned_data["feature"]
+        feature = self._get_feature(self.cleaned_data)
 
         if not feature.collect_codes and code is not None:
             raise ValidationError(

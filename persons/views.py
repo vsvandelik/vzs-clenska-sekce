@@ -133,11 +133,6 @@ class FeatureAssignEditMixin(FeatureAssignMixin, generic.edit.UpdateView):
 
     def form_valid(self, form):
         try:
-            form.instance.person = Person.objects.get(id=self.kwargs["person"])
-        except Person.DoesNotExist:
-            return HttpResponseNotFound(_("Osoba nebyla nalezena."))
-
-        try:
             response = super().form_valid(form)
             messages.success(
                 self.request,
@@ -220,19 +215,19 @@ class PermissionAssignDeleteView(FeatureAssignDeleteMixin):
 class EquipmentAssignAddView(FeatureAssignAddMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.feature_type_texts = FeatureTypeTexts["equipment"]
+        self.feature_type_texts = FeatureTypeTexts["equipments"]
 
 
 class EquipmentAssignEditView(FeatureAssignEditMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.feature_type_texts = FeatureTypeTexts["equipment"]
+        self.feature_type_texts = FeatureTypeTexts["equipments"]
 
 
 class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.feature_type_texts = FeatureTypeTexts["equipment"]
+        self.feature_type_texts = FeatureTypeTexts["equipments"]
 
 
 class FeatureIndex(generic.ListView):
