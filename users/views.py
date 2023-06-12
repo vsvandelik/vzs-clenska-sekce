@@ -19,7 +19,7 @@ class CustomCreateMixin(views.CreateView):
         }
 
     def success_message(self):
-        return _(f'"{str(self.object)}" úspěšně přidán.')
+        return _(f"{str(self.object)} úspěšně přidán.")
 
     def form_valid(self, form):
         result = super().form_valid(form)
