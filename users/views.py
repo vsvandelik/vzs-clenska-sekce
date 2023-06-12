@@ -8,6 +8,8 @@ from . import forms
 
 
 class CustomCreateMixin(views.CreateView):
+    get_form_classes = []
+
     def get_initial(self, form_class=None):
         if form_class == None:
             form_class = self.form_class
