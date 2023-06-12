@@ -46,8 +46,8 @@ class Feature(models.Model):
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)
     assignable = models.BooleanField(default=True)
-    issuer = models.CharField(max_length=255, blank=True, null=True)
-    code = models.CharField(max_length=255, blank=True, null=True)
+    collect_issuers = models.BooleanField(default=False)
+    collect_codes = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -80,6 +80,7 @@ FeatureTypeTexts = {
             "date_expire": _("Konec platnosti"),
             "name": _("Název kvalifikace"),
             "never_expires": _("Neomezená platnost"),
+            "collect_codes": _("Evidovat čísla osvědčení"),
             "issuer": _("Vydavatel"),
             "code": _("Kód osvědčení"),
         },
@@ -108,7 +109,8 @@ FeatureTypeTexts = {
             "date_expire": _("Datum vrácení"),
             "name": _("Název vybavení"),
             "never_expires": _("Časově neomezená zápůjčka"),
-            "code": _("Invertární číslo"),
+            "collect_codes": _("Evidovat inventární číslo"),
+            "code": _("Inventární číslo"),
         },
         _("Vybavení bylo úspěšně uloženo."),
         _("Vybavení bylo úspěšně odstraněno."),
@@ -121,6 +123,8 @@ class FeatureAssignment(models.Model):
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
     date_assigned = models.DateField()
     date_expire = models.DateField(null=True, blank=True)
+    issuer = models.CharField(max_length=255, blank=True, null=True)
+    code = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         unique_together = ["person", "feature"]

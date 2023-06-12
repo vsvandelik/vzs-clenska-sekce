@@ -24,10 +24,10 @@ class PersonForm(ModelForm):
 
 
 class FeatureAssignmentForm(ModelForm):
-    # TODO: Hide Date_expire when its unlimited
+    # TODO: Hide Date_expire, issuer and code when its not necessary
     class Meta:
         model = FeatureAssignment
-        fields = ["feature", "date_assigned", "date_expire"]
+        fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
         widgets = {
             "date_assigned": widgets.DateInput(
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
@@ -42,12 +42,11 @@ class FeatureAssignmentForm(ModelForm):
         super().__init__(*args, **kwargs)
         if feature_type:
             self.fields["feature"].queryset = Feature.objects.filter(
-                feature_type=feature_type
+                feature_type=feature_type, assignable=True
             )
 
     def clean_date_expire(self):
         date_expire_value = self.cleaned_data["date_expire"]
-        date_assigned_value = self.cleaned_data["date_assigned"]
         feature_value = self.cleaned_data["feature"]
 
         if feature_value.never_expires and date_expire_value is not None:
@@ -55,14 +54,41 @@ class FeatureAssignmentForm(ModelForm):
                 _("Je vyplněné datum expirace u kvalifikace s neomezenou platností.")
             )
 
-        elif (
+        return date_expire_value
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date_expire_value = cleaned_data.get("date_expire")
+        date_assigned_value = cleaned_data.get("date_assigned")
+
+        if (
             date_expire_value
             and date_assigned_value
             and date_assigned_value > date_expire_value
         ):
-            raise ValidationError(_("Datum expirace je nižší než datum přiřazení."))
+            self.add_error(
+                "date_expire", _("Datum expirace je nižší než datum přiřazení.")
+            )
 
-        return date_expire_value
+    def clean_issuer(self):
+        issuer = self.cleaned_data["issuer"]
+        feature = self.cleaned_data["feature"]
+
+        if not feature.collect_issuers and issuer is not None:
+            raise ValidationError(
+                _("Je vyplněn vydavatel u vlastnosti u které se vydavatel neeviduje.")
+            )
+
+    def clean_code(self):
+        code = self.cleaned_data["code"]
+        feature = self.cleaned_data["feature"]
+
+        if not feature.collect_codes and code is not None:
+            raise ValidationError(
+                _(
+                    "Je vyplněn kód vlastnosti u vlastnosti u které se vydavatel neeviduje."
+                )
+            )
 
 
 class FeatureForm(ModelForm):
@@ -76,6 +102,7 @@ class FeatureForm(ModelForm):
             "name": _("Název"),
             "parent": _("Nadřazená kategorie"),
             "assignable": _("Přiřaditelné osobě"),
+            "collect_issuers": _("Evidovat vydavatele kvalifikace"),
         }
 
     def __init__(self, *args, **kwargs):
