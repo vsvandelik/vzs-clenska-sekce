@@ -76,3 +76,11 @@ class FeatureForm(ModelForm):
             "name": _("Název"),
             "parent": _("Nadřazená kategorie"),
         }
+
+    def __init__(self, *args, **kwargs):
+        feature_type = kwargs.pop("feature_type", None)
+        super().__init__(*args, **kwargs)
+        if feature_type:
+            self.fields["parent"].queryset = Feature.objects.filter(
+                feature_type=feature_type
+            )

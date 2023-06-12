@@ -292,6 +292,11 @@ class FeatureEdit(generic.edit.UpdateView):
 
         return form
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["feature_type"] = FeatureTypeTexts[self.kwargs["feature_type"]].shortcut
+        return kwargs
+
 
 class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
