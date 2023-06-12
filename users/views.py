@@ -8,15 +8,15 @@ from . import forms
 
 
 class CustomCreateView(views.CreateView):
-    def _get_initial(self, form_class):
+    def get_initial(self, form_class=None):
+        if form_class == None:
+            form_class = self.form_class
+
         return {
             declared_field: self.request.GET.get(declared_field)
             for declared_field in form_class.declared_fields
             if declared_field != "form_id"
         }
-
-    def get_initial(self):
-        return self._get_initial(self.form_class)
 
     def success_message(self):
         return _(f'"{str(self.object)}" úspěšně přidán.')
@@ -38,7 +38,7 @@ class CustomCreateView(views.CreateView):
             if form_id == form_name or form_meta.always_bound:
                 form = get_form_class(self.request.GET)
             else:
-                form = get_form_class(initial=self._get_initial(get_form_class))
+                form = get_form_class(initial=self.get_initial(get_form_class))
 
             kwargs[form_name] = form
 
