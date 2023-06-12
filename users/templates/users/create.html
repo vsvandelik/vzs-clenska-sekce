@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-    <form action="{% url 'users:add' %}" method="post">
+    <form action="{% url "users:add" %}" method="post">
         {% csrf_token %}
         {{ form.as_div }}
         <input type="submit" value="Submit">
@@ -9,12 +9,12 @@
 
     <hr>
 
-    <form action="{% url 'users:add' %}" method="get">
+    <form action="{% url "users:add" %}" method="get">
         {{ person_search_form.as_div }}
         <button type="submit">Search</button>
     </form>
 
-    <form action="{% url 'users:add' %}" method="get">
+    <form action="{% url "users:add" %}" method="get">
         <table>
             <tr>
                 <th>First Name</th>
