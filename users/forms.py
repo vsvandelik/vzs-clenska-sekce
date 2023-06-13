@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import Form, ModelForm, PasswordInput
+from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
@@ -57,7 +57,7 @@ class CustomModelChoiceField(forms.ModelChoiceField):
         )
 
 
-class PersonSearchForm(Form):
+class PersonSearchForm(forms.Form):
     name = "person_search_form"
 
     person = forms.ModelChoiceField(
@@ -89,7 +89,7 @@ class PersonSearchForm(Form):
         context["people"] = self.search_people()
 
 
-class PersonSelectForm(Form):
+class PersonSelectForm(forms.Form):
     name = "person_select_form"
 
     person = forms.ModelChoiceField(
@@ -105,13 +105,13 @@ class PersonSelectForm(Form):
         pass
 
 
-class UserCreateForm(ModelForm):
+class UserCreateForm(forms.ModelForm):
     person = CustomModelChoiceField(queryset=userless_people)
 
     class Meta:
         model = User
         fields = ["person", "password"]
-        widgets = {"password": PasswordInput}
+        widgets = {"password": forms.PasswordInput}
 
     field_order = ["person", "password"]
 
@@ -121,3 +121,30 @@ class UserCreateForm(ModelForm):
         if commit:
             user.save()
         return user
+
+
+class UserSearchForm(forms.Form):
+    name_query = forms.CharField(required=False)
+    show_all = forms.BooleanField(required=False)
+
+    def search_users(self):
+        if not self.is_valid():
+            return User.objects.none()
+
+        if self.cleaned_data["show_all"]:
+            return User.objects.all()
+
+        query = self.cleaned_data["name_query"]
+
+        if query == "":
+            return User.objects.none()
+
+        return User.objects.filter(
+            Q(person__first_name__contains=query) | Q(person__last_name__contains=query)
+        )
+
+
+class UserSearchPaginationForm(forms.Form):
+    name_query = forms.CharField(required=False, widget=forms.HiddenInput)
+    show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
+    page = forms.IntegerField(required=False, min_value=1, **no_render_field)
