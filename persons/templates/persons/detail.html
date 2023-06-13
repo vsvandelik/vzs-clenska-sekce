@@ -6,9 +6,9 @@
 
     <a href="{% url 'persons:edit' person.id %}">Upravit osobu</a>
     <a href="{% url 'persons:delete' person.id %}">Smazat osobu</a>
-    <a href="{% url 'persons:qualification-add' person.id %}">Pridat kvalifikaci</a>
-    <a href="{% url 'persons:permission-add' person.id %}">Pridat oprávnění</a>
-    <a href="{% url 'persons:equipment-add' person.id %}">Pridat vybavení</a>
+    <a href="{% url 'persons:qualifications:add' person.id %}">Pridat kvalifikaci</a>
+    <a href="{% url 'persons:permissions:add' person.id %}">Pridat oprávnění</a>
+    <a href="{% url 'persons:equipments:add' person.id %}">Pridat vybavení</a>
 
     {% if qualifications %}
         <h2>Kvalifikace</h2>
@@ -28,8 +28,8 @@
                     <td>{{ qualification.date_assigned }}</td>
                     <td>{{ qualification.date_expire }}</td>
                     <td>
-                        <a href="{% url 'persons:qualification-edit' person=person.id pk=qualification.id %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:qualification-delete' person=person.id pk=qualification.id %}">smazat</a>
+                        <a href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:qualifications:delete' person=person.id pk=qualification.id %}">smazat</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -51,12 +51,12 @@
             <tbody>
             {% for permission in permissions %}
                 <tr>
-                    <td>{{ permissions.feature.name }}</td>
-                    <td>{{ permissions.date_assigned }}</td>
-                    <td>{{ permissions.date_expire }}</td>
+                    <td>{{ permission.feature.name }}</td>
+                    <td>{{ permission.date_assigned }}</td>
+                    <td>{{ permission.date_expire }}</td>
                     <td>
-                        <a href="{% url 'persons:permission-edit' person=person.id pk=permission %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:permission-delete' person=person.id pk=permission.id %}">smazat</a>
+                        <a href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:permissions:delete' person=person.id pk=permission.id %}">smazat</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -82,8 +82,8 @@
                     <td>{{ equipment.date_assigned }}</td>
                     <td>{{ equipment.date_expire }}</td>
                     <td>
-                        <a href="{% url 'persons:equipment-edit' person=person.id pk=equipment.id %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:equipment-delete' person=person.id pk=equipment.id %}">smazat</a>
+                        <a href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}">upravit</a>&nbsp;
+                        <a href="{% url 'persons:equipments:delete' person=person.id pk=equipment.id %}">smazat</a>
                     </td>
                 </tr>
             {% endfor %}
