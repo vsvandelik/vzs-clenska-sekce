@@ -116,14 +116,6 @@ class FeatureForm(ModelForm):
         fields = "__all__"
         exclude = ["feature_type"]
 
-        labels = {
-            "tier": _("Poplatek"),
-            "name": _("Název"),
-            "parent": _("Nadřazená kategorie"),
-            "assignable": _("Přiřaditelné osobě"),
-            "collect_issuers": _("Evidovat vydavatele kvalifikace"),
-        }
-
     def __init__(self, *args, **kwargs):
         feature_type = kwargs.pop("feature_type", None)
         super().__init__(*args, **kwargs)

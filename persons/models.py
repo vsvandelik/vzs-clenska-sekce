@@ -41,12 +41,15 @@ class Feature(models.Model):
         blank=True,
         null=True,
         related_name="children",
+        verbose_name=_("Nadřazená kategorie"),
     )
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(_("Název"), max_length=50, unique=True)
     never_expires = models.BooleanField(default=False)
-    tier = models.PositiveSmallIntegerField(default=0)
-    assignable = models.BooleanField(default=True)
-    collect_issuers = models.BooleanField(default=False)
+    tier = models.PositiveSmallIntegerField(_("Poplatek"), default=0)
+    assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
+    collect_issuers = models.BooleanField(
+        _("Evidovat vydavatele kvalifikace"), default=False
+    )
     collect_codes = models.BooleanField(default=False)
 
     def __str__(self):
