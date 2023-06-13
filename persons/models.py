@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
@@ -12,11 +13,15 @@ class Person(models.Model):
         PARENT = "rodic", _("rodič")
 
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
     date_of_birth = models.DateField()
     person_type = models.CharField(max_length=10, choices=Type.choices)
     features = models.ManyToManyField("persons.Feature", through="FeatureAssignment")
     managed_people = models.ManyToManyField("self", symmetrical=False)
+
+    def get_absolute_url(self):
+        return reverse("persons:detail", kwargs={"pk": self.pk})
 
 
 class Feature(models.Model):
@@ -31,12 +36,15 @@ class Feature(models.Model):
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(default=0)
 
+    def __str__(self):
+        return self.name
+
 
 class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
     date_assigned = models.DateField()
-    date_expire = models.DateField()
+    date_expire = models.DateField(null=True, blank=True)
 
     class Meta:
         unique_together = ["person", "feature"]
