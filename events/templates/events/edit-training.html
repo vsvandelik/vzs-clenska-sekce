@@ -14,6 +14,16 @@
         <textarea id="description" name="description" cols="50"></textarea>
     </div>
     <br>
+    <div>
+        <label for="capacity">Maximální počet účastníků</label><br>
+        <input type="number" min="1" step="1" pattern="\d*" id="capacity" name="capacity" required>
+    </div>
+    <br>
+    <div>
+        <label for="age_limit">Minimální věk účastníků</label><br>
+        <input type="number" min="8" step="1" pattern="\d*" id="age_limit" name="age_limit" required>
+    </div>
+    <br>
     <fieldset>
         <legend>Datum</legend>
         <label for="starts_date">Začíná</label>
@@ -24,21 +34,11 @@
     </fieldset>
     <br>
     <div>
-        <label for="capacity">Maximální počet účastníků</label><br>
-        <input type="number" min="1" step="1" pattern="\d*" id="capacity" name="capacity" required>
-    </div>
-    <br>
-    <div>
-        <label for="min_age">Minimální věk účastníků</label><br>
-        <input type="number" min="8" step="1" pattern="\d*" id="min_age" name="min_age" required>
-    </div>
-    <br>
-    <div>
         <label for="trainings_per_week">Počet tréninků týdně</label><br>
         <select id="trainings_per_week" name="trainings_per_week" onchange="trainingsPerWeekChanged()">
-            <option value="one">1x</option>
-            <option value="two">2x</option>
-            <option value="three">3x</option>
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="3">3x</option>
         </select>
     </div>
     <br>

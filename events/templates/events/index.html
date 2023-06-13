@@ -2,11 +2,13 @@
 <hr>
 <table>
     <th>Name</th>
-    <th>Detail</th>
+    <th>Description</th>
+    <th>Akce</th>
     {% for event in events %}
             <tr>
                 <td>{{ event.name }}</td>
-                <td><a href="{% url 'events:detail' event.id %}">Detail</a></td>
+                <td>{{ event.description }}</td>
+                <td><a href="{% url 'events:delete' event.id %}">Smazat</a> | <a href="{% url 'events:detail' event.id %}">Detail</a></td>
             </tr>
         {% endfor %}
     <tr></tr>

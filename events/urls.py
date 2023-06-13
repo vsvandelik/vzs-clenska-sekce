@@ -4,8 +4,8 @@ from . import views
 app_name = "events"
 
 urlpatterns = [
-    path("", views.IndexView.as_view(), name="index"),
-    path("novy-trenink/", views.new_training, name="create_training"),
-    path("nova-jednorazova/", views.new_one_time_event, name="new_one_time_event"),
-    path("detail/<int:event_id>", views.detail, name="detail"),
+    path("", views.EventIndexView.as_view(), name="index"),
+    path("<int:pk>/smazat/", views.EventDeleteView.as_view(), name="delete"),
+    path("<int:pk>/detail/", views.EventDetailView.as_view(), name="detail"),
+    path("novy-trenink/", views.TrainingCreateView.as_view(), name="create_training"),
 ]

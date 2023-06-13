@@ -9,16 +9,22 @@ function dateChanged() {
 
 }
 
+function getDateNulledHours(element) {
+    const date = new Date(element.value)
+    date.setHours(0)
+    return date
+}
+
 function validateDate() {
     const starts_date = document.getElementById('starts_date')
     const ends_date = document.getElementById('ends_date')
-    const starts_date_obj = new Date(starts_date.value)
-    const ends_date_obj = new Date(ends_date.value)
+    const starts_date_obj = getDateNulledHours(starts_date)
+    const ends_date_obj = getDateNulledHours(ends_date)
     const secondsBetween = (ends_date_obj.getTime() - starts_date_obj.getTime()) / 1000
     const secondsInWeek = 604800
     if (secondsBetween < secondsInWeek * 2 || isNaN(secondsBetween)) {
         window._datesValid = false
-        ends_date.setCustomValidity('Pravidelná akce se koná alespoň 2 týdny')
+        ends_date.setCustomValidity('Pravidelná událost se koná alespoň 2 týdny')
     } else {
         window._datesValid = true
         ends_date.setCustomValidity('')
@@ -66,13 +72,13 @@ function checkTrainingDays(element) {
 }
 
 function addCheckedDateCheckboxesTo(daysFieldset) {
-    const starts_date = new Date(document.getElementById('starts_date').value)
-    const ends_date = new Date(document.getElementById('ends_date').value)
+    const starts_date = getDateNulledHours(document.getElementById('starts_date'))
+    const ends_date = getDateNulledHours(document.getElementById('ends_date'))
     moveDaysToFirstTraining(starts_date, daysFieldset)
-    while (ends_date.getTime() > starts_date.getTime()) {
+    while (ends_date.getTime() >= starts_date.getTime()) {
         const datePretty = formatCzechDate(starts_date)
         const [checkbox, label] =
-            createCheckboxWithLabel('day[]', datePretty, datePretty)
+            createCheckboxWithLabel('day', datePretty, datePretty)
         daysFieldset.appendChild(checkbox)
         daysFieldset.appendChild(label)
         starts_date.setDate(starts_date.getDate() + 7)
@@ -173,14 +179,7 @@ function removeChildrenAfterLegend(element) {
 }
 
 function getTrainingsPerWeekValue() {
-    let val = document.getElementById('trainings_per_week').value
-    if (val === 'one')
-        val = 1
-    else if (val === 'two')
-        val = 2
-    else
-        val = 3
-    return val
+    return parseInt(document.getElementById('trainings_per_week').value)
 }
 
 function checkTrainingDaysOfTheWeekChosen() {
