@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
 
 from persons.models import Person
 from .models import User
@@ -33,7 +34,7 @@ class CustomModelChoiceInput(forms.HiddenInput):
         input_html = super().render(name, value, attrs, renderer)
 
         if value:
-            obj = self.queryset.get(id=value)
+            obj = get_object_or_404(self.queryset, id=value)
             presentation_html = str(obj)
         else:
             presentation_html = ""
