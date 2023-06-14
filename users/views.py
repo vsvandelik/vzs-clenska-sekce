@@ -1,13 +1,13 @@
-from django.views.generic import base as views
-from django.views.generic import edit as views
+from django.views import generic
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 
+from .models import User
 from . import forms
 
 
-class CustomCreateMixin(views.CreateView):
+class CustomCreateMixin(generic.edit.CreateView):
     """
     Allows having multiple additional GET forms in one CreateView
     The purpose is for the GET forms to fill some hidden fields
@@ -61,3 +61,20 @@ class UserCreateView(CustomCreateMixin):
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
     get_form_classes = [forms.PersonSearchForm, forms.PersonSelectForm]
+
+
+class IndexView(generic.list.ListView):
+    context_object_name = "users"
+    paginate_by = 2
+
+    def get_queryset(self):
+        self.user_search_form = forms.UserSearchForm(self.request.GET)
+        self.user_search_pagination_form = forms.UserSearchPaginationForm(
+            self.request.GET
+        )
+        return self.user_search_form.search_users()
+
+    def get_context_data(self, **kwargs):
+        kwargs["user_search_form"] = self.user_search_form
+        kwargs["user_search_pagination_form"] = self.user_search_pagination_form
+        return super().get_context_data(**kwargs)
