@@ -89,6 +89,11 @@ function formatCzechDate(date) {
     return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
 }
 
+function parseCzechDate(date_str) {
+    const [day, month, year] = date_str.split('.')
+    return new Date(year, month - 1, day, 0, 0, 0, 0)
+}
+
 function createCheckboxWithLabel(name, value, labelTxt) {
     const checkbox = document.createElement('input')
     checkbox.type = 'checkbox'
@@ -96,7 +101,8 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     checkbox.value = value
     checkbox.id = value
     checkbox.checked = true
-    checkbox.addEventListener('change', () => trainingDayToggled(checkbox), false)
+    checkbox.addEventListener('change', () =>
+        trainingDayToggled(checkbox), false)
 
     const label = document.createElement('label')
     label.htmlFor = value
@@ -129,7 +135,8 @@ function countCheckedCheckboxesIn(parentElement) {
     let counter = 0
     for (let i = 0; i < parentElement.childNodes.length; ++i) {
         if (parentElement.childNodes[i].nodeName.toLowerCase() === 'input'
-            && parentElement.childNodes[i].type === 'checkbox' && parentElement.childNodes[i].checked)
+            && parentElement.childNodes[i].type === 'checkbox'
+            && parentElement.childNodes[i].checked)
             ++counter
     }
     return counter
@@ -138,7 +145,8 @@ function countCheckedCheckboxesIn(parentElement) {
 function getFirstUncheckedCheckboxIn(parentElement) {
     for (let i = 0; i < parentElement.childNodes.length; ++i) {
         if (parentElement.childNodes[i].nodeName.toLowerCase() === 'input'
-            && parentElement.childNodes[i].type === 'checkbox' && !parentElement.childNodes[i].checked)
+            && parentElement.childNodes[i].type === 'checkbox'
+            && !parentElement.childNodes[i].checked)
             return parentElement.childNodes[i]
     }
     return undefined
@@ -154,26 +162,31 @@ function clearCustomValidityFromAllCheckboxesIn(parentElement) {
 
 function moveDaysToFirstTraining(date, daysFieldset) {
     let day = daysFieldset.id.substring(0, 2)
-    if (day === 'ne')
-        day = 0
-    else if (day === 'po')
-        day = 1
-    else if (day === 'ut')
-        day = 2
-    else if (day === 'st')
-        day = 3
-    else if (day === 'ct')
-        day = 4
-    else if (day === 'pa')
-        day = 5
-    else
-        day = 6
+    day = day_short_2_day_of_week(day)
     while (date.getDay() !== day)
         date.setDate(date.getDate() + 1)
 }
 
+function day_short_2_day_of_week(day_short) {
+    if (day_short === 'ne')
+        return 0
+    else if (day_short === 'po')
+        return 1
+    else if (day_short === 'ut')
+        return 2
+    else if (day_short === 'st')
+        return 3
+    else if (day_short === 'ct')
+        return 4
+    else if (day_short === 'pa')
+        return 5
+    else
+        return 6
+}
+
 function removeChildrenAfterLegend(element) {
-    while (element.childNodes.length > 1 && element.lastChild.nodeName.toLowerCase() !== 'legend')
+    while (element.childNodes.length > 1
+        && element.lastChild.nodeName.toLowerCase() !== 'legend')
         element.removeChild(element.lastChild);
 
 }
@@ -227,11 +240,39 @@ function setStateAllDays(state) {
         .forEach(d => document.getElementById(d).disabled = !state)
 }
 
+function checkChosenDaysValid() {
+    const starts_date_obj = getDateNulledHours(document.getElementById('starts_date'))
+    const ends_date_obj = getDateNulledHours(document.getElementById('ends_date'))
+    const chosenDays = days.filter(d => document.getElementById(d).checked)
+    const parentFieldsets = chosenDays.map(d => document.getElementById(`${d}_days`))
+    for (const fieldset of parentFieldsets) {
+        const weekday = day_short_2_day_of_week(fieldset.id.split('_')[0])
+        for (const child of fieldset.childNodes) {
+            if (child.nodeName.toLowerCase() === 'input'
+                && child.type === 'checkbox'
+                && child.checked) {
+                const date = parseCzechDate(child.value)
+                if (date.getDay() !== weekday
+                    || date.getTime() < starts_date_obj.getTime()
+                    || date.getTime() > ends_date_obj.getTime()) {
+                    child.setCustomValidity('Neplatné datum tréninku')
+                    return false
+                }
+            }
+        }
+    }
+    return true
+}
+
 function validateForm() {
     const trainingsPerWeek = getTrainingsPerWeekValue()
     const daysInWeekFieldset = document.getElementById('days_in_week')
     const firstUnchecked = getFirstUncheckedCheckboxIn(daysInWeekFieldset)
     const selectedDaysPerWeek = countCheckedCheckboxesIn(daysInWeekFieldset)
+
+    if (!checkChosenDaysValid())
+        return false
+
     if (trainingsPerWeek !== selectedDaysPerWeek) {
         firstUnchecked.setCustomValidity('Není vybrán odpovídající počet dní v týdnu vzhledem k počtu tréninků')
         return false

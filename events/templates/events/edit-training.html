@@ -1,148 +1,172 @@
-{% load static %}
-<script src="{% static 'edit-training.js' %}"></script>
-<h1>Nový trénink</h1>
-<hr>
-<form method="POST" action="{% url 'events:create_training' %}" onsubmit="return validateForm()">
-    {% csrf_token %}
-    <div>
-        <label for="name">Jméno</label><br>
-        <input type="text" id="name" name="name" required>
-    </div>
-    <br>
-    <div>
-        <label for="description">Popis</label><br>
-        <textarea id="description" name="description" cols="50"></textarea>
-    </div>
-    <br>
-    <div>
-        <label for="capacity">Maximální počet účastníků</label><br>
-        <input type="number" min="1" step="1" pattern="\d*" id="capacity" name="capacity" required>
-    </div>
-    <br>
-    <div>
-        <label for="age_limit">Minimální věk účastníků</label><br>
-        <input type="number" min="8" step="1" pattern="\d*" id="age_limit" name="age_limit" required>
-    </div>
-    <br>
-    <fieldset>
-        <legend>Datum</legend>
-        <label for="starts_date">Začíná</label>
-        <input type="date" id="starts_date" name="starts_date" required onchange="dateChanged()">
+{% extends "base.html" %}
+{% block content %}
+    {% load static %}
+    <script src="{% static 'edit-training.js' %}"></script>
+    <h1>Nový trénink</h1>
 
-        <label for="ends_date">Končí</label>
-        <input type="date" id="ends_date" name="ends_date" required onchange="dateChanged()">
-    </fieldset>
-    <br>
-    <div>
-        <label for="trainings_per_week">Počet tréninků týdně</label><br>
-        <select id="trainings_per_week" name="trainings_per_week" onchange="trainingsPerWeekChanged()">
-            <option value="1">1x</option>
-            <option value="2">2x</option>
-            <option value="3">3x</option>
-        </select>
-    </div>
-    <br>
-    <fieldset id="days_in_week">
-        <legend>Dny v týdnu</legend>
-        <input type="checkbox" id="po" name="po" onchange="dayToggled(this)">
-        <label for="po">Po</label>
-        <input type="checkbox" id="ut" name="ut" onchange="dayToggled(this)">
-        <label for="ut">Út</label>
-        <input type="checkbox" id="st" name="st" onchange="dayToggled(this)">
-        <label for="st">St</label>
-        <input type="checkbox" id="ct" name="ct" onchange="dayToggled(this)">
-        <label for="ct">Čt</label>
-        <input type="checkbox" id="pa" name="pa" onchange="dayToggled(this)">
-        <label for="pa">Pá</label>
-        <input type="checkbox" id="so" name="so" onchange="dayToggled(this)">
-        <label for="so">So</label>
-        <input type="checkbox" id="ne" name="ne" onchange="dayToggled(this)">
-        <label for="ne">Ne</label>
-    </fieldset>
-    <div id="po_time" style="display: none">
-        <label>Čas konání v Po</label><br>
-        <label for="from_po">Od</label>
-        <input type="time" id="from_po" name="from_po" onchange="validateTimes(this)" required disabled>
+    <hr>
+    <form method="POST" action="{% url 'events:add_training' %}"
+          onsubmit="return validateForm()">
+        {% csrf_token %}
+        <div>
+            <label for="name">Jméno</label><br>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <br>
+        <div>
+            <label for="description">Popis</label><br>
+            <textarea id="description" name="description" cols="50"></textarea>
+        </div>
+        <br>
+        <div>
+            <label for="capacity">Maximální počet účastníků</label><br>
+            <input type="number" min="1" step="1" pattern="\d*" id="capacity"
+                   name="capacity" required>
+        </div>
+        <br>
+        <div>
+            <label for="age_limit">Minimální věk účastníků</label><br>
+            <input type="number" min="8" step="1" pattern="\d*" id="age_limit"
+                   name="age_limit" required>
+        </div>
+        <br>
+        <fieldset>
+            <legend>Datum</legend>
+            <label for="starts_date">Začíná</label>
+            <input type="date" id="starts_date" name="starts_date" required
+                   onchange="dateChanged()">
 
-        <label for="to_po">Do</label>
-        <input type="time" id="to_po" name="to_po" onchange="validateTimes(this)" required disabled>
-    </div>
+            <label for="ends_date">Končí</label>
+            <input type="date" id="ends_date" name="ends_date" required
+                   onchange="dateChanged()">
+        </fieldset>
+        <br>
+        <div>
+            <label for="trainings_per_week">Počet tréninků týdně</label><br>
+            <select id="trainings_per_week" name="trainings_per_week"
+                    onchange="trainingsPerWeekChanged()">
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+            </select>
+        </div>
+        <br>
+        <fieldset id="days_in_week">
+            <legend>Dny v týdnu</legend>
+            <input type="checkbox" id="po" name="po" onchange="dayToggled(this)">
+            <label for="po">Po</label>
+            <input type="checkbox" id="ut" name="ut" onchange="dayToggled(this)">
+            <label for="ut">Út</label>
+            <input type="checkbox" id="st" name="st" onchange="dayToggled(this)">
+            <label for="st">St</label>
+            <input type="checkbox" id="ct" name="ct" onchange="dayToggled(this)">
+            <label for="ct">Čt</label>
+            <input type="checkbox" id="pa" name="pa" onchange="dayToggled(this)">
+            <label for="pa">Pá</label>
+            <input type="checkbox" id="so" name="so" onchange="dayToggled(this)">
+            <label for="so">So</label>
+            <input type="checkbox" id="ne" name="ne" onchange="dayToggled(this)">
+            <label for="ne">Ne</label>
+        </fieldset>
+        <div id="po_time" style="display: none">
+            <label>Čas konání v Po</label><br>
+            <label for="from_po">Od</label>
+            <input type="time" id="from_po" name="from_po"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="ut_time" style="display: none">
-        <label>Čas konání v Út</label><br>
-        <label for="from_ut">Od</label>
-        <input type="time" id="from_ut" name="from_ut" onchange="validateTimes(this)" required disabled>
+            <label for="to_po">Do</label>
+            <input type="time" id="to_po" name="to_po" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_ut">Do</label>
-        <input type="time" id="to_ut" name="to_ut" onchange="validateTimes(this)" required disabled>
-    </div>
+        <div id="ut_time" style="display: none">
+            <label>Čas konání v Út</label><br>
+            <label for="from_ut">Od</label>
+            <input type="time" id="from_ut" name="from_ut"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="st_time" style="display: none">
-        <label>Čas konání v St</label><br>
-        <label for="from_st">Od</label>
-        <input type="time" id="from_st" name="from_st" onchange="validateTimes(this)" required disabled>
+            <label for="to_ut">Do</label>
+            <input type="time" id="to_ut" name="to_ut" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_st">Do</label>
-        <input type="time" id="to_st" name="to_st" onchange="validateTimes(this)" required disabled>
-    </div>
+        <div id="st_time" style="display: none">
+            <label>Čas konání v St</label><br>
+            <label for="from_st">Od</label>
+            <input type="time" id="from_st" name="from_st"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="ct_time" style="display: none">
-        <label>Čas konání v Čt</label><br>
-        <label for="from_ct">Od</label>
-        <input type="time" id="from_ct" name="from_ct" onchange="validateTimes(this)" required disabled>
+            <label for="to_st">Do</label>
+            <input type="time" id="to_st" name="to_st" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_ct">Do</label>
-        <input type="time" id="to_ct" name="to_ct" onchange="validateTimes(this)" required disabled>
-    </div>
+        <div id="ct_time" style="display: none">
+            <label>Čas konání v Čt</label><br>
+            <label for="from_ct">Od</label>
+            <input type="time" id="from_ct" name="from_ct"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="pa_time" style="display: none">
-        <label>Čas konání v Pá</label><br>
-        <label for="from_pa">Od</label>
-        <input type="time" id="from_pa" name="from_pa" onchange="validateTimes(this)" required disabled>
+            <label for="to_ct">Do</label>
+            <input type="time" id="to_ct" name="to_ct" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_pa">Do</label>
-        <input type="time" id="to_pa" name="to_pa" onchange="validateTimes(this)" required disabled>
-    </div>
+        <div id="pa_time" style="display: none">
+            <label>Čas konání v Pá</label><br>
+            <label for="from_pa">Od</label>
+            <input type="time" id="from_pa" name="from_pa"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="so_time" style="display: none">
-        <label>Čas konání v So</label><br>
-        <label for="from_so">Od</label>
-        <input type="time" id="from_so" name="from_so" onchange="validateTimes(this)" required disabled>
+            <label for="to_pa">Do</label>
+            <input type="time" id="to_pa" name="to_pa" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_so">Do</label>
-        <input type="time" id="to_so" name="to_so" onchange="validateTimes(this)" required disabled>
-    </div>
+        <div id="so_time" style="display: none">
+            <label>Čas konání v So</label><br>
+            <label for="from_so">Od</label>
+            <input type="time" id="from_so" name="from_so"
+                   onchange="validateTimes(this)" required disabled>
 
-    <div id="ne_time" style="display: none">
-        <label>Čas konání v Ne</label><br>
-        <label for="from_ne">Od</label>
-        <input type="time" id="from_ne" name="from_ne" onchange="validateTimes(this)" required disabled>
+            <label for="to_so">Do</label>
+            <input type="time" id="to_so" name="to_so" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
 
-        <label for="to_ne">Do</label>
-        <input type="time" id="to_ne" name="to_ne" onchange="validateTimes(this)" required disabled>
-    </div>
-    <fieldset id="po_days" style="display: none">
-        <legend>Po dny</legend>
-    </fieldset>
-    <fieldset id="ut_days" style="display: none">
-        <legend>Út dny</legend>
-    </fieldset>
-    <fieldset id="st_days" style="display: none">
-        <legend>St dny</legend>
-    </fieldset>
-    <fieldset id="ct_days" style="display: none">
-        <legend>Čt dny</legend>
-    </fieldset>
-    <fieldset id="pa_days" style="display: none">
-        <legend>Pá dny</legend>
-    </fieldset>
-    <fieldset id="so_days" style="display: none">
-        <legend>So dny</legend>
-    </fieldset>
-    <fieldset id="ne_days" style="display: none">
-        <legend>Ne dny</legend>
-    </fieldset>
-    <div>
-    <input type="submit" value="Vytvořit">
-    </div>
-</form>
+        <div id="ne_time" style="display: none">
+            <label>Čas konání v Ne</label><br>
+            <label for="from_ne">Od</label>
+            <input type="time" id="from_ne" name="from_ne"
+                   onchange="validateTimes(this)" required disabled>
+
+            <label for="to_ne">Do</label>
+            <input type="time" id="to_ne" name="to_ne" onchange="validateTimes(this)"
+                   required disabled>
+        </div>
+        <fieldset id="po_days" style="display: none">
+            <legend>Po dny</legend>
+        </fieldset>
+        <fieldset id="ut_days" style="display: none">
+            <legend>Út dny</legend>
+        </fieldset>
+        <fieldset id="st_days" style="display: none">
+            <legend>St dny</legend>
+        </fieldset>
+        <fieldset id="ct_days" style="display: none">
+            <legend>Čt dny</legend>
+        </fieldset>
+        <fieldset id="pa_days" style="display: none">
+            <legend>Pá dny</legend>
+        </fieldset>
+        <fieldset id="so_days" style="display: none">
+            <legend>So dny</legend>
+        </fieldset>
+        <fieldset id="ne_days" style="display: none">
+            <legend>Ne dny</legend>
+        </fieldset>
+        <div>
+            <input type="submit" value="Vytvořit">
+        </div>
+    </form>
+{% endblock %}

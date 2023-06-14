@@ -48,6 +48,9 @@ class Event(models.Model):
     def get_children_trainings_sorted(self):
         return Event.objects.filter(parent__exact=self).order_by("time_start")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class EventPosition(models.Model):
     name = models.CharField(max_length=50)

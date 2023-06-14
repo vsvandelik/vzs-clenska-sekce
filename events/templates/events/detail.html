@@ -1,24 +1,30 @@
-<a href="{% url 'events:index' %}">Zpět</a>
-<h2>Detail události</h2>
-<ul>
-    <li>Jméno: {{ event.name }}</li>
-    <li>Popis: {{ event.description }}</li>
-    <li>Trénink (opakující se událost): {{ is_training|yesno:"Ano,Ne" }}</li>
-    <li>Maximální počet účastníků: {{ event.capacity }}</li>
-    <li>Minimální věk účastníků: {{ event.age_limit }}</li>
-    <li>Stav události: {{ event.state }}</li>
-    {% if is_training %}
-        <li>Začíná {{ event.time_start|date:'j.n.Y' }}</li>
-        <li>Končí {{ event.time_end|date:'j.n.Y' }}</li>
-        <li>Koná se týdně: {{ weekly_occurs }}x v {{ weekdays }}</li>
-        <li>Rozpis tréninků:
-            <ul>
-                {% for child in children %}
-                    <li>{{ child.time_start|date:'j.n.Y' }} {{ child.time_start|date:'H:i' }} – {{ child.time_end|date:'H:i' }}</li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% else %}
-        <li>Probíhá {{ event.time_start|date:'j.n.Y' }} {{ event.time_start|date:'H:i' }} – {{ event.time_end|date:'H:i' }}</li>
-    {% endif %}
-</ul>
+{% extends "base.html" %}
+{% block content %}
+    <a href="{% url 'events:index' %}">Zpět</a>
+    <h2>Detail události</h2>
+    <ul>
+        <li>Jméno: {{ event.name }}</li>
+        <li>Popis: {{ event.description }}</li>
+        <li>Trénink (opakující se událost): {{ is_training|yesno:"Ano,Ne" }}</li>
+        <li>Maximální počet účastníků: {{ event.capacity }}</li>
+        <li>Minimální věk účastníků: {{ event.age_limit }}</li>
+        <li>Stav události: {{ event.state }}</li>
+        {% if is_training %}
+            <li>Začíná {{ event.time_start|date:'j.n.Y' }}</li>
+            <li>Končí {{ event.time_end|date:'j.n.Y' }}</li>
+            <li>Koná se týdně: {{ weekly_occurs }}x v {{ weekdays }}</li>
+            <li>Rozpis tréninků:
+                <ul>
+                    {% for child in children %}
+                        <li>{{ child.time_start|date:'j.n.Y' }} {{ child.time_start|date:'H:i' }}
+                            – {{ child.time_end|date:'H:i' }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            <li>
+                Probíhá {{ event.time_start|date:'j.n.Y' }} {{ event.time_start|date:'H:i' }}
+                – {{ event.time_end|date:'H:i' }}</li>
+        {% endif %}
+    </ul>
+{% endblock %}

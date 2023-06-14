@@ -1,17 +1,22 @@
-<form method="post">
-		{% csrf_token %}
-		<h2>Smazaní události</h2>
-		<p>Chcete opravdu smazat událost "{{event.name}}"?</p>
+{% extends "base.html" %}
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <h2>Smazaní události</h2>
+        <p>Chcete opravdu smazat událost "{{ event.name }}"?</p>
         {% if children %}
-            <p>Tato událost zahrnuje pravidelné tréninky (celkem {{ children.count }})</p>
+            <p>Tato událost zahrnuje pravidelné tréninky
+                (celkem {{ children.count }})</p>
             <ul>
                 {% for child in children %}
-                    <li>{{ child.time_start|date:'j.n.Y' }} {{ child.time_start|date:'H:i' }} – {{ child.time_end|date:'H:i' }}</li>
+                    <li>{{ child.time_start|date:'j.n.Y' }} {{ child.time_start|date:'H:i' }}
+                        – {{ child.time_end|date:'H:i' }}</li>
                 {% endfor %}
             </ul>
         {% endif %}
-		<p class="form-buttons">
-			<input type="submit" value="Delete">
-			<a href="{% url 'events:index'%}">Zrušit</a>
-		</p>
-</form>
+        <p class="form-buttons">
+            <input type="submit" value="Delete">
+            <a href="{% url 'events:index' %}">Zrušit</a>
+        </p>
+    </form>
+{% endblock %}
