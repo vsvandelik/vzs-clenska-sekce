@@ -158,7 +158,7 @@ class Group(models.Model):
 
 
 class StaticGroup(Group):
-    members = models.ManyToManyField(Person, symmetrical=False)
+    members = models.ManyToManyField(Person)
 
 
 class DynamicGroup(Group):

@@ -129,3 +129,9 @@ class StaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
         fields = ["name"]
+
+
+class AddMembersStaticGroupForm(ModelForm):
+    class Meta:
+        model = StaticGroup
+        fields = ["members"]

@@ -1,12 +1,19 @@
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from .forms import PersonForm, FeatureAssignmentForm, FeatureForm, StaticGroupForm
+from .forms import (
+    PersonForm,
+    FeatureAssignmentForm,
+    FeatureForm,
+    StaticGroupForm,
+    AddMembersStaticGroupForm,
+)
 from .models import (
     Person,
     FeatureAssignment,
@@ -231,14 +238,35 @@ class GroupIndex(generic.ListView):
         return context
 
 
-class GroupDetail(generic.DetailView):
-    model = Group
+class StaticGroupDetail(
+    SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
+):
+    model = StaticGroup
+    form_class = AddMembersStaticGroupForm
+    success_message = "Osoby byly úspěšně přidány."
+    template_name = "persons/groups_detail_static.html"
 
-    def get_template_names(self):
-        if hasattr(self.object, "staticgroup"):
-            return "persons/groups_detail_static.html"
-        # else:
-        #    return "persons/groups_detail_dynamic.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["available_persons"] = Person.objects.exclude(
+            Q(staticgroup__isnull=False) & Q(staticgroup__id=self.object.pk)
+        )
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:groups:detail", args=(self.object.pk,))
+
+    def form_valid(self, form):
+        new_member_ids = form.cleaned_data["members"]
+
+        existing_members = self.object.members.all()
+        combined_members = existing_members | new_member_ids
+
+        form.instance.members.set(combined_members)
+
+        messages.success(self.request, self.success_message)
+
+        return redirect(self.get_success_url())
 
 
 class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):

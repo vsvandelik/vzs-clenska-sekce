@@ -20,7 +20,7 @@ nested_feature_assigning_urls = [
 
 groups_urlpatterns = [
     path("", views.GroupIndex.as_view(), name="index"),
-    path("<int:pk>/", views.GroupDetail.as_view(), name="detail"),
+    path("<int:pk>/", views.StaticGroupDetail.as_view(), name="detail"),
     path("pridat/staticka", views.StaticGroupEditView.as_view(), name="add-static"),
     path(
         "<int:pk>/upravit/staticka",
