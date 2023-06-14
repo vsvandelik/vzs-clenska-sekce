@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <a href="{% url "users:index" %}">Zpět</a>
+
+    <div>
+        Osoba: {{ user.person }}
+    </div>
+    <div>
+        Povolení: TODO
+    </div>
+
+    <a href="
+    {% comment %} {% url "users:edit" %} {% endcomment %}
+    ">Upravit</a>
+    <a href="
+    {% comment %} {% url "users:delete" %} {% endcomment %}
+    ">Smazat</a>
+{% endblock %}

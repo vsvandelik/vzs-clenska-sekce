@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <a href="{% url "users:index" %}">Zpět</a>
+    
     <form action="{% url "users:add" %}" method="post">
         {% csrf_token %}
         {{ form.as_div }}

@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+<a href="{% url "users:add" %}">Vytvořit nového uživatele</a>
+
 <form action="{% url "users:index" %}" method="get">
     {{ user_search_form.as_div }}
     <button type="submit">Hledat</button>
@@ -8,11 +10,13 @@
 
 <table>
     <tr>
+        <th>Detail</th>
         <th>Osoba</th>
         <th>Povolení</th>
     </tr>
     {% for user in page_obj %}
     <tr>
+        <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
         <td>{{ user.person }}</td>
         <td>TODO</td>
     </tr>
