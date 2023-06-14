@@ -13,7 +13,5 @@
     <a href="
     {% comment %} {% url "users:edit" %} {% endcomment %}
     ">Upravit</a>
-    <a href="
-    {% comment %} {% url "users:delete" %} {% endcomment %}
-    ">Smazat</a>
+    <a href="{% url "users:delete" user.pk %}">Smazat</a>
 {% endblock %}
