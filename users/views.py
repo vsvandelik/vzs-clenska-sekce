@@ -87,7 +87,7 @@ class DetailView(generic.detail.DetailView):
     template_name = "users/detail.html"
 
 
-class UserDeleteView(SuccessMessageMixin, views.DeleteView):
+class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = User
     template_name = "users/delete.html"
     success_url = reverse_lazy("users:index")
