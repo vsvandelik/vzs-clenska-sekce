@@ -5,10 +5,10 @@ from django.utils.translation import gettext_lazy as _
 
 class Person(models.Model):
     class Type(models.TextChoices):
-        CHILD = "dite", _("člen dítě")
-        ADULT = "dospely", _("člen dospělý")
-        EXPECTANT = "cekatel", _("člen čekatel")
+        ADULT = "radny", _("řádný člen")
+        EXPECTANT = "cekatel", _("člen - čekatel")
         HONORARY = "cestny", _("čestný člen")
+        CHILD = "dite", _("dítě")
         EXTERNAL = "externi", _("externí spolupracovník")
         PARENT = "rodic", _("rodič")
 
