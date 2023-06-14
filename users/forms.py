@@ -4,6 +4,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import password_validation
 
 from persons.models import Person
 from .models import User
@@ -115,6 +116,11 @@ class UserCreateForm(forms.ModelForm):
         widgets = {"password": forms.PasswordInput}
 
     field_order = ["person", "password"]
+
+    def clean_password(self):
+        raw_password = self.cleaned_data["password"]
+        password_validation.validate_password(raw_password)
+        return raw_password
 
     def save(self, commit=True):
         user = super().save(commit=False)
