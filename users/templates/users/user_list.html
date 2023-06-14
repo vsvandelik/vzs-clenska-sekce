@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="{% url "users:index" %}" method="get">
+    {{ user_search_form.as_div }}
+    <button type="submit">Hledat</button>
+</form>
+
+<table>
+    <tr>
+        <th>Osoba</th>
+        <th>Povolení</th>
+    </tr>
+    {% for user in page_obj %}
+    <tr>
+        <td>{{ user.person }}</td>
+        <td>TODO</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="pagination">
+    <form action="{% url "users:index" %}" method="get">
+        {{ user_search_pagination_form.as_div }}
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <button type="submit" name="page" value="1">&laquo; první</button>
+                <button type="submit" name="page" value="{{ page_obj.previous_page_number }}">předchozí</button>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <button type="submit" name="page" value="{{ page_obj.next_page_number }}">další</button>
+                <button type="submit" name="page" value="{{ page_obj.paginator.num_pages }}">poslední &raquo;</button>
+            {% endif %}
+        </span>
+    </form>
+</div>
+{% endblock %}
