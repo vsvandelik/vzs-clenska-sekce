@@ -1,6 +1,7 @@
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.http import HttpResponseNotFound, Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -13,6 +14,9 @@ FEATURES_TYPES = {
         "K",
         "kvalifikace",
         "kvalifikaci",
+        "Kvalifikace byla osobě úspěšně přidána.",
+        "Přiřazení kvalifikace bylo úspěšně upraveno.",
+        "Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo.",
         {
             "feature": "Název kvalifikace",
             "date_assigned": "Začátek platnost",
@@ -23,16 +27,22 @@ FEATURES_TYPES = {
         "O",
         "oprávnění",
         "oprávnění",
+        "Oprávnění bylo osobě úspěšně přidáno.",
+        "Přiřazení oprávnění bylo úspěšně upraveno.",
+        "Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo.",
         {
             "feature": "Název oprávnění",
             "date_assigned": "Datum přiřazení",
             "date_expire": "Konec platnosti",
         },
     ),
-    "equipment": (
+    "equipments": (
         "V",
         "vybavení",
         "vybavení",
+        "Vybavení bylo osobě úspěšně přidáno.",
+        "Přiřazení vybavení bylo úspěšně upraveno.",
+        "Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo.",
         {
             "feature": "Název vybavení",
             "date_assigned": "Datum zapůjčení",
@@ -84,225 +94,76 @@ class PersonDeleteView(generic.edit.DeleteView):
     success_url = reverse_lazy("persons:index")
 
 
-class FeatureAssignMixin(generic.edit.FormMixin):
+class FeatureAssignEditView(generic.edit.UpdateView):
     model = FeatureAssignment
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.feature_type = None
-        self.feature_type_name_1 = None
-        self.feature_type_name_4 = None
-        self.labels = None
+    form_class = FeatureAssignmentForm
+    template_name = "persons/features_assignment_edit.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
 
-    def get_context_data(self, **kwargs):
-        context = super(FeatureAssignMixin, self).get_context_data(**kwargs)
-        context["type"] = self.feature_type_name_4
-
+    def get_object(self, queryset=None):
         try:
-            context["person"] = Person.objects.get(id=self.kwargs["person"])
-        except Person.DoesNotExist:
-            raise Http404(_("Osoba nebyla nalezena."))
+            return super().get_object(queryset)
+        except AttributeError:
+            return None
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["type"] = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        if self.labels:
-            for field, label in self.labels.items():
+        if FEATURES_TYPES[self.kwargs["feature_type"]][6]:
+            for field, label in FEATURES_TYPES[self.kwargs["feature_type"]][6].items():
                 form.fields[field].label = label
 
         return form
 
-
-class FeatureAssignAddMixin(FeatureAssignMixin, generic.edit.CreateView):
-    form_class = FeatureAssignmentForm
-    template_name = "persons/features_assignment_edit.html"
-
     def form_valid(self, form):
-        try:
-            form.instance.person = Person.objects.get(id=self.kwargs["person"])
-        except Person.DoesNotExist:
-            return HttpResponseNotFound(_("Osoba nebyla nalezena."))
+        form.instance.person = get_object_or_404(Person, id=self.kwargs["person"])
+
+        if not form.instance.pk:
+            success_message = FEATURES_TYPES[self.kwargs["feature_type"]][3]
+        else:
+            success_message = FEATURES_TYPES[self.kwargs["feature_type"]][4]
 
         try:
             response = super().form_valid(form)
-            messages.success(
-                self.request,
-                _(f"{self.feature_type_name_1.capitalize()} byla úspěšně přidána."),
-            )
+            messages.success(self.request, success_message)
             return response
 
         except IntegrityError:
-            messages.error(
-                self.request,
-                _(
-                    f"Nepodařilo se uložit {self.feature_type_name_4}. Osoba již má danou {self.feature_type_name_4} přiřazenou."
-                ),
-            )
+            messages.error(self.request, FEATURES_TYPES[self.kwargs["feature_type"]][5])
             return super().form_invalid(form)
 
     def form_invalid(self, form):
-        messages.error(
-            self.request, _(f"Nepodařilo se uložit {self.feature_type_name_4}.")
-        )
+        feature_name_4 = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        messages.error(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
 
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["feature_type"] = self.feature_type
+        kwargs["feature_type"] = FEATURES_TYPES[self.kwargs["feature_type"]][0]
         return kwargs
 
 
-class FeatureAssignEditMixin(FeatureAssignMixin, generic.edit.UpdateView):
-    form_class = FeatureAssignmentForm
-    template_name = "persons/features_assignment_edit.html"
-
-    def form_valid(self, form):
-        try:
-            form.instance.person = Person.objects.get(id=self.kwargs["person"])
-        except Person.DoesNotExist:
-            return HttpResponseNotFound(_("Osoba nebyla nalezena."))
-
-        try:
-            response = super().form_valid(form)
-            messages.success(
-                self.request,
-                _(f"{self.feature_type_name_1.capitalize()} byla úspěšně upravena."),
-            )
-            return response
-
-        except IntegrityError:
-            messages.error(
-                self.request,
-                _(
-                    f"Nepodařilo se uložit {self.feature_type_name_4}. Osoba již má danou {self.feature_type_name_4} přiřazenou."
-                ),
-            )
-            return super().form_invalid(form)
-
-    def form_invalid(self, form):
-        messages.error(
-            self.request, _(f"Nepodařilo se uložit {self.feature_type_name_4}.")
-        )
-
-        return super().form_invalid(form)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["feature_type"] = self.feature_type
-        return kwargs
-
-
-class FeatureAssignDeleteMixin(FeatureAssignMixin, generic.edit.DeleteView):
+class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = FeatureAssignment
     template_name = "persons/features_assignment_delete.html"
 
-    def form_valid(self, form):
-        messages.success(
-            self.request,
-            _(f"{self.feature_type_name_1.capitalize()} byla úspěšně smazána."),
-        )
-        return super().form_valid(form)
+    def get_success_url(self):
+        return reverse("persons:detail", args=[self.kwargs["person"]])
 
+    def get_success_message(self, cleaned_data):
+        feature_type_name_1 = FEATURES_TYPES[self.kwargs["feature_type"]][1]
+        return f"{feature_type_name_1.capitalize()} byla úspěšně smazána."
 
-class QualificationAssignAddView(FeatureAssignAddMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["qualifications"]
-
-
-class QualificationAssignEditView(FeatureAssignEditMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["qualifications"]
-
-
-class QualificationAssignDeleteView(FeatureAssignDeleteMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["qualifications"]
-
-
-class PermissionAssignAddView(FeatureAssignAddMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["permissions"]
-
-
-class PermissionAssignEditView(FeatureAssignEditMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["permissions"]
-
-
-class PermissionAssignDeleteView(FeatureAssignDeleteMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["permissions"]
-
-
-class EquipmentAssignAddView(FeatureAssignAddMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["equipment"]
-
-
-class EquipmentAssignEditView(FeatureAssignEditMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["equipment"]
-
-
-class EquipmentAssignDeleteView(FeatureAssignDeleteMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        (
-            self.feature_type,
-            self.feature_type_name_1,
-            self.feature_type_name_4,
-            self.labels,
-        ) = FEATURES_TYPES["equipment"]
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["type"] = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
+        return context
