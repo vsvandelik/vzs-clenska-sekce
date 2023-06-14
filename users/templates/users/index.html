@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{% url "users:add" %}">Vytvořit nového uživatele</a>
+<a href="{% url "users:add" %}">Přidat nového uživatele</a>
 
 <form action="{% url "users:index" %}" method="get">
     {{ user_search_form.as_div }}
