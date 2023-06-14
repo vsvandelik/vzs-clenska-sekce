@@ -2,6 +2,8 @@ from django.urls import path, include
 
 from . import views
 
+app_name = "persons"
+
 nested_feature_assigning_urls = [
     path(
         "",
@@ -20,7 +22,6 @@ nested_feature_assigning_urls = [
     ),
 ]
 
-app_name = "persons"
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
     path("pridat", views.PersonCreateView.as_view(), name="add"),
