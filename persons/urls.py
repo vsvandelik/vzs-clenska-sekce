@@ -27,6 +27,11 @@ groups_urlpatterns = [
         views.StaticGroupEditView.as_view(),
         name="edit-static",
     ),
+    path(
+        "<int:group>/odebrat-clena/<int:person>",
+        views.StaticGroupRemoveMemberView.as_view(),
+        name="remove-member",
+    ),
     path("<int:pk>/smazat", views.GroupDeleteView.as_view(), name="delete"),
 ]
 

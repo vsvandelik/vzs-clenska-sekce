@@ -40,7 +40,7 @@
 
     <ul>
         {% for person in object.members.all %}
-            <li>{{ person.first_name }} {{ person.last_name }}</li>
+            <li>{{ person.first_name }} {{ person.last_name }}&nbsp;<a href="{% url "persons:groups:remove-member" group=object.pk person=person.pk %}">&#10006;</a></li>
         {% endfor %}
     </ul>
 

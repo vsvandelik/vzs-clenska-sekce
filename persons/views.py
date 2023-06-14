@@ -238,6 +238,13 @@ class GroupIndex(generic.ListView):
         return context
 
 
+class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+    model = StaticGroup
+    template_name = "persons/groups_delete.html"
+    success_url = reverse_lazy("persons:groups:index")
+    success_message = "Skupina byla úspěšně smazána."
+
+
 class StaticGroupDetail(
     SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
 ):
@@ -269,13 +276,6 @@ class StaticGroupDetail(
         return redirect(self.get_success_url())
 
 
-class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
-    model = StaticGroup
-    template_name = "persons/groups_delete.html"
-    success_url = reverse_lazy("persons:groups:index")
-    success_message = "Skupina byla úspěšně smazána."
-
-
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
     form_class = StaticGroupForm
@@ -290,3 +290,19 @@ class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
 
     def get_success_url(self):
         return reverse(f"persons:groups:detail", args=(self.object.pk,))
+
+
+class StaticGroupRemoveMemberView(generic.View):
+    success_message = "Osoba byla odebrána."
+
+    def get_success_url(self):
+        return reverse("persons:groups:detail", args=(self.kwargs["group"],))
+
+    def get(self, request, *args, **kwargs):
+        member_to_remove = self.kwargs["person"]
+
+        static_group = get_object_or_404(StaticGroup, id=self.kwargs["group"])
+        static_group.members.remove(member_to_remove)
+
+        messages.success(self.request, self.success_message)
+        return redirect(self.get_success_url())
