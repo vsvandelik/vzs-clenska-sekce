@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 
+from .models import User
 from . import forms
 
 
@@ -61,3 +62,9 @@ class UserCreateView(CustomCreateMixin):
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
     get_form_classes = [forms.PersonSearchForm, forms.PersonSelectForm]
+
+
+class UserDeleteView(views.DeleteView):
+    model = User
+    template_name = "users/delete.html"
+    success_url = reverse_lazy("users:index")
