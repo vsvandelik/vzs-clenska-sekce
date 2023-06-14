@@ -106,6 +106,11 @@ class PersonSelectForm(forms.Form):
 
 
 class UserBaseForm(forms.ModelForm):
+    """
+    This form is the common base for both UserCreateForm and UserEditForm forms,
+    as they both submit a password but only the Create form submits the person.
+    """
+
     class Meta:
         model = User
         fields = ["password"]
