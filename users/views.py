@@ -64,6 +64,7 @@ class UserCreateView(CustomCreateMixin):
 
 
 class IndexView(generic.list.ListView):
+    template_name = "users/index.html"
     context_object_name = "users"
     paginate_by = 2
 
@@ -78,6 +79,11 @@ class IndexView(generic.list.ListView):
         kwargs["user_search_form"] = self.user_search_form
         kwargs["user_search_pagination_form"] = self.user_search_pagination_form
         return super().get_context_data(**kwargs)
+
+
+class DetailView(generic.detail.DetailView):
+    model = User
+    template_name = "users/detail.html"
 
 
 class UserEditView(generic.edit.UpdateView):
