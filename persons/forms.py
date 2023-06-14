@@ -5,7 +5,7 @@ from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from vzs import settings
-from .models import Person, FeatureAssignment, Feature
+from .models import Person, FeatureAssignment, Feature, StaticGroup
 
 
 class PersonForm(ModelForm):
@@ -149,3 +149,15 @@ class FeatureForm(ModelForm):
             self.fields["parent"].queryset = Feature.objects.filter(
                 feature_type=feature_type
             )
+
+
+class StaticGroupForm(ModelForm):
+    class Meta:
+        model = StaticGroup
+        fields = ["name"]
+
+
+class AddMembersStaticGroupForm(ModelForm):
+    class Meta:
+        model = StaticGroup
+        fields = ["members"]

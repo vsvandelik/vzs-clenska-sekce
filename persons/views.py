@@ -1,13 +1,27 @@
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from .forms import PersonForm, FeatureAssignmentForm, FeatureForm
-from .models import Person, FeatureAssignment, Feature, FeatureTypeTexts
+from .forms import (
+    PersonForm,
+    FeatureAssignmentForm,
+    FeatureForm,
+    StaticGroupForm,
+    AddMembersStaticGroupForm,
+)
+from .models import (
+    Person,
+    FeatureAssignment,
+    Feature,
+    FeatureTypeTexts,
+    Group,
+    StaticGroup,
+)
 
 
 class IndexView(generic.ListView):
@@ -202,8 +216,6 @@ class FeatureEdit(generic.edit.UpdateView):
 
 class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
-    success_url = reverse_lazy("qualifications:index")
-    success_message = "Kvalifikace byla úspěšně smazána."
 
     def get_template_names(self):
         return f"persons/{self.kwargs['feature_type']}_delete.html"
@@ -213,3 +225,84 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_success_message(self, cleaned_data):
         return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
+
+
+class GroupIndex(generic.ListView):
+    model = Group
+    template_name = "persons/groups_index.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["static_groups"] = StaticGroup.objects.all()
+        context["dynamic_groups"] = StaticGroup.objects.all()
+        return context
+
+
+class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+    model = StaticGroup
+    template_name = "persons/groups_delete.html"
+    success_url = reverse_lazy("persons:groups:index")
+    success_message = "Skupina byla úspěšně smazána."
+
+
+class StaticGroupDetail(
+    SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
+):
+    model = StaticGroup
+    form_class = AddMembersStaticGroupForm
+    success_message = "Osoby byly úspěšně přidány."
+    template_name = "persons/groups_detail_static.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["available_persons"] = Person.objects.exclude(
+            Q(staticgroup__isnull=False) & Q(staticgroup__id=self.object.pk)
+        )
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:groups:detail", args=(self.object.pk,))
+
+    def form_valid(self, form):
+        new_member_ids = form.cleaned_data["members"]
+
+        existing_members = self.object.members.all()
+        combined_members = existing_members | new_member_ids
+
+        form.instance.members.set(combined_members)
+
+        messages.success(self.request, self.success_message)
+
+        return redirect(self.get_success_url())
+
+
+class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
+    model = StaticGroup
+    form_class = StaticGroupForm
+    template_name = "persons/groups_edit_static.html"
+    success_message = "Statická skupina byla úspěšně uložena."
+
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return None
+
+    def get_success_url(self):
+        return reverse(f"persons:groups:detail", args=(self.object.pk,))
+
+
+class StaticGroupRemoveMemberView(generic.View):
+    success_message = "Osoba byla odebrána."
+
+    def get_success_url(self):
+        return reverse("persons:groups:detail", args=(self.kwargs["group"],))
+
+    def get(self, request, *args, **kwargs):
+        member_to_remove = self.kwargs["person"]
+
+        static_group = get_object_or_404(StaticGroup, id=self.kwargs["group"])
+        static_group.members.remove(member_to_remove)
+
+        messages.success(self.request, self.success_message)
+        return redirect(self.get_success_url())
