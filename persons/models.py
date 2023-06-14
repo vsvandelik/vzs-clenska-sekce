@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -12,11 +13,63 @@ class Person(models.Model):
         EXTERNAL = "externi", _("externí spolupracovník")
         PARENT = "rodic", _("rodič")
 
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    date_of_birth = models.DateField()
-    person_type = models.CharField(max_length=10, choices=Type.choices)
+    class HealthInsuranceCompany(models.TextChoices):
+        VZP = 111, "111 - Všeobecná zdravotní pojišťovna České republiky"
+        VOZP = 201, "201 - Vojenská zdravotní pojišťovna České republiky"
+        CPZP = 205, "205 - Česká průmyslová zdravotní pojišťovna"
+        OZP = (
+            207,
+            "207 - Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
+        )
+        ZPS = 209, "209 - Zaměstnanecká pojišťovna Škoda"
+        ZPMV = 211, "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
+        RBP = 213, "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
+
+    class Sex(models.TextChoices):
+        M = "M", _("muž")
+        F = "F", _("žena")
+
+    email = models.EmailField(_("E-mailová adressa"), unique=True)
+    first_name = models.CharField(_("Křestní jméno"), max_length=50)
+    last_name = models.CharField(_("Příjmení"), max_length=50)
+    date_of_birth = models.DateField(_("Datum narození"), blank=True, null=True)
+    sex = models.CharField(_("Pohlaví"), max_length=1, choices=Sex.choices)
+    person_type = models.CharField(_("Typ osoby"), max_length=10, choices=Type.choices)
+    birth_number = models.CharField(
+        _("Rodné číslo"),
+        max_length=11,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                r"\d{2}(0[1-9]|1[0-2]|5[1-9]|6[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])\/?\d{3,4}",
+                _("Rodné číslo má špatný tvar."),
+            )
+        ],
+    )
+    health_insurance_company = models.SmallIntegerField(
+        _("Zdravotní pojišťovna"),
+        choices=HealthInsuranceCompany.choices,
+        blank=True,
+        null=True,
+    )
+    phone = models.CharField(_("Telefon"), max_length=20, blank=True, null=True)
+    street = models.CharField(
+        _("Ulice a číslo popisné"), max_length=255, blank=True, null=True
+    )
+    city = models.CharField(_("Město"), max_length=255, blank=True, null=True)
+    postcode = models.IntegerField(_("PSČ"), blank=True, null=True)
+    swimming_time = models.CharField(
+        _("Čas na 100m"),
+        max_length=8,
+        blank=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                r"\d{2}:\d{2}\.\d{2}", _("Čas na 100m musí být v formátu mm:ss.ss.")
+            )
+        ],
+    )
     features = models.ManyToManyField("persons.Feature", through="FeatureAssignment")
     managed_people = models.ManyToManyField("self", symmetrical=False)
 
