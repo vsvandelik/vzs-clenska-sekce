@@ -105,15 +105,11 @@ class PersonSelectForm(forms.Form):
         pass
 
 
-class UserCreateForm(forms.ModelForm):
-    person = CustomModelChoiceField(queryset=userless_people)
-
+class UserBaseForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["person", "password"]
+        fields = ["password"]
         widgets = {"password": forms.PasswordInput}
-
-    field_order = ["person", "password"]
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -121,6 +117,15 @@ class UserCreateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class UserCreateForm(UserBaseForm):
+    class Meta(UserBaseForm.Meta):
+        fields = UserBaseForm.Meta.fields + ["person"]
+
+    person = CustomModelChoiceField(queryset=userless_people)
+
+    field_order = ["person", "password"]
 
 
 class UserSearchForm(forms.Form):
@@ -148,3 +153,7 @@ class UserSearchPaginationForm(forms.Form):
     name_query = forms.CharField(required=False, widget=forms.HiddenInput)
     show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
     page = forms.IntegerField(required=False, min_value=1, **no_render_field)
+
+
+class UserEditForm(UserBaseForm):
+    pass

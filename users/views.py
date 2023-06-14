@@ -78,3 +78,9 @@ class IndexView(generic.list.ListView):
         kwargs["user_search_form"] = self.user_search_form
         kwargs["user_search_pagination_form"] = self.user_search_pagination_form
         return super().get_context_data(**kwargs)
+
+
+class UserEditView(generic.edit.UpdateView):
+    model = User
+    template_name = "users/edit.html"
+    form_class = forms.UserEditForm
