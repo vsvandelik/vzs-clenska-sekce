@@ -17,8 +17,34 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from persons import urls as persons_urls
+
 urlpatterns = [
     path("osoby/", include("persons.urls")),
     path("admin/", admin.site.urls),
     path("uzivatele/", include("users.urls")),
+    path(
+        "kvalifikace/",
+        include(
+            (persons_urls.feature_urls, "qualifications"),
+            namespace="qualifications",
+        ),
+        {"feature_type": "qualifications"},
+    ),
+    path(
+        "opravneni/",
+        include(
+            (persons_urls.feature_urls, "permissions"),
+            namespace="permissions",
+        ),
+        {"feature_type": "permissions"},
+    ),
+    path(
+        "vybaveni/",
+        include(
+            (persons_urls.feature_urls, "equipments"),
+            namespace="equipments",
+        ),
+        {"feature_type": "equipments"},
+    ),
 ]

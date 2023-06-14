@@ -6,50 +6,8 @@ from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from .forms import PersonForm, FeatureAssignmentForm
-from .models import Person, FeatureAssignment
-
-FEATURES_TYPES = {
-    "qualifications": (
-        "K",
-        "kvalifikace",
-        "kvalifikaci",
-        "Kvalifikace byla osobě úspěšně přidána.",
-        "Přiřazení kvalifikace bylo úspěšně upraveno.",
-        "Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo.",
-        {
-            "feature": "Název kvalifikace",
-            "date_assigned": "Začátek platnost",
-            "date_expire": "Konec platnosti",
-        },
-    ),
-    "permissions": (
-        "O",
-        "oprávnění",
-        "oprávnění",
-        "Oprávnění bylo osobě úspěšně přidáno.",
-        "Přiřazení oprávnění bylo úspěšně upraveno.",
-        "Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo.",
-        {
-            "feature": "Název oprávnění",
-            "date_assigned": "Datum přiřazení",
-            "date_expire": "Konec platnosti",
-        },
-    ),
-    "equipments": (
-        "V",
-        "vybavení",
-        "vybavení",
-        "Vybavení bylo osobě úspěšně přidáno.",
-        "Přiřazení vybavení bylo úspěšně upraveno.",
-        "Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo.",
-        {
-            "feature": "Název vybavení",
-            "date_assigned": "Datum zapůjčení",
-            "date_expire": "Datum vrácení",
-        },
-    ),
-}
+from .forms import PersonForm, FeatureAssignmentForm, FeatureForm
+from .models import Person, FeatureAssignment, Feature, FeatureTypeTexts
 
 
 class IndexView(generic.ListView):
@@ -65,13 +23,15 @@ class DetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         context["qualifications"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"], feature__feature_type="K"
+            person=self.kwargs["pk"],
+            feature__feature_type=Feature.Type.QUALIFICATION.value,
         )
         context["permissions"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"], feature__feature_type="O"
+            person=self.kwargs["pk"], feature__feature_type=Feature.Type.PERMIT.value
         )
         context["equipments"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"], feature__feature_type="V"
+            person=self.kwargs["pk"],
+            feature__feature_type=Feature.Type.POSSESSION.value,
         )
         return context
 
@@ -110,25 +70,28 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        if FEATURES_TYPES[self.kwargs["feature_type"]][6]:
-            for field, label in FEATURES_TYPES[self.kwargs["feature_type"]][6].items():
-                form.fields[field].label = label
+        form_labels = FeatureTypeTexts[self.kwargs["feature_type"]].form_labels
+        if form_labels:
+            for field, label in form_labels.items():
+                if field in form.fields:
+                    form.fields[field].label = label
 
         return form
 
     def form_valid(self, form):
         form.instance.person = get_object_or_404(Person, id=self.kwargs["person"])
+        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
 
         if not form.instance.pk:
-            success_message = FEATURES_TYPES[self.kwargs["feature_type"]][3]
+            success_message = feature_type_texts.success_message_assigned
         else:
-            success_message = FEATURES_TYPES[self.kwargs["feature_type"]][4]
+            success_message = feature_type_texts.success_message_assigning_updated
 
         try:
             response = super().form_valid(form)
@@ -136,18 +99,20 @@ class FeatureAssignEditView(generic.edit.UpdateView):
             return response
 
         except IntegrityError:
-            messages.error(self.request, FEATURES_TYPES[self.kwargs["feature_type"]][5])
+            messages.error(
+                self.request, feature_type_texts.duplicated_message_assigning
+            )
             return super().form_invalid(form)
 
     def form_invalid(self, form):
-        feature_name_4 = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        feature_name_4 = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
         messages.error(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
 
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["feature_type"] = FEATURES_TYPES[self.kwargs["feature_type"]][0]
+        kwargs["feature_type"] = FeatureTypeTexts[self.kwargs["feature_type"]].shortcut
         return kwargs
 
 
@@ -159,11 +124,92 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
         return reverse("persons:detail", args=[self.kwargs["person"]])
 
     def get_success_message(self, cleaned_data):
-        feature_type_name_1 = FEATURES_TYPES[self.kwargs["feature_type"]][1]
-        return f"{feature_type_name_1.capitalize()} byla úspěšně smazána."
+        return FeatureTypeTexts[
+            self.kwargs["feature_type"]
+        ].success_message_assigning_delete
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FEATURES_TYPES[self.kwargs["feature_type"]][2]
+        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
+
+
+class FeatureIndex(generic.ListView):
+    model = Feature
+    context_object_name = "features"
+
+    def get_template_names(self):
+        return f"persons/{self.kwargs['feature_type']}_index.html"
+
+    def get_queryset(self):
+        feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return (
+            super()
+            .get_queryset()
+            .filter(feature_type=feature_type_params.shortcut, parent=None)
+        )
+
+
+class FeatureDetail(generic.DetailView):
+    model = Feature
+
+    def get_template_names(self):
+        return f"persons/{self.kwargs['feature_type']}_detail.html"
+
+    def get_queryset(self):
+        feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
+
+
+class FeatureEdit(generic.edit.UpdateView):
+    model = Feature
+    form_class = FeatureForm
+
+    def get_template_names(self):
+        return f"persons/{self.kwargs['feature_type']}_edit.html"
+
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return None
+
+    def get_success_url(self):
+        return reverse(f"{self.kwargs['feature_type']}:detail", args=(self.object.pk,))
+
+    def form_valid(self, form):
+        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        form.instance.feature_type = feature_type_texts.shortcut
+        messages.success(self.request, feature_type_texts.success_message_save)
+        return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        form = super().get_form(form_class)
+        if feature_type_texts.form_labels:
+            for field, label in feature_type_texts.form_labels.items():
+                if field in form.fields:
+                    form.fields[field].label = label
+
+        return form
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["feature_type"] = FeatureTypeTexts[self.kwargs["feature_type"]].shortcut
+        return kwargs
+
+
+class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
+    model = Feature
+    success_url = reverse_lazy("qualifications:index")
+    success_message = "Kvalifikace byla úspěšně smazána."
+
+    def get_template_names(self):
+        return f"persons/{self.kwargs['feature_type']}_delete.html"
+
+    def get_success_url(self):
+        return reverse(f"{self.kwargs['feature_type']}:index")
+
+    def get_success_message(self, cleaned_data):
+        return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
