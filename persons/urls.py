@@ -18,6 +18,18 @@ nested_feature_assigning_urls = [
     path("<int:pk>/smazat", views.FeatureAssignDeleteView.as_view(), name="delete"),
 ]
 
+groups_urlpatterns = [
+    path("", views.GroupIndex.as_view(), name="index"),
+    path("<int:pk>/", views.GroupDetail.as_view(), name="detail"),
+    path("pridat/staticka", views.StaticGroupEditView.as_view(), name="add-static"),
+    path(
+        "<int:pk>/upravit/staticka",
+        views.StaticGroupEditView.as_view(),
+        name="edit-static",
+    ),
+    path("<int:pk>/smazat", views.GroupDeleteView.as_view(), name="delete"),
+]
+
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
     path("pridat", views.PersonCreateView.as_view(), name="add"),
@@ -39,4 +51,5 @@ urlpatterns = [
         include((nested_feature_assigning_urls, "equipments")),
         {"feature_type": "equipments"},
     ),
+    path("skupiny/", include((groups_urlpatterns, "groups"))),
 ]

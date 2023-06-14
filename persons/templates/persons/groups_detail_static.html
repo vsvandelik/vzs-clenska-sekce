@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ object.name }}</h1>
+    <a href="{% url 'persons:groups:edit-static' object.pk %}">Upravit skupinu</a>&nbsp;
+    <a href="{% url 'persons:groups:delete' object.pk %}">Smazat skupinu</a>
+
+
+{% endblock %}

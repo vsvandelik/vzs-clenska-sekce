@@ -153,6 +153,18 @@ class FeatureAssignment(models.Model):
         unique_together = ["person", "feature"]
 
 
+class Group(models.Model):
+    name = models.CharField(max_length=255)
+
+
+class StaticGroup(Group):
+    members = models.ManyToManyField(Person, symmetrical=False)
+
+
+class DynamicGroup(Group):
+    pass
+
+
 class Transaction(models.Model):
     amount = models.IntegerField()
     reason = models.CharField(max_length=150)

@@ -6,8 +6,15 @@ from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from .forms import PersonForm, FeatureAssignmentForm, FeatureForm
-from .models import Person, FeatureAssignment, Feature, FeatureTypeTexts
+from .forms import PersonForm, FeatureAssignmentForm, FeatureForm, StaticGroupForm
+from .models import (
+    Person,
+    FeatureAssignment,
+    Feature,
+    FeatureTypeTexts,
+    Group,
+    StaticGroup,
+)
 
 
 class IndexView(generic.ListView):
@@ -202,8 +209,6 @@ class FeatureEdit(generic.edit.UpdateView):
 
 class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
-    success_url = reverse_lazy("qualifications:index")
-    success_message = "Kvalifikace byla úspěšně smazána."
 
     def get_template_names(self):
         return f"persons/{self.kwargs['feature_type']}_delete.html"
@@ -213,3 +218,47 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_success_message(self, cleaned_data):
         return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
+
+
+class GroupIndex(generic.ListView):
+    model = Group
+    template_name = "persons/groups_index.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["static_groups"] = StaticGroup.objects.all()
+        context["dynamic_groups"] = StaticGroup.objects.all()
+        return context
+
+
+class GroupDetail(generic.DetailView):
+    model = Group
+
+    def get_template_names(self):
+        if hasattr(self.object, "staticgroup"):
+            return "persons/groups_detail_static.html"
+        # else:
+        #    return "persons/groups_detail_dynamic.html"
+
+
+class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+    model = StaticGroup
+    template_name = "persons/groups_delete.html"
+    success_url = reverse_lazy("persons:groups:index")
+    success_message = "Skupina byla úspěšně smazána."
+
+
+class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
+    model = StaticGroup
+    form_class = StaticGroupForm
+    template_name = "persons/groups_edit_static.html"
+    success_message = "Statická skupina byla úspěšně uložena."
+
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return None
+
+    def get_success_url(self):
+        return reverse(f"persons:groups:detail", args=(self.object.pk,))
