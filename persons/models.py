@@ -64,6 +64,10 @@ class FeatureTypeTextsClass:
         form_labels,
         success_message_save,
         success_message_delete,
+        success_message_assigned,
+        success_message_assigning_updated,
+        success_message_assigning_delete,
+        duplicated_message_assigning,
     ):
         self.shortcut = feature_type.value
         self.name_1 = feature_type.label
@@ -71,6 +75,10 @@ class FeatureTypeTextsClass:
         self.form_labels = form_labels
         self.success_message_save = success_message_save
         self.success_message_delete = success_message_delete
+        self.success_message_assigned = success_message_assigned
+        self.success_message_assigning_updated = success_message_assigning_updated
+        self.success_message_assigning_delete = success_message_assigning_delete
+        self.duplicated_message_assigning = duplicated_message_assigning
 
 
 FeatureTypeTexts = {
@@ -89,6 +97,10 @@ FeatureTypeTexts = {
         },
         _("Kvalifikace byla úspěšně uložena."),
         _("Kvalifikace byla úspěšně odstraněna."),
+        _("Kvalifikace byla osobě úspěšně přidána."),
+        _("Přiřazení kvalifikace bylo úspěšně upraveno."),
+        _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
+        _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMIT,
@@ -102,6 +114,10 @@ FeatureTypeTexts = {
         },
         _("Oprávnění bylo úspěšně uloženo."),
         _("Oprávnění bylo úspěšně odstraněno."),
+        _("Oprávnění bylo osobě úspěšně přidáno."),
+        _("Přiřazení oprávnění bylo úspěšně upraveno."),
+        _("Přiřazení oprávnění bylo úspěšně odstraněno."),
+        _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.POSSESSION,
@@ -117,6 +133,10 @@ FeatureTypeTexts = {
         },
         _("Vybavení bylo úspěšně uloženo."),
         _("Vybavení bylo úspěšně odstraněno."),
+        _("Vybavení bylo osobě úspěšně přidáno."),
+        _("Přiřazení vybavení bylo úspěšně upraveno."),
+        _("Přiřazení vybavení bylo úspěšně odstraněno."),
+        _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
     ),
 }
 
