@@ -9,7 +9,9 @@ function select_person(e) {
 
     if (!list_of_selected_persons.includes(person_pk)) {
         list_of_selected_persons.push(person_pk);
-        selected_persons_list.append(`<li>${person_name}<input type="hidden" name="members" value="${person_pk}"/></li>`);
+        selected_persons_list.append(
+            `<li>${person_name}<input type="hidden" name="members" value="${person_pk}"/></li>`
+        );
         tr.remove();
     }
 }

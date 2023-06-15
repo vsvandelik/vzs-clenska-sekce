@@ -1,95 +1,104 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
+<h1>{{ person.first_name }} {{ person.last_name }}</h1>
 
-    <h1>{{ person.first_name }} {{ person.last_name }}</h1>
+<a href="{% url 'persons:edit' person.id %}">Upravit osobu</a>
+<a href="{% url 'persons:delete' person.id %}">Smazat osobu</a>
+<a href="{% url 'persons:qualifications:add' person.id %}">Pridat kvalifikaci</a>
+<a href="{% url 'persons:permissions:add' person.id %}">Pridat oprávnění</a>
+<a href="{% url 'persons:equipments:add' person.id %}">Pridat vybavení</a>
 
-    <a href="{% url 'persons:edit' person.id %}">Upravit osobu</a>
-    <a href="{% url 'persons:delete' person.id %}">Smazat osobu</a>
-    <a href="{% url 'persons:qualifications:add' person.id %}">Pridat kvalifikaci</a>
-    <a href="{% url 'persons:permissions:add' person.id %}">Pridat oprávnění</a>
-    <a href="{% url 'persons:equipments:add' person.id %}">Pridat vybavení</a>
-
-    {% if qualifications %}
-        <h2>Kvalifikace</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>Název kvalifiakce</th>
-                <th>Platnost od</th>
-                <th>Platnost do</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for qualification in qualifications %}
-                <tr>
-                    <td>{{ qualification.feature.name }}</td>
-                    <td>{{ qualification.date_assigned }}</td>
-                    <td>{{ qualification.date_expire }}</td>
-                    <td>
-                        <a href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:qualifications:delete' person=person.id pk=qualification.id %}">smazat</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-    {% if permissions %}
-        <h2>Oprávnění</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>Název oprávnění</th>
-                <th>Platnost od</th>
-                <th>Platnost do</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for permission in permissions %}
-                <tr>
-                    <td>{{ permission.feature.name }}</td>
-                    <td>{{ permission.date_assigned }}</td>
-                    <td>{{ permission.date_expire }}</td>
-                    <td>
-                        <a href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:permissions:delete' person=person.id pk=permission.id %}">smazat</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-    {% if equipments %}
-        <h2>Zapůjčené vybavení</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>Položka</th>
-                <th>Zapůjčeno od</th>
-                <th>Zapůjčeno do</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for equipment in equipments %}
-                <tr>
-                    <td>{{ equipment.feature.name }}</td>
-                    <td>{{ equipment.date_assigned }}</td>
-                    <td>{{ equipment.date_expire }}</td>
-                    <td>
-                        <a href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}">upravit</a>&nbsp;
-                        <a href="{% url 'persons:equipments:delete' person=person.id pk=equipment.id %}">smazat</a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-
-{% endblock %}
+{% if qualifications %}
+<h2>Kvalifikace</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Název kvalifiakce</th>
+            <th>Platnost od</th>
+            <th>Platnost do</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for qualification in qualifications %}
+        <tr>
+            <td>{{ qualification.feature.name }}</td>
+            <td>{{ qualification.date_assigned }}</td>
+            <td>{{ qualification.date_expire }}</td>
+            <td>
+                <a
+                    href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"
+                    >upravit</a
+                >&nbsp;
+                <a
+                    href="{% url 'persons:qualifications:delete' person=person.id pk=qualification.id %}"
+                    >smazat</a
+                >
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %} {% if permissions %}
+<h2>Oprávnění</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Název oprávnění</th>
+            <th>Platnost od</th>
+            <th>Platnost do</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for permission in permissions %}
+        <tr>
+            <td>{{ permission.feature.name }}</td>
+            <td>{{ permission.date_assigned }}</td>
+            <td>{{ permission.date_expire }}</td>
+            <td>
+                <a
+                    href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"
+                    >upravit</a
+                >&nbsp;
+                <a
+                    href="{% url 'persons:permissions:delete' person=person.id pk=permission.id %}"
+                    >smazat</a
+                >
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %} {% if equipments %}
+<h2>Zapůjčené vybavení</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Položka</th>
+            <th>Zapůjčeno od</th>
+            <th>Zapůjčeno do</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for equipment in equipments %}
+        <tr>
+            <td>{{ equipment.feature.name }}</td>
+            <td>{{ equipment.date_assigned }}</td>
+            <td>{{ equipment.date_expire }}</td>
+            <td>
+                <a
+                    href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"
+                    >upravit</a
+                >&nbsp;
+                <a
+                    href="{% url 'persons:equipments:delete' person=person.id pk=equipment.id %}"
+                    >smazat</a
+                >
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %} {% endblock %}

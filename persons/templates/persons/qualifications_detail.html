@@ -1,10 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<h1>Kvalifikace - {{ object.name }}</h1>
 
-{% block content %}
-    <h1>Kvalifikace - {{ object.name }}</h1>
-
-
-    <a href="{% url 'qualifications:edit' object.pk %}">Upravit kvalifikaci</a>
-    <a href="{% url 'qualifications:delete' object.pk %}">Smazat kvalifikaci</a>
+<a href="{% url 'qualifications:edit' object.pk %}">Upravit kvalifikaci</a>
+<a href="{% url 'qualifications:delete' object.pk %}">Smazat kvalifikaci</a>
 
 {% endblock %}
