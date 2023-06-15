@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <h1>{{ object.name }}</h1>
+    <a href="{% url 'persons:groups:edit-static' object.pk %}">Upravit skupinu</a>&nbsp;
+    <a href="{% url 'persons:groups:delete' object.pk %}">Smazat skupinu</a>
+
+    <h2>Členové</h2>
+    Tady potom bude čudlík na otevření modálního okna pro přidání nových členů. Modální okno zde je symbolizováno ohraničeným obdélníkem.
+    <div style="border:3px solid black" id="modal">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.members.errors }}
+            <strong>Vybrané osoby:</strong>
+            <ul id="selected-persons"></ul>
+            <table>
+                <thead>
+                <tr>
+                    <th>Osoba</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="persons-list">
+                {% for person in available_persons %}
+                    <tr data-person-id="{{ person.pk }}">
+                        <td class="test">{{ person.first_name }} {{ person.last_name }}</td>
+                        <td>
+                            <button type="button" value="{{ person.pk }}">+</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <input type="submit" value="Přidat osoby">
+        </form>
+    </div>
+
+    <ul>
+        {% for person in object.members.all %}
+            <li>{{ person.first_name }} {{ person.last_name }}&nbsp;<a href="{% url "persons:groups:remove-member" group=object.pk person=person.pk %}">&#10006;</a></li>
+        {% endfor %}
+    </ul>
+
+
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'persons/add-members.js' %}"></script>
+{% endblock %}

@@ -1,26 +1,52 @@
+import datetime
+import re
+
 from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from vzs import settings
-from .models import Person, FeatureAssignment, Feature
+from .models import Person, FeatureAssignment, Feature, StaticGroup
 
 
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        fields = ["email", "first_name", "last_name", "date_of_birth", "person_type"]
+        exclude = ["features", "managed_people"]
         widgets = {
             "date_of_birth": widgets.DateInput(
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
             )
         }
-        labels = {
-            "email": _("E-mailová adresa"),
-            "first_name": _("Křestní jméno"),
-            "last_name": _("Příjmení"),
-            "date_of_birth": _("Datum narození"),
-            "person_type": _("Typ osoby"),
-        }
+
+    def clean_date_of_birth(self):
+        date_of_birth = self.cleaned_data["date_of_birth"]
+
+        if date_of_birth and date_of_birth > datetime.date.today():
+            raise ValidationError(_("Neplatné datum narození."))
+
+        return date_of_birth
+
+    def clean_phone(self):
+        phone = self.cleaned_data["phone"]
+        phone = re.sub(r"\D", "", phone)  # remove non digits
+
+        if phone.startswith("00420"):
+            phone = phone[5:]
+        elif phone.startswith("420"):
+            phone = phone[3:]
+
+        if len(phone) != 9:
+            raise ValidationError(_("Telefonní číslo nemá platný formát."))
+
+        return phone
+
+    def clean_postcode(self):
+        postcode = self.cleaned_data["postcode"]
+
+        if len(str(postcode)) != 5:
+            raise ValidationError(_("PSČ nemá platný formát."))
+
+        return postcode
 
 
 class FeatureAssignmentForm(ModelForm):
@@ -123,3 +149,15 @@ class FeatureForm(ModelForm):
             self.fields["parent"].queryset = Feature.objects.filter(
                 feature_type=feature_type
             )
+
+
+class StaticGroupForm(ModelForm):
+    class Meta:
+        model = StaticGroup
+        fields = ["name"]
+
+
+class AddMembersStaticGroupForm(ModelForm):
+    class Meta:
+        model = StaticGroup
+        fields = ["members"]

@@ -3,6 +3,8 @@ from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import password_validation
 
 from persons.models import Person
 from .models import User
@@ -33,7 +35,7 @@ class CustomModelChoiceInput(forms.HiddenInput):
         input_html = super().render(name, value, attrs, renderer)
 
         if value:
-            obj = self.queryset.get(id=value)
+            obj = get_object_or_404(self.queryset, id=value)
             presentation_html = str(obj)
         else:
             presentation_html = ""
@@ -115,6 +117,11 @@ class UserBaseForm(forms.ModelForm):
         model = User
         fields = ["password"]
         widgets = {"password": forms.PasswordInput}
+
+    def clean_password(self):
+        raw_password = self.cleaned_data["password"]
+        password_validation.validate_password(raw_password)
+        return raw_password
 
     def save(self, commit=True):
         user = super().save(commit=False)

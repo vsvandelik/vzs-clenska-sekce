@@ -2,6 +2,7 @@ from django.views import generic
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
+from django.contrib.messages.views import SuccessMessageMixin
 
 from .models import User
 from . import forms
@@ -84,6 +85,20 @@ class IndexView(generic.list.ListView):
 class DetailView(generic.detail.DetailView):
     model = User
     template_name = "users/detail.html"
+
+
+class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+    model = User
+    template_name = "users/delete.html"
+    success_url = reverse_lazy("users:index")
+
+    def form_valid(self, form):
+        # success_message is sent after object deletion so we need to save the person
+        self.person = self.object.person
+        return super().form_valid(form)
+
+    def get_success_message(self, cleaned_data):
+        return f"Uživatel osoby {self.person} byl úspěšně odstraněn."
 
 
 class UserEditView(generic.edit.UpdateView):
