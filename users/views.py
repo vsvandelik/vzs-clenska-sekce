@@ -70,9 +70,15 @@ class IndexView(generic.list.ListView):
         return self.user_search_form.search_users()
 
     def get_context_data(self, **kwargs):
-        kwargs["user_search_form"] = self.user_search_form
-        kwargs["user_search_pagination_form"] = self.user_search_pagination_form
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+
+        if "user_search_form" not in context:
+            context["user_search_form"] = self.user_search_form
+
+        if "user_search_pagination_form" not in context:
+            context["user_search_pagination_form"] = self.user_search_pagination_form
+
+        return context
 
 
 class DetailView(generic.detail.DetailView):
