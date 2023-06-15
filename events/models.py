@@ -29,6 +29,28 @@ class Event(models.Model):
         "persons.Feature", through="events.EventRequirement"
     )
 
+    def is_top(self):
+        return self.parent == None
+
+    def is_top_training(self):
+        children = Event.objects.filter(parent__exact=self)
+        return self.is_top() and len(children) > 0
+
+    def get_weekdays_trainings_occur(self):
+        weekdays = set()
+        children = Event.objects.filter(parent__exact=self)
+        for child in children:
+            weekdays.add(child.time_start.weekday())
+        out = list(weekdays)
+        out.sort()
+        return out
+
+    def get_children_trainings_sorted(self):
+        return Event.objects.filter(parent__exact=self).order_by("time_start")
+
+    def __str__(self):
+        return f"{self.name}"
+
 
 class EventPosition(models.Model):
     name = models.CharField(max_length=50)

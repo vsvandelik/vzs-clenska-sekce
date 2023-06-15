@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+    <a href="{% url 'events:add_training' %}">Nový trénink</a>
+    <hr>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Akce</th>
+        </tr>
+
+        {% for event in events %}
+            <tr>
+                <td>{{ event.name }}</td>
+                <td>{{ event.description }}</td>
+                <td>
+                    <a href="{% url 'events:delete' event.id %}">Smazat</a> |
+                    <a href="{% url 'events:detail' event.id %}">Detail</a>
+                </td>
+            </tr>
+        {% endfor %}
+        <tr></tr>
+    </table>
+{% endblock %}
