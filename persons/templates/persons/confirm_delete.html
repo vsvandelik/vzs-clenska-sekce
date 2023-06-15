@@ -1,12 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
 
-{% block content %}
-
-    <form method="post">
-        {% csrf_token %}
-        <input type="submit" value="Smazat">
-    </form>
+<form method="post">
+    {% csrf_token %}
+    <input type="submit" value="Smazat" />
+</form>
 
 {% endblock %}
-
-

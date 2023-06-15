@@ -1,11 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<h1>Vybaveni</h1>
 
-{% block content %}
-    <h1>Vybaveni</h1>
+<ul>
+    {% include "persons/_features_list_display_recursive.html" with type="equipments" %}
+</ul>
 
-    <ul>
-        {% include "persons/_features_list_display_recursive.html" with type="equipments" %}
-    </ul>
-
-    <a href="{% url 'equipments:add' %}">Pridat vybaveni</a>
+<a href="{% url 'equipments:add' %}">Pridat vybaveni</a>
 {% endblock %}
