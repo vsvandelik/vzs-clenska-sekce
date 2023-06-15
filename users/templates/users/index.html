@@ -3,6 +3,16 @@
 {% block content %}
     <a href="{% url "users:add" %}">Přidat nového uživatele</a>
 
+    {% comment %} TODO: remove, just for debugging {% endcomment %}
+    <div>
+        prihlasen:
+        {% if user.is_authenticated %}
+            {{ user.person }}
+        {% else %}
+            nikdo
+        {% endif %}
+    </div>
+
     <form action="{% url "users:index" %}" method="get">
         {{ user_search_form.as_div }}
         <button type="submit">Hledat</button>
@@ -18,7 +28,7 @@
             <tr>
                 <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
                 <td>{{ user.person }}</td>
-                <td>TODO</td>
+                <td>{% comment %}TODO: display povoleni{% endcomment %}</td>
             </tr>
         {% endfor %}
     </table>

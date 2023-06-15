@@ -33,6 +33,4 @@ class User(AbstractUser, PermissionsMixin):
         return f"Uživatel pro Osobu {str(self.person)}"
 
     def get_absolute_url(self):
-        return reverse("users:index")
-        # TODO:
-        # return reverse("users:detail", kwargs={"pk": self.pk})
+        return reverse("users:detail", kwargs={"pk": self.pk})

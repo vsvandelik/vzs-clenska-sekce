@@ -1,4 +1,8 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+
+{% block content %}
+    <a href="{% url "users:detail" user.pk %}">Zpět</a>
+
     <h1>Smazat uživatele</h1>
 
     Opravdu chcete smazat uživatele osoby {{ user.person }}?

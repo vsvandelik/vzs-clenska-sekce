@@ -3,6 +3,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth import views as auth_views
 
 from .models import User
 from . import forms
@@ -98,10 +99,16 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):
-        return f"Uživatel osoby {self.person} byl úspěšně odstraněn."
+        return _(f"Uživatel osoby {self.person} byl úspěšně odstraněn.")
 
 
 class UserEditView(generic.edit.UpdateView):
     model = User
     template_name = "users/edit.html"
     form_class = forms.UserEditForm
+
+
+class LoginView(auth_views.LoginView):
+    template_name = "users/login.html"
+    authentication_form = forms.LoginForm
+    redirect_authenticated_user = True
