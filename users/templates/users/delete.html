@@ -1,10 +1,10 @@
 {% extends "base.html" %} {% block content %}
-<h1>Smazat uživatele</h1>
+    <h1>Smazat uživatele</h1>
 
-Opravdu chcete smazat uživatele osoby {{ user.person }}?
+    Opravdu chcete smazat uživatele osoby {{ user.person }}?
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Smazat</button>
-</form>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Smazat</button>
+    </form>
 {% endblock %}

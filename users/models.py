@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.urls import reverse
 
 
 class User(AbstractUser, PermissionsMixin):
@@ -30,3 +31,8 @@ class User(AbstractUser, PermissionsMixin):
 
     def __str__(self):
         return f"Uživatel pro Osobu {str(self.person)}"
+
+    def get_absolute_url(self):
+        return reverse("users:index")
+        # TODO:
+        # return reverse("users:detail", kwargs={"pk": self.pk})

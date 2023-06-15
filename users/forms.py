@@ -107,15 +107,16 @@ class PersonSelectForm(forms.Form):
         pass
 
 
-class UserCreateForm(forms.ModelForm):
-    person = CustomModelChoiceField(queryset=userless_people)
+class UserBaseForm(forms.ModelForm):
+    """
+    This form is the common base for both UserCreateForm and UserEditForm forms,
+    as they both submit a password but only the Create form submits the person.
+    """
 
     class Meta:
         model = User
-        fields = ["person", "password"]
+        fields = ["password"]
         widgets = {"password": forms.PasswordInput}
-
-    field_order = ["person", "password"]
 
     def clean_password(self):
         raw_password = self.cleaned_data["password"]
@@ -128,6 +129,15 @@ class UserCreateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class UserCreateForm(UserBaseForm):
+    class Meta(UserBaseForm.Meta):
+        fields = UserBaseForm.Meta.fields + ["person"]
+
+    person = CustomModelChoiceField(queryset=userless_people)
+
+    field_order = ["person", "password"]
 
 
 class UserSearchForm(forms.Form):
@@ -155,3 +165,7 @@ class UserSearchPaginationForm(forms.Form):
     name_query = forms.CharField(required=False, widget=forms.HiddenInput)
     show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
     page = forms.IntegerField(required=False, min_value=1, **no_render_field)
+
+
+class UserEditForm(UserBaseForm):
+    pass

@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block content %}
-<h1>Vybaveni - {{ object.name }}</h1>
+    <h1>Vybaveni - {{ object.name }}</h1>
 
-<a href="{% url 'equipments:edit' object.pk %}">Upravit vybaveni</a>
-<a href="{% url 'equipments:delete' object.pk %}">Smazat vybaveni</a>
+    <a href="{% url 'equipments:edit' object.pk %}">Upravit vybaveni</a>
+    <a href="{% url 'equipments:delete' object.pk %}">Smazat vybaveni</a>
 
 {% endblock %}

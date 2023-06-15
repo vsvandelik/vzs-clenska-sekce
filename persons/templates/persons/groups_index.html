@@ -1,13 +1,13 @@
 {% extends 'base.html' %} {% block content %}
-<h1>Skupiny</h1>
+    <h1>Skupiny</h1>
 
-<h2>Statické skupiny</h2>
-<a href="{% url 'persons:groups:add-static' %}">Pridat statickou skupinu</a>
+    <h2>Statické skupiny</h2>
+    <a href="{% url 'persons:groups:add-static' %}">Pridat statickou skupinu</a>
 
-<ul>
-    {% for group in static_groups %}
-    <li><a href="{% url 'persons:groups:detail' group.id %}">{{ group.name }}</a></li>
-    {% endfor %}
-</ul>
+    <ul>
+        {% for group in static_groups %}
+            <li><a href="{% url 'persons:groups:detail' group.id %}">{{ group.name }}</a></li>
+        {% endfor %}
+    </ul>
 
 {% endblock %}

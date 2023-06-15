@@ -22,8 +22,7 @@
                 </ul>
             </li>
         {% else %}
-            <li>
-                Probíhá {{ event.time_start|date:'j.n.Y' }} {{ event.time_start|date:'H:i' }}
+            <li>Probíhá {{ event.time_start|date:'j.n.Y' }} {{ event.time_start|date:'H:i' }}
                 – {{ event.time_end|date:'H:i' }}</li>
         {% endif %}
     </ul>

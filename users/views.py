@@ -99,3 +99,9 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_success_message(self, cleaned_data):
         return f"Uživatel osoby {self.person} byl úspěšně odstraněn."
+
+
+class UserEditView(generic.edit.UpdateView):
+    model = User
+    template_name = "users/edit.html"
+    form_class = forms.UserEditForm
