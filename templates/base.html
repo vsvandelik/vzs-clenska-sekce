@@ -3,30 +3,30 @@
 <!DOCTYPE html>
 <html lang="cs">
 
-<head>
-    <title>VZS Členská sekce</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+    <head>
+        <title>VZS Členská sekce</title>
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
 
-<body>
-<header>
+    <body>
+        <header>
 
-</header>
-<section>
+        </header>
+        <section>
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
-    {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
 
-</section>
-<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"></script>
-{% block scripts %}{% endblock %}
-</body>
+        </section>
+        <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"></script>
+        {% block scripts %}{% endblock %}
+    </body>
 </html>

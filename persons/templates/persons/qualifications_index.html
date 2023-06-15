@@ -1,10 +1,9 @@
 {% extends 'base.html' %} {% block content %}
-<h1>Kvalifikace</h1>
+    <h1>Kvalifikace</h1>
 
-<ul>
-    {% include "persons/_features_list_display_recursive.html" with
-    type="qualifications" %}
-</ul>
+    <ul>
+        {% include "persons/_features_list_display_recursive.html" with type="qualifications" %}
+    </ul>
 
-<a href="{% url 'qualifications:add' %}">Pridat kvalifikaci</a>
+    <a href="{% url 'qualifications:add' %}">Pridat kvalifikaci</a>
 {% endblock %}

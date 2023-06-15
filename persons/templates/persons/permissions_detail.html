@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block content %}
-<h1>Opravneni - {{ object.name }}</h1>
+    <h1>Opravneni - {{ object.name }}</h1>
 
-<a href="{% url 'permissions:edit' object.pk %}">Upravit opravneni</a>
-<a href="{% url 'permissions:delete' object.pk %}">Smazat opravneni</a>
+    <a href="{% url 'permissions:edit' object.pk %}">Upravit opravneni</a>
+    <a href="{% url 'permissions:delete' object.pk %}">Smazat opravneni</a>
 
 {% endblock %}

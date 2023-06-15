@@ -17,20 +17,20 @@
             <ul id="selected-persons"></ul>
             <table>
                 <thead>
-                <tr>
-                    <th>Osoba</th>
-                    <th></th>
-                </tr>
+                    <tr>
+                        <th>Osoba</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody id="persons-list">
-                {% for person in available_persons %}
-                    <tr data-person-id="{{ person.pk }}">
-                        <td class="test">{{ person.first_name }} {{ person.last_name }}</td>
-                        <td>
-                            <button type="button" value="{{ person.pk }}">+</button>
-                        </td>
-                    </tr>
-                {% endfor %}
+                    {% for person in available_persons %}
+                        <tr data-person-id="{{ person.pk }}">
+                            <td class="test">{{ person.first_name }} {{ person.last_name }}</td>
+                            <td>
+                                <button type="button" value="{{ person.pk }}">+</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
 

@@ -2,7 +2,7 @@
 
 {% block content %}
     <a href="{% url "users:index" %}">Zpět</a>
-    
+
     <form action="{% url "users:add" %}" method="post">
         {% csrf_token %}
         {{ form.as_div }}
@@ -25,14 +25,14 @@
                 <th>Select</th>
             </tr>
             {% for person in people %}
-            <tr>
-                <td>{{ person.first_name }}</td>
-                <td>{{ person.last_name }}</td>
-                <td>{{ person.email }}</td>
-                <td>
-                    <input type="radio" name="person" value="{{ person.id }}" required>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ person.first_name }}</td>
+                    <td>{{ person.last_name }}</td>
+                    <td>{{ person.email }}</td>
+                    <td>
+                        <input type="radio" name="person" value="{{ person.id }}" required>
+                    </td>
+                </tr>
             {% endfor %}
         </table>
         {{ person_select_form }}
