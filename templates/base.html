@@ -1,10 +1,11 @@
 {% load static %}
+{% load repeatedblocks %}
 
 <!DOCTYPE html>
 <html lang="cs">
 
     <head>
-        <title>VZS Členská sekce</title>
+        <title>{% repeated_block title %}{% endblock %} | VZS Členská sekce</title>
         <link rel="stylesheet" href="{% static 'style.css' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
@@ -14,6 +15,7 @@
 
         </header>
         <section>
+            <h1>{% repeat title %}</h1>
 
             {% if messages %}
                 <ul class="messages">
@@ -24,7 +26,6 @@
             {% endif %}
 
             {% block content %}{% endblock %}
-
         </section>
         <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"></script>
         {% block scripts %}{% endblock %}
