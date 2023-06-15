@@ -17,7 +17,7 @@
         {% for user in page_obj %}
             <tr>
                 <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
-                <td>{{ user.person }}</td>
+                <td>{{ user.person.render_inline }}</td>
                 <td>TODO</td>
             </tr>
         {% endfor %}
