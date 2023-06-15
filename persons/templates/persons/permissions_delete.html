@@ -1,12 +1,12 @@
 {% extends 'base.html' %} {% block content %}
-<h1>Smazat opravneni</h1>
+    <h1>Smazat opravneni</h1>
 
-Opravdu chcete smazat opravneni {{ object.name }}?
-<form method="post">
-    {% csrf_token %}
-    <table>
-        {{ form.as_table }}
-    </table>
-    <input type="submit" value="Smazat" />
-</form>
+    Opravdu chcete smazat opravneni {{ object.name }}?
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <input type="submit" value="Smazat" />
+    </form>
 {% endblock %}

@@ -171,15 +171,15 @@ function day_short_2_day_of_week(day_short) {
     if (day_short === 'ne')
         return 0
     else if (day_short === 'po')
-        return 1
+    return 1
     else if (day_short === 'ut')
-        return 2
+    return 2
     else if (day_short === 'st')
-        return 3
+    return 3
     else if (day_short === 'ct')
-        return 4
+    return 4
     else if (day_short === 'pa')
-        return 5
+    return 5
     else
         return 6
 }
@@ -251,14 +251,14 @@ function checkChosenDaysValid() {
             if (child.nodeName.toLowerCase() === 'input'
                 && child.type === 'checkbox'
                 && child.checked) {
-                const date = parseCzechDate(child.value)
-                if (date.getDay() !== weekday
-                    || date.getTime() < starts_date_obj.getTime()
-                    || date.getTime() > ends_date_obj.getTime()) {
-                    child.setCustomValidity('Neplatné datum tréninku')
-                    return false
+                    const date = parseCzechDate(child.value)
+                    if (date.getDay() !== weekday
+                        || date.getTime() < starts_date_obj.getTime()
+                        || date.getTime() > ends_date_obj.getTime()) {
+                            child.setCustomValidity('Neplatné datum tréninku')
+                            return false
+                        }
                 }
-            }
         }
     }
     return true
