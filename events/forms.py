@@ -4,6 +4,9 @@ from django import forms
 from .models import Event
 from .utils import day_shortcut_2_weekday, weekday_2_day_shortcut
 from django.forms import ValidationError
+from django.utils import timezone
+from django.conf import settings
+from zoneinfo import ZoneInfo
 
 trainings_per_week_choices = ((1, "1x"), (2, "2x"), (3, "3x"))
 
@@ -18,35 +21,36 @@ class TrainingForm(ModelForm):
         model = Event
         fields = ["name", "description", "capacity", "age_limit"]
 
-    starts_date = forms.DateField()
-    ends_date = forms.DateField()
+    starts_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    ends_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
     trainings_per_week = forms.ChoiceField(choices=trainings_per_week_choices)
 
     po = forms.BooleanField(label_suffix="Po", required=False)
+    ut = forms.BooleanField(label_suffix="Út", required=False)
+    st = forms.BooleanField(label_suffix="St", required=False)
+    ct = forms.BooleanField(label_suffix="Čt", required=False)
+    pa = forms.BooleanField(label_suffix="Pá", required=False)
+    so = forms.BooleanField(label_suffix="So", required=False)
+    ne = forms.BooleanField(label_suffix="Ne", required=False)
+
     from_po = forms.TimeField(required=False)
     to_po = forms.TimeField(required=False)
 
-    ut = forms.BooleanField(label_suffix="Út", required=False)
     from_ut = forms.TimeField(required=False)
     to_ut = forms.TimeField(required=False)
 
-    st = forms.BooleanField(label_suffix="St", required=False)
     from_st = forms.TimeField(required=False)
     to_st = forms.TimeField(required=False)
 
-    ct = forms.BooleanField(label_suffix="Čt", required=False)
     from_ct = forms.TimeField(required=False)
     to_ct = forms.TimeField(required=False)
 
-    pa = forms.BooleanField(label_suffix="Pá", required=False)
     from_pa = forms.TimeField(required=False)
     to_pa = forms.TimeField(required=False)
 
-    so = forms.BooleanField(label_suffix="So", required=False)
     from_so = forms.TimeField(required=False)
     to_so = forms.TimeField(required=False)
 
-    ne = forms.BooleanField(label_suffix="Ne", required=False)
     from_ne = forms.TimeField(required=False)
     to_ne = forms.TimeField(required=False)
 
@@ -113,43 +117,70 @@ class TrainingForm(ModelForm):
         super().clean()
         self._check_constraints()
 
-    def save(self, commit=True):
-        training_instance = Event.objects.create()
-        training_instance.name = self.cleaned_data["name"]
-        training_instance.description = self.cleaned_data["description"]
-        training_instance.capacity = self.cleaned_data["capacity"]
-        training_instance.age_limit = self.cleaned_data["age_limit"]
-        training_instance.state = Event.State.FUTURE
-        training_instance.time_start = self.cleaned_data["starts_date"]
-        training_instance.time_end = self.cleaned_data["ends_date"]
-        if commit:
-            training_instance.save()
-        parent_id = training_instance.id
-        training_instance._state.adding = True
-        training_instance.parent_id = parent_id
+    def _factory(self):
+        instance = Event.objects.create()
+        instance.name = self.cleaned_data["name"]
+        instance.description = self.cleaned_data["description"]
+        instance.capacity = self.cleaned_data["capacity"]
+        instance.age_limit = self.cleaned_data["age_limit"]
+        instance.state = Event.State.FUTURE
+        return instance
 
+    def save(self, commit=True):
+        parent = self.instance
+        if self.instance.id is None:
+            parent = self._factory()
+            parent.time_start = self.cleaned_data["starts_date"]
+            parent.time_end = self.cleaned_data["ends_date"]
+        if commit:
+            parent.save()
+        parent.extend_2_training()
+        new_dates = []
         for date_raw in self.cleaned_data["day"]:
-            date = datetime.strptime(date_raw, "%d.%m.%Y")
-            day_short = weekday_2_day_shortcut(date.weekday())
-            time_from = self.cleaned_data[f"from_{day_short}"]
-            time_to = self.cleaned_data[f"to_{day_short}"]
-            date_start = datetime(
-                year=date.year,
-                month=date.month,
-                day=date.day,
-                hour=time_from.hour,
-                minute=time_from.minute,
+            date_start, date_end = self._create_training_date(date_raw)
+            new_dates.append((date_start, date_end))
+
+        for child in parent.children:
+            times = (
+                timezone.localtime(child.time_start),
+                timezone.localtime(child.time_end),
             )
-            date_end = datetime(
-                year=date.year,
-                month=date.month,
-                day=date.day,
-                hour=time_to.hour,
-                minute=time_to.minute,
-            )
-            training_instance.pk = None
-            training_instance.time_start = date_start
-            training_instance.time_end = date_end
+            if times in new_dates:
+                new_dates.remove(times)
+            elif commit:
+                Event.objects.filter(id=child.id).delete()
+
+        self._save_add_trainings(parent, new_dates, commit)
+        return parent
+
+    def _save_add_trainings(self, parent, new_dates, commit=True):
+        for date_start, date_end in new_dates:
+            child = self._factory()
+            child.parent = parent
+            child.time_start = date_start
+            child.time_end = date_end
             if commit:
-                training_instance.save()
-        return training_instance
+                child.save()
+
+    def _create_training_date(self, date_raw):
+        date = datetime.strptime(date_raw, "%d.%m.%Y")
+        day_short = weekday_2_day_shortcut(date.weekday())
+        time_from = self.cleaned_data[f"from_{day_short}"]
+        time_to = self.cleaned_data[f"to_{day_short}"]
+        date_start = datetime(
+            year=date.year,
+            month=date.month,
+            day=date.day,
+            hour=time_from.hour,
+            minute=time_from.minute,
+            tzinfo=ZoneInfo(key=settings.TIME_ZONE),
+        )
+        date_end = datetime(
+            year=date.year,
+            month=date.month,
+            day=date.day,
+            hour=time_to.hour,
+            minute=time_to.minute,
+            tzinfo=ZoneInfo(key=settings.TIME_ZONE),
+        )
+        return date_start, date_end

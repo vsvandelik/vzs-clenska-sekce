@@ -44,3 +44,11 @@ def weekday_pretty(weekday):
     elif weekday == 5:
         return "So"
     return "Ne"
+
+
+def days_shortcut_list():
+    return ["po", "ut", "st", "ct", "pa", "so", "ne"]
+
+
+def days_pretty_list():
+    return ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]

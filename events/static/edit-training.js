@@ -284,6 +284,4 @@ function validateForm() {
 
 window.onload = function () {
     validateDate()
-    const checkedIds = days.filter(d => document.getElementById(d).checked)
-    checkedIds.forEach(id => dayToggled(document.getElementById(id)))
 }

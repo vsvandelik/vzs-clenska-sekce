@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from .utils import weekday_2_day_shortcut
+from django.utils import timezone
 
 
 class Event(models.Model):
@@ -44,6 +46,29 @@ class Event(models.Model):
         out = list(weekdays)
         out.sort()
         return out
+
+    def extend_2_training(self):
+        self.weekdays = self.get_weekdays_trainings_occur()
+        self.children = self.get_children_trainings_sorted()
+        for weekday in self.weekdays:
+            day_shortcut = weekday_2_day_shortcut(weekday)
+            for child in self.children:
+                if child.time_start.weekday() == weekday:
+                    setattr(
+                        self,
+                        f"from_{day_shortcut}",
+                        timezone.localtime(child.time_start),
+                    )
+                    setattr(
+                        self, f"to_{day_shortcut}", timezone.localtime(child.time_end)
+                    )
+                    break
+
+    def does_training_take_place_on(self, dtime):
+        for child in self.children:
+            if child.time_start.date() <= dtime.date() <= child.time_end.date():
+                return True
+        return False
 
     def get_children_trainings_sorted(self):
         return Event.objects.filter(parent__exact=self).order_by("time_start")
