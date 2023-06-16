@@ -30,7 +30,7 @@ class User(AbstractUser, PermissionsMixin):
         super().clean()
 
     def __str__(self):
-        return f"Uživatel pro Osobu {str(self.person)}"
+        return f"Uživatel osoby {str(self.person)}"
 
     def get_absolute_url(self):
         return reverse("users:index")
