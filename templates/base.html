@@ -14,8 +14,6 @@
 
         </header>
         <section>
-            <h1>{% repeat title %}</h1>
-
             {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
@@ -25,6 +23,7 @@
             {% endif %}
 
             {% block content %}{% endblock %}
+
         </section>
         <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js"></script>
         {% block scripts %}{% endblock %}
