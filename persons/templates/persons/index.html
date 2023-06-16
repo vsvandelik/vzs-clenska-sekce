@@ -1,9 +1,5 @@
 {% extends 'base.html' %}
 
-{% load repeatedblocks %}
-
-{% repeated_block title%}Osoby{% endblock %}
-
 {% block content %}
     <ul>
         {% for person in persons %}
