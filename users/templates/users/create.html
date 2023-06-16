@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load render %}
+
 {% block content %}
     <a href="{% url "users:index" %}">Zpět</a>
 
@@ -13,19 +15,21 @@
 
     <form action="{% url "users:add" %}" method="get">
         {{ person_search_form.as_div }}
-        <button type="submit">Search</button>
+        <button type="submit">Hledej</button>
     </form>
 
     <form action="{% url "users:add" %}" method="get">
         <table>
             <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Select</th>
+                <th>Detail</th>
+                <th>Jméno</th>
+                <th>Příjmení</th>
+                <th>E-mail</th>
+                <th>Vybrat</th>
             </tr>
             {% for person in people %}
                 <tr>
+                    <td>{% render person "link" text="Detail" %}</td>
                     <td>{{ person.first_name }}</td>
                     <td>{{ person.last_name }}</td>
                     <td>{{ person.email }}</td>
@@ -36,6 +40,6 @@
             {% endfor %}
         </table>
         {{ person_select_form }}
-        <button type="submit" {% if not people %} disabled {% endif %}>Select</button>
+        <button type="submit" {% if not people %} disabled {% endif %}>Vybrat</button>
     </form>
 {% endblock %}

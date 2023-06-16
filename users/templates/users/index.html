@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load render %}
+
 {% block content %}
     <a href="{% url "users:add" %}">Přidat nového uživatele</a>
 
@@ -17,7 +19,7 @@
         {% for user in page_obj %}
             <tr>
                 <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
-                <td>{{ user.person.render_inline }}</td>
+                <td>{% render user.person "inline" %}</td>
                 <td>TODO</td>
             </tr>
         {% endfor %}

@@ -2,8 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.urls import reverse
 
+from vzs.models import RenderableModelMixin
 
-class User(AbstractUser, PermissionsMixin):
+
+class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
     person = models.OneToOneField(
         "persons.Person", on_delete=models.CASCADE, primary_key=True
     )
