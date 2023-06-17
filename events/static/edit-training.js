@@ -101,8 +101,6 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     checkbox.value = value
     checkbox.id = value
     checkbox.checked = true
-    checkbox.addEventListener('change', () =>
-        trainingDayToggled(checkbox), false)
 
     const label = document.createElement('label')
     label.htmlFor = value
@@ -110,25 +108,6 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     label.appendChild(txtNode)
 
     return [checkbox, label]
-}
-
-function trainingDayToggled(sender) {
-    const parentFieldset = sender.parentElement
-    if (sender.checked) {
-        for (let i = 0; i < parentFieldset.childNodes.length; ++i) {
-            if (parentFieldset.childNodes[i].nodeName.toLowerCase() === 'input')
-                parentFieldset.childNodes[i].disabled = false
-        }
-    } else {
-        const checkedCount = countCheckedCheckboxesIn(parentFieldset)
-        if (checkedCount === 1) {
-            for (let i = 0; i < parentFieldset.childNodes.length; ++i) {
-                if (parentFieldset.childNodes[i].nodeName.toLowerCase() === 'input'
-                    && parentFieldset.childNodes[i].checked)
-                    parentFieldset.childNodes[i].disabled = true
-            }
-        }
-    }
 }
 
 function countCheckedCheckboxesIn(parentElement) {

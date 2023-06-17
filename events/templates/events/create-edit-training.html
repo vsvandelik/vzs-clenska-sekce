@@ -106,7 +106,7 @@
                                               style="display: none" {% endif %}>
                                         <legend>{{ day_pretty }} dny</legend>
                                         {% for date,checked in dates|index_safe:weekday %}
-                                            {% with date|date:'j.n.Y' as dateFormatted %}<input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %} checked {% endif %} onchange="trainingDayToggled(this)" value="{{ dateFormatted }}"><label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                            {% with date|date:'j.n.Y' as dateFormatted %}<input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %} checked {% endif %} value="{{ dateFormatted }}"><label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
                                             {% endwith %}
                                         {% endfor %}
                                     </fieldset>

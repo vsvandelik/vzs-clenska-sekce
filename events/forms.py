@@ -5,8 +5,6 @@ from .models import Event
 from .utils import day_shortcut_2_weekday, weekday_2_day_shortcut
 from django.forms import ValidationError
 from django.utils import timezone
-from django.conf import settings
-from zoneinfo import ZoneInfo
 
 trainings_per_week_choices = ((1, "1x"), (2, "2x"), (3, "3x"))
 
@@ -117,30 +115,26 @@ class TrainingForm(ModelForm):
         super().clean()
         self._check_constraints()
 
-    def _factory(self):
-        instance = Event.objects.create()
-        instance.name = self.cleaned_data["name"]
-        instance.description = self.cleaned_data["description"]
-        instance.capacity = self.cleaned_data["capacity"]
-        instance.age_limit = self.cleaned_data["age_limit"]
-        instance.state = Event.State.FUTURE
-        return instance
-
     def save(self, commit=True):
-        parent = self.instance
+        instance = self.instance
         if self.instance.id is None:
-            parent = self._factory()
-            parent.time_start = self.cleaned_data["starts_date"]
-            parent.time_end = self.cleaned_data["ends_date"]
+            instance = Event.objects.create()
+            instance.name = self.cleaned_data["name"]
+            instance.description = self.cleaned_data["description"]
+            instance.capacity = self.cleaned_data["capacity"]
+            instance.age_limit = self.cleaned_data["age_limit"]
+            instance.state = Event.State.FUTURE
+            instance.time_start = self.cleaned_data["starts_date"]
+            instance.time_end = self.cleaned_data["ends_date"]
         if commit:
-            parent.save()
-        parent.extend_2_training()
+            instance.save()
+        children = instance.get_children_trainings_sorted()
         new_dates = []
         for date_raw in self.cleaned_data["day"]:
             date_start, date_end = self._create_training_date(date_raw)
             new_dates.append((date_start, date_end))
 
-        for child in parent.children:
+        for child in children:
             times = (
                 timezone.localtime(child.time_start),
                 timezone.localtime(child.time_end),
@@ -150,17 +144,19 @@ class TrainingForm(ModelForm):
             elif commit:
                 Event.objects.filter(id=child.id).delete()
 
-        self._save_add_trainings(parent, new_dates, commit)
-        return parent
+        parent_id = instance.id
+        instance._state.adding = True
+        self._save_add_trainings(instance, parent_id, new_dates, commit)
+        return instance
 
-    def _save_add_trainings(self, parent, new_dates, commit=True):
+    def _save_add_trainings(self, instance, parent_id, new_dates, commit=True):
         for date_start, date_end in new_dates:
-            child = self._factory()
-            child.parent = parent
-            child.time_start = date_start
-            child.time_end = date_end
+            instance.pk = None
+            instance.parent_id = parent_id
+            instance.time_start = date_start
+            instance.time_end = date_end
             if commit:
-                child.save()
+                instance.save()
 
     def _create_training_date(self, date_raw):
         date = datetime.strptime(date_raw, "%d.%m.%Y")
@@ -173,7 +169,7 @@ class TrainingForm(ModelForm):
             day=date.day,
             hour=time_from.hour,
             minute=time_from.minute,
-            tzinfo=ZoneInfo(key=settings.TIME_ZONE),
+            tzinfo=timezone.get_default_timezone(),
         )
         date_end = datetime(
             year=date.year,
@@ -181,6 +177,6 @@ class TrainingForm(ModelForm):
             day=date.day,
             hour=time_to.hour,
             minute=time_to.minute,
-            tzinfo=ZoneInfo(key=settings.TIME_ZONE),
+            tzinfo=timezone.get_default_timezone(),
         )
         return date_start, date_end
