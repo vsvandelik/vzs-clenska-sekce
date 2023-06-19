@@ -2,12 +2,68 @@
 
 {% load render %}
 
-{% block content %}
-    <ul>
-        {% for person in persons %}
-            <li>{% render person "inline" %}</li>
-        {% endfor %}
-    </ul>
+{% block title %}Seznam všech osob{% endblock %}
 
-    <a href="{% url 'persons:add' %}">Pridat osobu</a>
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Osoby</div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Jméno</th>
+                                        <th scope="col">E-mail</th>
+                                        <th scope="col" style="width: 40px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for person in persons %}
+                                        <tr>
+                                            <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                            <td><a href="mailto:{{ person.email }}">{{ person.email }}</a></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
+                                                    <a class="btn btn-success btn-sm" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
+                                                    <a class="btn btn-danger btn-sm" href="{% url "persons:delete" person.pk %}"><i class="fas fa-trash-alt"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-sm-12 col-md-5">
+                            Zobrazují se řádky {{ page_obj.start_index }} až {{ page_obj.end_index }} z {{ page_obj.paginator.count }}.
+                        </div>
+                        <div class="col-sm-12 col-md-7">
+                            <ul class="pagination float-right mb-0">
+                                <li class="paginate_button page-item previous {% if not page_obj.has_previous %}disabled{% endif %}">
+                                    <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}" class="page-link">Předchozí</a>
+                                </li>
+                                {% for page in page_obj.paginator.get_elided_page_range %}
+                                    <li class="paginate_button page-item {% if page == page_obj.number %}active{% endif %}"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
+                                {% endfor %}
+                                <li class="paginate_button page-item next {% if not page_obj.has_next %}disabled{% endif %}">
+                                    <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}" class="page-link">Další</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'persons:add' %}" class="btn btn-primary">Přidat osobu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
