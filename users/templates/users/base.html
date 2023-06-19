@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% load render %}
+
+{% block content %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">{% render user "inline" %}</h3>
+        </div>
+
+        <div class="card-body">
+            {% block body %}{% endblock %}
+        </div>
+
+        <div class="card-footer">
+            {% block footer %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

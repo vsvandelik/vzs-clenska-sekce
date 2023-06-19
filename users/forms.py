@@ -178,7 +178,7 @@ class UserEditForm(UserBaseForm):
 
 class LoginForm(AuthenticationForm):
     username = None
-    email = forms.EmailField()
+    email = forms.EmailField(label=_("E-mail"))
 
     field_order = ["email", "password"]
 

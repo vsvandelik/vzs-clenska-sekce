@@ -5,10 +5,13 @@
         <p>Prosím, přihlašte se.</p>
     {% endif %}
 
-    <form action="{% url "users:login" %}" method="post">
-        {% csrf_token %}
-        {{ form.as_div }}
-        <button type="submit">Přihlásit</button>
-    </form>
-
+    <div class="card">
+        <div class="card-body login-card-body">
+            <form action="{% url "users:login" %}" method="post">
+                {% csrf_token %}
+                {{ form.as_div }}
+                <button type="submit" class="btn btn-primary">Přihlásit</button>
+            </form>
+        </div>
+    </div>
 {% endblock %}
