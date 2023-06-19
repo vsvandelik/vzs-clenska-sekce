@@ -3,7 +3,7 @@
 {% load render %}
 
 {% block content %}
-    <a href="{% url "users:index" %}">Zpět</a>
+    <a href="{% url "users:detail" user.pk %}">Zpět</a>
 
     <div>
         Osoba: {% render user.person "inline" %}
