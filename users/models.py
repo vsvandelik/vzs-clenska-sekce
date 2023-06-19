@@ -2,11 +2,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin, BaseUserManager
 from django.urls import reverse
 
+from persons.models import Person
+
 
 class UserManager(BaseUserManager):
     def create_user(self, person, password=None):
         if not person:
             raise ValueError("Users must have a person set")
+
+        if not isinstance(person, Person):
+            person = Person.objects.get(pk=person)
 
         user = self.model(person=person)
 
@@ -14,7 +19,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, person, date_of_birth, password=None):
+    def create_superuser(self, person, password=None):
         user = self.create_user(
             person,
             password=password,
