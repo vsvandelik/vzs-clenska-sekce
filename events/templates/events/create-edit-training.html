@@ -7,7 +7,7 @@
 {% endblock %}
 {% block content %}
     <a href="{% url 'events:index' %}">Zpět</a>
-    <h1>{% if event %} Editace tréninku {% else %} Nový trénink {% endif %}</h1>
+    <h1 id="training_header">{% if event %} Editace tréninku {% else %} Nový trénink {% endif %}</h1>
     <hr>
     <form method="POST"
           action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"

@@ -297,4 +297,9 @@ function validateForm() {
 window.onload = function () {
     validateDate()
     trainingsPerWeekChanged()
+
+    if(document.getElementById('training_header').innerText.startsWith('Nový')) {
+        const checkedDays = days.filter(d => document.getElementById(`id_${d}`).checked)
+        checkedDays.forEach(d => checkTrainingDays(document.getElementById(`id_${d}`)))
+    }
 }
