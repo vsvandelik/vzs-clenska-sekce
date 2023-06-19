@@ -28,6 +28,7 @@ class IndexView(generic.ListView):
     model = Person
     template_name = "persons/index.html"
     context_object_name = "persons"
+    paginate_by = 20
 
 
 class DetailView(generic.DetailView):
