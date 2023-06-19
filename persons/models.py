@@ -3,8 +3,10 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from vzs import models as vzs_models
 
-class Person(models.Model):
+
+class Person(vzs_models.RenderableModelMixin, models.Model):
     class Type(models.TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")
