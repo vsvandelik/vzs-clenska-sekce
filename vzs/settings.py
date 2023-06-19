@@ -70,6 +70,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            "libraries": {"render": "vzs.templatetags.render"},
         },
     },
 ]
@@ -146,3 +147,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Settings for app django-active-link
 
 ACTIVE_LINK_STRICT = True
+
+# Settings for Django authenticator
+
+LOGIN_REDIRECT_URL = "users:index"  # TODO: change
+LOGOUT_REDIRECT_URL = "users:index"  # TODO: change
+

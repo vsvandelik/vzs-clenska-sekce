@@ -1,0 +1,3 @@
+{% load render %}
+
+<a href="{% url "users:detail" user.pk %}">Uživatel</a> osoby {% render user.person "inline" %}
