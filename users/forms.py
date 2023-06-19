@@ -39,7 +39,7 @@ class CustomModelChoiceInput(forms.HiddenInput):
             obj = get_object_or_404(self.queryset, id=value)
             presentation_html = obj.render("inline")
         else:
-            presentation_html = ""
+            presentation_html = _("Vyberte osobu")
 
         return presentation_html + input_html
 
@@ -144,8 +144,8 @@ class UserCreateForm(UserBaseForm):
 
 
 class UserSearchForm(forms.Form):
-    name_query = forms.CharField(required=False)
-    show_all = forms.BooleanField(required=False)
+    name_query = forms.CharField(required=False, label=_("Obsahuje"))
+    show_all = forms.BooleanField(required=False, label=_("Ukázat vše"))
 
     def search_users(self):
         if not self.is_valid():

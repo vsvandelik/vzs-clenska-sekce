@@ -3,46 +3,60 @@
 {% load render %}
 
 {% block content %}
-    <a href="{% url "users:add" %}">Přidat nového uživatele</a>
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Hledat uživatele</h3>
+        </div>
 
-    <form action="{% url "users:index" %}" method="get">
-        {{ user_search_form.as_div }}
-        <button type="submit">Hledat</button>
-    </form>
+        <div class="card-body">
+            <form action="{% url "users:index" %}" method="get">
+                {{ user_search_form.as_div }}
+                <button type="submit" class="btn btn-primary">Hledat</button>
+            </form>
 
-    <table>
-        <tr>
-            <th>Detail</th>
-            <th>Osoba</th>
-            <th>Povolení</th>
-        </tr>
-        {% for user in page_obj %}
-            <tr>
-                <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
-                <td>{% render user.person "inline" %}</td>
-                <td>TODO</td>
-            </tr>
-        {% endfor %}
-    </table>
+            <br>
 
-    <div class="pagination">
-        <form action="{% url "users:index" %}" method="get">
-            {{ user_search_pagination_form.as_div }}
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <button type="submit" name="page" value="1">&laquo; první</button>
-                    <button type="submit" name="page" value="{{ page_obj.previous_page_number }}">předchozí</button>
-                {% endif %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Detail</th>
+                        <th>Osoba</th>
+                        <th>Povolení</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in page_obj %}
+                        <tr>
+                            <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
+                            <td>{% render user.person "inline" %}</td>
+                            <td>TODO</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">Žádné výsledky</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer clearfix">
+            <div class="pagination">
+                <form action="{% url "users:index" %}" method="get">
+                    {{ user_search_pagination_form.as_div }}
 
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
+                    <div class="btn-group">
+                        <button type="submit" name="page" {% if page_obj.has_previous %} value="1" {% else %} disabled {% endif %} class="btn btn-default">&laquo;</button>
+                        <button type="submit" name="page" {% if page_obj.has_previous %} value="{{ page_obj.previous_page_number }}" {% else %} disabled {% endif %} class="btn btn-default">&lt;</button>
+                    </div>
 
-                {% if page_obj.has_next %}
-                    <button type="submit" name="page" value="{{ page_obj.next_page_number }}">další</button>
-                    <button type="submit" name="page" value="{{ page_obj.paginator.num_pages }}">poslední &raquo;</button>
-                {% endif %}
-            </span>
-        </form>
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+
+                    <div class="btn-group">
+                        <button type="submit" name="page" {% if  page_obj.has_next %} value="{{ page_obj.next_page_number }}" {% else %} disabled {% endif %} class="btn btn-default">&gt;</button>
+                        <button type="submit" name="page" {% if  page_obj.has_next %} value="{{ page_obj.paginator.num_pages }}" {% else %} disabled {% endif %} class="btn btn-default">&raquo;</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 {% endblock %}
