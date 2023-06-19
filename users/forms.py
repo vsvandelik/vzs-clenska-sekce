@@ -4,7 +4,9 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import password_validation
+from django.contrib.auth import password_validation, authenticate
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
@@ -172,3 +174,42 @@ class UserSearchPaginationForm(forms.Form):
 
 class UserEditForm(UserBaseForm):
     pass
+
+
+class LoginForm(AuthenticationForm):
+    username = None
+    email = forms.EmailField()
+
+    field_order = ["email", "password"]
+
+    error_messages = {
+        "inactive": _("Tento uživatel je deaktivovaný."),
+    }
+
+    def __init__(self, request=None, *args, **kwargs):
+        self.request = request
+        self.user_cache = None
+        forms.Form.__init__(self, *args, **kwargs)
+
+    def clean(self):
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
+
+        if email and password:
+            person = Person.objects.filter(email=email).first()
+
+            if person:
+                self.user_cache = authenticate(
+                    self.request, person=person, password=password
+                )
+                if self.user_cache:
+                    self.confirm_login_allowed(self.user_cache)
+                    return self.cleaned_data
+
+        raise self.get_invalid_login_error()
+
+    def get_invalid_login_error(self):
+        return ValidationError(
+            _("Prosím, zadejte správný e-mail a heslo"),
+            code="invalid_login",
+        )

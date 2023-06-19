@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% load render %}
 
@@ -9,11 +9,9 @@
         Osoba: {% render user.person "inline" %}
     </div>
     <div>
-        Povolení: TODO
+        Povolení: {% comment %} TODO: display povoleni {% endcomment %}
     </div>
 
-    <a href="
-    {% comment %} {% url "users:edit" %} {% endcomment %}
-            ">Upravit</a>
+    <a href="{% url "users:edit" user.pk %}">Upravit</a>
     <a href="{% url "users:delete" user.pk %}">Smazat</a>
 {% endblock %}

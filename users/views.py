@@ -3,6 +3,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth import views as auth_views
 
 from .models import User
 from . import forms
@@ -108,3 +109,9 @@ class UserEditView(SuccessMessageMixin, generic.edit.UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("users:detail", kwargs={"pk": self.object.pk})
+
+
+class LoginView(auth_views.LoginView):
+    template_name = "users/login.html"
+    authentication_form = forms.LoginForm
+    redirect_authenticated_user = True
