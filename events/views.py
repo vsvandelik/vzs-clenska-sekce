@@ -14,15 +14,11 @@ class EventIndexView(generic.ListView):
     template_name = "events/index.html"
     context_object_name = "events"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = self.get_queryset()
-        for event in context[self.context_object_name]:
-            event.is_top_training = event.is_top_training()
-        return context
-
     def get_queryset(self):
-        return Event.objects.filter(parent__isnull=True)
+        events = Event.objects.filter(parent__isnull=True)
+        for event in events:
+            event.is_top_training = event.is_top_training()
+        return events
 
 
 class EventDeleteView(generic.DeleteView):
@@ -33,7 +29,6 @@ class EventDeleteView(generic.DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = kwargs["object"]
         context["children"] = context[
             self.context_object_name
         ].get_children_trainings_sorted()
@@ -61,7 +56,6 @@ class EventDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name] = kwargs["object"]
         if context[self.context_object_name].is_top_training():
             context[self.context_object_name].extend_2_training()
             context["is_top_training"] = True
@@ -90,14 +84,11 @@ class TrainingCreateView(generic.CreateView):
         return res
 
     def form_invalid(self, form):
-        messages.error(self.request, self._error_msg())
+        messages.error(self.request, form.errors)
         return super().form_invalid(form)
 
     def _success_msg(self):
         return _(f"{self.object} úspěšně přidán.")
-
-    def _error_msg(self):
-        return _(f"Trénink nebyl přidán.")
 
 
 class TrainingUpdateView(generic.UpdateView):
@@ -133,6 +124,11 @@ class TrainingUpdateView(generic.UpdateView):
         context["days"] = days_shortcut_list()
         context["days_pretty"] = days_pretty_list()
         context["dates"] = self._generate_dates(context)
+        context["weekday_disable"] = {}
+        for weekday in context["dates"]:
+            context["weekday_disable"][weekday] = (
+                sum(map(lambda x: x[1], context["dates"][weekday])) == 1
+            )
         return context
 
     def form_valid(self, form):
@@ -141,11 +137,8 @@ class TrainingUpdateView(generic.UpdateView):
         return res
 
     def form_invalid(self, form):
-        messages.error(self.request, self._error_msg())
+        messages.error(self.request, form.errors)
         return super().form_invalid(form)
 
     def _success_msg(self):
         return _(f"{self.object} úspěšně upraven.")
-
-    def _error_msg(self):
-        return _(f"{self.object} nebyl upraven.")

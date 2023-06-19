@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load extra_tags %}
 {% load static %}
+{% load widget_tweaks %}
 {% block scripts %}
     <script src="{% static 'edit-training.js' %}"></script>
 {% endblock %}
@@ -14,104 +15,93 @@
         {% csrf_token %}
         <div>
             <label for="name">Jméno</label><br>
-            <input type="text" id="name" name="name" value="{{ event.name }}" required>
+            {{ form.name }}
         </div>
         <br>
         <div>
             <label for="description">Popis</label><br>
-            <textarea id="description" name="description" cols="50">{{ event.description }}</textarea>
+            {{ form.description }}
         </div>
         <br>
         <div>
             <label for="capacity">Maximální počet účastníků</label><br>
-            <input type="number" min="1" step="1" pattern="\d*" id="capacity" value="{{ event.capacity }}"
-                   name="capacity" required>
+            {{ form.capacity }}
         </div>
         <br>
         <div>
             <label for="age_limit">Minimální věk účastníků</label><br>
-            <input type="number" min="8" step="1" pattern="\d*" id="age_limit" value="{{ event.age_limit }}"
-                   name="age_limit" required>
+            {{ form.age_limit }}
         </div>
         <br>
         <fieldset>
             <legend>Datum</legend>
             <label for="starts_date">Začíná</label>
-            <input type="date" id="starts_date" name="starts_date" required value="{{ event.time_start|date:'Y-m-d' }}"
-                   onchange="dateChanged()">
+            {{ form.starts_date }}
 
             <label for="ends_date">Končí</label>
-            <input type="date" id="ends_date" name="ends_date" required value="{{ event.time_end|date:'Y-m-d' }}"
-                   onchange="dateChanged()">
+            {{ form.ends_date }}
         </fieldset>
         <br>
         <div>
             <label for="trainings_per_week">Počet tréninků týdně</label><br>
-            <select id="trainings_per_week" name="trainings_per_week"
-                    onchange="trainingsPerWeekChanged()">
-                <option value="1" {% if event.weekdays|length == 1 %} selected="" {% endif %}>1x</option>
-                <option value="2" {% if event.weekdays|length == 2 %} selected="" {% endif %}>2x</option>
-                <option value="3" {% if event.weekdays|length == 3 %} selected="" {% endif %}>3x</option>
-            </select>
+            {{ form.trainings_per_week }}
         </div>
         <br>
-        <fieldset id="days_in_week">
+        <fieldset id="id_days_in_week">
             <legend>Dny v týdnu</legend>
             {% for i in '0123456'|make_list %}
-                {% with days|index:forloop.counter0 as day %}
-                    {% with days_pretty|index:forloop.counter0 as day_pretty %}
-                        <input type="checkbox" id="{{ day }}" name="{{ day }}" onchange="dayToggled(this)"
-                               {% if forloop.counter0 in event.weekdays %} checked {% endif %}>
-                        <label for="{{ day }}">{{ day_pretty }}</label>
+                {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
+                    {% with form|index:day as input %}
+                        {{ input }}
                     {% endwith %}
+                    <label for="id_{{ day }}">{{ day_pretty }}</label>
                 {% endwith %}
             {% endfor %}
         </fieldset>
 
         {% for i in '0123456'|make_list %}
-            {% with days|index:forloop.counter0 as day %}
-                {% with days_pretty|index:forloop.counter0 as day_pretty %}
-                    {% with 'from_'|addstr:day as from_var_name %}
-                        {% with 'to_'|addstr:day as to_var_name %}
-                            {% with event|getattribute:from_var_name as from_time %}
-                                {% with event|getattribute:to_var_name as to_time %}
-                                    <div id="{{ day }}_time" {% if not from_time %} style="display: none" {% endif %}>
-                                        <label>Čas konání v {{ day_pretty }}</label><br>
-                                        <label for="from_{{ day }}">Od</label>
-                                        <input type="time" id="from_{{ day }}" name="from_{{ day }}"
-                                               onchange="validateTimes(this)" required {% if not from_time %}
-                                                   disabled {% endif %}
-                                               value="{{ from_time|date:'H:i' }}">
+            {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
+                {% with from_var_name='from_'|addstr:day to_var_name='to_'|addstr:day %}
+                    {% with from_time=form|field_value:from_var_name to_time=form|field_value:to_var_name %}
+                        <div id="id_{{ day }}_time" {% if not from_time %} style="display: none" {% endif %}>
+                            <label>Čas konání v {{ day_pretty }}</label><br>
+                            <label for="id_from_{{ day }}">Od</label>
+                            {% if from_time %}
+                                {% render_field form|index:from_var_name required="" %}
+                            {% else %}
+                                {% render_field form|index:from_var_name required="" disabled="" %}
+                            {% endif %}
 
-                                        <label for="to_{{ day }}">Do</label>
-                                        <input type="time" id="to_{{ day }}" name="to_{{ day }}"
-                                               onchange="validateTimes(this)"
-                                               required {% if not to_time %} disabled {% endif %}
-                                               value="{{ to_time|date:'H:i' }}">
-                                    </div>
-                                {% endwith %}
-                            {% endwith %}
-                        {% endwith %}
+                            <label for="id_to_{{ day }}">Do</label>
+                            {% if to_time %}
+                                {% render_field form|index:to_var_name required="" %}
+                            {% else %}
+                                {% render_field form|index:to_var_name required="" disabled="" %}
+                            {% endif %}
+                        </div>
                     {% endwith %}
                 {% endwith %}
             {% endwith %}
         {% endfor %}
+
         {% for i in '0123456'|make_list %}
             {% with days|index:forloop.counter0 as day %}
                 {% with day|day_shortcut_2_weekday as weekday %}
-                    {% with days_pretty|index:forloop.counter0 as day_pretty %}
-                        {% with 'from_'|addstr:day as from_var_name %}
-                            {% with event|getattribute:from_var_name as from_time %}
-                                <fieldset id="{{ day }}_days" {% if not from_time %}
-                                              style="display: none" {% endif %}>
-                                        <legend>{{ day_pretty }} dny</legend>
-                                        {% for date,checked in dates|index_safe:weekday %}
-                                            {% with date|date:'j.n.Y' as dateFormatted %}<input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %} checked {% endif %} value="{{ dateFormatted }}"><label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
-                                            {% endwith %}
-                                        {% endfor %}
-                                    </fieldset>
-                            {% endwith %}
+                    {% with day_pretty=days_pretty|index:forloop.counter0 from_var_name='from_'|addstr:day dates_weekday=dates|index_safe:weekday %}
+                        {% with event|getattribute:from_var_name as from_time %}
+                            <fieldset id="id_{{ day }}_days" {% if not from_time %} style="display: none" {% endif %}>
+                                <legend>{{ day_pretty }} dny</legend>
+                                {% for date,checked in dates_weekday %}
+                                    {% with date|date:'j.n.Y' as dateFormatted %}
+                                        <input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %}
+                                                   checked {% endif %} {% if weekday_disable|index:weekday and checked %}
+                                                       disabled {% endif %} onchange="trainingDayToggled(this)"
+                                               value="{{ dateFormatted }}">
+                                        <label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                    {% endwith %}
+                                {% endfor %}
                         {% endwith %}
+                        </fieldset>
                     {% endwith %}
                 {% endwith %}
             {% endwith %}

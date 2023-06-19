@@ -40,8 +40,13 @@ def index(indexable, i):
 
 @register.filter
 def index_safe(indexable, i):
-    if indexable is None:
+    if indexable in [None, ""]:
         return iter([])
     if i in indexable:
         return indexable[i]
     return iter([])
+
+
+@register.filter
+def field_value(fields, field_name):
+    return fields[field_name].value()
