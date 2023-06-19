@@ -35,8 +35,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Macros
+
+    # Extensions
+    "macros",
     "active_link",
+  
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
