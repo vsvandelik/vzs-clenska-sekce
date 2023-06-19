@@ -52,37 +52,37 @@ class TrainingForm(ModelForm):
     po = forms.BooleanField(
         label_suffix="Po",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     ut = forms.BooleanField(
         label_suffix="Út",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     st = forms.BooleanField(
         label_suffix="St",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     ct = forms.BooleanField(
         label_suffix="Čt",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     pa = forms.BooleanField(
         label_suffix="Pá",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     so = forms.BooleanField(
         label_suffix="So",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
     ne = forms.BooleanField(
         label_suffix="Ne",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayOfWeekToggled(this)"}),
     )
 
     from_po = forms.TimeField(
