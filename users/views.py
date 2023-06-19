@@ -3,6 +3,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth import views as auth_views
 
 from .models import User
 from . import forms
@@ -27,16 +28,6 @@ class CustomCreateMixin(generic.edit.CreateView):
             if declared_field != "form_id"
         }
 
-    def success_message(self):
-        return _(f"{str(self.object)} úspěšně přidán.")
-
-    def form_valid(self, form):
-        result = super().form_valid(form)
-
-        messages.success(self.request, self.success_message())
-
-        return result
-
     def get_context_data(self, **kwargs):
         form_id = self.request.GET.get("form_id")
 
@@ -57,11 +48,14 @@ class CustomCreateMixin(generic.edit.CreateView):
         return super().get_context_data(**kwargs)
 
 
-class UserCreateView(CustomCreateMixin):
+class UserCreateView(SuccessMessageMixin, CustomCreateMixin):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
     get_form_classes = [forms.PersonSearchForm, forms.PersonSelectForm]
+
+    def get_success_message(self, cleaned_data):
+        return _(f"{self.object} byl úspěšně přidán.")
 
 
 class IndexView(generic.list.ListView):
@@ -77,9 +71,15 @@ class IndexView(generic.list.ListView):
         return self.user_search_form.search_users()
 
     def get_context_data(self, **kwargs):
-        kwargs["user_search_form"] = self.user_search_form
-        kwargs["user_search_pagination_form"] = self.user_search_pagination_form
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+
+        if "user_search_form" not in context:
+            context["user_search_form"] = self.user_search_form
+
+        if "user_search_pagination_form" not in context:
+            context["user_search_pagination_form"] = self.user_search_pagination_form
+
+        return context
 
 
 class DetailView(generic.detail.DetailView):
@@ -93,15 +93,25 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     success_url = reverse_lazy("users:index")
 
     def form_valid(self, form):
-        # success_message is sent after object deletion so we need to save the person
-        self.person = self.object.person
+        # success_message is sent after object deletion so we need to save the string
+        self.user_representation = str(self.object)
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):
-        return f"Uživatel osoby {self.person} byl úspěšně odstraněn."
+        return _(f"{self.user_representation} byl úspěšně odstraněn.")
 
 
-class UserEditView(generic.edit.UpdateView):
+class UserEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = User
     template_name = "users/edit.html"
     form_class = forms.UserEditForm
+    success_message = _("Uživatel byl úspěšně upraven.")
+
+    def get_success_url(self):
+        return reverse_lazy("users:detail", kwargs={"pk": self.object.pk})
+
+
+class LoginView(auth_views.LoginView):
+    template_name = "users/login.html"
+    authentication_form = forms.LoginForm
+    redirect_authenticated_user = True

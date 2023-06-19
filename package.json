@@ -1,0 +1,20 @@
+{
+  "name": "vzs",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vsvandelik/vzs-clenska-sekce.git"
+  },
+  "author": "Peter Facko, Jakub Levy, Vojtech Svandelik",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vsvandelik/vzs-clenska-sekce/issues"
+  },
+  "homepage": "https://github.com/vsvandelik/vzs-clenska-sekce#readme",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "admin-lte": "3.2",
+    "bootstrap": "^4.6.2",
+    "jquery": "^3.7.0"
+  }
+}

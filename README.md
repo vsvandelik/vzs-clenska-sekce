@@ -9,3 +9,7 @@
 
 ### djhtml a Windows
 Je potřeba nastavit Systémovou proměnnou `PYTHONUTF8=1`. To je možné přes GUI "Edit the system environment variables" nebo v příkazové řádce, která musí být spuštěna jako správce, příkazem `setx /m PYTHONUTF8 1`. Jinak to nefunguje a píše nějaké errory s Unicode a neznámými znaky.
+
+## Informace k front-endu
+
+- Pro zprovoznění frontendových závislostí je třeba mít nainstalované `node.js` a zavolat příkaz `npm install`, který nainstaluje závislosti vydefinované v souboru `package.json`.
