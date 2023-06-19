@@ -39,7 +39,7 @@ class CustomModelChoiceInput(forms.HiddenInput):
 
         if value:
             obj = get_object_or_404(self.queryset, id=value)
-            presentation_html = str(obj)
+            presentation_html = obj.render("inline")
         else:
             presentation_html = ""
 
@@ -66,10 +66,12 @@ class PersonSearchForm(forms.Form):
     name = "person_search_form"
 
     person = forms.ModelChoiceField(
-        required=False, queryset=userless_people, widget=forms.HiddenInput
+        required=False,
+        queryset=userless_people,
+        widget=forms.HiddenInput,
     )
-    query = forms.CharField(required=False)
-    show_all = forms.BooleanField(required=False)
+    query = forms.CharField(required=False, label=_("Obsahuje"))
+    show_all = forms.BooleanField(required=False, label=_("Ukázat vše"))
     form_id = forms.CharField(
         required=False, initial="person_search_form", widget=forms.HiddenInput
     )
@@ -138,7 +140,7 @@ class UserCreateForm(UserBaseForm):
     class Meta(UserBaseForm.Meta):
         fields = UserBaseForm.Meta.fields + ["person"]
 
-    person = CustomModelChoiceField(queryset=userless_people)
+    person = CustomModelChoiceField(queryset=userless_people, label=_("Osoba"))
 
     field_order = ["person", "password"]
 

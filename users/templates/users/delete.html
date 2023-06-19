@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 
+{% load render %}
+
 {% block content %}
     <a href="{% url "users:detail" user.pk %}">Zpět</a>
 
     <h1>Smazat uživatele</h1>
 
-    Opravdu chcete smazat uživatele osoby {{ user.person }}?
+    <p>Má být {% render user "inline" %} opravdu smazán?</p>
 
     <form method="post">
         {% csrf_token %}
-        <button type="submit">Smazat</button>
+        <button type="submit">Ano, smazat</button>
     </form>
 {% endblock %}

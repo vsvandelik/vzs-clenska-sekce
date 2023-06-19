@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
+{% load render %}
+
 {% block content %}
     <a href="{% url "users:detail" user.pk %}">Zpět</a>
 
     <div>
-        Osoba: {{ user.person }}
+        Osoba: {% render user.person "inline" %}
     </div>
     <form method="post">
         {% csrf_token %}

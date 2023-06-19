@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
+{% load render %}
+
 {% block content %}
     <a href="{% url "users:index" %}">Zpět</a>
 
     <div>
-        Osoba: {{ user.person }}
+        Osoba: {% render user.person "inline" %}
     </div>
     <div>
         Povolení: {% comment %} TODO: display povoleni {% endcomment %}

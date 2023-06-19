@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin, BaseUserManager
 from django.urls import reverse
 
+from vzs.models import RenderableModelMixin
 from persons.models import Person
 
 
@@ -29,7 +30,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractUser, PermissionsMixin):
+class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
     objects = UserManager()
 
     person = models.OneToOneField(
