@@ -41,11 +41,12 @@ class DetailView(generic.DetailView):
             feature__feature_type=Feature.Type.QUALIFICATION.value,
         )
         context["permissions"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"], feature__feature_type=Feature.Type.PERMIT.value
+            person=self.kwargs["pk"],
+            feature__feature_type=Feature.Type.PERMISSION.value,
         )
         context["equipments"] = FeatureAssignment.objects.filter(
             person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.POSSESSION.value,
+            feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
         return context
 
