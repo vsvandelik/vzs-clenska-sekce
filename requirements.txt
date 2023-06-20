@@ -1,3 +1,5 @@
 django
 django-active-link
 django-macros
+django-crispy-forms
+crispy-bootstrap4

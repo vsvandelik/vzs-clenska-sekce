@@ -35,9 +35,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+  
     # Extensions
     "macros",
     "active_link",
+    "crispy_forms",
+    "crispy_bootstrap4",
+  
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -153,6 +157,11 @@ ACTIVE_LINK_STRICT = True
 
 LOGIN_REDIRECT_URL = "users:index"  # TODO: change
 LOGOUT_REDIRECT_URL = "users:index"  # TODO: change
+
+# Settings for CrispyForms
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 # Settings for message type level
 
