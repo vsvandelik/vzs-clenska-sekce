@@ -3,7 +3,7 @@
         <a href="{% url type|add:':detail' feature.id %}">{{ feature.name }}</a>
         {% if feature.children.all|length %}
             <ul>
-                {% include "persons/_features_list_display_recursive.html" with features=feature.children.all %}
+                {% include "persons/features/_features_list_display_recursive.html" with features=feature.children.all %}
             </ul>
         {% endif %}
     </li>

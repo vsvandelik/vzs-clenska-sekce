@@ -123,6 +123,8 @@ class FeatureTypeTextsClass:
     def __init__(
         self,
         feature_type,
+        name_2,
+        name_2_plural,
         name_4,
         form_labels,
         success_message_save,
@@ -134,6 +136,8 @@ class FeatureTypeTextsClass:
     ):
         self.shortcut = feature_type.value
         self.name_1 = feature_type.label
+        self.name_2 = name_2
+        self.name_2_plural = name_2_plural
         self.name_4 = name_4
         self.form_labels = form_labels
         self.success_message_save = success_message_save
@@ -147,6 +151,8 @@ class FeatureTypeTextsClass:
 FeatureTypeTexts = {
     "qualifications": FeatureTypeTextsClass(
         Feature.Type.QUALIFICATION,
+        _("kvalifikace"),
+        _("kvalifikací"),
         _("kvalifikaci"),
         {
             "feature": _("Název kvalifikace"),
@@ -168,6 +174,8 @@ FeatureTypeTexts = {
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMIT,
         "oprávnění",
+        "oprávnění",
+        "oprávnění",
         {
             "feature": _("Název oprávnění"),
             "date_assigned": _("Datum přiřazení"),
@@ -184,6 +192,8 @@ FeatureTypeTexts = {
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.POSSESSION,
+        "vybavení",
+        "vybavení",
         "vybavení",
         {
             "feature": _("Název vybavení"),
