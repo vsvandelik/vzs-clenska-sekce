@@ -49,8 +49,9 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
             )
         ],
     )
-    health_insurance_company = models.SmallIntegerField(
+    health_insurance_company = models.CharField(
         _("Zdravotní pojišťovna"),
+        max_length=3,
         choices=HealthInsuranceCompany.choices,
         blank=True,
         null=True,
@@ -74,6 +75,13 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
     )
     features = models.ManyToManyField("persons.Feature", through="FeatureAssignment")
     managed_people = models.ManyToManyField("self", symmetrical=False)
+
+    @property
+    def address(self):
+        if not (self.street and self.city and self.postcode):
+            return None
+
+        return f"{self.street}, {self.city}, {self.postcode}"
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
@@ -237,7 +245,7 @@ class Group(models.Model):
 
 
 class StaticGroup(Group):
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(Person, related_name="groups")
 
 
 class DynamicGroup(Group):
