@@ -173,9 +173,9 @@ FeatureTypeTexts = {
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMIT,
-        "oprávnění",
-        "oprávnění",
-        "oprávnění",
+        _("oprávnění"),
+        _("oprávnění"),
+        _("oprávnění"),
         {
             "feature": _("Název oprávnění"),
             "date_assigned": _("Datum přiřazení"),
@@ -192,9 +192,9 @@ FeatureTypeTexts = {
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.POSSESSION,
-        "vybavení",
-        "vybavení",
-        "vybavení",
+        _("vybavení"),
+        _("vybavení"),
+        _("vybavení"),
         {
             "feature": _("Název vybavení"),
             "date_assigned": _("Datum zapůjčení"),
