@@ -1,9 +1,9 @@
 const days = ['po', 'ut', 'st', 'ct', 'pa', 'so', 'ne']
 
 function dateChanged() {
+    saveCheckboxesToLocalStorage()
     validateDate()
-    const selectedDays = getSelectedDays()
-    selectedDays.forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
+    getSelectedDays().forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
 }
 
 function getDateNulledHours(element) {
@@ -102,8 +102,18 @@ function trainingDaysUpdate(dowElement) {
         daysFieldset.style.display = 'none'
         removeChildrenAfterLegend(daysFieldset)
     }
-    if (countCheckedCheckboxesIn(daysFieldset) === 1)
+    const checkedCheckboxesCount = countCheckedCheckboxesIn(daysFieldset)
+    if (checkedCheckboxesCount === 0 && countCheckboxesIn(daysFieldset) > 0)
+        checkAndDisableFirstCheckboxIn(daysFieldset)
+    if (checkedCheckboxesCount === 1)
         disableCheckedCheckboxesInParent(daysFieldset)
+}
+
+function checkAndDisableFirstCheckboxIn(fieldset) {
+    const firstCheckbox = fieldset.getElementsByTagName('input')[0]
+    firstCheckbox.checked = true
+    firstCheckbox.disabled = true
+    localStorage.removeItem(firstCheckbox.id)
 }
 
 function addDateCheckboxesTo(daysFieldset) {
@@ -165,6 +175,14 @@ function disableCheckedCheckboxesInParent(parent) {
         if (child.checked)
             child.disabled = true
     })
+}
+
+function countCheckboxesIn(parentElement) {
+    let counter = 0
+    applyToCheckboxesOfParent(parentElement, child => {
+        ++counter
+    })
+    return counter
 }
 
 function countCheckedCheckboxesIn(parentElement) {

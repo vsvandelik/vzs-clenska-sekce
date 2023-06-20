@@ -250,13 +250,13 @@ class TrainingForm(ModelForm):
         instance = self.instance
         if self.instance.id is None:
             instance = Event.objects.create()
-            instance.name = self.cleaned_data["name"]
-            instance.description = self.cleaned_data["description"]
-            instance.capacity = self.cleaned_data["capacity"]
-            instance.age_limit = self.cleaned_data["age_limit"]
             instance.state = Event.State.FUTURE
-            instance.time_start = self.cleaned_data["starts_date"]
-            instance.time_end = self.cleaned_data["ends_date"]
+        instance.name = self.cleaned_data["name"]
+        instance.description = self.cleaned_data["description"]
+        instance.capacity = self.cleaned_data["capacity"]
+        instance.age_limit = self.cleaned_data["age_limit"]
+        instance.time_start = self.cleaned_data["starts_date"]
+        instance.time_end = self.cleaned_data["ends_date"]
         if commit:
             instance.save()
         children = instance.get_children_trainings_sorted()
