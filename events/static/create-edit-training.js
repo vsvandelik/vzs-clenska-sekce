@@ -1,13 +1,5 @@
 const days = ['po', 'ut', 'st', 'ct', 'pa', 'so', 'ne']
 
-// const pageAccessedByReload = (
-//   (window.performance.navigation && window.performance.navigation.type === 1) ||
-//     window.performance
-//       .getEntriesByType('navigation')
-//       .map(nav => nav.type)
-//       .includes('reload')
-// );
-
 function dateChanged() {
     validateDate()
     const selectedDays = getSelectedDays()
@@ -343,17 +335,15 @@ function isNewEvent() {
 }
 
 window.onload = function () {
-    if(!isNewEvent())
-        localStorage.clear()
+    const newEvent = isNewEvent()
 
-    //const editPageWithoutReload = selectedDaysCount > 0 && !pageAccessedByReload
-    // if(editPageWithoutReload)
-    //     localStorage.clear()
+    if(!newEvent)
+        localStorage.clear()
 
     validateDate()
     trainingsPerWeekChanged()
 
-    if(isNewEvent())
+    if(newEvent)
         getSelectedDays().forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
 
     localStorage.clear()
