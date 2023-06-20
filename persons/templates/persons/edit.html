@@ -1,9 +1,10 @@
-{% extends 'base.html' %} {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        <table>
-            {{ form.as_table }}
-        </table>
-        <input type="submit" value="Uložit" />
-    </form>
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+
+{% block title %}Úprava osoby{% endblock %}
+
+{% block content %}
+    {% crispy form form.helper %}
 {% endblock %}

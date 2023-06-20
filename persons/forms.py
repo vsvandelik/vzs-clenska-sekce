@@ -1,10 +1,12 @@
 import datetime
 import re
 
+from crispy_forms.layout import Submit
 from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from vzs import settings
+from vzs.forms import VZSDefaultFormHelper
 from .models import Person, FeatureAssignment, Feature, StaticGroup
 
 
@@ -17,6 +19,11 @@ class PersonForm(ModelForm):
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
             )
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = VZSDefaultFormHelper()
+        self.helper.add_input(Submit("submit", "Uložit"))
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]

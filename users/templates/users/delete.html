@@ -3,6 +3,8 @@
 {% load render %}
 
 {% block content %}
+    <a href="{% url "users:detail" user.pk %}">Zpět</a>
+
     <h1>Smazat uživatele</h1>
 
     <p>Má být {% render user "inline" %} opravdu smazán?</p>
