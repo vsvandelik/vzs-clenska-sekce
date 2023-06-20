@@ -19,17 +19,17 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Detail</th>
                         <th>Osoba</th>
                         <th>Povolení</th>
+                        <th>Akce</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in page_obj %}
                         <tr>
-                            <td><a href="{% url "users:detail" user.pk %}">Detail</a></td>
                             <td>{% render user.person "inline" %}</td>
                             <td>TODO</td>
+                            <td><a href="{% url "users:detail" user.pk %}" class="btn btn-info">Detail</a></td>
                         </tr>
                     {% empty %}
                         <tr>
