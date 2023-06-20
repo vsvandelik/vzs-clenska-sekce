@@ -57,7 +57,6 @@ class PersonForm(ModelForm):
 
 
 class FeatureAssignmentForm(ModelForm):
-    # TODO: Hide Date_expire, issuer and code when its not necessary
     class Meta:
         model = FeatureAssignment
         fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
@@ -84,11 +83,11 @@ class FeatureAssignmentForm(ModelForm):
             if self.instance.feature.never_expires is True:
                 self.fields.pop("date_expire")
 
-        if feature_type == Feature.Type.PERMIT:
+        if feature_type == Feature.Type.PERMISSION:
             self.fields.pop("issuer")
             self.fields.pop("code")
 
-        elif feature_type == Feature.Type.POSSESSION:
+        elif feature_type == Feature.Type.EQUIPMENT:
             self.fields.pop("issuer")
 
     def _get_feature(self, cleaned_data):
@@ -131,6 +130,8 @@ class FeatureAssignmentForm(ModelForm):
                 _("Je vyplněn vydavatel u vlastnosti u které se vydavatel neeviduje.")
             )
 
+        return issuer
+
     def clean_code(self):
         code = self.cleaned_data["code"]
         feature = self._get_feature(self.cleaned_data)
@@ -141,6 +142,8 @@ class FeatureAssignmentForm(ModelForm):
                     "Je vyplněn kód vlastnosti u vlastnosti u které se vydavatel neeviduje."
                 )
             )
+
+        return code
 
 
 class FeatureForm(ModelForm):
@@ -156,6 +159,34 @@ class FeatureForm(ModelForm):
             self.fields["parent"].queryset = Feature.objects.filter(
                 feature_type=feature_type
             )
+            self.feature_type = feature_type
+
+        if feature_type == Feature.Type.PERMISSION:
+            self.fields.pop("collect_issuers")
+            self.fields.pop("collect_codes")
+
+        elif feature_type == Feature.Type.EQUIPMENT:
+            self.fields.pop("collect_issuers")
+
+    def clean_collect_issuers(self):
+        collect_issuers = self.cleaned_data["collect_issuers"]
+
+        if self.feature_type != Feature.Type.QUALIFICATION and collect_issuers:
+            raise ValidationError(
+                _(
+                    "Je vyplněno zadávání vydavatelů u jiných vlastností osob než jsou kvalifikace."
+                )
+            )
+
+        return collect_issuers
+
+    def clean_collect_codes(self):
+        collect_codes = self.cleaned_data["collect_codes"]
+
+        if self.feature_type == Feature.Type.PERMISSION and collect_codes:
+            raise ValidationError(_("Je vyplněno zadávání kódů u oprávnění."))
+
+        return collect_codes
 
 
 class StaticGroupForm(ModelForm):

@@ -221,8 +221,12 @@ class FeatureAssignment(models.Model):
     feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
     date_assigned = models.DateField()
     date_expire = models.DateField(null=True, blank=True)
-    issuer = models.CharField(max_length=255, blank=True, null=True)
-    code = models.CharField(max_length=255, blank=True, null=True)
+    issuer = models.CharField(
+        max_length=255, blank=True, null=True
+    )  # Only for qualifications
+    code = models.CharField(
+        max_length=255, blank=True, null=True
+    )  # Only for qualification + equipments
 
     class Meta:
         unique_together = ["person", "feature"]
