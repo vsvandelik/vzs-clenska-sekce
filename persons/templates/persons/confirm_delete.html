@@ -1,8 +1,34 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
 
-    <form method="post">
-        {% csrf_token %}
-        <input type="submit" value="Smazat" />
-    </form>
+{% block title %}Smazání osoby{% endblock %}
 
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <div class="card-title h5">Potvrzení smazání osoby</div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        Opravdu chcete smazat osobu {{ person.first_name }} {{ person.last_name }}?
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Smazat" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
