@@ -1,16 +1,14 @@
-{% extends "base.html" %}
+{% extends "users/base.html" %}
 
 {% load render %}
 
-{% block content %}
-    <a href="{% url "users:detail" user.pk %}">Zpět</a>
+{% block body %}
+    Má být {% render user "inline" %} opravdu smazán?
+{% endblock %}
 
-    <h1>Smazat uživatele</h1>
-
-    <p>Má být {% render user "inline" %} opravdu smazán?</p>
-
+{% block footer %}
     <form method="post">
         {% csrf_token %}
-        <button type="submit">Ano, smazat</button>
+        <button type="submit" class="btn btn-danger">Ano, smazat</button>
     </form>
 {% endblock %}

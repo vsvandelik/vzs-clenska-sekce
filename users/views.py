@@ -17,19 +17,23 @@ class CustomCreateMixin(generic.edit.CreateView):
     """
 
     get_form_classes = []
+    default_form_class = None
 
     def get_initial(self, form_class=None):
-        if form_class == None:
+        if form_class is None:
             form_class = self.form_class
 
         return {
             declared_field: self.request.GET.get(declared_field)
             for declared_field in form_class.declared_fields
-            if declared_field != "form_id"
+            if declared_field != "form_id" and declared_field in self.request.GET
         }
 
     def get_context_data(self, **kwargs):
-        form_id = self.request.GET.get("form_id")
+        form_id = self.request.GET.get("form_id", "")
+
+        if form_id == "" and self.default_form_class is not None:
+            form_id = self.default_form_class.name
 
         for form_class in self.get_form_classes:
             form_name = form_class.name
@@ -53,6 +57,7 @@ class UserCreateView(SuccessMessageMixin, CustomCreateMixin):
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
     get_form_classes = [forms.PersonSearchForm, forms.PersonSelectForm]
+    default_form_class = forms.PersonSearchForm
 
     def get_success_message(self, cleaned_data):
         return _(f"{self.object} byl úspěšně přidán.")

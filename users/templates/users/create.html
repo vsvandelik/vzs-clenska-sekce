@@ -3,43 +3,68 @@
 {% load render %}
 
 {% block content %}
-    <a href="{% url "users:index" %}">Zpět</a>
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Vytvořit uživatele</h3>
+        </div>
+        <form action="{% url "users:add" %}" method="post">
+            {% csrf_token %}
+            <div class="card-body">
+                {{ form.as_div }}
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Vytvořit</button>
+            </div>
+        </form>
+    </div>
 
-    <form action="{% url "users:add" %}" method="post">
-        {% csrf_token %}
-        {{ form.as_div }}
-        <input type="submit" value="Submit">
-    </form>
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Vybrat osobu</h3>
+        </div>
 
-    <hr>
+        <div class="card-body">
+            <form action="{% url "users:add" %}" method="get">
+                {{ person_search_form }}
+                <button type="submit" class="btn btn-primary">Hledat</button>
+            </form>
 
-    <form action="{% url "users:add" %}" method="get">
-        {{ person_search_form.as_div }}
-        <button type="submit">Hledej</button>
-    </form>
+            <form action="{% url "users:add" %}" method="get" id="person_select_form">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Vybrat</th>
+                            <th>Jméno</th>
+                            <th>Příjmení</th>
+                            <th>E-mail</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for person in people %}
+                            <tr>
+                                <td>
+                                    <input type="radio" name="person" value="{{ person.id }}" required>
+                                </td>
+                                <td>{{ person.first_name }}</td>
+                                <td>{{ person.last_name }}</td>
+                                <td>{{ person.email }}</td>
+                                <td>{% render person "link" text="Detail" %}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">Žádné výsledky</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-    <form action="{% url "users:add" %}" method="get">
-        <table>
-            <tr>
-                <th>Detail</th>
-                <th>Jméno</th>
-                <th>Příjmení</th>
-                <th>E-mail</th>
-                <th>Vybrat</th>
-            </tr>
-            {% for person in people %}
-                <tr>
-                    <td>{% render person "link" text="Detail" %}</td>
-                    <td>{{ person.first_name }}</td>
-                    <td>{{ person.last_name }}</td>
-                    <td>{{ person.email }}</td>
-                    <td>
-                        <input type="radio" name="person" value="{{ person.id }}" required>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-        {{ person_select_form }}
-        <button type="submit" {% if not people %} disabled {% endif %}>Vybrat</button>
-    </form>
+                {{ person_select_form }}
+            </form>
+        </div>
+
+        <div class="card-footer">
+            <button form="person_select_form" type="submit" {% if not people %} disabled {% endif %} class="btn btn-primary">Vybrat</button>
+        </div>
+    </div>
 {% endblock %}
