@@ -42,22 +42,23 @@ class Event(models.Model):
         weekdays = set()
         children = Event.objects.filter(parent__exact=self)
         for child in children:
-            weekdays.add(child.time_start.weekday())
+            weekdays.add(timezone.localtime(child.time_start).weekday())
         out = list(weekdays)
         out.sort()
         return out
 
-    def extend_2_training(self):
+    def extend_2_top_training(self):
         self.weekdays = self.get_weekdays_trainings_occur()
         self.children = self.get_children_trainings_sorted()
         for weekday in self.weekdays:
             day_shortcut = weekday_2_day_shortcut(weekday)
             for child in self.children:
-                if child.time_start.weekday() == weekday:
+                child_time_start_local = timezone.localtime(child.time_start)
+                if child_time_start_local.weekday() == weekday:
                     setattr(
                         self,
                         f"from_{day_shortcut}",
-                        timezone.localtime(child.time_start),
+                        child_time_start_local,
                     )
                     setattr(
                         self, f"to_{day_shortcut}", timezone.localtime(child.time_end)
@@ -66,7 +67,11 @@ class Event(models.Model):
 
     def does_training_take_place_on(self, dtime):
         for child in self.children:
-            if child.time_start.date() <= dtime.date() <= child.time_end.date():
+            if (
+                timezone.localtime(child.time_start).date()
+                <= dtime.date()
+                <= timezone.localtime(child.time_end).date()
+            ):
                 return True
         return False
 

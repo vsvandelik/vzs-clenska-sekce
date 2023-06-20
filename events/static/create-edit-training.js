@@ -1,12 +1,17 @@
 const days = ['po', 'ut', 'st', 'ct', 'pa', 'so', 'ne']
 
+// const pageAccessedByReload = (
+//   (window.performance.navigation && window.performance.navigation.type === 1) ||
+//     window.performance
+//       .getEntriesByType('navigation')
+//       .map(nav => nav.type)
+//       .includes('reload')
+// );
 
 function dateChanged() {
     validateDate()
-
-    const selectedDays = days.filter(d => document.getElementById(`id_${d}`).checked)
+    const selectedDays = getSelectedDays()
     selectedDays.forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
-
 }
 
 function getDateNulledHours(element) {
@@ -51,15 +56,38 @@ function validateTimes(sender) {
 
 }
 
-function dayOfWeekToggled(sender) {
-    applyToCheckboxesOfParent(document.getElementById(`${sender.id}_days`), child => {
-        if(!child.checked)
-            localStorage.setItem(child.value, '0')
-    })
-
+function dowToggled(sender) {
+    saveCheckboxesOfParentToLocalStorage(document.getElementById(`${sender.id}_days`))
     setDisplayTimeSettingForDay(sender)
     dowUpdate()
     trainingDaysUpdate(sender)
+
+}
+
+function saveCheckboxesOfParentToLocalStorage(parent) {
+    applyToCheckboxesOfParent(parent, child => {
+        if (!child.checked)
+            localStorage.setItem(child.value, '0')
+    })
+}
+
+function getSelectedDays() {
+    return days.filter(d => document.getElementById(`id_${d}`).checked)
+}
+
+function getUnselectedDays() {
+    return days.filter(d => !document.getElementById(`id_${d}`).checked)
+}
+
+function getParentFieldsetsOfSelectedDow() {
+    return getSelectedDays().map(d => document.getElementById(`id_${d}_days`))
+
+}
+
+function saveCheckboxesToLocalStorage() {
+    const parentFieldsets = getParentFieldsetsOfSelectedDow()
+    for (const fieldset of parentFieldsets)
+        saveCheckboxesOfParentToLocalStorage(fieldset)
 
 }
 
@@ -142,7 +170,7 @@ function trainingDayToggled(sender) {
 
 function disableCheckedCheckboxesInParent(parent) {
     applyToCheckboxesOfParent(parent, child => {
-        if(child.checked)
+        if (child.checked)
             child.disabled = true
     })
 }
@@ -150,7 +178,7 @@ function disableCheckedCheckboxesInParent(parent) {
 function countCheckedCheckboxesIn(parentElement) {
     let counter = 0
     applyToCheckboxesOfParent(parentElement, child => {
-        if(child.checked)
+        if (child.checked)
             ++counter
     })
     return counter
@@ -172,12 +200,12 @@ function clearCustomValidityFromAllCheckboxesIn(parentElement) {
 
 function moveDaysToFirstTraining(date, daysFieldset) {
     let day = daysFieldset.id.substring(3, 5)
-    day = dayShort2dayOfWeek(day)
+    day = dayShort2dow(day)
     while (date.getDay() !== day)
         date.setDate(date.getDate() + 1)
 }
 
-function dayShort2dayOfWeek(dayShort) {
+function dayShort2dow(dayShort) {
     if (dayShort === 'ne')
         return 0
     else if (dayShort === 'po')
@@ -207,7 +235,7 @@ function getTrainingsPerWeekValue() {
 
 function dowUpdate() {
     const shouldChoose = getTrainingsPerWeekValue()
-    const chosenCount = countChosenDays()
+    const chosenCount = countSelectedDays()
     if (shouldChoose === chosenCount)
         setStateUncheckedDow(false)
     else
@@ -216,7 +244,7 @@ function dowUpdate() {
 
 function trainingsPerWeekChanged() {
     let trainings = getTrainingsPerWeekValue()
-    let chosenCount = countChosenDays()
+    let chosenCount = countSelectedDays()
     const rDays = days.reverse()
     while (trainings < chosenCount) {
         const idToUncheck = rDays.find(d => document.getElementById(`id_${d}`).checked)
@@ -226,8 +254,8 @@ function trainingsPerWeekChanged() {
     dowUpdate()
 }
 
-function countChosenDays() {
-    return days.filter(d => document.getElementById(`id_${d}`).checked).length
+function countSelectedDays() {
+    return getSelectedDays().length
 }
 
 function setDisplayTimeSettingForDay(dowElement) {
@@ -247,17 +275,15 @@ function setStateFromToFields(id, state) {
 }
 
 function setStateUncheckedDow(state) {
-    days.filter(d => !document.getElementById(`id_${d}`).checked)
-        .forEach(d => document.getElementById(`id_${d}`).disabled = !state)
+    getUnselectedDays().forEach(d => document.getElementById(`id_${d}`).disabled = !state)
 }
 
-function checkChosenDaysValid() {
+function checkSelectedDaysValid() {
     const startsDateObj = getDateNulledHours(document.getElementById('id_starts_date'))
     const endsDateObj = getDateNulledHours(document.getElementById('id_ends_date'))
-    const chosenDays = days.filter(d => document.getElementById(`id_${d}`).checked)
-    const parentFieldsets = chosenDays.map(d => document.getElementById(`id_${d}_days`))
+    const parentFieldsets = getParentFieldsetsOfSelectedDow()
     for (const fieldset of parentFieldsets) {
-        const weekday = dayShort2dayOfWeek(fieldset.id.split('_')[1])
+        const weekday = dayShort2dow(fieldset.id.split('_')[1])
         for (const child of fieldset.childNodes) {
             if (child.nodeName.toLowerCase() === 'input'
                 && child.type === 'checkbox'
@@ -276,7 +302,7 @@ function checkChosenDaysValid() {
 }
 
 function enableAllTrainingDaysCheckboxes() {
-    const parentFieldsets = days.map(d => document.getElementById(`id_${d}_days`))
+    const parentFieldsets = getParentFieldsetsOfSelectedDow()
     for (const fieldset of parentFieldsets) {
         applyToCheckboxesOfParent(fieldset, child => child.disabled = false)
     }
@@ -288,7 +314,7 @@ function validateForm() {
     const firstUnchecked = getFirstUncheckedCheckboxIn(daysInWeekFieldset)
     const selectedDaysPerWeek = countCheckedCheckboxesIn(daysInWeekFieldset)
 
-    if (!checkChosenDaysValid())
+    if (!checkSelectedDaysValid())
         return false
 
     if (trainingsPerWeek !== selectedDaysPerWeek) {
@@ -296,21 +322,39 @@ function validateForm() {
         return false
     }
     clearCustomValidityFromAllCheckboxesIn(daysInWeekFieldset)
-    enableAllTrainingDaysCheckboxes()
     return true
 }
+
+function beforeSubmit() {
+    if (validateForm()) {
+        saveCheckboxesToLocalStorage()
+        enableAllTrainingDaysCheckboxes()
+        return true
+    }
+    return false
+}
+
+window.onbeforeunload = function(e) {
+    saveCheckboxesToLocalStorage()
+};
 
 function isNewEvent() {
     return document.getElementById('training_header').innerText.startsWith('Nový')
 }
 
 window.onload = function () {
+    if(!isNewEvent())
+        localStorage.clear()
+
+    //const editPageWithoutReload = selectedDaysCount > 0 && !pageAccessedByReload
+    // if(editPageWithoutReload)
+    //     localStorage.clear()
+
     validateDate()
     trainingsPerWeekChanged()
 
-    if(isNewEvent()) {
-        const checkedDays = days.filter(d => document.getElementById(`id_${d}`).checked)
-        checkedDays.forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
-    }
+    if(isNewEvent())
+        getSelectedDays().forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
+
     localStorage.clear()
 }

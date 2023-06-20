@@ -4,7 +4,12 @@ from django.views import generic
 from .forms import TrainingForm
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
-from .utils import weekday_pretty, days_shortcut_list, days_pretty_list
+from .utils import (
+    weekday_pretty,
+    days_shortcut_list,
+    days_pretty_list,
+    parse_czech_date,
+)
 from datetime import timedelta
 from django.utils import timezone
 
@@ -57,7 +62,7 @@ class EventDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if context[self.context_object_name].is_top_training():
-            context[self.context_object_name].extend_2_training()
+            context[self.context_object_name].extend_2_top_training()
             context["is_top_training"] = True
             weekdays = list(
                 map(weekday_pretty, context[self.context_object_name].weekdays)
@@ -98,19 +103,28 @@ class TrainingUpdateView(generic.UpdateView):
     form_class = TrainingForm
     success_url = reverse_lazy("events:index")
 
-    def _generate_dates(self, context):
+    def _generate_dates(self, event, form):
         dates_all = {}
-        for weekday in context[self.context_object_name].weekdays:
+        dates_submitted = []
+        if hasattr(form, "cleaned_data") and "day" in form.cleaned_data:
+            dates_submitted = [
+                parse_czech_date(date_raw).date()
+                for date_raw in form.cleaned_data["day"]
+            ]
+        for weekday in event.weekdays:
             dates = []
-            start = timezone.localtime(context[self.context_object_name].time_start)
-            end = timezone.localtime(context[self.context_object_name].time_end)
+            start = timezone.localtime(event.time_start)
+            end = timezone.localtime(event.time_end)
 
             while start.weekday() != weekday:
                 start += timedelta(days=1)
 
             while start.date() <= end.date():
                 checked = False
-                if context[self.context_object_name].does_training_take_place_on(start):
+                if (
+                    event.does_training_take_place_on(start)
+                    or start.date() in dates_submitted
+                ):
                     checked = True
                 dates.append((start, checked))
                 start += timedelta(days=7)
@@ -120,10 +134,11 @@ class TrainingUpdateView(generic.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[self.context_object_name].extend_2_training()
+        event = context[self.context_object_name]
+        event.extend_2_top_training()
         context["days"] = days_shortcut_list()
         context["days_pretty"] = days_pretty_list()
-        context["dates"] = self._generate_dates(context)
+        context["dates"] = self._generate_dates(event, context["form"])
         context["weekday_disable"] = {}
         for weekday in context["dates"]:
             context["weekday_disable"][weekday] = (

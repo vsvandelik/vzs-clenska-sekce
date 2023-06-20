@@ -11,39 +11,39 @@
     <hr>
     <form method="POST"
           action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
-          onsubmit="return validateForm()">
+          onsubmit="return beforeSubmit()">
         {% csrf_token %}
         <div>
-            <label for="name">Jméno</label><br>
+            <label for="id_name">Jméno</label><br>
             {{ form.name }}
         </div>
         <br>
         <div>
-            <label for="description">Popis</label><br>
+            <label for="id_description">Popis</label><br>
             {{ form.description }}
         </div>
         <br>
         <div>
-            <label for="capacity">Maximální počet účastníků</label><br>
+            <label for="id_capacity">Maximální počet účastníků</label><br>
             {{ form.capacity }}
         </div>
         <br>
         <div>
-            <label for="age_limit">Minimální věk účastníků</label><br>
+            <label for="id_age_limit">Minimální věk účastníků</label><br>
             {{ form.age_limit }}
         </div>
         <br>
         <fieldset>
             <legend>Datum</legend>
-            <label for="starts_date">Začíná</label>
+            <label for="id_starts_date">Začíná</label>
             {{ form.starts_date }}
 
-            <label for="ends_date">Končí</label>
+            <label for="id_ends_date">Končí</label>
             {{ form.ends_date }}
         </fieldset>
         <br>
         <div>
-            <label for="trainings_per_week">Počet tréninků týdně</label><br>
+            <label for="id_trainings_per_week">Počet tréninků týdně</label><br>
             {{ form.trainings_per_week }}
         </div>
         <br>
