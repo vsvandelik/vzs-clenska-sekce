@@ -35,11 +35,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Extensions
     "macros",
     "active_link",
-  
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -70,7 +68,10 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
-            "libraries": {"render": "vzs.templatetags.render"},
+            "libraries": {
+                "render": "vzs.templatetags.render",
+                "radius_range": "vzs.templatetags.radius_range",
+            },
         },
     },
 ]
@@ -153,3 +154,14 @@ ACTIVE_LINK_STRICT = True
 LOGIN_REDIRECT_URL = "users:index"  # TODO: change
 LOGOUT_REDIRECT_URL = "users:index"  # TODO: change
 
+# Settings for message type level
+
+from django.contrib.messages import constants as message_constants
+
+MESSAGE_TAGS = {
+    message_constants.DEBUG: "primary",
+    message_constants.INFO: "info",
+    message_constants.SUCCESS: "success",
+    message_constants.WARNING: "warning",
+    message_constants.ERROR: "danger",
+}

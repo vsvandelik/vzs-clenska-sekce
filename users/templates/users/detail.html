@@ -1,17 +1,10 @@
-{% extends "base.html" %}
+{% extends "users/base.html" %}
 
-{% load render %}
+{% block body %}
+    Povolení: {% comment %} TODO: display povoleni {% endcomment %}
+{% endblock %}
 
-{% block content %}
-    <a href="{% url "users:index" %}">Zpět</a>
-
-    <div>
-        Osoba: {% render user.person "inline" %}
-    </div>
-    <div>
-        Povolení: {% comment %} TODO: display povoleni {% endcomment %}
-    </div>
-
-    <a href="{% url "users:edit" user.pk %}">Upravit</a>
-    <a href="{% url "users:delete" user.pk %}">Smazat</a>
+{% block footer %}
+    <a href="{% url "users:edit" user.pk %}" class="btn btn-secondary">Upravit</a>
+    <a href="{% url "users:delete" user.pk %}" class="btn btn-danger">Smazat</a>
 {% endblock %}

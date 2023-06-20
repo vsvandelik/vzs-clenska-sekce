@@ -41,7 +41,7 @@ class CustomModelChoiceInput(forms.HiddenInput):
             obj = get_object_or_404(self.queryset, id=value)
             presentation_html = obj.render("inline")
         else:
-            presentation_html = ""
+            presentation_html = _("Vyberte osobu")
 
         return presentation_html + input_html
 
@@ -71,22 +71,16 @@ class PersonSearchForm(forms.Form):
         widget=forms.HiddenInput,
     )
     query = forms.CharField(required=False, label=_("Obsahuje"))
-    show_all = forms.BooleanField(required=False, label=_("Ukázat vše"))
-    form_id = forms.CharField(
-        required=False, initial="person_search_form", widget=forms.HiddenInput
-    )
+    form_id = forms.CharField(required=False, initial=name, widget=forms.HiddenInput)
 
     def search_people(self):
         if not self.is_valid():
-            return []
-
-        if self.cleaned_data["show_all"]:
-            return userless_people.all()
+            return userless_people.none()
 
         query = self.cleaned_data["query"]
 
         if query == "":
-            return []
+            return userless_people.all()
 
         return userless_people.filter(
             Q(first_name__contains=query) | Q(last_name__contains=query)
@@ -103,7 +97,6 @@ class PersonSelectForm(forms.Form):
         required=False, queryset=userless_people, **no_render_field
     )
     query = forms.CharField(required=False, widget=forms.HiddenInput)
-    show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
     form_id = forms.CharField(
         required=False, initial="person_select_form", widget=forms.HiddenInput
     )
@@ -146,20 +139,16 @@ class UserCreateForm(UserBaseForm):
 
 
 class UserSearchForm(forms.Form):
-    name_query = forms.CharField(required=False)
-    show_all = forms.BooleanField(required=False)
+    name_query = forms.CharField(required=False, label=_("Obsahuje"))
 
     def search_users(self):
         if not self.is_valid():
             return User.objects.none()
 
-        if self.cleaned_data["show_all"]:
-            return User.objects.all()
-
         query = self.cleaned_data["name_query"]
 
         if query == "":
-            return User.objects.none()
+            return User.objects.all()
 
         return User.objects.filter(
             Q(person__first_name__contains=query) | Q(person__last_name__contains=query)
@@ -168,7 +157,6 @@ class UserSearchForm(forms.Form):
 
 class UserSearchPaginationForm(forms.Form):
     name_query = forms.CharField(required=False, widget=forms.HiddenInput)
-    show_all = forms.BooleanField(required=False, widget=forms.HiddenInput)
     page = forms.IntegerField(required=False, min_value=1, **no_render_field)
 
 
@@ -178,7 +166,7 @@ class UserEditForm(UserBaseForm):
 
 class LoginForm(AuthenticationForm):
     username = None
-    email = forms.EmailField()
+    email = forms.EmailField(label=_("E-mail"))
 
     field_order = ["email", "password"]
 
