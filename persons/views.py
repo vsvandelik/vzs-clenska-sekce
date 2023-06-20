@@ -50,22 +50,38 @@ class DetailView(generic.DetailView):
         return context
 
 
-class PersonCreateView(generic.edit.CreateView):
+class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
     model = Person
     template_name = "persons/edit.html"
     form_class = PersonForm
+    success_message = _("Osoba byla úspěšně vytvořena")
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři."),
+        )
+        return super().form_invalid(form)
 
 
-class PersonUpdateView(generic.edit.UpdateView):
+class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
     model = Person
     template_name = "persons/edit.html"
     form_class = PersonForm
+    success_message = _("Osoba byla úspěšně upravena")
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
+        )
+        return super().form_invalid(form)
 
 
 class PersonDeleteView(generic.edit.DeleteView):
     model = Person
     template_name = "persons/confirm_delete.html"
     success_url = reverse_lazy("persons:index")
+    success_message = _("Osoba byla úspěšně smazána")
 
 
 class FeatureAssignEditView(generic.edit.UpdateView):
@@ -198,6 +214,13 @@ class FeatureEdit(generic.edit.UpdateView):
         messages.success(self.request, feature_type_texts.success_message_save)
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            _("Formulář se nepodařilo uložit. Opravte chyby a zkuste to znovu."),
+        )
+        return super().form_invalid(form)
+
     def get_form(self, form_class=None):
         feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
         form = super().get_form(form_class)
@@ -275,6 +298,10 @@ class StaticGroupDetail(
 
         return redirect(self.get_success_url())
 
+    def form_invalid(self, form):
+        messages.error(self.request, _("Nepodařilo se přidat osoby."))
+        return super().form_invalid(form)
+
 
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
@@ -290,6 +317,10 @@ class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
 
     def get_success_url(self):
         return reverse(f"persons:groups:detail", args=(self.object.pk,))
+
+    def form_invalid(self, form):
+        messages.error(self.request, _("Skupinu se nepodařilo uložit."))
+        return super().form_invalid(form)
 
 
 class StaticGroupRemoveMemberView(generic.View):
