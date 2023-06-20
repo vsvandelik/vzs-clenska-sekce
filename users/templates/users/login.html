@@ -5,13 +5,22 @@
         <p>Prosím, přihlašte se.</p>
     {% endif %}
 
-    <div class="card">
-        <div class="card-body login-card-body">
-            <form action="{% url "users:login" %}" method="post">
-                {% csrf_token %}
-                {{ form.as_div }}
-                <button type="submit" class="btn btn-primary">Přihlásit</button>
-            </form>
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col-3">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Přihlášení</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="{% url "users:login" %}" method="post">
+                            {% csrf_token %}
+                            {{ form.as_div }}
+                            <button type="submit" class="btn btn-primary">Přihlásit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
