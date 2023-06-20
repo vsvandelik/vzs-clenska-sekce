@@ -82,11 +82,31 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+class QualificationsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(feature_type=Feature.Type.QUALIFICATION)
+
+
+class PermissionsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(feature_type=Feature.Type.PERMISSION)
+
+
+class EquipmentsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(feature_type=Feature.Type.EQUIPMENT)
+
+
 class Feature(models.Model):
     class Type(models.TextChoices):
         QUALIFICATION = "K", _("kvalifikace")
-        POSSESSION = "V", _("vlastnictví")
-        PERMIT = "O", _("oprávnění")
+        EQUIPMENT = "V", _("vybavení")
+        PERMISSION = "O", _("oprávnění")
+
+    objects = models.Manager()
+    qualifications = QualificationsManager()
+    permissions = PermissionsManager()
+    equipments = EquipmentsManager()
 
     feature_type = models.CharField(max_length=1, choices=Type.choices)
     parent = models.ForeignKey(
@@ -158,7 +178,7 @@ FeatureTypeTexts = {
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
     ),
     "permissions": FeatureTypeTextsClass(
-        Feature.Type.PERMIT,
+        Feature.Type.PERMISSION,
         "oprávnění",
         {
             "feature": _("Název oprávnění"),
@@ -175,7 +195,7 @@ FeatureTypeTexts = {
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
     ),
     "equipments": FeatureTypeTextsClass(
-        Feature.Type.POSSESSION,
+        Feature.Type.EQUIPMENT,
         "vybavení",
         {
             "feature": _("Název vybavení"),
