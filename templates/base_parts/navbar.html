@@ -39,20 +39,29 @@
             </div>
         </li>
 
-        <!-- User -->
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="far fa-user"></i>&nbsp;
-                Jan Novák
-            </a>
-        </li>
+        {% if user.is_authenticated %}
+                <!-- User -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url "users:detail" user.pk %}">
+                    <i class="far fa-user"></i>&nbsp;
+                    {{ user.person.first_name }} {{ user.person.last_name }}
+                </a>
+            </li>
 
-        <!-- Log out -->
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                <i class="fas fa-sign-out-alt"></i>
-            </a>
-        </li>
+            <!-- Log out -->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#logout_modal">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        {% else %}
+            <!-- Log in -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url "users:login" %}">
+                    <i class="fas fa-sign-in-alt"></i>
+                </a>
+            </li>
+        {% endif %}
     </ul>
 </nav>
 <!-- /.navbar -->
