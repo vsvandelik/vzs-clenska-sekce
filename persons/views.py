@@ -3,6 +3,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -172,7 +173,13 @@ class FeatureIndex(generic.ListView):
     context_object_name = "features"
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_index.html"
+        return get_template(f"persons/features/feature_index.html")
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["feature_type"] = self.kwargs["feature_type"]
+        return context
 
     def get_queryset(self):
         feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
@@ -187,7 +194,13 @@ class FeatureDetail(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_detail.html"
+        return get_template(f"persons/features/feature_detail.html")
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["feature_type"] = self.kwargs["feature_type"]
+        return context
 
     def get_queryset(self):
         feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
@@ -199,7 +212,12 @@ class FeatureEdit(generic.edit.UpdateView):
     form_class = FeatureForm
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_edit.html"
+        return get_template(f"persons/features/feature_edit.html")
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return context
 
     def get_object(self, queryset=None):
         try:
@@ -243,7 +261,12 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_delete.html"
+        return get_template(f"persons/features/feature_delete.html")
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return context
 
     def get_success_url(self):
         return reverse(f"{self.kwargs['feature_type']}:index")

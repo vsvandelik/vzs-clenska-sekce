@@ -1,9 +1,0 @@
-{% extends 'base.html' %} {% block content %}
-    <h1>Opravneni</h1>
-
-    <ul>
-        {% include "persons/_features_list_display_recursive.html" with type="permissions" %}
-    </ul>
-
-    <a href="{% url 'permissions:add' %}">Pridat opravneni</a>
-{% endblock %}
