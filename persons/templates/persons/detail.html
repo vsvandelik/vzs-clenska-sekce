@@ -161,7 +161,7 @@
                         </thead>
                         <tbody>
                             {% for qualification in qualifications %}
-                                <tr>
+                                <tr {% if qualification.issuer or qualification.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
                                     <td>{{ qualification.feature.name }}</td>
                                     <td>{{ qualification.date_assigned }}</td>
                                     <td>{% if qualification.date_expire %}{{ qualification.date_expire }}{% endif %}</td>
@@ -172,6 +172,14 @@
                                         </div>
                                     </td>
                                 </tr>
+                                {% if qualification.issuer or qualification.code %}
+                                    <tr class="expandable-body">
+                                        <td colspan="4">
+                                            {% if qualification.issuer %}<p class="m-0 py-0"><strong>Vydavatel:&nbsp;</strong>{{ qualification.issuer }}</p>{% endif %}
+                                            {% if qualification.code %}<p class="m-0 py-0"><strong>Kód osvědčení:&nbsp;</strong>{{ qualification.code }}</p>{% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>

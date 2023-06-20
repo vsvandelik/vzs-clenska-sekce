@@ -86,7 +86,11 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
+        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["texts"] = feature_type_texts
+        context["features"] = Feature.objects.filter(
+            feature_type=feature_type_texts.shortcut, assignable=True
+        )
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
@@ -146,7 +150,7 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 

@@ -1,11 +1,52 @@
-{% extends 'base.html' %} {% block content %}
-    <h1>{{ person.first_name }} {{ person.last_name }} - Upravit {{ type }}</h1>
+{% extends 'base.html' %}
 
-    <form method="post">
-        {% csrf_token %}
-        <table>
-            {{ form.as_table }}
-        </table>
-        <input type="submit" value="Uložit" />
-    </form>
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Přiřazení {{ texts.name_2 }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace{% else %}Přiřazení nové kvalifikace{% endif %}</div>
+                </div>
+                <form method="post" id="assign-form">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Uložit" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script>
+        const features = {
+            {% for feature in features %}
+                {{ feature.pk }}: {
+                    code: {{ feature.collect_codes|lower }},
+                    issuer: {{ feature.collect_issuers|lower }},
+                    date_expire: {% if feature.never_expires %}false{% else %}true{% endif %}
+                }
+            {% endfor %}
+        }
+    </script>
+    <script src="{% static "persons/assign_feature.js" %}"></script>
 {% endblock %}
