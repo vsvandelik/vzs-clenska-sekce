@@ -257,7 +257,7 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
 
 class GroupIndex(generic.ListView):
     model = Group
-    template_name = "persons/groups_index.html"
+    template_name = "persons/groups/groups_index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -268,7 +268,7 @@ class GroupIndex(generic.ListView):
 
 class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = StaticGroup
-    template_name = "persons/groups_delete.html"
+    template_name = "persons/groups/groups_delete.html"
     success_url = reverse_lazy("persons:groups:index")
     success_message = "Skupina byla úspěšně smazána."
 
@@ -279,12 +279,12 @@ class StaticGroupDetail(
     model = StaticGroup
     form_class = AddMembersStaticGroupForm
     success_message = "Osoby byly úspěšně přidány."
-    template_name = "persons/groups_detail_static.html"
+    template_name = "persons/groups/groups_detail_static.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["available_persons"] = Person.objects.exclude(
-            Q(staticgroup__isnull=False) & Q(staticgroup__id=self.object.pk)
+            Q(groups__isnull=False) & Q(groups__id=self.object.pk)
         )
         return context
 
@@ -307,7 +307,7 @@ class StaticGroupDetail(
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
     form_class = StaticGroupForm
-    template_name = "persons/groups_edit_static.html"
+    template_name = "persons/groups/groups_edit_static.html"
     success_message = "Statická skupina byla úspěšně uložena."
 
     def get_object(self, queryset=None):

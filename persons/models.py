@@ -227,7 +227,7 @@ class FeatureAssignment(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(_("Název skupiny"), max_length=255)
 
 
 class StaticGroup(Group):
