@@ -69,7 +69,10 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
-            "libraries": {"render": "vzs.templatetags.render"},
+            "libraries": {
+                "render": "vzs.templatetags.render",
+                "radius_range": "vzs.templatetags.radius_range",
+            },
         },
     },
 ]

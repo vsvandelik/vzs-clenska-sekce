@@ -66,7 +66,7 @@ class UserCreateView(SuccessMessageMixin, CustomCreateMixin):
 class IndexView(generic.list.ListView):
     template_name = "users/index.html"
     context_object_name = "users"
-    paginate_by = 8
+    paginate_by = 2
 
     def get_queryset(self):
         self.user_search_form = forms.UserSearchForm(self.request.GET)
