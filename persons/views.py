@@ -160,7 +160,7 @@ class FeatureIndex(generic.ListView):
     context_object_name = "features"
 
     def get_template_names(self):
-        return get_template(f"persons/features/feature_index.html")
+        return f"persons/features/feature_index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -181,7 +181,7 @@ class FeatureDetail(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
-        return get_template(f"persons/features/feature_detail.html")
+        return f"persons/features/feature_detail.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -199,7 +199,7 @@ class FeatureEdit(generic.edit.UpdateView):
     form_class = FeatureForm
 
     def get_template_names(self):
-        return get_template(f"persons/features/feature_edit.html")
+        return f"persons/features/feature_edit.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -241,7 +241,7 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
-        return get_template(f"persons/features/feature_delete.html")
+        return f"persons/features/feature_delete.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
