@@ -243,7 +243,7 @@
                         </thead>
                         <tbody>
                             {% for equipment in equipments %}
-                                <tr>
+                                <tr {% if equipment.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
                                     <td>{{ equipment.feature.name }}</td>
                                     <td>{{ equipment.date_assigned }}</td>
                                     <td>{% if equipment.date_expire %}{{ equipment.date_expire }}{% endif %}</td>
@@ -254,6 +254,13 @@
                                         </div>
                                     </td>
                                 </tr>
+                                {% if equipment.code %}
+                                    <tr class="expandable-body">
+                                        <td colspan="4">
+                                            <p class="m-0 py-0"><strong>Inventární číslo:&nbsp;</strong>{{ equipment.code }}</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
