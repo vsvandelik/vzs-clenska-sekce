@@ -1,16 +1,13 @@
-{% extends "base.html" %}
+{% extends "users/base.html" %}
 
-{% load render %}
+{% block body %}
+    Povolení: {% comment %} TODO: display povoleni {% endcomment %}
+{% endblock %}
 
-{% block content %}
-    <a href="{% url "users:detail" user.pk %}">Zpět</a>
-
-    <div>
-        Osoba: {% render user.person "inline" %}
-    </div>
+{% block footer %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_div }}
-        <button type="submit">Uložit</button>
+        <button type="submit" class="btn btn-primary">Uložit</button>
     </form>
 {% endblock %}
