@@ -44,9 +44,9 @@
                     code: {{ feature.collect_codes|lower }},
                     issuer: {{ feature.collect_issuers|lower }},
                     date_expire: {% if feature.never_expires %}false{% else %}true{% endif %}
-                }
+                },
             {% endfor %}
         }
     </script>
-    <script src="{% static "persons/assign_feature.js" %}"></script>
+    <script src="{% static "persons/assign-feature.js" %}"></script>
 {% endblock %}
