@@ -49,8 +49,9 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
             )
         ],
     )
-    health_insurance_company = models.SmallIntegerField(
+    health_insurance_company = models.CharField(
         _("Zdravotní pojišťovna"),
+        max_length=3,
         choices=HealthInsuranceCompany.choices,
         blank=True,
         null=True,
@@ -74,6 +75,13 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
     )
     features = models.ManyToManyField("persons.Feature", through="FeatureAssignment")
     managed_people = models.ManyToManyField("self", symmetrical=False)
+
+    @property
+    def address(self):
+        if not (self.street and self.city and self.postcode):
+            return None
+
+        return f"{self.street}, {self.city}, {self.postcode}"
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
@@ -135,6 +143,8 @@ class FeatureTypeTextsClass:
     def __init__(
         self,
         feature_type,
+        name_2,
+        name_2_plural,
         name_4,
         form_labels,
         success_message_save,
@@ -146,6 +156,8 @@ class FeatureTypeTextsClass:
     ):
         self.shortcut = feature_type.value
         self.name_1 = feature_type.label
+        self.name_2 = name_2
+        self.name_2_plural = name_2_plural
         self.name_4 = name_4
         self.form_labels = form_labels
         self.success_message_save = success_message_save
@@ -159,6 +171,8 @@ class FeatureTypeTextsClass:
 FeatureTypeTexts = {
     "qualifications": FeatureTypeTextsClass(
         Feature.Type.QUALIFICATION,
+        _("kvalifikace"),
+        _("kvalifikací"),
         _("kvalifikaci"),
         {
             "feature": _("Název kvalifikace"),
@@ -179,7 +193,9 @@ FeatureTypeTexts = {
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
-        "oprávnění",
+        _("oprávnění"),
+        _("oprávnění"),
+        _("oprávnění"),
         {
             "feature": _("Název oprávnění"),
             "date_assigned": _("Datum přiřazení"),
@@ -196,7 +212,9 @@ FeatureTypeTexts = {
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
-        "vybavení",
+        _("vybavení"),
+        _("vybavení"),
+        _("vybavení"),
         {
             "feature": _("Název vybavení"),
             "date_assigned": _("Datum zapůjčení"),
@@ -233,11 +251,11 @@ class FeatureAssignment(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(_("Název skupiny"), max_length=255)
 
 
 class StaticGroup(Group):
-    members = models.ManyToManyField(Person)
+    members = models.ManyToManyField(Person, related_name="groups")
 
 
 class DynamicGroup(Group):

@@ -1,21 +1,21 @@
-let selected_persons_list = $("#selected-persons");
-let list_of_selected_persons = [];
+const selectedPersonsListUI = $("#selected-persons");
+const selectedPersonsListArray = [];
 
-function select_person(e) {
-    let button = $(e.target);
-    let tr = button.parent().parent();
-    let person_pk = parseInt(button.val());
-    let person_name = button.parent().prev().text();
+function selectPerson(e) {
+    const button = $(e.target);
+    const tr = button.parent().parent();
+    const personPK = parseInt(button.val());
+    const personName = button.parent().prev().text();
 
-    if (!list_of_selected_persons.includes(person_pk)) {
-        list_of_selected_persons.push(person_pk);
-        selected_persons_list.append(
-            `<li>${person_name}<input type="hidden" name="members" value="${person_pk}"/></li>`
+    if (!selectedPersonsListArray.includes(personPK)) {
+        selectedPersonsListArray.push(personPK);
+        selectedPersonsListUI.append(
+            `<li class="d-block bg-info p-1 m-1 rounded float-left">${personName}<input type="hidden" name="members" value="${personPK}"/></li>`
         );
         tr.remove();
     }
 }
 
 $(function () {
-    $("#persons-list button").click(select_person);
+    $("#persons-list button").click(selectPerson);
 });

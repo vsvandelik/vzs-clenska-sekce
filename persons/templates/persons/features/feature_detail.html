@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+{% load vzs_filters %}
+
+{% block title %}Detail {{ texts.name_2 }}{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ object.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url feature_type|add:':edit' object.pk %}" class="btn btn-success">Upravit {{ texts.name_4 }}</a>
+                <a href="{% url feature_type|add:':delete' object.pk %}" class="btn btn-danger">Smazat {{ texts.name_4 }}</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Parametry {{ texts.name_2 }}</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">{{ texts.form_labels.never_expires }}:</td>
+                                <td class="w-100">{{ object.never_expires|bool_cz }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Poplatek:</td>
+                                <td class="w-100">{{ object.tier }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Přiřaditelné osobě:</td>
+                                <td class="w-100">{{ object.assignable|bool_cz }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Evidovat vydavatele kvalifikace:</td>
+                                <td class="w-100">{{ object.collect_issuers|bool_cz }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">{{ texts.form_labels.collect_codes }}:</td>
+                                <td class="w-100">{{ object.collect_codes|bool_cz }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Stromová struktura</div>
+                </div>
+                <div class="card-body">
+                    TODO: přidat předchůdce
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přiřazení {{ texts.name_2 }}</div>
+                </div>
+                <div class="card-body">
+                    TODO: zobrazit v tabulce přidělení
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

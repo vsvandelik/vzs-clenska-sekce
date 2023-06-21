@@ -3,6 +3,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -28,6 +29,7 @@ class IndexView(generic.ListView):
     model = Person
     template_name = "persons/index.html"
     context_object_name = "persons"
+    paginate_by = 20
 
 
 class DetailView(generic.DetailView):
@@ -101,7 +103,11 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
+        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["texts"] = feature_type_texts
+        context["features"] = Feature.objects.filter(
+            feature_type=feature_type_texts.shortcut, assignable=True
+        )
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
@@ -161,7 +167,7 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["type"] = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
@@ -171,7 +177,13 @@ class FeatureIndex(generic.ListView):
     context_object_name = "features"
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_index.html"
+        return f"persons/features/feature_index.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["feature_type"] = self.kwargs["feature_type"]
+        return context
 
     def get_queryset(self):
         feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
@@ -186,7 +198,13 @@ class FeatureDetail(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_detail.html"
+        return f"persons/features/feature_detail.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        context["feature_type"] = self.kwargs["feature_type"]
+        return context
 
     def get_queryset(self):
         feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
@@ -198,7 +216,12 @@ class FeatureEdit(generic.edit.UpdateView):
     form_class = FeatureForm
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_edit.html"
+        return f"persons/features/feature_edit.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return context
 
     def get_object(self, queryset=None):
         try:
@@ -242,7 +265,12 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/{self.kwargs['feature_type']}_delete.html"
+        return f"persons/features/feature_delete.html"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+        return context
 
     def get_success_url(self):
         return reverse(f"{self.kwargs['feature_type']}:index")
@@ -253,7 +281,7 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
 
 class GroupIndex(generic.ListView):
     model = Group
-    template_name = "persons/groups_index.html"
+    template_name = "persons/groups/groups_index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -264,7 +292,7 @@ class GroupIndex(generic.ListView):
 
 class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = StaticGroup
-    template_name = "persons/groups_delete.html"
+    template_name = "persons/groups/groups_delete.html"
     success_url = reverse_lazy("persons:groups:index")
     success_message = "Skupina byla úspěšně smazána."
 
@@ -275,12 +303,12 @@ class StaticGroupDetail(
     model = StaticGroup
     form_class = AddMembersStaticGroupForm
     success_message = "Osoby byly úspěšně přidány."
-    template_name = "persons/groups_detail_static.html"
+    template_name = "persons/groups/groups_detail_static.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["available_persons"] = Person.objects.exclude(
-            Q(staticgroup__isnull=False) & Q(staticgroup__id=self.object.pk)
+            Q(groups__isnull=False) & Q(groups__id=self.object.pk)
         )
         return context
 
@@ -307,7 +335,7 @@ class StaticGroupDetail(
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
     form_class = StaticGroupForm
-    template_name = "persons/groups_edit_static.html"
+    template_name = "persons/groups/groups_edit_static.html"
     success_message = "Statická skupina byla úspěšně uložena."
 
     def get_object(self, queryset=None):

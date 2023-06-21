@@ -35,18 +35,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-  
     # Extensions
     "macros",
     "active_link",
     "crispy_forms",
     "crispy_bootstrap4",
-  
+    "widget_tweaks",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
-    "widget_tweaks",
+    # Template tags
+    "vzs"
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% load static %}
+{% load render %}
+
+{% block title %}Detail statické skupiny{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ object.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'persons:groups:edit-static' object.pk %}" class="btn btn-success">Upravit skupinu</a>
+                <a href="{% url 'persons:groups:delete' object.pk %}" class="btn btn-danger">Smazat skupinu</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Členové</div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Osoba</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for person in object.members.all %}
+                                <tr>
+                                    <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                    <td><a href="{% url "persons:groups:remove-member" group=object.pk person=person.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přidat členy</div>
+                </div>
+                <form method="post">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        {{ form.members.errors }}
+                        <strong>Vybrané osoby:</strong>
+                        <ul id="selected-persons" style="list-style: none" class="p-0"></ul>
+
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="persons-list">
+                                {% for person in available_persons %}
+                                    <tr data-person-id="{{ person.pk }}">
+                                        <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                        <td>
+                                            <button type="button" class="btn btn-info btn-sm" value="{{ person.pk }}">+</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Přidat osoby" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script src="{% static 'persons/add-members.js' %}"></script>
+{% endblock %}

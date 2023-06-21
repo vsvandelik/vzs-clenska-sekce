@@ -42,17 +42,17 @@ urlpatterns = [
     path("<int:pk>/upravit", views.PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat", views.PersonDeleteView.as_view(), name="delete"),
     path(
-        "<int:person>/kvalifikace",
+        "<int:person>/kvalifikace/",
         include((nested_feature_assigning_urls, "qualifications")),
         {"feature_type": "qualifications"},
     ),
     path(
-        "<int:person>/opravneni",
+        "<int:person>/opravneni/",
         include((nested_feature_assigning_urls, "permissions")),
         {"feature_type": "permissions"},
     ),
     path(
-        "<int:person>/vybaveni",
+        "<int:person>/vybaveni/",
         include((nested_feature_assigning_urls, "equipments")),
         {"feature_type": "equipments"},
     ),
