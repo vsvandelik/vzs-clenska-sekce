@@ -210,9 +210,28 @@ class AddManagedPersonForm(Form):
         super().__init__(*args, **kwargs)
 
     def clean_person(self):
-        person = self.cleaned_data.get("person")
+        managed_person_pk = self.cleaned_data.get("person")
 
-        if person and self.managing_person and person == self.managing_person:
+        try:
+            managing_person_instance = Person.objects.get(pk=self.managing_person)
+            self.cleaned_data["managing_person_instance"] = managing_person_instance
+        except Person.DoesNotExist:
+            raise forms.ValidationError(_("Daná osoba neexistuje."))
+
+        try:
+            managed_person_instance = Person.objects.get(pk=managed_person_pk)
+            self.cleaned_data["managed_person_instance"] = managed_person_instance
+        except Person.DoesNotExist:
+            raise forms.ValidationError(_("Daná osoba neexistuje."))
+
+        if (
+            managed_person_pk
+            and self.managing_person
+            and managed_person_pk == self.managing_person
+        ):
             raise forms.ValidationError(_("Osoba nemůže spravovat samu sebe."))
 
-        return person
+        if managing_person_instance.managed_persons.contains(managed_person_instance):
+            raise forms.ValidationError(_("Daný vztah spravované osoby je již zadán."))
+
+        return managed_person_pk

@@ -52,7 +52,7 @@ class DetailView(generic.DetailView):
         )
         context["persons_to_manage"] = Person.objects.exclude(
             managed_by=self.kwargs["pk"]
-        )
+        ).exclude(pk=self.kwargs["pk"])
         return context
 
 
@@ -377,16 +377,21 @@ class AddManagedPerson(generic.View):
     def post(self, request, pk):
         form = AddManagedPersonForm(request.POST, managing_person=pk)
         if form.is_valid():
-            managing_person = get_object_or_404(Person, id=pk)
-            new_managed_person = get_object_or_404(
-                Person, id=form.cleaned_data["person"]
-            )
+            managing_person = form.cleaned_data["managing_person_instance"]
+            new_managed_person = form.cleaned_data["managed_person_instance"]
 
             managing_person.managed_persons.add(new_managed_person)
 
             messages.success(request, _("Nová spravovaná osoba byla přidána."))
 
         else:
-            messages.error(request, _("Nepodařilo se uložit novou spravovanou osobu"))
+            person_error_messages = " ".join(form.errors["person"])
+            messages.error(
+                request,
+                _(
+                    "Nepodařilo se uložit novou spravovanou osobu. "
+                    + person_error_messages
+                ),
+            )
 
         return redirect(reverse("persons:detail", args=[pk]))
