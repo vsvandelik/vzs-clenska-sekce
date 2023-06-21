@@ -3,7 +3,6 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
-from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -14,6 +13,7 @@ from .forms import (
     FeatureForm,
     StaticGroupForm,
     AddMembersStaticGroupForm,
+    AddManagedPersonForm,
 )
 from .models import (
     Person,
@@ -50,6 +50,7 @@ class DetailView(generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
+        context["persons"] = Person.objects.all()
         return context
 
 
@@ -366,3 +367,24 @@ class StaticGroupRemoveMemberView(generic.View):
 
         messages.success(self.request, self.success_message)
         return redirect(self.get_success_url())
+
+
+class AddManagedPerson(generic.View):
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        form = AddManagedPersonForm(request.POST, managing_person=pk)
+        if form.is_valid():
+            managing_person = get_object_or_404(Person, id=pk)
+            new_managed_person = get_object_or_404(
+                Person, id=form.cleaned_data["person"]
+            )
+
+            managing_person.managed_persons.add(new_managed_person)
+
+            messages.success(request, _("Nová spravovaná osoba byla přidána."))
+
+        else:
+            messages.error(request, _("Nepodařilo se uložit novou spravovanou osobu"))
+
+        return redirect(reverse("persons:detail", args=[pk]))

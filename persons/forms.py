@@ -2,7 +2,8 @@ import datetime
 import re
 
 from crispy_forms.layout import Submit
-from django.forms import ModelForm, widgets, ValidationError
+from django import forms
+from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
 from vzs import settings
@@ -13,7 +14,7 @@ from .models import Person, FeatureAssignment, Feature, StaticGroup
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_people"]
+        exclude = ["features", "managed_persons"]
         widgets = {
             "date_of_birth": widgets.DateInput(
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
@@ -199,3 +200,19 @@ class AddMembersStaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
         fields = ["members"]
+
+
+class AddManagedPersonForm(Form):
+    person = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self.managing_person = kwargs.pop("managing_person", None)
+        super().__init__(*args, **kwargs)
+
+    def clean_person(self):
+        person = self.cleaned_data.get("person")
+
+        if person and self.managing_person and person == self.managing_person:
+            raise forms.ValidationError(_("Osoba nemůže spravovat samu sebe."))
+
+        return person
