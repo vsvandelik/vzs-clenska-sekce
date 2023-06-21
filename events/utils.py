@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 def weekday_2_day_shortcut(weekday):
     if weekday == 0:
         return "po"
@@ -44,3 +47,15 @@ def weekday_pretty(weekday):
     elif weekday == 5:
         return "So"
     return "Ne"
+
+
+def days_shortcut_list():
+    return ["po", "ut", "st", "ct", "pa", "so", "ne"]
+
+
+def days_pretty_list():
+    return ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]
+
+
+def parse_czech_date(date_str):
+    return datetime.strptime(date_str, "%d.%m.%Y")

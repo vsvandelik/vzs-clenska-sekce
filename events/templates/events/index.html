@@ -6,6 +6,7 @@
         <tr>
             <th>Name</th>
             <th>Description</th>
+            <th>Trénink</th>
             <th>Akce</th>
         </tr>
 
@@ -13,9 +14,19 @@
             <tr>
                 <td>{{ event.name }}</td>
                 <td>{{ event.description }}</td>
+                <td>{{ event.is_top_training|yesno:"Ano,Ne" }}</td>
                 <td>
+                    <a href="{% url 'events:detail' event.id %}">Detail</a> |
+                    {% if event.is_top_training %}
+                        <a href="{% url 'events:edit_training' event.id %}">Edit</a> |
+                    {% else %}
+                        {% comment %}
+                        TODO: pridat editaci jednorazove udalosti
+                        {% endcomment %}
+                    {% endif %}
+
                     <a href="{% url 'events:delete' event.id %}">Smazat</a> |
-                    <a href="{% url 'events:detail' event.id %}">Detail</a>
+
                 </td>
             </tr>
         {% endfor %}

@@ -1,4 +1,5 @@
 django
+django-widget-tweaks
 django-active-link
 django-macros
 django-crispy-forms

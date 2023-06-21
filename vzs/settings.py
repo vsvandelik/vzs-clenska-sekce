@@ -40,12 +40,13 @@ INSTALLED_APPS = [
     "active_link",
     "crispy_forms",
     "crispy_bootstrap4",
+    "widget_tweaks",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
     # Template tags
-    "vzs",
+    "vzs"
 ]
 
 MIDDLEWARE = [
