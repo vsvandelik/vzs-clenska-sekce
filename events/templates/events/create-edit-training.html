@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load extra_tags %}
+{% load static %}
+{% load widget_tweaks %}
+{% block scripts %}
+    <script src="{% static 'create-edit-training.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <a href="{% url 'events:index' %}">Zpět</a>
+    <h1 id="training_header">{% if event %} Editace tréninku {% else %} Nový trénink {% endif %}</h1>
+    <hr>
+    <form method="POST"
+          action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
+          onsubmit="return beforeSubmit()">
+        {% csrf_token %}
+        <div>
+            <label for="id_name">Jméno</label><br>
+            {{ form.name }}
+        </div>
+        <br>
+        <div>
+            <label for="id_description">Popis</label><br>
+            {{ form.description }}
+        </div>
+        <br>
+        <div>
+            <label for="id_capacity">Maximální počet účastníků</label><br>
+            {{ form.capacity }}
+        </div>
+        <br>
+        <div>
+            <label for="id_age_limit">Minimální věk účastníků</label><br>
+            {{ form.age_limit }}
+        </div>
+        <br>
+        <fieldset>
+            <legend>Datum</legend>
+            <label for="id_starts_date">Začíná</label>
+            {{ form.starts_date }}
+
+            <label for="id_ends_date">Končí</label>
+            {{ form.ends_date }}
+        </fieldset>
+        <br>
+        <div>
+            <label for="id_trainings_per_week">Počet tréninků týdně</label><br>
+            {{ form.trainings_per_week }}
+        </div>
+        <br>
+        <fieldset id="id_days_in_week">
+            <legend>Dny v týdnu</legend>
+            {% for i in '0123456'|make_list %}
+                {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
+                    {% with form|index:day as input %}
+                        {{ input }}
+                    {% endwith %}
+                    <label for="id_{{ day }}">{{ day_pretty }}</label>
+                {% endwith %}
+            {% endfor %}
+        </fieldset>
+
+        {% for i in '0123456'|make_list %}
+            {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
+                {% with from_var_name='from_'|addstr:day to_var_name='to_'|addstr:day %}
+                    {% with from_time=form|field_value:from_var_name to_time=form|field_value:to_var_name %}
+                        <div id="id_{{ day }}_time" {% if not from_time %} style="display: none" {% endif %}>
+                            <label>Čas konání v {{ day_pretty }}</label><br>
+                            <label for="id_from_{{ day }}">Od</label>
+                            {% if from_time %}
+                                {% render_field form|index:from_var_name required="" %}
+                            {% else %}
+                                {% render_field form|index:from_var_name required="" disabled="" %}
+                            {% endif %}
+
+                            <label for="id_to_{{ day }}">Do</label>
+                            {% if to_time %}
+                                {% render_field form|index:to_var_name required="" %}
+                            {% else %}
+                                {% render_field form|index:to_var_name required="" disabled="" %}
+                            {% endif %}
+                        </div>
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+
+        {% for i in '0123456'|make_list %}
+            {% with days|index:forloop.counter0 as day %}
+                {% with day|day_shortcut_2_weekday as weekday %}
+                    {% with day_pretty=days_pretty|index:forloop.counter0 from_var_name='from_'|addstr:day dates_weekday=dates|index_safe:weekday %}
+                        {% with event|getattribute:from_var_name as from_time %}
+                            <fieldset id="id_{{ day }}_days" {% if not from_time %} style="display: none" {% endif %}>
+                                <legend>{{ day_pretty }} dny</legend>
+                                {% for date,checked in dates_weekday %}
+                                    {% with date|date:'j.n.Y' as dateFormatted %}
+                                        <input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %}
+                                                   checked {% endif %} {% if weekday_disable|index:weekday and checked %}
+                                                       disabled {% endif %} onchange="trainingDayToggled(this)"
+                                               value="{{ dateFormatted }}">
+                                        <label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                    {% endwith %}
+                                {% endfor %}
+                        {% endwith %}
+                        </fieldset>
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+        {% endfor %}
+        <div>
+            <input type="submit" value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
+        </div>
+    </form>
+{% endblock %}

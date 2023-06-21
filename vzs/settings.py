@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
