@@ -47,6 +47,11 @@ urlpatterns = [
         name="add-managed-person",
     ),
     path(
+        "<int:pk>/odebrat-spravovanou-osobu",
+        views.DeleteManagedPerson.as_view(),
+        name="remove-managed-person",
+    ),
+    path(
         "<int:person>/kvalifikace/",
         include((nested_feature_assigning_urls, "qualifications")),
         {"feature_type": "qualifications"},

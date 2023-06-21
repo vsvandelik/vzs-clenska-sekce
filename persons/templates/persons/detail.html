@@ -137,20 +137,48 @@
                 <div class="card-header">
                     <div class="card-title h5">Spravované osoby</div>
                 </div>
-                <div class="card-body">
-                    <h6>Osoba spravuje:</h6>
-                    <ul>
-                        {% for person in object.managed_persons.all %}
-                            <li><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></li>
-                        {% endfor %}
-                    </ul>
+                <div class="card-body p-0">
+                    {% if object.managed_persons.count %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Osoba spravuje</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for person in object.managed_persons.all %}
+                                    <tr>
+                                        <td class="align-middle"><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                        <td class="text-center">
+                                            <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="person" value="{{ person.pk }}">
+                                                <input type="submit" name="submit" value="Odebrat" class="btn btn-primary btn-sm">
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
 
-                    <h6>Osoba je spravována:</h6>
-                    <ul>
-                        {% for person in object.managed_by.all %}
-                            <li><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></li>
-                        {% endfor %}
-                    </ul>
+                    {% if object.managed_by.count %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Osoba je spravována</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for person in object.managed_by.all %}
+                                    <tr>
+                                        <td class="align-middle"><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
 
                 </div>
                 <div class="card-footer text-center">
@@ -315,7 +343,6 @@
                                             <input type="hidden" name="person" value="{{ person.pk }}">
                                             <input type="submit" name="submit" value="Přidat" class="btn btn-primary btn-sm">
                                         </form>
-
                                     </td>
                                 </tr>
                             {% endfor %}

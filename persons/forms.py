@@ -202,7 +202,7 @@ class AddMembersStaticGroupForm(ModelForm):
         fields = ["members"]
 
 
-class AddManagedPersonForm(Form):
+class AddDeleteManagedPersonForm(Form):
     person = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
@@ -231,7 +231,20 @@ class AddManagedPersonForm(Form):
         ):
             raise forms.ValidationError(_("Osoba nemůže spravovat samu sebe."))
 
-        if managing_person_instance.managed_persons.contains(managed_person_instance):
+        return managed_person_pk
+
+
+class AddManagedPersonForm(AddDeleteManagedPersonForm):
+    def clean_person(self):
+        result = super().clean_person()
+
+        if self.cleaned_data["managing_person_instance"].managed_persons.contains(
+            self.cleaned_data["managed_person_instance"]
+        ):
             raise forms.ValidationError(_("Daný vztah spravované osoby je již zadán."))
 
-        return managed_person_pk
+        return result
+
+
+class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
+    pass
