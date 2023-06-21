@@ -50,7 +50,9 @@ class DetailView(generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
-        context["persons"] = Person.objects.all()
+        context["persons_to_manage"] = Person.objects.exclude(
+            managed_by=self.kwargs["pk"]
+        )
         return context
 
 

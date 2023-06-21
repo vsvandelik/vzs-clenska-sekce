@@ -306,7 +306,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for person in persons %}
+                            {% for person in persons_to_manage %}
                                 <tr>
                                     <td class="align-middle"><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
                                     <td class="text-center">
