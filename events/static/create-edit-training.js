@@ -20,6 +20,19 @@ function dowToggled(sender) {
     trainingDaysUpdate(sender)
 }
 
+function trainingDayToggled(sender) {
+    const parentFieldset = sender.parentElement
+    if (sender.checked) {
+        localStorage.removeItem(sender.value)
+        clearCustomValidityFromAllCheckboxesIn(parentFieldset)
+    } else {
+        localStorage.setItem(sender.value, '0')
+        const checkedCount = countCheckedCheckboxesIn(parentFieldset)
+        if (checkedCount === 0)
+            setReportValidity(sender, 'Alespoň jeden trénink se musí konat ve vybraný den pro pravidelné opakování', true)
+    }
+}
+
 function beforeSubmit() {
     if (validateForm()) {
         enableAllTrainingDaysCheckboxes()
@@ -255,19 +268,6 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     label.appendChild(txtNode)
 
     return [checkbox, label]
-}
-
-function trainingDayToggled(sender) {
-    const parentFieldset = sender.parentElement
-    if (sender.checked) {
-        localStorage.removeItem(sender.value)
-        clearCustomValidityFromAllCheckboxesIn(parentFieldset)
-    } else {
-        localStorage.setItem(sender.value, '0')
-        const checkedCount = countCheckedCheckboxesIn(parentFieldset)
-        if (checkedCount === 0)
-            setReportValidity(sender, 'Alespoň jeden trénink se musí konat ve vybraný den pro pravidelné opakování', true)
-    }
 }
 
 function countCheckedCheckboxesIn(parentElement) {

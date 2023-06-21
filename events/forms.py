@@ -2,7 +2,12 @@ from datetime import datetime, timedelta
 from django.forms import ModelForm, MultipleChoiceField
 from django import forms
 from .models import Event
-from .utils import weekday_2_day_shortcut, parse_czech_date
+from .utils import (
+    weekday_2_day_shortcut,
+    parse_czech_date,
+    days_shortcut_list,
+    day_shortcut_2_weekday,
+)
 from datetime import timezone
 from django.utils import timezone
 
@@ -296,3 +301,51 @@ class TrainingForm(ModelForm):
             tzinfo=timezone.get_default_timezone(),
         )
         return date_start, date_end
+
+    def generate_dates(self):
+        dates_all = {}
+        if (
+            hasattr(self, "cleaned_data")
+            and "day" in self.cleaned_data
+            and "starts_date" in self.cleaned_data
+            and "ends_date" in self.cleaned_data
+            and (any(day in self.cleaned_data for day in days_shortcut_list()))
+        ):
+            start_submitted = self.cleaned_data["starts_date"]
+            end_submitted = self.cleaned_data["ends_date"]
+            dates_submitted = [
+                parse_czech_date(date_raw).date()
+                for date_raw in self.cleaned_data["day"]
+            ]
+            days_list = [
+                d
+                for d in [
+                    day if day in self.cleaned_data and self.cleaned_data[day] else None
+                    for day in days_shortcut_list()
+                ]
+                if d is not None
+            ]
+            checked_eval = "start in dates_submitted"
+        elif self.instance.id:
+            event = self.instance
+            start_submitted = event.time_start.date()
+            end_submitted = event.time_end.date()
+            days_list = map(weekday_2_day_shortcut, event.weekdays)
+            checked_eval = "event.does_training_take_place_on_date(start)"
+        else:
+            return []
+        end = end_submitted
+        for day in days_list:
+            dates = []
+            start = start_submitted
+            weekday = day_shortcut_2_weekday(day)
+
+            while start.weekday() != weekday:
+                start += timedelta(days=1)
+
+            while start <= end:
+                dates.append((start, eval(checked_eval)))
+                start += timedelta(days=7)
+
+            dates_all[weekday] = dates
+        return dates_all
