@@ -17,8 +17,8 @@ class Command(BaseCommand):
                 email=f"email.osoba.{i}@email.cz",
                 first_name=f"Testovaci",
                 last_name=f"Osoba {i}",
-                sex=random.choices(Person.Sex.values),
-                person_type=random.choices(Person.Type.values),
+                sex=random.choices(Person.Sex.values)[0],
+                person_type=random.choices(Person.Type.values)[0],
             )
             new_person.save()
 
