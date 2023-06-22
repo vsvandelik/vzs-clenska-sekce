@@ -1,7 +1,10 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
@@ -420,3 +423,63 @@ class DeleteManagedPerson(AddDeleteManagedPerson):
             _("Odebrání spravované osoby bylo úspěšné."),
             _("Nepodařilo se odebrat spravovanou osobu. "),
         )
+      
+      
+class SendEmailToSelectedPersonsView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        # selected_persons_id = request.GET.getlist('persons', [])
+        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
+
+        # TODO: Adjust this filtering person based on displayed persons in table
+        selected_persons = Person.objects.all()
+
+        recipients = [
+            f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons
+        ]
+
+        gmail_link = "https://mail.google.com/mail/?view=cm&to=" + ",".join(recipients)
+
+        return redirect(gmail_link)
+
+
+class ExportSelectedPersonsView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        # selected_persons_id = request.GET.getlist('persons', [])
+        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
+
+        # TODO: Adjust this filtering person based on displayed persons in table
+        selected_persons = Person.objects.all()
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="vzs_osoby_export.csv"'
+            },
+        )
+        response.write("\ufeff".encode("utf8"))
+
+        writer = csv.writer(response, delimiter=";")
+
+        labels = []
+        keys = []
+
+        for field in Person._meta.get_fields():
+            if field.is_relation:
+                continue
+
+            labels.append(
+                field.verbose_name if hasattr(field, "verbose_name") else field.name
+            )
+            keys.append(field.name)
+
+        writer.writerow(labels)  # header
+
+        for person in selected_persons:
+            writer.writerow([getattr(person, key) for key in keys])
+
+        return response
+
