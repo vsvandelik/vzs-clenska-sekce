@@ -49,7 +49,11 @@ def get_list_of_groups():
     page_token = None
 
     while True:
-        results = service.groups().list(pageToken=page_token).execute()
+        results = (
+            service.groups()
+            .list(domain=settings.GOOGLE_DOMAIN, pageToken=page_token)
+            .execute()
+        )
 
         for group in results.get("groups", []):
             groups_lists.append(

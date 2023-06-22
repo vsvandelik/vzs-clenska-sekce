@@ -5,6 +5,7 @@ from crispy_forms.layout import Submit
 from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
 from .models import Person, FeatureAssignment, Feature, StaticGroup
@@ -193,6 +194,18 @@ class StaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
         exclude = ["members"]
+
+    def clean_google_email(self):
+        all_groups = google_directory.get_list_of_groups()
+
+        emails_of_groups = [group["email"] for group in all_groups]
+
+        if self.cleaned_data["google_email"] not in emails_of_groups:
+            raise ValidationError(
+                _("E-mailová adresa Google skupiny neodpovídá žádné reálné skupině.")
+            )
+
+        return self.cleaned_data["google_email"]
 
     def clean_google_as_members_authority(self):
         if (
