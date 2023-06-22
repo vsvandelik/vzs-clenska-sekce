@@ -4,6 +4,7 @@
 
 {% load static %}
 {% load render %}
+{% load vzs_filters %}
 
 {% block title %}Detail statické skupiny{% endblock %}
 
@@ -47,7 +48,7 @@
                             {% if object.google_email %}
                                 <tr>
                                     <td class="text-nowrap text-bold">Je Google autorita seznamu členů?</td>
-                                    <td class="w-100">{{ object.google_as_members_authority }}</td>
+                                    <td class="w-100">{{ object.google_as_members_authority|bool_cz }}</td>
                                 </tr>
                             {% endif %}
                         </tbody>
