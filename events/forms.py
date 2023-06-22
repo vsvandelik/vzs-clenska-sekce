@@ -325,13 +325,13 @@ class TrainingForm(ModelForm):
                 ]
                 if d is not None
             ]
-            checked_eval = "start in dates_submitted"
+            checked = lambda: start in dates_submitted
         elif self.instance.id:
             event = self.instance
             start_submitted = event.time_start.date()
             end_submitted = event.time_end.date()
             days_list = map(weekday_2_day_shortcut, event.weekdays)
-            checked_eval = "event.does_training_take_place_on_date(start)"
+            checked = lambda: event.does_training_take_place_on_date(start)
         else:
             return []
         end = end_submitted
@@ -344,7 +344,7 @@ class TrainingForm(ModelForm):
                 start += timedelta(days=1)
 
             while start <= end:
-                dates.append((start, eval(checked_eval)))
+                dates.append((start, checked()))
                 start += timedelta(days=7)
 
             dates_all[weekday] = dates
