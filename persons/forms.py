@@ -201,7 +201,10 @@ class StaticGroupForm(ModelForm):
 
         emails_of_groups = [group["email"] for group in all_groups]
 
-        if self.cleaned_data["google_email"] not in emails_of_groups:
+        if (
+            self.cleaned_data["google_email"]
+            and self.cleaned_data["google_email"] not in emails_of_groups
+        ):
             raise ValidationError(
                 _("E-mailová adresa Google skupiny neodpovídá žádné reálné skupině.")
             )
