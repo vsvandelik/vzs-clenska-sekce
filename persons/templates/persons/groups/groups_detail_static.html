@@ -19,6 +19,9 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:groups:edit-static' object.pk %}" class="btn btn-success">Upravit skupinu</a>
                 <a href="{% url 'persons:groups:delete' object.pk %}" class="btn btn-danger">Smazat skupinu</a>
+                {% if object.google_email %}
+                    <a href="{% url 'persons:groups:sync-group-members-google' object.pk %}" class="btn btn-info">Synchronizovat s Google</a>
+                {% endif %}
             </div>
         </div>
     </div>

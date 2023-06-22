@@ -257,6 +257,7 @@ class Group(models.Model):
         max_length=255,
         blank=True,
         null=True,
+        unique=True,
     )
     google_as_members_authority = models.BooleanField(
         _("Je Google autorita seznamu členů?")

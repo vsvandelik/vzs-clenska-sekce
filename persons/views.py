@@ -382,6 +382,73 @@ class StaticGroupRemoveMemberView(generic.View):
         return redirect(self.get_success_url())
 
 
+class SyncGroupMembersWithGoogle(generic.View):
+    http_method_names = ["get"]
+
+    def _sync_single_group(self, local_group):
+        google_email = local_group.google_email
+
+        local_emails = {p.email for p in local_group.members.all()}
+        google_emails = {
+            m["email"] for m in google_directory.get_group_members(google_email)
+        }
+
+        if not local_group.google_as_members_authority:
+            members_to_add = local_emails - google_emails
+            members_to_remove = google_emails - local_emails
+
+            for email in members_to_add:
+                google_directory.add_member_to_group(email, google_email)
+
+            for email in members_to_remove:
+                google_directory.remove_member_from_group(email, google_email)
+
+        else:
+            members_to_add = google_emails - local_emails
+            members_to_remove = local_emails - google_emails
+
+            for email in members_to_add:
+                try:
+                    local_person = Person.objects.get(email=email)
+                    local_group.members.add(local_person)
+                except Person.DoesNotExist:
+                    pass
+
+            for email in members_to_remove:
+                local_group.members.remove(Person.objects.get(email=email))
+
+    def get(self, request, group=None):
+        if group:
+            group_instance = get_object_or_404(StaticGroup, pk=group)
+            if not group_instance.google_email:
+                messages.error(
+                    request,
+                    _(
+                        "Zvolená skupina nemá zadanou google e-mailovou adresu, a proto nemůže být sychronizována."
+                    ),
+                )
+                return redirect(
+                    reverse("persons:groups:detail", args=[group_instance.pk])
+                )
+
+            self._sync_single_group(group_instance)
+            messages.success(
+                request,
+                _("Synchronizace skupiny %s s Google Workplace byla úspěšná.")
+                % group_instance.name,
+            )
+            return redirect(reverse("persons:groups:detail", args=[group_instance.pk]))
+
+        else:
+            for group in StaticGroup.objects.filter(google_email__isnull=False):
+                self._sync_single_group(group)
+            messages.success(
+                request,
+                _("Synchronizace všech skupin s Google Workplace byla úspěšná."),
+            )
+            return redirect(reverse("persons:groups:index"))
+
+
 class SendEmailToSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
