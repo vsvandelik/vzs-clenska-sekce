@@ -388,7 +388,7 @@ class StaticGroupRemoveMemberView(generic.View):
         return redirect(self.get_success_url())
 
 
-class SyncGroupMembersWithGoogle(generic.View):
+class SyncGroupMembersWithGoogleView(generic.View):
     http_method_names = ["get"]
 
     def get(self, request, group=None):

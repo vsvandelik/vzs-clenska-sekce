@@ -35,12 +35,12 @@ groups_urlpatterns = [
     path("<int:pk>/smazat", views.GroupDeleteView.as_view(), name="delete"),
     path(
         "synchronizovat-s-google",
-        views.SyncGroupMembersWithGoogle.as_view(),
+        views.SyncGroupMembersWithGoogleView.as_view(),
         name="sync-group-members-google",
     ),
     path(
         "<int:group>/synchronizovat-s-google",
-        views.SyncGroupMembersWithGoogle.as_view(),
+        views.SyncGroupMembersWithGoogleView.as_view(),
         name="sync-group-members-google",
     ),
 ]
