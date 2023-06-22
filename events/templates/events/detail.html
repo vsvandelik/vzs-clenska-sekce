@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% block title %}
+    Detail události
+{% endblock %}
 {% block content %}
-    <a href="{% url 'events:index' %}">Zpět</a>
-    <h2>Detail události</h2>
     <ul>
         <li>Jméno: {{ event.name }}</li>
         <li>Popis: {{ event.description }}</li>
@@ -9,9 +10,9 @@
         <li>Maximální počet účastníků: {{ event.capacity }}</li>
         <li>Minimální věk účastníků: {{ event.age_limit }}</li>
         <li>Stav události: {{ event.state }}</li>
+        <li>Začíná {{ event.time_start|date:'j.n.Y' }}</li>
+        <li>Končí {{ event.time_end|date:'j.n.Y' }}</li>
         {% if is_top_training %}
-            <li>Začíná {{ event.time_start|date:'j.n.Y' }}</li>
-            <li>Končí {{ event.time_end|date:'j.n.Y' }}</li>
             <li>Koná se týdně: {{ weekdays_count }}x v {{ weekdays }}</li>
             <li>Rozpis tréninků:
                 <ul>
@@ -22,8 +23,7 @@
                 </ul>
             </li>
         {% else %}
-            <li>Probíhá {{ event.time_start|date:'j.n.Y' }} {{ event.time_start|date:'H:i' }}
-                – {{ event.time_end|date:'H:i' }}</li>
+            <li>Probíhá {{ event.time_start|date:'j.n.Y H:i' }} -– {{ event.time_end|date:'j.n.Y H:i' }}</li>
         {% endif %}
     </ul>
 {% endblock %}

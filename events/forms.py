@@ -17,7 +17,50 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
         pass
 
 
-class TrainingForm(ModelForm):
+class OneTimeEventForm(ModelForm):
+    class Meta:
+        model = Event
+        fields = [
+            "name",
+            "description",
+            "time_start",
+            "time_end",
+            "capacity",
+            "age_limit",
+        ]
+        widgets = {
+            "time_start": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "onchange": "dateChanged()"},
+                format="%Y-%m-%dT%H:%M:%S",
+            ),
+            "time_end": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "onchange": "dateChanged()"},
+                format="%Y-%m-%dT%H:%M:%S",
+            ),
+        }
+
+    def _check_date_constraints(self):
+        if self.cleaned_data["time_start"] >= self.cleaned_data["time_end"]:
+            self.add_error(
+                "time_end", "Konec události nesmí být dříve než její začátek"
+            )
+
+    def clean(self):
+        super().clean()
+        self._check_date_constraints()
+
+    def save(self, commit=True):
+        instance = self.instance
+        edit = True
+        if self.instance.id is None:
+            edit = False
+        super().save(commit)
+        if not edit:
+            instance.state = Event.State.FUTURE
+        return instance
+
+
+class TrainingForm(OneTimeEventForm):
     class Meta:
         model = Event
         fields = ["name", "description", "capacity", "age_limit"]
