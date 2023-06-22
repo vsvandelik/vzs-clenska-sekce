@@ -141,3 +141,6 @@ GitHub.sublime-settings
 # Frontend
 node_modules
 package-lock.json
+
+# Credentials
+google_integration/service_account_file.json

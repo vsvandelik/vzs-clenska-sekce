@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
     # Template tags
-    "vzs"
+    "vzs",
 ]
 
 MIDDLEWARE = [
@@ -175,3 +175,8 @@ MESSAGE_TAGS = {
     message_constants.WARNING: "warning",
     message_constants.ERROR: "danger",
 }
+
+# Settings for Google Integration
+
+GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
+GOOGLE_DOMAIN = "vzs-praha15.cz"
