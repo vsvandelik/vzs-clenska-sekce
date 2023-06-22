@@ -37,6 +37,10 @@ groups_urlpatterns = [
 
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
+    path(
+        "poslat-email", views.SendEmailToSelectedPersonsView.as_view(), name="send-mail"
+    ),
+    path("exportovat", views.ExportSelectedPersonsView.as_view(), name="export"),
     path("pridat", views.PersonCreateView.as_view(), name="add"),
     path("<int:pk>/", views.DetailView.as_view(), name="detail"),
     path("<int:pk>/upravit", views.PersonUpdateView.as_view(), name="edit"),

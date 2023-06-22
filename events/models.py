@@ -65,11 +65,11 @@ class Event(models.Model):
                     )
                     break
 
-    def does_training_take_place_on(self, dtime):
+    def does_training_take_place_on_date(self, date):
         for child in self.children:
             if (
                 timezone.localtime(child.time_start).date()
-                <= dtime.date()
+                <= date
                 <= timezone.localtime(child.time_end).date()
             ):
                 return True
