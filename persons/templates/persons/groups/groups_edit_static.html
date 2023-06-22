@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}Úprava statické skupiny{% endblock %}
 
@@ -34,4 +35,7 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "persons/edit-group.js" %}"></script>
 {% endblock %}

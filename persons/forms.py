@@ -192,7 +192,20 @@ class FeatureForm(ModelForm):
 class StaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
-        fields = ["name"]
+        exclude = ["members"]
+
+    def clean_google_as_members_authority(self):
+        if (
+            self.cleaned_data["google_as_members_authority"]
+            and not self.cleaned_data["google_email"]
+        ):
+            raise ValidationError(
+                _(
+                    "Google nemůže být jako autorita členů skupiny v situaci, kdy není vyplněna emailová adresa skupiny."
+                )
+            )
+
+        return self.cleaned_data["google_as_members_authority"]
 
 
 class AddMembersStaticGroupForm(ModelForm):
