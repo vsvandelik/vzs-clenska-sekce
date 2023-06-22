@@ -1,3 +1,14 @@
+"""
+TUTORIAL HOW TO MAKE ENABLE GOOGLE ADMIN SDK
+
+1. On Google Cloud Platform enable Google Admin SDK.
+2. Create new service account in GCP.
+3. Download a credentials json file to this folder.
+4. In Google Workplace Admin add created service account as an admin for managing users and groups.
+
+"""
+
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
