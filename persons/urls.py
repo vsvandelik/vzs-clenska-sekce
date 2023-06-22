@@ -5,11 +5,11 @@ from . import views
 app_name = "persons"
 
 feature_urls = [
-    path("", views.FeatureIndex.as_view(), name="index"),
-    path("pridat", views.FeatureEdit.as_view(), name="add"),
-    path("<int:pk>", views.FeatureDetail.as_view(), name="detail"),
-    path("<int:pk>/upravit", views.FeatureEdit.as_view(), name="edit"),
-    path("<int:pk>/smazat", views.FeatureDelete.as_view(), name="delete"),
+    path("", views.FeatureIndexView.as_view(), name="index"),
+    path("pridat", views.FeatureEditView.as_view(), name="add"),
+    path("<int:pk>", views.FeatureDetailView.as_view(), name="detail"),
+    path("<int:pk>/upravit", views.FeatureEditView.as_view(), name="edit"),
+    path("<int:pk>/smazat", views.FeatureDeleteView.as_view(), name="delete"),
 ]
 
 nested_feature_assigning_urls = [
@@ -19,8 +19,8 @@ nested_feature_assigning_urls = [
 ]
 
 groups_urlpatterns = [
-    path("", views.GroupIndex.as_view(), name="index"),
-    path("<int:pk>/", views.StaticGroupDetail.as_view(), name="detail"),
+    path("", views.GroupIndexView.as_view(), name="index"),
+    path("<int:pk>/", views.StaticGroupDetailView.as_view(), name="detail"),
     path("pridat/staticka", views.StaticGroupEditView.as_view(), name="add-static"),
     path(
         "<int:pk>/upravit/staticka",
@@ -46,23 +46,23 @@ groups_urlpatterns = [
 ]
 
 urlpatterns = [
-    path("", views.IndexView.as_view(), name="index"),
+    path("", views.PersonIndexView.as_view(), name="index"),
     path(
         "poslat-email", views.SendEmailToSelectedPersonsView.as_view(), name="send-mail"
     ),
     path("exportovat", views.ExportSelectedPersonsView.as_view(), name="export"),
     path("pridat", views.PersonCreateView.as_view(), name="add"),
-    path("<int:pk>/", views.DetailView.as_view(), name="detail"),
+    path("<int:pk>/", views.PersonDetailView.as_view(), name="detail"),
     path("<int:pk>/upravit", views.PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat", views.PersonDeleteView.as_view(), name="delete"),
     path(
         "<int:pk>/pridat-spravovanou-osobu",
-        views.AddManagedPerson.as_view(),
+        views.AddManagedPersonView.as_view(),
         name="add-managed-person",
     ),
     path(
         "<int:pk>/odebrat-spravovanou-osobu",
-        views.DeleteManagedPerson.as_view(),
+        views.DeleteManagedPersonView.as_view(),
         name="remove-managed-person",
     ),
     path(

@@ -31,19 +31,19 @@ from .models import (
 from .utils import sync_single_group_with_google
 
 
-class IndexView(generic.ListView):
+class PersonIndexView(generic.ListView):
     model = Person
-    template_name = "persons/index.html"
+    template_name = "persons/persons/index.html"
     context_object_name = "persons"
     paginate_by = 20
 
 
-class DetailView(generic.DetailView):
+class PersonDetailView(generic.DetailView):
     model = Person
-    template_name = "persons/detail.html"
+    template_name = "persons/persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["qualifications"] = FeatureAssignment.objects.filter(
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.QUALIFICATION.value,
@@ -64,7 +64,7 @@ class DetailView(generic.DetailView):
 
 class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
     model = Person
-    template_name = "persons/edit.html"
+    template_name = "persons/persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně vytvořena")
 
@@ -78,7 +78,7 @@ class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
 
 class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
     model = Person
-    template_name = "persons/edit.html"
+    template_name = "persons/persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně upravena")
 
@@ -91,7 +91,7 @@ class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
 
 class PersonDeleteView(generic.edit.DeleteView):
     model = Person
-    template_name = "persons/confirm_delete.html"
+    template_name = "persons/persons/confirm_delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
 
@@ -99,7 +99,7 @@ class PersonDeleteView(generic.edit.DeleteView):
 class FeatureAssignEditView(generic.edit.UpdateView):
     model = FeatureAssignment
     form_class = FeatureAssignmentForm
-    template_name = "persons/features_assignment_edit.html"
+    template_name = "persons/features_assignment/features_assignment_edit.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -164,7 +164,7 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
 class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = FeatureAssignment
-    template_name = "persons/features_assignment_delete.html"
+    template_name = "persons/features_assignment/features_assignment_delete.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -181,7 +181,7 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
         return context
 
 
-class FeatureIndex(generic.ListView):
+class FeatureIndexView(generic.ListView):
     model = Feature
     context_object_name = "features"
 
@@ -203,7 +203,7 @@ class FeatureIndex(generic.ListView):
         )
 
 
-class FeatureDetail(generic.DetailView):
+class FeatureDetailView(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
@@ -220,7 +220,7 @@ class FeatureDetail(generic.DetailView):
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
-class FeatureEdit(generic.edit.UpdateView):
+class FeatureEditView(generic.edit.UpdateView):
     model = Feature
     form_class = FeatureForm
 
@@ -270,7 +270,7 @@ class FeatureEdit(generic.edit.UpdateView):
         return kwargs
 
 
-class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
+class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
@@ -288,7 +288,7 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
         return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
 
 
-class GroupIndex(generic.ListView):
+class GroupIndexView(generic.ListView):
     model = Group
     template_name = "persons/groups/groups_index.html"
 
@@ -306,7 +306,7 @@ class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     success_message = "Skupina byla úspěšně smazána."
 
 
-class StaticGroupDetail(
+class StaticGroupDetailView(
     SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
 ):
     model = StaticGroup
@@ -424,7 +424,7 @@ class SyncGroupMembersWithGoogleView(generic.View):
             return redirect(reverse("persons:groups:index"))
 
 
-class AddDeleteManagedPerson(generic.View):
+class AddDeleteManagedPersonMixin(generic.View):
     http_method_names = ["post"]
 
     def process_form(self, request, form, pk, op, success_message, error_message):
@@ -446,7 +446,7 @@ class AddDeleteManagedPerson(generic.View):
         return redirect(reverse("persons:detail", args=[pk]))
 
 
-class AddManagedPerson(AddDeleteManagedPerson):
+class AddManagedPersonView(AddDeleteManagedPersonMixin):
     def post(self, request, pk):
         form = AddManagedPersonForm(request.POST, managing_person=pk)
 
@@ -460,7 +460,7 @@ class AddManagedPerson(AddDeleteManagedPerson):
         )
 
 
-class DeleteManagedPerson(AddDeleteManagedPerson):
+class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
     def post(self, request, pk):
         form = DeleteManagedPersonForm(request.POST, managing_person=pk)
 
