@@ -15,6 +15,7 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "admin-lte": "3.2",
     "bootstrap": "^4.6.2",
+    "datatables.net-bs": "^1.13.4",
     "jquery": "^3.7.0"
   }
 }

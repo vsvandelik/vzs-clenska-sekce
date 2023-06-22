@@ -2,7 +2,8 @@ import datetime
 import re
 
 from crispy_forms.layout import Submit
-from django.forms import ModelForm, widgets, ValidationError
+from django import forms
+from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
 from google_integration import google_directory
@@ -14,7 +15,7 @@ from .models import Person, FeatureAssignment, Feature, StaticGroup
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_people"]
+        exclude = ["features", "managed_persons"]
         widgets = {
             "date_of_birth": widgets.DateInput(
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
@@ -225,3 +226,51 @@ class AddMembersStaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
         fields = ["members"]
+
+
+class AddDeleteManagedPersonForm(Form):
+    person = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self.managing_person = kwargs.pop("managing_person", None)
+        super().__init__(*args, **kwargs)
+
+    def clean_person(self):
+        managed_person_pk = self.cleaned_data.get("person")
+
+        try:
+            managing_person_instance = Person.objects.get(pk=self.managing_person)
+            self.cleaned_data["managing_person_instance"] = managing_person_instance
+        except Person.DoesNotExist:
+            raise forms.ValidationError(_("Daná osoba neexistuje."))
+
+        try:
+            managed_person_instance = Person.objects.get(pk=managed_person_pk)
+            self.cleaned_data["managed_person_instance"] = managed_person_instance
+        except Person.DoesNotExist:
+            raise forms.ValidationError(_("Daná osoba neexistuje."))
+
+        if (
+            managed_person_pk
+            and self.managing_person
+            and managed_person_pk == self.managing_person
+        ):
+            raise forms.ValidationError(_("Osoba nemůže spravovat samu sebe."))
+
+        return managed_person_pk
+
+
+class AddManagedPersonForm(AddDeleteManagedPersonForm):
+    def clean_person(self):
+        result = super().clean_person()
+
+        if self.cleaned_data["managing_person_instance"].managed_persons.contains(
+            self.cleaned_data["managed_person_instance"]
+        ):
+            raise forms.ValidationError(_("Daný vztah spravované osoby je již zadán."))
+
+        return result
+
+
+class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
+    pass

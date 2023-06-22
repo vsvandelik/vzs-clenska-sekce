@@ -42,11 +42,6 @@
             {{ form.ends_date }}
         </fieldset>
         <br>
-        <div>
-            <label for="id_trainings_per_week">Počet tréninků týdně</label><br>
-            {{ form.trainings_per_week }}
-        </div>
-        <br>
         <fieldset id="id_days_in_week">
             <legend>Dny v týdnu</legend>
             {% for i in '0123456'|make_list %}

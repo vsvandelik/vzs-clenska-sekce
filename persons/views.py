@@ -17,6 +17,8 @@ from .forms import (
     FeatureForm,
     StaticGroupForm,
     AddMembersStaticGroupForm,
+    AddManagedPersonForm,
+    DeleteManagedPersonForm,
 )
 from .models import (
     Person,
@@ -54,6 +56,9 @@ class DetailView(generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
+        context["persons_to_manage"] = Person.objects.exclude(
+            managed_by=self.kwargs["pk"]
+        ).exclude(pk=self.kwargs["pk"])
         return context
 
 
@@ -417,6 +422,56 @@ class SyncGroupMembersWithGoogle(generic.View):
                 _("Synchronizace všech skupin s Google Workplace byla úspěšná."),
             )
             return redirect(reverse("persons:groups:index"))
+
+
+class AddDeleteManagedPerson(generic.View):
+    http_method_names = ["post"]
+
+    def process_form(self, request, form, pk, op, success_message, error_message):
+        if form.is_valid():
+            managing_person = form.cleaned_data["managing_person_instance"]
+            new_managed_person = form.cleaned_data["managed_person_instance"]
+
+            if op == "add":
+                managing_person.managed_persons.add(new_managed_person)
+            else:
+                managing_person.managed_persons.remove(new_managed_person)
+
+            messages.success(request, success_message)
+
+        else:
+            person_error_messages = " ".join(form.errors["person"])
+            messages.error(request, error_message + person_error_messages)
+
+        return redirect(reverse("persons:detail", args=[pk]))
+
+
+class AddManagedPerson(AddDeleteManagedPerson):
+    def post(self, request, pk):
+        form = AddManagedPersonForm(request.POST, managing_person=pk)
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            "add",
+            _("Nová spravovaná osoba byla přidána."),
+            _("Nepodařilo se uložit novou spravovanou osobu. "),
+        )
+
+
+class DeleteManagedPerson(AddDeleteManagedPerson):
+    def post(self, request, pk):
+        form = DeleteManagedPersonForm(request.POST, managing_person=pk)
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            "delete",
+            _("Odebrání spravované osoby bylo úspěšné."),
+            _("Nepodařilo se odebrat spravovanou osobu. "),
+        )
 
 
 class SendEmailToSelectedPersonsView(generic.View):

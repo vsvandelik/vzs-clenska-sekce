@@ -2,11 +2,14 @@ from datetime import datetime, timedelta
 from django.forms import ModelForm, MultipleChoiceField
 from django import forms
 from .models import Event
-from .utils import day_shortcut_2_weekday, weekday_2_day_shortcut, parse_czech_date
+from .utils import (
+    weekday_2_day_shortcut,
+    parse_czech_date,
+    days_shortcut_list,
+    day_shortcut_2_weekday,
+)
 from datetime import timezone
 from django.utils import timezone
-
-trainings_per_week_choices = ((1, "1x"), (2, "2x"), (3, "3x"))
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -29,7 +32,6 @@ class TrainingForm(ModelForm):
             for weekday in event.weekdays:
                 day_shortcut = weekday_2_day_shortcut(weekday)
                 self.initial[day_shortcut] = True
-            self.initial["trainings_per_week"] = len(event.weekdays)
             for attr, value in event.__dict__.items():
                 if attr[:5] == "from_" or attr[:3] == "to_":
                     self.initial[attr] = value
@@ -44,11 +46,6 @@ class TrainingForm(ModelForm):
             attrs={"type": "date", "onchange": "dateChanged()"}, format="%Y-%m-%d"
         )
     )
-    trainings_per_week = forms.ChoiceField(
-        choices=trainings_per_week_choices,
-        widget=forms.Select(attrs={"onchange": "trainingsPerWeekChanged()"}),
-    )
-
     po = forms.BooleanField(
         label_suffix="Po",
         required=False,
@@ -88,91 +85,91 @@ class TrainingForm(ModelForm):
     from_po = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_po = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ut = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ut = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_st = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_st = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ct = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ct = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_pa = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_pa = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_so = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_so = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ne = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ne = forms.TimeField(
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "validateTimes(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
         ),
     )
 
@@ -183,7 +180,9 @@ class TrainingForm(ModelForm):
             self.cleaned_data["starts_date"] + timedelta(days=14)
             > self.cleaned_data["ends_date"]
         ):
-            self.add_error("ends_date", "Pravidelná událost se koná alespoň 2 týdny")
+            self.add_error(
+                "ends_date", "Pravidelná událost se musí konat alespoň 2 týdny"
+            )
 
     def _check_training_time_of_chosen_day(self, day):
         from_time_field_name = f"from_{day}"
@@ -195,22 +194,14 @@ class TrainingForm(ModelForm):
             or (from_time.hour <= to_time.hour and from_time.minute < to_time.minute)
         ):
             self.add_error(
-                to_time_field_name, "Konec tréningu je čas před jeho začátkem"
-            )
-
-    def _check_if_training_occurs_on_dow(self, d, weekdays):
-        if day_shortcut_2_weekday(d) not in weekdays:
-            self.add_error(
-                None,
-                "Není vybrán odpovídající počet dní v týdnu vzhledem k počtu tréninků",
+                to_time_field_name, "Konec tréninku je čas před jeho začátkem"
             )
 
     def _check_days_chosen_constraints(self):
         days = ["po", "ut", "st", "ct", "pa", "so", "ne"]
         days = {d for d in days if self.cleaned_data[d]}
         number_of_chosen_days = len(days)
-        trainings_per_week = int(self.cleaned_data["trainings_per_week"])
-        if trainings_per_week == number_of_chosen_days:
+        if number_of_chosen_days in [1, 2, 3]:
             training_dates = [
                 parse_czech_date(x).date() for x in self.cleaned_data["day"]
             ]
@@ -219,11 +210,10 @@ class TrainingForm(ModelForm):
             if days != weekdays_shortcut:
                 self.add_error(
                     None,
-                    "Konkrétní trénink se musí konat v jednom z určených dnů pro pravidelné opakování",
+                    "Trénink se musí konat v jednom z určených dnů pro pravidelné opakování",
                 )
             for d in days:
                 self._check_training_time_of_chosen_day(d)
-                self._check_if_training_occurs_on_dow(d, weekdays)
             d_start = self.cleaned_data["starts_date"]
             d_end = self.cleaned_data["ends_date"]
             for td in training_dates:
@@ -235,7 +225,7 @@ class TrainingForm(ModelForm):
         else:
             self.add_error(
                 None,
-                "Není vybrán odpovídající počet dní v týdnu vzhledem k počtu tréninků",
+                "Není vybrán korektní počet dní týdnu pro pravidelné opakovaní",
             )
 
     def _check_constraints(self):
@@ -311,3 +301,51 @@ class TrainingForm(ModelForm):
             tzinfo=timezone.get_default_timezone(),
         )
         return date_start, date_end
+
+    def generate_dates(self):
+        dates_all = {}
+        if (
+            hasattr(self, "cleaned_data")
+            and "day" in self.cleaned_data
+            and "starts_date" in self.cleaned_data
+            and "ends_date" in self.cleaned_data
+            and (any(day in self.cleaned_data for day in days_shortcut_list()))
+        ):
+            start_submitted = self.cleaned_data["starts_date"]
+            end_submitted = self.cleaned_data["ends_date"]
+            dates_submitted = [
+                parse_czech_date(date_raw).date()
+                for date_raw in self.cleaned_data["day"]
+            ]
+            days_list = [
+                d
+                for d in [
+                    day if day in self.cleaned_data and self.cleaned_data[day] else None
+                    for day in days_shortcut_list()
+                ]
+                if d is not None
+            ]
+            checked = lambda: start in dates_submitted
+        elif self.instance.id:
+            event = self.instance
+            start_submitted = event.time_start.date()
+            end_submitted = event.time_end.date()
+            days_list = map(weekday_2_day_shortcut, event.weekdays)
+            checked = lambda: event.does_training_take_place_on_date(start)
+        else:
+            return []
+        end = end_submitted
+        for day in days_list:
+            dates = []
+            start = start_submitted
+            weekday = day_shortcut_2_weekday(day)
+
+            while start.weekday() != weekday:
+                start += timedelta(days=1)
+
+            while start <= end:
+                dates.append((start, checked()))
+                start += timedelta(days=7)
+
+            dates_all[weekday] = dates
+        return dates_all
