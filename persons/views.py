@@ -97,7 +97,7 @@ class PersonDeleteView(generic.edit.DeleteView):
 class FeatureAssignEditView(generic.edit.UpdateView):
     model = FeatureAssignment
     form_class = FeatureAssignmentForm
-    template_name = "persons/features_assignment/features_assignment_edit.html"
+    template_name = "persons/features_assignment/edit.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -162,7 +162,7 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
 class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = FeatureAssignment
-    template_name = "persons/features_assignment/features_assignment_delete.html"
+    template_name = "persons/features_assignment/delete.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -288,7 +288,7 @@ class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
 class GroupIndexView(generic.ListView):
     model = Group
-    template_name = "persons/groups/groups_index.html"
+    template_name = "persons/groups/index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -299,7 +299,7 @@ class GroupIndexView(generic.ListView):
 
 class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = StaticGroup
-    template_name = "persons/groups/groups_delete.html"
+    template_name = "persons/groups/delete.html"
     success_url = reverse_lazy("persons:groups:index")
     success_message = "Skupina byla úspěšně smazána."
 
@@ -310,7 +310,7 @@ class StaticGroupDetailView(
     model = StaticGroup
     form_class = AddMembersStaticGroupForm
     success_message = "Osoby byly úspěšně přidány."
-    template_name = "persons/groups/groups_detail_static.html"
+    template_name = "persons/groups/detail_static.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -342,7 +342,7 @@ class StaticGroupDetailView(
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
     form_class = StaticGroupForm
-    template_name = "persons/groups/groups_edit_static.html"
+    template_name = "persons/groups/edit_static.html"
     success_message = "Statická skupina byla úspěšně uložena."
 
     def get_object(self, queryset=None):
