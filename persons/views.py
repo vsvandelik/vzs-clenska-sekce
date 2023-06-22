@@ -10,6 +10,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from google_integration import google_directory
 from .forms import (
     PersonForm,
     FeatureAssignmentForm,
@@ -318,12 +319,18 @@ class StaticGroupDetail(
         return reverse("persons:groups:detail", args=(self.object.pk,))
 
     def form_valid(self, form):
-        new_member_ids = form.cleaned_data["members"]
+        new_members = form.cleaned_data["members"]
 
         existing_members = self.object.members.all()
-        combined_members = existing_members | new_member_ids
+        combined_members = existing_members | new_members
 
         form.instance.members.set(combined_members)
+
+        if form.instance.google_email:
+            for new_member in new_members:
+                google_directory.add_member_to_group(
+                    new_member.email, form.instance.google_email
+                )
 
         messages.success(self.request, self.success_message)
 
@@ -365,6 +372,11 @@ class StaticGroupRemoveMemberView(generic.View):
 
         static_group = get_object_or_404(StaticGroup, id=self.kwargs["group"])
         static_group.members.remove(member_to_remove)
+
+        if static_group.google_email:
+            google_directory.remove_member_from_group(
+                Person.objects.get(pk=member_to_remove).email, static_group.google_email
+            )
 
         messages.success(self.request, self.success_message)
         return redirect(self.get_success_url())
