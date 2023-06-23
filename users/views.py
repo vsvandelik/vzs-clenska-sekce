@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth import models as auth_models
 
 from .models import User
 from . import forms
@@ -66,7 +67,7 @@ class UserCreateView(SuccessMessageMixin, CustomCreateMixin):
 class IndexView(generic.list.ListView):
     template_name = "users/index.html"
     context_object_name = "users"
-    paginate_by = 2
+    paginate_by = 8
 
     def get_queryset(self):
         self.user_search_form = forms.UserSearchForm(self.request.GET)
@@ -120,3 +121,9 @@ class LoginView(auth_views.LoginView):
     template_name = "users/login.html"
     authentication_form = forms.LoginForm
     redirect_authenticated_user = True
+
+
+class PermissionsView(generic.list.ListView):
+    model = auth_models.Permission
+    template_name = "users/permissions.html"
+    context_object_name = "permissions"

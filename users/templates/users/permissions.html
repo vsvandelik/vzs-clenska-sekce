@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Povolení</h3>
+        </div>
+
+        <div class="card-body">
+            <table class="table" id="permissions_table">
+                <thead>
+                    <tr>
+                        <th>Název</th>
+                        <th>Popis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for permission in permissions %}
+                        <tr>
+                            <td>{{ permission.name }}</td>
+                            <td>TODO</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2">Žádné výsledky</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "users/datatables_permissions.js" %}"></script>
+{% endblock %}

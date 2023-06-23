@@ -268,3 +268,7 @@ class Transaction(models.Model):
     date = models.DateField()
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        permissions = [("ucetni", _("Účetní"))]
+        default_permissions = []
