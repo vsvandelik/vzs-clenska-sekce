@@ -211,18 +211,17 @@ class StaticGroupForm(ModelForm):
 
         return self.cleaned_data["google_email"]
 
-    def clean_google_as_members_authority(self):
-        if (
-            self.cleaned_data["google_as_members_authority"]
-            and not self.cleaned_data["google_email"]
-        ):
+    def clean(self):
+        cleaned_data = super().clean()
+        google_as_members_authority = cleaned_data.get("google_as_members_authority")
+        google_email = cleaned_data.get("google_email")
+
+        if google_as_members_authority and not google_email:
             raise ValidationError(
                 _(
                     "Google nemůže být jako autorita členů skupiny v situaci, kdy není vyplněna emailová adresa skupiny."
                 )
             )
-
-        return self.cleaned_data["google_as_members_authority"]
 
 
 class AddMembersStaticGroupForm(ModelForm):
