@@ -74,7 +74,6 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "users/datatables_enable.js" %}">
-        datatables_enable("index_table");
-    </script>
+    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script>datatables_enable("index_table");</script>
 {% endblock %}
