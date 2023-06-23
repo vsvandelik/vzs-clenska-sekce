@@ -57,6 +57,7 @@ class OneTimeEventForm(ModelForm):
         super().save(commit)
         if not edit:
             instance.state = Event.State.FUTURE
+            instance.save()
         return instance
 
 
