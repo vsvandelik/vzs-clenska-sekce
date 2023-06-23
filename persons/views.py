@@ -1,9 +1,11 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.template.loader import get_template
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -14,6 +16,8 @@ from .forms import (
     FeatureForm,
     StaticGroupForm,
     AddMembersStaticGroupForm,
+    AddManagedPersonForm,
+    DeleteManagedPersonForm,
 )
 from .models import (
     Person,
@@ -25,19 +29,19 @@ from .models import (
 )
 
 
-class IndexView(generic.ListView):
+class PersonIndexView(generic.ListView):
     model = Person
-    template_name = "persons/index.html"
+    template_name = "persons/persons/index.html"
     context_object_name = "persons"
     paginate_by = 20
 
 
-class DetailView(generic.DetailView):
+class PersonDetailView(generic.DetailView):
     model = Person
-    template_name = "persons/detail.html"
+    template_name = "persons/persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["qualifications"] = FeatureAssignment.objects.filter(
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.QUALIFICATION.value,
@@ -50,12 +54,15 @@ class DetailView(generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
+        context["persons_to_manage"] = Person.objects.exclude(
+            managed_by=self.kwargs["pk"]
+        ).exclude(pk=self.kwargs["pk"])
         return context
 
 
 class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
     model = Person
-    template_name = "persons/edit.html"
+    template_name = "persons/persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně vytvořena")
 
@@ -69,7 +76,7 @@ class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
 
 class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
     model = Person
-    template_name = "persons/edit.html"
+    template_name = "persons/persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně upravena")
 
@@ -82,7 +89,7 @@ class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
 
 class PersonDeleteView(generic.edit.DeleteView):
     model = Person
-    template_name = "persons/confirm_delete.html"
+    template_name = "persons/persons/confirm_delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
 
@@ -90,7 +97,7 @@ class PersonDeleteView(generic.edit.DeleteView):
 class FeatureAssignEditView(generic.edit.UpdateView):
     model = FeatureAssignment
     form_class = FeatureAssignmentForm
-    template_name = "persons/features_assignment_edit.html"
+    template_name = "persons/features_assignment/edit.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -155,7 +162,7 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
 class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = FeatureAssignment
-    template_name = "persons/features_assignment_delete.html"
+    template_name = "persons/features_assignment/delete.html"
 
     def get_success_url(self):
         return reverse("persons:detail", args=[self.kwargs["person"]])
@@ -172,7 +179,7 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
         return context
 
 
-class FeatureIndex(generic.ListView):
+class FeatureIndexView(generic.ListView):
     model = Feature
     context_object_name = "features"
 
@@ -194,7 +201,7 @@ class FeatureIndex(generic.ListView):
         )
 
 
-class FeatureDetail(generic.DetailView):
+class FeatureDetailView(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
@@ -211,7 +218,7 @@ class FeatureDetail(generic.DetailView):
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
-class FeatureEdit(generic.edit.UpdateView):
+class FeatureEditView(generic.edit.UpdateView):
     model = Feature
     form_class = FeatureForm
 
@@ -261,7 +268,7 @@ class FeatureEdit(generic.edit.UpdateView):
         return kwargs
 
 
-class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
+class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
@@ -279,9 +286,9 @@ class FeatureDelete(SuccessMessageMixin, generic.edit.DeleteView):
         return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
 
 
-class GroupIndex(generic.ListView):
+class GroupIndexView(generic.ListView):
     model = Group
-    template_name = "persons/groups/groups_index.html"
+    template_name = "persons/groups/index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -292,18 +299,18 @@ class GroupIndex(generic.ListView):
 
 class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = StaticGroup
-    template_name = "persons/groups/groups_delete.html"
+    template_name = "persons/groups/delete.html"
     success_url = reverse_lazy("persons:groups:index")
     success_message = "Skupina byla úspěšně smazána."
 
 
-class StaticGroupDetail(
+class StaticGroupDetailView(
     SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
 ):
     model = StaticGroup
     form_class = AddMembersStaticGroupForm
     success_message = "Osoby byly úspěšně přidány."
-    template_name = "persons/groups/groups_detail_static.html"
+    template_name = "persons/groups/detail_static.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -335,7 +342,7 @@ class StaticGroupDetail(
 class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
     model = StaticGroup
     form_class = StaticGroupForm
-    template_name = "persons/groups/groups_edit_static.html"
+    template_name = "persons/groups/edit_static.html"
     success_message = "Statická skupina byla úspěšně uložena."
 
     def get_object(self, queryset=None):
@@ -366,3 +373,112 @@ class StaticGroupRemoveMemberView(generic.View):
 
         messages.success(self.request, self.success_message)
         return redirect(self.get_success_url())
+
+
+class AddDeleteManagedPersonMixin(generic.View):
+    http_method_names = ["post"]
+
+    def process_form(self, request, form, pk, op, success_message, error_message):
+        if form.is_valid():
+            managing_person = form.cleaned_data["managing_person_instance"]
+            new_managed_person = form.cleaned_data["managed_person_instance"]
+
+            if op == "add":
+                managing_person.managed_persons.add(new_managed_person)
+            else:
+                managing_person.managed_persons.remove(new_managed_person)
+
+            messages.success(request, success_message)
+
+        else:
+            person_error_messages = " ".join(form.errors["person"])
+            messages.error(request, error_message + person_error_messages)
+
+        return redirect(reverse("persons:detail", args=[pk]))
+
+
+class AddManagedPersonView(AddDeleteManagedPersonMixin):
+    def post(self, request, pk):
+        form = AddManagedPersonForm(request.POST, managing_person=pk)
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            "add",
+            _("Nová spravovaná osoba byla přidána."),
+            _("Nepodařilo se uložit novou spravovanou osobu. "),
+        )
+
+
+class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
+    def post(self, request, pk):
+        form = DeleteManagedPersonForm(request.POST, managing_person=pk)
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            "delete",
+            _("Odebrání spravované osoby bylo úspěšné."),
+            _("Nepodařilo se odebrat spravovanou osobu. "),
+        )
+
+
+class SendEmailToSelectedPersonsView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        # selected_persons_id = request.GET.getlist('persons', [])
+        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
+
+        # TODO: Adjust this filtering person based on displayed persons in table
+        selected_persons = Person.objects.all()
+
+        recipients = [
+            f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons
+        ]
+
+        gmail_link = "https://mail.google.com/mail/?view=cm&to=" + ",".join(recipients)
+
+        return redirect(gmail_link)
+
+
+class ExportSelectedPersonsView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        # selected_persons_id = request.GET.getlist('persons', [])
+        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
+
+        # TODO: Adjust this filtering person based on displayed persons in table
+        selected_persons = Person.objects.all()
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="vzs_osoby_export.csv"'
+            },
+        )
+        response.write("\ufeff".encode("utf8"))
+
+        writer = csv.writer(response, delimiter=";")
+
+        labels = []
+        keys = []
+
+        for field in Person._meta.get_fields():
+            if field.is_relation:
+                continue
+
+            labels.append(
+                field.verbose_name if hasattr(field, "verbose_name") else field.name
+            )
+            keys.append(field.name)
+
+        writer.writerow(labels)  # header
+
+        for person in selected_persons:
+            writer.writerow([getattr(person, key) for key in keys])
+
+        return response

@@ -74,7 +74,9 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
         ],
     )
     features = models.ManyToManyField("persons.Feature", through="FeatureAssignment")
-    managed_people = models.ManyToManyField("self", symmetrical=False)
+    managed_persons = models.ManyToManyField(
+        "self", symmetrical=False, related_name="managed_by"
+    )
 
     @property
     def address(self):
