@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
     # Template tags
-    "vzs"
+    "vzs",
 ]
 
 MIDDLEWARE = [
