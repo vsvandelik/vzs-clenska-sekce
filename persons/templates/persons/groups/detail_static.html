@@ -4,6 +4,7 @@
 
 {% load static %}
 {% load render %}
+{% load vzs_filters %}
 
 {% block title %}Detail statické skupiny{% endblock %}
 
@@ -19,11 +20,41 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:groups:edit-static' object.pk %}" class="btn btn-success">Upravit skupinu</a>
                 <a href="{% url 'persons:groups:delete' object.pk %}" class="btn btn-danger">Smazat skupinu</a>
+                {% if object.google_email %}
+                    <a href="{% url 'persons:groups:sync-group-members-google' object.pk %}" class="btn btn-info">Synchronizovat s Google</a>
+                {% endif %}
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Parametry skupiny</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">E-mailová adresa skupiny v Google Workspace:</td>
+                                <td class="w-100">
+                                    {% if object.google_email %}
+                                        <a href="mailto:{{ object.google_email }}">{{ object.google_email }}</a>
+                                    {% else %}
+                                        neuvedena
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if object.google_email %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Je Google autorita seznamu členů?</td>
+                                    <td class="w-100">{{ object.google_as_members_authority|bool_cz }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-header">
                     <div class="card-title h5">Členové</div>

@@ -6,6 +6,7 @@ from django import forms
 from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
+from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
 from .models import Person, FeatureAssignment, Feature, StaticGroup
@@ -193,7 +194,34 @@ class FeatureForm(ModelForm):
 class StaticGroupForm(ModelForm):
     class Meta:
         model = StaticGroup
-        fields = ["name"]
+        exclude = ["members"]
+
+    def clean_google_email(self):
+        all_groups = google_directory.get_list_of_groups()
+
+        emails_of_groups = [group["email"] for group in all_groups]
+
+        if (
+            self.cleaned_data["google_email"]
+            and self.cleaned_data["google_email"] not in emails_of_groups
+        ):
+            raise ValidationError(
+                _("E-mailová adresa Google skupiny neodpovídá žádné reálné skupině.")
+            )
+
+        return self.cleaned_data["google_email"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        google_as_members_authority = cleaned_data.get("google_as_members_authority")
+        google_email = cleaned_data.get("google_email")
+
+        if google_as_members_authority and not google_email:
+            raise ValidationError(
+                _(
+                    "Google nemůže být jako autorita členů skupiny v situaci, kdy není vyplněna emailová adresa skupiny."
+                )
+            )
 
 
 class AddMembersStaticGroupForm(ModelForm):

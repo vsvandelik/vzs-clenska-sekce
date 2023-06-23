@@ -254,6 +254,16 @@ class FeatureAssignment(models.Model):
 
 class Group(models.Model):
     name = models.CharField(_("Název skupiny"), max_length=255)
+    google_email = models.EmailField(
+        _("E-mailová adresa skupiny v Google Workspace"),
+        max_length=255,
+        blank=True,
+        null=True,
+        unique=True,
+    )
+    google_as_members_authority = models.BooleanField(
+        _("Je Google autorita seznamu členů?")
+    )
 
 
 class StaticGroup(Group):
