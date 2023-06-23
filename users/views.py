@@ -122,3 +122,26 @@ class PermissionsView(generic.list.ListView):
 class PermissionDetailView(generic.detail.DetailView):
     model = Permission
     template_name = "users/permission_detail.html"
+
+
+class PermissionAssignView(
+    generic.detail.SingleObjectTemplateResponseMixin,
+    generic.detail.SingleObjectMixin,
+    generic.edit.BaseFormView,
+):
+    http_method_names = ["post"]
+    form_class = forms.PermissionAssignForm
+    model = User
+
+    def get_success_url(self):
+        return reverse_lazy("users:detail", kwargs={"pk": self.object.pk})
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+
+        user = self.object
+        permission = form.cleaned_data["permission"]
+
+        user.user_permissions.add(permission)
+
+        return super().form_valid(form)

@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
-from .models import User
+from .models import User, Permission
 
 
 class NoRenderWidget(forms.Widget):
@@ -172,3 +172,7 @@ class LoginForm(AuthenticationForm):
             _("Prosím, zadejte správný e-mail a heslo"),
             code="invalid_login",
         )
+
+
+class PermissionAssignForm(forms.Form):
+    permission = forms.ModelChoiceField(queryset=Permission.objects.all())
