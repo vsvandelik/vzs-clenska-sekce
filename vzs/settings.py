@@ -180,4 +180,3 @@ MESSAGE_TAGS = {
 
 GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_DOMAIN = "vzs-praha15.cz"
-GOOGLE_DOMAIN = "madlenkapluje.cz"
