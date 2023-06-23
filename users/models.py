@@ -1,12 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth import models as auth_models
 from django.urls import reverse
+from django.contrib.contenttypes.models import ContentType
 
 from vzs.models import RenderableModelMixin
 from persons.models import Person
 
 
-class UserManager(BaseUserManager):
+class UserManager(auth_models.BaseUserManager):
     def create_user(self, person, password=None):
         if not person:
             raise ValueError("Users must have a person set")
@@ -30,7 +31,9 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
+class User(
+    RenderableModelMixin, auth_models.AbstractUser, auth_models.PermissionsMixin
+):
     objects = UserManager()
 
     person = models.OneToOneField(
@@ -63,3 +66,7 @@ class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"pk": self.pk})
+
+
+class Permission(RenderableModelMixin, auth_models.Permission):
+    description = models.CharField(max_length=255)

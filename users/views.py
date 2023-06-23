@@ -6,7 +6,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import models as auth_models
 
-from .models import User
+from persons.models import Person
+from .models import User, Permission
 from . import forms
 
 
@@ -57,34 +58,24 @@ class UserCreateView(SuccessMessageMixin, CustomCreateMixin):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
     success_url = reverse_lazy("users:add")
-    get_form_classes = [forms.PersonSearchForm, forms.PersonSelectForm]
-    default_form_class = forms.PersonSearchForm
+    get_form_classes = [forms.PersonSelectForm]
 
     def get_success_message(self, cleaned_data):
         return _(f"{self.object} byl úspěšně přidán.")
 
-
-class IndexView(generic.list.ListView):
-    template_name = "users/index.html"
-    context_object_name = "users"
-
-    def get_queryset(self):
-        self.user_search_form = forms.UserSearchForm(self.request.GET)
-        self.user_search_pagination_form = forms.UserSearchPaginationForm(
-            self.request.GET
-        )
-        return self.user_search_form.search_users()
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if "user_search_form" not in context:
-            context["user_search_form"] = self.user_search_form
-
-        if "user_search_pagination_form" not in context:
-            context["user_search_pagination_form"] = self.user_search_pagination_form
+        if "people" not in context:
+            context["people"] = Person.objects.filter(user__isnull=True)
 
         return context
+
+
+class IndexView(generic.list.ListView):
+    model = User
+    template_name = "users/index.html"
+    context_object_name = "users"
 
 
 class DetailView(generic.detail.DetailView):
@@ -123,6 +114,11 @@ class LoginView(auth_views.LoginView):
 
 
 class PermissionsView(generic.list.ListView):
-    model = auth_models.Permission
+    model = Permission
     template_name = "users/permissions.html"
     context_object_name = "permissions"
+
+
+class PermissionDetailView(generic.detail.DetailView):
+    model = Permission
+    template_name = "users/permission_detail.html"

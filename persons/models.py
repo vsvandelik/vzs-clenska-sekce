@@ -273,4 +273,3 @@ class Transaction(models.Model):
 
     class Meta:
         permissions = [("ucetni", _("Účetní"))]
-        default_permissions = []

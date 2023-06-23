@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
     {% if next %}
         <p>Prosím, přihlašte se.</p>
@@ -15,7 +17,7 @@
                     <div class="card-body">
                         <form action="{% url "users:login" %}" method="post">
                             {% csrf_token %}
-                            {{ form.as_div }}
+                            {{ form|crispy }}
                             <button type="submit" class="btn btn-primary">Přihlásit</button>
                         </form>
                     </div>

@@ -14,4 +14,9 @@ urlpatterns = [
     path("prihlasit/", views.LoginView.as_view(), name="login"),
     path("odhlasit/", auth.views.LogoutView.as_view(), name="logout"),
     path("povoleni/", views.PermissionsView.as_view(), name="permissions"),
+    path(
+        "povoleni/<int:pk>",
+        views.PermissionDetailView.as_view(),
+        name="permission_detail",
+    ),
 ]
