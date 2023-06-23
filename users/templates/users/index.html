@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load render %}
 {% load radius_range %}
 
@@ -17,7 +18,7 @@
 
             <br>
 
-            <table class="table">
+            <table class="table" id="index_table">
                 <thead>
                     <tr>
                         <th>Osoba</th>
@@ -26,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in page_obj %}
+                    {% for user in users %}
                         <tr>
                             <td>{% render user.person "inline" %}</td>
                             <td>TODO</td>
@@ -40,7 +41,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer">
+        {% comment %} <div class="card-footer">
             <div class="pagination">
                 <form action="{% url "users:index" %}" method="get">
                     {{ user_search_pagination_form.as_div }}
@@ -68,6 +69,12 @@
                     </div>
                 </form>
             </div>
-        </div>
+        </div> {% endcomment %}
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "users/datatables_enable.js" %}">
+        datatables_enable("index_table");
+    </script>
 {% endblock %}

@@ -34,5 +34,7 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "users/datatables_permissions.js" %}"></script>
+    <script src="{% static "users/datatables_enable.js" %}">
+        datatables_enable("permissions_table");
+    </script>
 {% endblock %}
