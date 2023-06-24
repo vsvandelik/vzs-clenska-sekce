@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events_common.js' %}"></script>
+    <script src="{% static 'create_edit_one_time_event.js' %}"></script>
+{% endblock %}
+{% block title %}
+    {% if event %} Editace jednorázové {% else %} Nová jednorázová {% endif %}
+{% endblock %}
+{% block content %}
+    <form method="POST"
+          action=" {% if event %} {% url 'events:edit_one_time_event' event.id %} {% else %} {% url 'events:add_one_time_event' %} {% endif %}"
+          onsubmit="return beforeSubmit()">
+        {% csrf_token %}
+        {% include "events/event_common_fields.html" %}
+        <fieldset>
+            <legend>Datum</legend>
+            <label for="id_starts_date">Začíná</label>
+            {{ form.time_start }}
+
+            <label for="id_ends_date">Končí</label>
+            {{ form.time_end }}
+        </fieldset>
+        <div>
+            <input type="submit" value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
+        </div>
+    </form>
+{% endblock %}

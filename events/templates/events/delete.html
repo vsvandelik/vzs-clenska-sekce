@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% block title %}
+    Smazání události
+{% endblock %}
 {% block content %}
     <form method="post">
         {% csrf_token %}
-        <h2>Smazaní události</h2>
         <p>Chcete opravdu smazat událost "{{ event.name }}"?</p>
         {% if children %}
             <p>Tato událost zahrnuje pravidelné tréninky

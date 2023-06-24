@@ -3,36 +3,18 @@
 {% load static %}
 {% load widget_tweaks %}
 {% block scripts %}
-    <script src="{% static 'create-edit-training.js' %}"></script>
+    <script src="{% static 'events_common.js' %}"></script>
+    <script src="{% static 'create_edit_training.js' %}"></script>
+{% endblock %}
+{% block title %}
+    {% if event %} Editace tréninku {% else %} Nový trénink {% endif %}
 {% endblock %}
 {% block content %}
-    <a href="{% url 'events:index' %}">Zpět</a>
-    <h1 id="training_header">{% if event %} Editace tréninku {% else %} Nový trénink {% endif %}</h1>
-    <hr>
     <form method="POST"
           action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
           onsubmit="return beforeSubmit()">
         {% csrf_token %}
-        <div>
-            <label for="id_name">Jméno</label><br>
-            {{ form.name }}
-        </div>
-        <br>
-        <div>
-            <label for="id_description">Popis</label><br>
-            {{ form.description }}
-        </div>
-        <br>
-        <div>
-            <label for="id_capacity">Maximální počet účastníků</label><br>
-            {{ form.capacity }}
-        </div>
-        <br>
-        <div>
-            <label for="id_age_limit">Minimální věk účastníků</label><br>
-            {{ form.age_limit }}
-        </div>
-        <br>
+        {% include "events/event_common_fields.html" %}
         <fieldset>
             <legend>Datum</legend>
             <label for="id_starts_date">Začíná</label>
