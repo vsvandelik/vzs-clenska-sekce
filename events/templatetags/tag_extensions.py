@@ -1,6 +1,8 @@
 import re
 from django import template
 from ..utils import day_shortcut_2_weekday as day_shortcut_2_weekday_impl
+from ..utils import weekday_pretty as weekday_pretty_impl
+from ..utils import weekday_2_day_shortcut as weekday_2_day_shortcut_impl
 
 numeric_test = re.compile("^\d+$")
 register = template.Library()
@@ -21,6 +23,16 @@ def getattribute(value, arg):
 @register.filter
 def day_shortcut_2_weekday(value):
     return day_shortcut_2_weekday_impl(value)
+
+
+@register.filter
+def weekday_2_day_shortcut(value):
+    return weekday_2_day_shortcut_impl(value)
+
+
+@register.filter
+def weekday_pretty(value):
+    return weekday_pretty_impl(value)
 
 
 @register.filter
@@ -50,3 +62,8 @@ def index_safe(indexable, i):
 @register.filter
 def field_value(fields, field_name):
     return fields[field_name].value()
+
+
+@register.filter
+def atoi(value):
+    return int(value)

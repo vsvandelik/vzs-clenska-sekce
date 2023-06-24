@@ -62,8 +62,7 @@ class EventDetailView(generic.DetailView):
             weekdays = list(
                 map(weekday_pretty, context[self.context_object_name].weekdays)
             )
-            context["weekdays"] = ", ".join(weekdays)
-            context["weekdays_count"] = len(weekdays)
+            context["weekdays_pretty_out"] = ", ".join(weekdays)
         return context
 
 

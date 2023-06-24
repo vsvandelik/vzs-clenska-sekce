@@ -11,12 +11,16 @@ class Event(models.Model):
         APPROVED = "schvalena", _("schválena")
 
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
-    name = models.CharField(max_length=50)
-    description = models.TextField()
-    time_start = models.DateTimeField(null=True)
-    time_end = models.DateTimeField(null=True)
-    capacity = models.PositiveSmallIntegerField(null=True)
-    age_limit = models.PositiveSmallIntegerField(null=True)
+    name = models.CharField(_("Název"), max_length=50)
+    description = models.TextField(_("Popis"))
+    time_start = models.DateTimeField(_("Začíná"), null=True)
+    time_end = models.DateTimeField(_("Končí"), null=True)
+    capacity = models.PositiveSmallIntegerField(
+        _("Maximální počet účastníků"), null=True
+    )
+    age_limit = models.PositiveSmallIntegerField(
+        _("Minimální věk účastníků"), null=True
+    )
     price_list = models.ForeignKey(
         "events.PriceList", on_delete=models.SET_NULL, null=True
     )

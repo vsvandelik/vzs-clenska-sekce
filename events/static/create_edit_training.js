@@ -4,46 +4,44 @@ const days = ['po', 'ut', 'st', 'ct', 'pa', 'so', 'ne']
 
 // Events
 function dateChanged() {
-    saveCheckboxesToLocalStorage()
+    saveTrainingDaysStateToLocalStorage()
     validateDate()
-    getSelectedDays().forEach(d => trainingDaysUpdate(document.getElementById(`id_${d}`)))
+    getSelectedDays().forEach(d => trainingDaysUpdate(d))
 }
 
-function dowTimeChanged(sender) {
-    validateDowTime(sender.id.split('_')[2])
+function timeChanged(sender) {
+    validateTime(sender.name)
 }
 
-function dowToggled(sender) {
-    saveCheckboxesOfParentToLocalStorage(document.getElementById(`${sender.id}_days`))
-    setTimeVisibilityForDowElement(sender)
-    validateDow(true, sender)
-    trainingDaysUpdate(sender)
+function dayToggled(sender) {
+    const day = sender.name
+    saveTrainingDaysStateToLocalStorage()
+    setTimeFieldsState(day, sender.checked)
+    validateDay(true, sender)
+    trainingDaysUpdate(day)
 }
 
 function trainingDayToggled(sender) {
-    const parentFieldset = sender.parentElement
+    const day = sender.parentElement.parentElement.parentElement.id.split('_')[1]
     if (sender.checked) {
         localStorage.removeItem(sender.value)
-        clearCustomValidityFromAllCheckboxesIn(parentFieldset)
+        clearCustomValidityFromTrainingDayElementsOf(day)
     } else {
         localStorage.setItem(sender.value, '0')
-        const checkedCount = countCheckedCheckboxesIn(parentFieldset)
+        const checkedCount = countCheckedTrainingDaysOf(day)
         if (checkedCount === 0)
             setReportValidity(sender, 'Alespoň jeden trénink se musí konat ve vybraný den pro pravidelné opakování', true)
     }
 }
 
 function beforeSubmit() {
-    if (validateForm()) {
-        enableAllTrainingDaysCheckboxes()
-        return true
-    }
-    return false
+    return validateForm()
 }
 
 window.onload = function () {
     dateChanged()
-    getSelectedDow().forEach(d => dowToggled(d))
+    getUnselectedDays().forEach(d => setTimeFieldsState(d, false))
+    getSelectedDayElements().forEach(d => dayToggled(d))
 }
 
 window.onbeforeunload = function () {
@@ -70,27 +68,27 @@ function validateDate(report = false) {
     }
 }
 
-function validateDow(report = false, dowElement = getFirstDow(true)) {
+function validateDay(report = false, dayElement = getFirstDay(true)) {
     const noDayError = 'Není vybrán žádný den pro pravidelné opakování'
-    if (dowElement === undefined) {
-        dowElement = getFirstDow(false)
-        setReportValidity(dowElement, noDayError, report)
+    if (dayElement === undefined) {
+        dayElement = getFirstDay(false)
+        setReportValidity(dayElement, noDayError, report)
         return false
     }
     const selectedCount = countSelectedDays()
     if (selectedCount > 3) {
-        setReportValidity(dowElement, 'Překročen maximální počet konání 3x týdně', report)
+        setReportValidity(dayElement, 'Překročen maximální počet konání 3x týdně', report)
         return false
     } else if (selectedCount === 0) {
-        setReportValidity(dowElement, noDayError, report)
+        setReportValidity(dayElement, noDayError, report)
         return false
     } else {
-        getAllDow().forEach(el => setReportValidity(el, '', report))
+        getAllDays().forEach(el => setReportValidity(el, '', report))
         return true
     }
 }
 
-function validateDowTime(day, report = false) {
+function validateTime(day, report = false) {
     const fromId = `id_from_${day}`
     const toId = `id_to_${day}`
     const fromElm = document.getElementById(fromId)
@@ -109,19 +107,17 @@ function validateDowTime(day, report = false) {
 }
 
 function validateAllTimes(report = false) {
-    return getSelectedDays().map(d => validateDowTime(d, report)).every(b => b === true)
+    return getSelectedDays().map(d => validateTime(d, report)).every(b => b === true)
 }
 
 function validateTrainingDay(day, report = false) {
-    const parentElement = document.getElementById(`id_${day}_days`)
-    const daySelectedTrainings = countCheckedCheckboxesIn(parentElement)
+    const daySelectedTrainings = countCheckedTrainingDaysOf(day)
     if (daySelectedTrainings === 0) {
-        const trainingDay = getFirstUncheckedTrainingDay(parentElement)
+        const trainingDay = getFirstUncheckedTrainingDay(day)
         setReportValidity(trainingDay, 'Alespoň jeden trénink se musí konat ve vybraný den pro pravidelné opakování', report)
         return false
     } else {
-
-        clearCustomValidityFromAllCheckboxesIn(parentElement)
+        clearCustomValidityFromTrainingDayElementsOf(day)
         return true
     }
 }
@@ -129,20 +125,16 @@ function validateTrainingDay(day, report = false) {
 function validateAllTrainingDaysDates(report = false) {
     const startsDateObj = getDateNulledHours(document.getElementById('id_starts_date'))
     const endsDateObj = getDateNulledHours(document.getElementById('id_ends_date'))
-    const parentFieldsets = getParentElementsOfSelectedDow()
-    for (const fieldset of parentFieldsets) {
-        const weekday = dayShort2dow(fieldset.id.split('_')[1])
-        for (const child of fieldset.childNodes) {
-            if (child.nodeName.toLowerCase() === 'input'
-                && child.type === 'checkbox'
-                && child.checked) {
-                    const date = parseCzechDate(child.value)
-                    if (date.getDay() !== weekday
-                        || date.getTime() < startsDateObj.getTime()
-                        || date.getTime() > endsDateObj.getTime()) {
-                            setReportValidity(child, 'Neplatné datum tréninku', report)
-                            return false
-                        }
+    for (const day of getSelectedDays()) {
+        const weekday = dayShortToWeekday(day)
+        const trainingDayElements = getTrainingDayElements(day)
+        for (const element of trainingDayElements) {
+            const date = parseCzechDate(element.value)
+            if (date.getDay() !== weekday
+                || date.getTime() < startsDateObj.getTime()
+                || date.getTime() > endsDateObj.getTime()) {
+                    setReportValidity(element, 'Neplatné datum tréninku', report)
+                    return false
                 }
         }
     }
@@ -154,7 +146,7 @@ function validateAllTrainingDays(report = false) {
 }
 
 function validateForm() {
-    return validateDate(true) && validateDow(true) && validateAllTimes(true) && validateAllTrainingDays(true) && validateAllTrainingDaysDates(true)
+    return validateDate(true) && validateDay(true) && validateAllTimes(true) && validateAllTrainingDays(true) && validateAllTrainingDaysDates(true)
 }
 
 // Helper functions
@@ -164,83 +156,87 @@ function getDateNulledHours(element) {
     return date
 }
 
-function saveCheckboxesOfParentToLocalStorage(parent) {
-    applyToCheckboxesOfParent(parent, child => {
-        if (!child.checked)
-            localStorage.setItem(child.value, '0')
-    })
-}
-
 function getSelectedDays() {
     return days.filter(d => document.getElementById(`id_${d}`).checked)
 }
 
-function getParentElementsOfSelectedDow() {
-    return getSelectedDays().map(d => document.getElementById(`id_${d}_days`))
+function getUnselectedDays() {
+    return days.filter(d => !document.getElementById(`id_${d}`).checked)
 }
 
-function getAllDow() {
+function getTrainingDayElements(day) {
+    return [...document.getElementById(`id_${day}_tbody`).getElementsByTagName('input')]
+}
+
+function getAllTrainingDayElements() {
+    return days.map(d => getTrainingDayElements(d)).flat()
+}
+
+function getAllDays() {
     return days.map(d => document.getElementById(`id_${d}`))
 }
 
-function getSelectedDow() {
+function getSelectedDayElements() {
     return getSelectedDays().map(d => document.getElementById(`id_${d}`))
 }
 
-function getFirstDow(checkedStatus) {
+function getFirstDay(checkedStatus) {
     const d = days.find(d => document.getElementById(`id_${d}`).checked === checkedStatus)
     if (d !== undefined)
         return document.getElementById(`id_${d}`)
     return undefined
 }
 
-function getFirstUncheckedTrainingDay(parentElement) {
-    for (const child of parent.childNodes) {
-        if (child.nodeName.toLowerCase() === 'input' && child.type === 'checkbox' && !child.checked)
-            return child
-    }
+function getFirstUncheckedTrainingDay(day) {
+    const uncheckedTrainingDays = getTrainingDayElements(day).filter(e => !e.checked)
+    if (uncheckedTrainingDays.length > 0)
+        return uncheckedTrainingDays[0]
     return undefined
 }
 
-function saveCheckboxesToLocalStorage() {
-    const parentFieldsets = getParentElementsOfSelectedDow()
-    for (const fieldset of parentFieldsets)
-        saveCheckboxesOfParentToLocalStorage(fieldset)
-}
-
-function applyToCheckboxesOfParent(parent, func) {
-    for (const child of parent.childNodes) {
-        if (child.nodeName.toLowerCase() === 'input' && child.type === 'checkbox') {
-            func(child)
-        }
+function saveTrainingDaysStateToLocalStorage() {
+    const trainingDayElements = getAllTrainingDayElements()
+    for (const element of trainingDayElements) {
+        if (!element.checked)
+            localStorage.setItem(element.value, '0')
     }
 }
 
-function trainingDaysUpdate(dowElement) {
-    const daysFieldsetId = `${dowElement.id}_days`
-    const daysFieldset = document.getElementById(daysFieldsetId)
-    if (dowElement.checked && window._datesValid) {
-        removeChildrenAfterLegend(daysFieldset)
-        daysFieldset.style.display = 'block'
-        addDateCheckboxesTo(daysFieldset)
+function trainingDaysUpdate(day) {
+    const dayElement = document.getElementById(`id_${day}`)
+    if (dayElement.checked && window._datesValid) {
+        removeTrainingDays(day)
+        setTimeFieldsState(day, true)
+        addTrainingDaysTo(document.getElementById(`id_${day}_tbody`))
     } else {
-        daysFieldset.style.display = 'none'
-        removeChildrenAfterLegend(daysFieldset)
+        setTimeFieldsState(day, false)
+        removeTrainingDays(day)
     }
 }
 
-function addDateCheckboxesTo(daysFieldset) {
+
+function addTrainingDaysTo(parent) {
     const startsDate = getDateNulledHours(document.getElementById('id_starts_date'))
     const endsDate = getDateNulledHours(document.getElementById('id_ends_date'))
-    moveDaysToFirstTraining(startsDate, daysFieldset)
+    const day = parent.id.split('_')[1]
+    moveDaysToFirstTraining(startsDate, day)
     while (endsDate.getTime() >= startsDate.getTime()) {
         const datePretty = formatCzechDate(startsDate)
-        const [checkbox, label] =
-            createCheckboxWithLabel('day', datePretty, datePretty)
-        daysFieldset.appendChild(checkbox)
-        daysFieldset.appendChild(label)
+        const tr = createCheckboxWithLabel('day', datePretty, datePretty)
+        parent.appendChild(tr)
         startsDate.setDate(startsDate.getDate() + 7)
     }
+}
+
+function setTimeFieldsState(day, state) {
+    const display = state ? 'block' : 'none'
+    const parentFrom = document.getElementById(`id_from_${day}`).parentElement
+    const parentTo = document.getElementById(`id_to_${day}`).parentElement
+    parentFrom.style.display = display
+    parentTo.style.display = display
+    parentFrom.getElementsByTagName('input')[0].disabled = !state
+    parentTo.getElementsByTagName('input')[0].disabled = !state
+
 }
 
 function formatCzechDate(date) {
@@ -264,33 +260,38 @@ function createCheckboxWithLabel(name, value, labelTxt) {
 
     const label = document.createElement('label')
     label.htmlFor = value
+    label.style.paddingLeft = '3px'
+    label.classList.add('font-weight-normal')
+
     const txtNode = document.createTextNode(labelTxt)
     label.appendChild(txtNode)
 
-    return [checkbox, label]
+    const td = document.createElement('td')
+    td.classList.add('w-100')
+    td.appendChild(checkbox)
+    td.appendChild(label)
+
+    const tr = document.createElement('tr')
+    tr.appendChild(td)
+
+    return tr
 }
 
-function countCheckedCheckboxesIn(parentElement) {
-    let counter = 0
-    applyToCheckboxesOfParent(parentElement, child => {
-        if (child.checked)
-            ++counter
-    })
-    return counter
+function countCheckedTrainingDaysOf(day) {
+    return getTrainingDayElements(day).filter(e => e.checked).length
 }
 
-function clearCustomValidityFromAllCheckboxesIn(parentElement) {
-    applyToCheckboxesOfParent(parentElement, child => setReportValidity(child, '', true))
+function clearCustomValidityFromTrainingDayElementsOf(day) {
+    getTrainingDayElements(day).forEach(e => setReportValidity(e, '', true))
 }
 
-function moveDaysToFirstTraining(date, daysFieldset) {
-    let day = daysFieldset.id.substring(3, 5)
-    day = dayShort2dow(day)
+function moveDaysToFirstTraining(date, day) {
+    day = dayShortToWeekday(day)
     while (date.getDay() !== day)
         date.setDate(date.getDate() + 1)
 }
 
-function dayShort2dow(dayShort) {
+function dayShortToWeekday(dayShort) {
     if (dayShort === 'ne')
         return 0
     else if (dayShort === 'po')
@@ -307,36 +308,10 @@ function dayShort2dow(dayShort) {
         return 6
 }
 
-function removeChildrenAfterLegend(element) {
-    while (element.childNodes.length > 1
-        && element.lastChild.nodeName.toLowerCase() !== 'legend')
-        element.removeChild(element.lastChild);
-
+function removeTrainingDays(day) {
+    document.getElementById(`id_${day}_tbody`).innerHTML = ''
 }
-
 
 function countSelectedDays() {
     return getSelectedDays().length
-}
-
-function setTimeVisibilityForDowElement(dowElement) {
-    const newdisplay = dowElement.checked ? 'block' : 'none'
-    const daytimeid = `${dowElement.id}_time`
-    const daytime = document.getElementById(daytimeid)
-    daytime.style.display = newdisplay
-    setTimeFieldsState(dowElement.id.split('_')[1], !dowElement.checked)
-}
-
-function setTimeFieldsState(day, state) {
-    const f1id = `id_from_${day}`
-    const f2id = `id_to_${day}`
-    document.getElementById(f1id).disabled = state
-    document.getElementById(f2id).disabled = state
-}
-
-function enableAllTrainingDaysCheckboxes() {
-    const parentFieldsets = getParentElementsOfSelectedDow()
-    for (const fieldset of parentFieldsets) {
-        applyToCheckboxesOfParent(fieldset, child => child.disabled = false)
-    }
 }

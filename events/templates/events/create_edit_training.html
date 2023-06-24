@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load extra_tags %}
+{% load tag_extensions %}
+{% load crispy_forms_tags %}
 {% load static %}
 {% load widget_tweaks %}
 {% block scripts %}
@@ -10,81 +11,94 @@
     {% if event %} Editace tréninku {% else %} Nový trénink {% endif %}
 {% endblock %}
 {% block content %}
-    <form method="POST"
-          action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
-          onsubmit="return beforeSubmit()">
-        {% csrf_token %}
-        {% include "events/event_common_fields.html" %}
-        <fieldset>
-            <legend>Datum</legend>
-            <label for="id_starts_date">Začíná</label>
-            {{ form.starts_date }}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST"
+                      action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
+                      onsubmit="return beforeSubmit()">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
+                    </div>
+                    <div class="card-body">
 
-            <label for="id_ends_date">Končí</label>
-            {{ form.ends_date }}
-        </fieldset>
-        <br>
-        <fieldset id="id_days_in_week">
-            <legend>Dny v týdnu</legend>
-            {% for i in '0123456'|make_list %}
-                {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
-                    {% with form|index:day as input %}
-                        {{ input }}
-                    {% endwith %}
-                    <label for="id_{{ day }}">{{ day_pretty }}</label>
-                {% endwith %}
-            {% endfor %}
-        </fieldset>
 
-        {% for i in '0123456'|make_list %}
-            {% with day=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 %}
-                {% with from_var_name='from_'|addstr:day to_var_name='to_'|addstr:day %}
-                    {% with from_time=form|field_value:from_var_name to_time=form|field_value:to_var_name %}
-                        <div id="id_{{ day }}_time" {% if not from_time %} style="display: none" {% endif %}>
-                            <label>Čas konání v {{ day_pretty }}</label><br>
-                            <label for="id_from_{{ day }}">Od</label>
-                            {% if from_time %}
-                                {% render_field form|index:from_var_name required="" %}
-                            {% else %}
-                                {% render_field form|index:from_var_name required="" disabled="" %}
-                            {% endif %}
+                        {% include "events/event_common_fields.html" %}
+                        <fieldset>
+                            <legend>Datum</legend>
+                            {{ form.starts_date|as_crispy_field }}
 
-                            <label for="id_to_{{ day }}">Do</label>
-                            {% if to_time %}
-                                {% render_field form|index:to_var_name required="" %}
-                            {% else %}
-                                {% render_field form|index:to_var_name required="" disabled="" %}
-                            {% endif %}
-                        </div>
-                    {% endwith %}
-                {% endwith %}
-            {% endwith %}
-        {% endfor %}
-
-        {% for i in '0123456'|make_list %}
-            {% with days|index:forloop.counter0 as day %}
-                {% with day|day_shortcut_2_weekday as weekday %}
-                    {% with day_pretty=days_pretty|index:forloop.counter0 from_var_name='from_'|addstr:day dates_weekday=dates|index_safe:weekday %}
-                        {% with event|getattribute:from_var_name as from_time %}
-                            <fieldset id="id_{{ day }}_days" {% if not from_time %} style="display: none" {% endif %}>
-                                <legend>{{ day_pretty }} dny</legend>
-                                {% for date,checked in dates_weekday %}
-                                    {% with date|date:'j.n.Y' as dateFormatted %}
-                                        <input id="{{ dateFormatted }}" type="checkbox" name="day"{% if checked %}
-                                                   checked {% endif %} {% if weekday_disable|index:weekday and checked %}
-                                                       disabled {% endif %} onchange="trainingDayToggled(this)"
-                                               value="{{ dateFormatted }}">
-                                        <label for="{{ dateFormatted }}">{{ dateFormatted }}</label>
-                                    {% endwith %}
-                                {% endfor %}
-                        {% endwith %}
+                            {{ form.ends_date|as_crispy_field }}
                         </fieldset>
-                    {% endwith %}
-                {% endwith %}
-            {% endwith %}
-        {% endfor %}
-        <div>
-            <input type="submit" value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
-        </div>
-    </form>
+
+
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header border-0">
+                                    <div class="card-title h5">Rozpis tréninků</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for i in '0123456'|make_list %}
+
+                                            {% with day_shortcut=days|index:forloop.counter0 day_pretty=days_pretty|index:forloop.counter0 weekday=i|atoi %}
+                                                <div class="col-sm-5 col-md-4 col-lg-3 col-12">
+                                                    <div class="card">
+                                                        <div class="card-header border-0">
+                                                            <div class="card-title h5 text-bold">{{ form|index:day_shortcut|as_crispy_field }}</div>
+                                                        </div>
+                                                        <div class="card-body p-0">
+                                                            {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
+                                                                {% with from_time=form|field_value:from_var_name to_time=form|field_value:to_var_name %}
+                                                                    <div class="row">
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:from_var_name|as_crispy_field }}
+                                                                        </div>
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:to_var_name|as_crispy_field }}
+                                                                        </div>
+                                                                    </div>
+                                                                {% endwith %}
+                                                                <table class="mb-1 table">
+                                                                    <tbody id="id_{{ day_shortcut }}_tbody">
+                                                                        {% with dates_weekday=dates|index_safe:weekday %}
+                                                                            {% for date,checked in dates_weekday %}
+                                                                                <tr>
+                                                                                    {% with date|date:'j.n.Y' as dateFormatted %}
+                                                                                        <td class="w-100">
+                                                                                            <input id="{{ dateFormatted }}"
+                                                                                                   type="checkbox" name="day"
+                                                                                                   {% if checked %}
+                                                                                                       checked {% endif %}
+                                                                                                   {% if weekday_disable|index:weekday and checked %}
+                                                                                                       disabled {% endif %}
+                                                                                                   onchange="trainingDayToggled(this)"
+                                                                                                   value="{{ dateFormatted }}">
+                                                                                            <label class="font-weight-normal"
+                                                                                                   for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                    {% endwith %}
+                                                                                </td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        {% endwith %}
+                                                            {% endwith %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                </div>
+                                                </div>
+                                            {% endwith %}
+                                        {% endfor %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
+                    </div>
+                </form>
 {% endblock %}
