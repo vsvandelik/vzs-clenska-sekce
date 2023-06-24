@@ -79,7 +79,7 @@
                                 {% for weekday in event.weekdays %}
                                     <tr>
                                         <td class="text-nowrap text-bold">{{ weekday|weekday_pretty }}:</td>
-                                        {% with weekday|weekday_2_day_shortcut as day_shortcut %}
+                                        {% with day_shortcut=weekday|weekday_2_day_shortcut %}
                                             {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
                                                 {% with from_time=event|getattribute:from_var_name to_time=event|getattribute:to_var_name %}
                                                     <td class="w-100">{{ from_time|date:'H:i' }}
@@ -106,7 +106,7 @@
                                 <div class="col-md-2 col-12">
                                     <div class="card">
                                         <div class="card-header border-0">
-                                            {% with weekday|weekday_pretty as day %}
+                                            {% with day=weekday|weekday_pretty %}
                                                 <div class="card-title h5 text-bold">{{ day }}</div>
                                             {% endwith %}
                                         </div>
