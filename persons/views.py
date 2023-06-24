@@ -10,6 +10,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from google_integration import google_directory
 from .forms import (
     PersonForm,
     FeatureAssignmentForm,
@@ -27,6 +28,7 @@ from .models import (
     Group,
     StaticGroup,
 )
+from .utils import sync_single_group_with_google
 
 
 class PersonIndexView(generic.ListView):
@@ -184,7 +186,7 @@ class FeatureIndexView(generic.ListView):
     context_object_name = "features"
 
     def get_template_names(self):
-        return f"persons/features/feature_index.html"
+        return f"persons/features/index.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -205,7 +207,7 @@ class FeatureDetailView(generic.DetailView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/features/feature_detail.html"
+        return f"persons/features/detail.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -223,7 +225,7 @@ class FeatureEditView(generic.edit.UpdateView):
     form_class = FeatureForm
 
     def get_template_names(self):
-        return f"persons/features/feature_edit.html"
+        return f"persons/features/edit.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -272,7 +274,7 @@ class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = Feature
 
     def get_template_names(self):
-        return f"persons/features/feature_delete.html"
+        return f"persons/features/delete.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -323,12 +325,18 @@ class StaticGroupDetailView(
         return reverse("persons:groups:detail", args=(self.object.pk,))
 
     def form_valid(self, form):
-        new_member_ids = form.cleaned_data["members"]
+        new_members = form.cleaned_data["members"]
 
         existing_members = self.object.members.all()
-        combined_members = existing_members | new_member_ids
+        combined_members = existing_members | new_members
 
         form.instance.members.set(combined_members)
+
+        if form.instance.google_email:
+            for new_member in new_members:
+                google_directory.add_member_to_group(
+                    new_member.email, form.instance.google_email
+                )
 
         messages.success(self.request, self.success_message)
 
@@ -371,8 +379,49 @@ class StaticGroupRemoveMemberView(generic.View):
         static_group = get_object_or_404(StaticGroup, id=self.kwargs["group"])
         static_group.members.remove(member_to_remove)
 
+        if static_group.google_email:
+            google_directory.remove_member_from_group(
+                Person.objects.get(pk=member_to_remove).email, static_group.google_email
+            )
+
         messages.success(self.request, self.success_message)
         return redirect(self.get_success_url())
+
+
+class SyncGroupMembersWithGoogleView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, group=None):
+        if group:
+            group_instance = get_object_or_404(StaticGroup, pk=group)
+            if not group_instance.google_email:
+                messages.error(
+                    request,
+                    _(
+                        "Zvolená skupina nemá zadanou google e-mailovou adresu, a proto nemůže být sychronizována."
+                    ),
+                )
+                return redirect(
+                    reverse("persons:groups:detail", args=[group_instance.pk])
+                )
+
+            sync_single_group_with_google(group_instance)
+            messages.success(
+                request,
+                _("Synchronizace skupiny %s s Google Workplace byla úspěšná.")
+                % group_instance.name,
+            )
+            return redirect(reverse("persons:groups:detail", args=[group_instance.pk]))
+
+        else:
+            for group in StaticGroup.objects.filter(google_email__isnull=False):
+                sync_single_group_with_google(group)
+
+            messages.success(
+                request,
+                _("Synchronizace všech skupin s Google Workplace byla úspěšná."),
+            )
+            return redirect(reverse("persons:groups:index"))
 
 
 class AddDeleteManagedPersonMixin(generic.View):
