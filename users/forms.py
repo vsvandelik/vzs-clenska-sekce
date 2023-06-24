@@ -201,3 +201,25 @@ class LoginForm(AuthenticationForm):
             _("Prosím, zadejte správný e-mail a heslo"),
             code="invalid_login",
         )
+
+
+class ChangeActivePersonForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    person = forms.ModelChoiceField(queryset=Person.objects.all())
+
+    def clean_person(self):
+        person = self.cleaned_data["person"]
+
+        if person not in self.user.get_managed_persons():
+            raise ValidationError(_("Uživatel nespravuje tuto osobu."))
+
+        return person
+
+    def clean(self):
+        if not self.user.is_authenticated:
+            raise ValidationError(_("Uživatel musí být přihlášen."))
+
+        return self.cleaned_data

@@ -13,4 +13,9 @@ urlpatterns = [
     path("<int:pk>/upravit/", views.UserEditView.as_view(), name="edit"),
     path("prihlasit/", views.LoginView.as_view(), name="login"),
     path("odhlasit/", auth_views.LogoutView.as_view(), name="logout"),
+    path(
+        "zmenit-aktivni-osobu/",
+        views.ChangeActivePersonView.as_view(),
+        name="change-active-person",
+    ),
 ]

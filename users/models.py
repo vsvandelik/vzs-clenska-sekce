@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin, BaseUserManager
 from django.urls import reverse
+from itertools import chain
 
 from vzs.models import RenderableModelMixin
 from persons.models import Person
@@ -63,3 +64,6 @@ class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"pk": self.pk})
+
+    def get_managed_persons(self):
+        return chain(self.person.managed_persons.all(), [self.person])

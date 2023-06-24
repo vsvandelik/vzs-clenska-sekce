@@ -40,12 +40,30 @@
         </li>
 
         {% if user.is_authenticated %}
-                <!-- User -->
+            <!-- User -->
             <li class="nav-item">
                 <a class="nav-link" href="{% url "users:detail" user.pk %}">
                     <i class="far fa-user"></i>&nbsp;
                     {{ user.person.first_name }} {{ user.person.last_name }}
                 </a>
+            </li>
+
+            <!-- User -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" href="#" data-toggle="dropdown">
+                    <i class="far fa-user"></i>
+                    {{ active_person.first_name }} {{ active_person.last_name }}
+                </a>
+                <div class="dropdown-menu">
+                    <form action="{% url "users:change-active-person" %}" method="post">
+                        {% csrf_token %}
+                        {% for managed_person in user.get_managed_persons %}
+                            {% if managed_person != active_person %}
+                                <button type="submit" name="person" value="{{ managed_person.pk }}" class="dropdown-item">{{ managed_person.first_name }} {{ managed_person.last_name }}</button>
+                            {% endif %}
+                        {% endfor %}
+                    </form>
+                </div>
             </li>
 
             <!-- Log out -->
