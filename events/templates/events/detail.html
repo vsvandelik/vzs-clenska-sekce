@@ -14,6 +14,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="
+
                          {% if is_top_training %}{% url 'events:edit_training' event.id %}{% else %}{% url 'events:edit_one_time_event' event.id %}{% endif %}"
                    class="btn btn-success">Upravit</a>
                 <a href="{% url 'events:delete' event.id %}" class="btn btn-danger">Smazat</a>

@@ -29,7 +29,8 @@
                                         <div class="btn-group">
                                             <a class="btn btn-info btn-sm" href="{% url 'events:detail' event.id %}"><i
                                                 class="fas fa-info"></i></a>
-                                            <a class="btn btn-success btn-sm" href="{% if event.is_top_training %}{% url 'events:edit_training' event.id %}{% else %}{% url 'events:edit_one_time_event' event.id %}{% endif %}"><i
+                                            <a class="btn btn-success btn-sm" href="
+                                                                                    {% if event.is_top_training %}{% url 'events:edit_training' event.id %}{% else %}{% url 'events:edit_one_time_event' event.id %}{% endif %}"><i
                                                 class="fas fa-pen"></i></a>
                                             <a class="btn btn-danger btn-sm" href="{% url 'events:delete' event.id %}"><i
                                                 class="fas fa-trash-alt"></i></a>
