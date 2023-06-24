@@ -230,12 +230,11 @@ function addTrainingDaysTo(parent) {
 
 function setTimeFieldsState(day, state) {
     const display = state ? 'block' : 'none'
-    const parentFrom = document.getElementById(`id_from_${day}`).parentElement
-    const parentTo = document.getElementById(`id_to_${day}`).parentElement
-    parentFrom.style.display = display
-    parentTo.style.display = display
-    parentFrom.getElementsByTagName('input')[0].disabled = !state
-    parentTo.getElementsByTagName('input')[0].disabled = !state
+    const parent = document.getElementById(`id_from_${day}`).parentElement.parentElement.parentElement.parentElement
+    parent.style.display = display
+    const fields = parent.getElementsByTagName('input')
+    fields[0].disabled = !state
+    fields[1].disabled = !state
 
 }
 
