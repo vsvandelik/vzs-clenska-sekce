@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     dependencies = [
         (
             "persons",
-            "0015_remove_person_managed_people_person_managed_persons_and_more",
+            "0015_remove_person_managed_people_and_more",
         ),
     ]
 
