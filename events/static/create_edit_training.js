@@ -10,7 +10,7 @@ function dateChanged() {
 }
 
 function timeChanged(sender) {
-    validateTime(sender.name)
+    validateTime(sender.name.split('_')[1])
 }
 
 function dayToggled(sender) {

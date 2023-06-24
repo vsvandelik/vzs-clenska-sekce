@@ -44,9 +44,9 @@ class Event(models.Model):
 
     def get_weekdays_trainings_occur(self):
         weekdays = set()
-        children = Event.objects.filter(parent__exact=self)
+        children = self.get_children_trainings_sorted()
         for child in children:
-            weekdays.add(timezone.localtime(child.time_start).weekday())
+            weekdays.add(child.time_start.weekday())
         out = list(weekdays)
         out.sort()
         return out
@@ -57,16 +57,13 @@ class Event(models.Model):
         for weekday in self.weekdays:
             day_shortcut = weekday_2_day_shortcut(weekday)
             for child in self.children:
-                child_time_start_local = timezone.localtime(child.time_start)
-                if child_time_start_local.weekday() == weekday:
+                if child.time_start.weekday() == weekday:
                     setattr(
                         self,
                         f"from_{day_shortcut}",
-                        child_time_start_local,
+                        child.time_start,
                     )
-                    setattr(
-                        self, f"to_{day_shortcut}", timezone.localtime(child.time_end)
-                    )
+                    setattr(self, f"to_{day_shortcut}", child.time_end)
                     break
 
     def does_training_take_place_on_date(self, date):
@@ -80,10 +77,14 @@ class Event(models.Model):
         return False
 
     def get_children_trainings_sorted(self):
-        return Event.objects.filter(parent__exact=self).order_by("time_start")
+        children = Event.objects.filter(parent__exact=self).order_by("time_start")
+        for child in children:
+            child.time_start = timezone.localtime(child.time_start)
+            child.time_end = timezone.localtime(child.time_end)
+        return children
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
 
 class EventPosition(models.Model):
