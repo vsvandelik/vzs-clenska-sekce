@@ -75,7 +75,11 @@
                             <tbody>
                                 <tr>
                                     <td class="text-nowrap text-bold">Koná se týdně:</td>
-                                    <td class="w-100">{{ event.weekdays|length }}x v {{ weekdays_pretty_out }}</td>
+                                    <td class="w-100">{{ event.weekdays|length }}x v
+                                        {% for weekday in event.weekdays %}
+                                            {{ weekday|weekday_pretty }}{% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    </td>
                                 </tr>
                                 {% for weekday in event.weekdays %}
                                     <tr>

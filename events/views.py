@@ -59,10 +59,6 @@ class EventDetailView(generic.DetailView):
         if context[self.context_object_name].is_top_training():
             context[self.context_object_name].extend_2_top_training()
             context["is_top_training"] = True
-            weekdays = list(
-                map(weekday_pretty, context[self.context_object_name].weekdays)
-            )
-            context["weekdays_pretty_out"] = ", ".join(weekdays)
         return context
 
 
