@@ -21,11 +21,6 @@ def getattribute(value, arg):
 
 
 @register.filter
-def map(func, val):
-    return func(val)
-
-
-@register.filter
 def day_shortcut_2_weekday(value):
     return day_shortcut_2_weekday_impl(value)
 

@@ -4,7 +4,6 @@ from django.views import generic
 from .forms import TrainingForm, OneTimeEventForm
 from django.contrib.messages.views import SuccessMessageMixin
 from .mixin_extensions import FailureMessageMixin
-from .utils import weekday_pretty, days_shortcut_list, days_pretty_list
 
 
 class EventMessagesMixin(SuccessMessageMixin, FailureMessageMixin):
@@ -78,8 +77,6 @@ class TrainingCreateView(generic.CreateView, EventCreateMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["days"] = days_shortcut_list()
-        context["days_pretty"] = days_pretty_list()
         context["dates"] = context["form"].generate_dates()
         return context
 
@@ -92,12 +89,5 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
         context = super().get_context_data(**kwargs)
         event = context[self.context_object_name]
         event.extend_2_top_training()
-        context["days"] = days_shortcut_list()
-        context["days_pretty"] = days_pretty_list()
         context["dates"] = context["form"].generate_dates()
-        context["weekday_disable"] = {}
-        for weekday in context["dates"]:
-            context["weekday_disable"][weekday] = (
-                sum(map(lambda x: x[1], context["dates"][weekday])) == 1
-            )
         return context
