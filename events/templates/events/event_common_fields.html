@@ -1,20 +1,5 @@
-<div>
-    <label for="id_name">Jméno</label><br>
-    {{ form.name }}
-</div>
-<br>
-<div>
-    <label for="id_description">Popis</label><br>
-    {{ form.description }}
-</div>
-<br>
-<div>
-    <label for="id_capacity">Maximální počet účastníků</label><br>
-    {{ form.capacity }}
-</div>
-<br>
-<div>
-    <label for="id_age_limit">Minimální věk účastníků</label><br>
-    {{ form.age_limit }}
-</div>
-<br>
+{% load crispy_forms_tags %}
+{{ form.name|as_crispy_field }}
+{{ form.description|as_crispy_field }}
+{{ form.capacity|as_crispy_field }}
+{{ form.age_limit|as_crispy_field }}

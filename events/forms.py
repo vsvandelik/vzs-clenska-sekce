@@ -10,6 +10,7 @@ from .utils import (
 )
 from datetime import timezone
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -81,139 +82,155 @@ class TrainingForm(OneTimeEventForm):
                     self.initial[attr] = value
 
     starts_date = forms.DateField(
+        label="Začíná",
         widget=forms.DateInput(
             attrs={"type": "date", "onchange": "dateChanged()"}, format="%Y-%m-%d"
-        )
+        ),
     )
     ends_date = forms.DateField(
+        label="Končí",
         widget=forms.DateInput(
             attrs={"type": "date", "onchange": "dateChanged()"}, format="%Y-%m-%d"
-        )
+        ),
     )
     po = forms.BooleanField(
-        label_suffix="Po",
+        label="Po",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     ut = forms.BooleanField(
-        label_suffix="Út",
+        label="Út",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     st = forms.BooleanField(
-        label_suffix="St",
+        label="St",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     ct = forms.BooleanField(
-        label_suffix="Čt",
+        label="Čt",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     pa = forms.BooleanField(
-        label_suffix="Pá",
+        label="Pá",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     so = forms.BooleanField(
-        label_suffix="So",
+        label="So",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
     ne = forms.BooleanField(
-        label_suffix="Ne",
+        label="Ne",
         required=False,
-        widget=forms.CheckboxInput(attrs={"onchange": "dowToggled(this)"}),
+        widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
 
     from_po = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_po = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ut = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ut = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_st = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_st = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ct = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ct = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_pa = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_pa = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_so = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_so = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
     from_ne = forms.TimeField(
+        label="Od",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
     to_ne = forms.TimeField(
+        label="Do",
         required=False,
         widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "dowTimeChanged(this)"}, format="%H:%M"
+            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
         ),
     )
 
