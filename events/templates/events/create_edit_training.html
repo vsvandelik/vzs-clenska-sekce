@@ -22,8 +22,6 @@
                         <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
                     </div>
                     <div class="card-body">
-
-
                         {% include "events/event_common_fields.html" %}
                         <fieldset>
                             <legend>Datum</legend>
@@ -31,8 +29,6 @@
 
                             {{ form.ends_date|as_crispy_field }}
                         </fieldset>
-
-
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header border-0">
@@ -42,7 +38,7 @@
                                     <div class="row">
                                         {% for i in '0123456'|make_list %}
                                             {% with weekday=i|atoi %}
-                                                {% with day_shortcut=weekday|weekday_2_day_shortcut day_pretty=weekday|weekday_pretty %}
+                                                {% with day_shortcut=weekday|weekday_2_day_shortcut%}
                                                     <div class="col-sm-5 col-md-4 col-lg-3 col-12">
                                                         <div class="card">
                                                             <div class="card-header border-0">
@@ -50,46 +46,43 @@
                                                             </div>
                                                             <div class="card-body p-0">
                                                                 {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
-                                                                    {% with from_time=form|field_value:from_var_name to_time=form|field_value:to_var_name %}
-                                                                        <div class="row">
-                                                                            <div class="col-12 px-4">
-                                                                                {{ form|index:from_var_name|as_crispy_field }}
-                                                                            </div>
-                                                                            <div class="col-12 px-4">
-                                                                                {{ form|index:to_var_name|as_crispy_field }}
-                                                                            </div>
+                                                                    <div class="row">
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:from_var_name|as_crispy_field }}
                                                                         </div>
-                                                                    {% endwith %}
-                                                                    <table class="mb-1 table">
-                                                                        <tbody id="id_{{ day_shortcut }}_tbody">
-                                                                            {% with dates_weekday=dates|index_safe:weekday %}
-                                                                                {% for date,checked in dates_weekday %}
-                                                                                    <tr>
-                                                                                        {% with dateFormatted=date|date:'j.n.Y' %}
-                                                                                            <td class="w-100">
-                                                                                                <input id="{{ dateFormatted }}"
-                                                                                                       type="checkbox" name="day"
-                                                                                                       {% if checked %}
-                                                                                                           checked {% endif %}
-                                                                                                       onchange="trainingDayToggled(this)"
-                                                                                                       value="{{ dateFormatted }}">
-                                                                                                <label class="font-weight-normal"
-                                                                                                       for="{{ dateFormatted }}">{{ dateFormatted }}</label>
-                                                                                        {% endwith %}
-                                                                                    </td>
-                                                                                    </tr>
-                                                                                {% endfor %}
-                                                                            {% endwith %}
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:to_var_name|as_crispy_field }}
+                                                                        </div>
+                                                                    </div>
                                                                 {% endwith %}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                    </div>
+                                                                <table class="mb-1 table">
+                                                                    <tbody id="id_{{ day_shortcut }}_tbody">
+                                                                        {% with dates_weekday=dates|index_safe:weekday %}
+                                                                            {% for date,checked in dates_weekday %}
+                                                                                <tr>
+                                                                                    {% with dateFormatted=date|date:'j.n.Y' %}
+                                                                                        <td class="w-100">
+                                                                                            <input id="{{ dateFormatted }}"
+                                                                                                   type="checkbox" name="day"
+                                                                                                   {% if checked %}
+                                                                                                       checked {% endif %}
+                                                                                                   onchange="trainingDayToggled(this)"
+                                                                                                   value="{{ dateFormatted }}">
+                                                                                            <label class="font-weight-normal"
+                                                                                                   for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                    {% endwith %}
+                                                                                </td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        {% endwith %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 {% endwith %}
                                             {% endwith %}
                                         {% endfor %}
-
                                     </div>
                                 </div>
                             </div>
