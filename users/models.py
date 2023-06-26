@@ -66,4 +66,4 @@ class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
         return reverse("users:detail", kwargs={"pk": self.pk})
 
     def get_managed_persons(self):
-        return chain(self.person.managed_persons.all(), [self.person])
+        return list(chain(self.person.managed_persons.all(), [self.person]))

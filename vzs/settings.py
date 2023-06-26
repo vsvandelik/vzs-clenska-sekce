@@ -75,10 +75,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "users.context_processors.active_person",
             ],
-            "libraries": {
-                "render": "vzs.templatetags.render",
-                "radius_range": "vzs.templatetags.radius_range",
-            },
         },
     },
 ]
