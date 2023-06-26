@@ -3,10 +3,6 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    {% if next %}
-        <p>Prosím, přihlašte se.</p>
-    {% endif %}
-
     <div class="container">
         <div class="row justify-content-md-center">
             <div class="col-3">
@@ -15,6 +11,10 @@
                         <h3 class="card-title">Přihlášení</h3>
                     </div>
                     <div class="card-body">
+                        {% if next %}
+                            <p>Prosím, přihlašte se.</p>
+                        {% endif %}
+
                         <form action="{% url "users:login" %}" method="post">
                             {% csrf_token %}
                             {{ form|crispy }}
