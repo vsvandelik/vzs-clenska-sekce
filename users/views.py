@@ -5,7 +5,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
 from django.utils.functional import SimpleLazyObject
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import User
 from . import forms
@@ -136,7 +137,7 @@ class LoginView(auth_views.LoginView):
         return response
 
 
-class ChangeActivePersonView(generic.edit.BaseFormView):
+class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
     http_method_names = ["post"]
     form_class = forms.ChangeActivePersonForm
 
@@ -149,10 +150,14 @@ class ChangeActivePersonView(generic.edit.BaseFormView):
         request = self.request
         user = request.user
 
-        if user.is_authenticated:
-            new_active_person = form.cleaned_data["person"]
+        new_active_person = form.cleaned_data["person"]
 
-            if new_active_person in user.person.get_managed_persons():
-                set_active_person(request, new_active_person)
+        if new_active_person in user.person.get_managed_persons():
+            set_active_person(request, new_active_person)
+            messages.success(request, _("Aktivní osoba úspěšně změněna."))
+        else:
+            return HttpResponseForbidden(
+                _("Vybraná osoba není spravována přihlášenou osobou.")
+            )
 
         return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
