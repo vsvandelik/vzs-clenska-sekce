@@ -160,4 +160,6 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
                 _("Vybraná osoba není spravována přihlášenou osobou.")
             )
 
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        return HttpResponseRedirect(
+            request.META.get("HTTP_REFERER", reverse_lazy("persons:index"))
+        )
