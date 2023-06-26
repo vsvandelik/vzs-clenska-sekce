@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 descriptions = {"ucetni": _("Popis účetního")}
 
 
-def _get_all_permissions(opts, app_config):
+def _get_all_permissions(opts):
     """
     Return (codename, name, description) for all permissions in the given opts.
     """
