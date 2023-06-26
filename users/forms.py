@@ -63,17 +63,9 @@ class CustomModelChoiceField(forms.ModelChoiceField):
 
 
 class PersonSelectForm(forms.Form):
-    name = "person_select_form"
-
     person = forms.ModelChoiceField(
         required=False, queryset=userless_people, **no_render_field
     )
-    form_id = forms.CharField(
-        required=False, initial="person_select_form", widget=forms.HiddenInput
-    )
-
-    def handle(self, request, context):
-        pass
 
 
 class UserBaseForm(forms.ModelForm):
