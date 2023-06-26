@@ -152,7 +152,7 @@ class ChangeActivePersonView(generic.edit.BaseFormView):
         if user.is_authenticated:
             new_active_person = form.cleaned_data["person"]
 
-            if new_active_person in user.get_managed_persons():
+            if new_active_person in user.person.get_managed_persons():
                 set_active_person(request, new_active_person)
 
         return HttpResponseRedirect(request.META.get("HTTP_REFERER"))

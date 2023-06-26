@@ -213,7 +213,7 @@ class ChangeActivePersonForm(forms.Form):
     def clean_person(self):
         person = self.cleaned_data["person"]
 
-        if person not in self.user.get_managed_persons():
+        if person not in self.user.person.get_managed_persons():
             raise ValidationError(_("Uživatel nespravuje tuto osobu."))
 
         return person

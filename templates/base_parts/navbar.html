@@ -43,7 +43,7 @@
         {% if user.is_authenticated %}
             <!-- User -->
             <li class="nav-item dropdown">
-                {% with managed_persons=user.get_managed_persons %}
+                {% with managed_persons=user.person.get_managed_persons %}
                     {% with do_render_dropdown=managed_persons|length|neq:1 %}
                         <a class="nav-link" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
                             <i class="far fa-user"></i>
