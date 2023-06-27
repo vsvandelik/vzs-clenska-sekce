@@ -148,12 +148,12 @@ class LoginForm(AuthenticationForm):
         password = self.cleaned_data.get("password")
 
         if not email or not password:
-            raise error
+            raise self.error
 
         user = authenticate(self.request, email=email, password=password)
 
         if not user:
-            raise error
+            raise self.error
 
         self.user_cache = user
         return self.cleaned_data
