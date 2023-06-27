@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load tag_extensions %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load widget_tweaks %}
+{% block scripts %}
+    <script src="{% static 'events_common.js' %}"></script>
+    <script src="{% static 'create_edit_training.js' %}"></script>
+{% endblock %}
+{% block title %}
+    {% if event %} Editace tréninku {% else %} Nový trénink {% endif %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST"
+                      action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
+                      onsubmit="return beforeSubmit()">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
+                    </div>
+                    <div class="card-body">
+                        {% include "events/event_common_fields.html" %}
+                        <fieldset>
+                            <legend>Datum</legend>
+                            {{ form.starts_date|as_crispy_field }}
+
+                            {{ form.ends_date|as_crispy_field }}
+                        </fieldset>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header border-0">
+                                    <div class="card-title h5">Rozpis tréninků</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for i in '0123456'|make_list %}
+                                            {% with weekday=i|atoi %}
+                                                {% with day_shortcut=weekday|weekday_2_day_shortcut%}
+                                                    <div class="col-sm-5 col-md-4 col-lg-3 col-12">
+                                                        <div class="card">
+                                                            <div class="card-header border-0">
+                                                                <div class="card-title h5 text-bold">{{ form|index:day_shortcut|as_crispy_field }}</div>
+                                                            </div>
+                                                            <div class="card-body p-0">
+                                                                {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
+                                                                    <div class="row">
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:from_var_name|as_crispy_field }}
+                                                                        </div>
+                                                                        <div class="col-12 px-4">
+                                                                            {{ form|index:to_var_name|as_crispy_field }}
+                                                                        </div>
+                                                                    </div>
+                                                                {% endwith %}
+                                                                <table class="mb-1 table">
+                                                                    <tbody id="id_{{ day_shortcut }}_tbody">
+                                                                        {% with dates_weekday=dates|index_safe:weekday %}
+                                                                            {% for date,checked in dates_weekday %}
+                                                                                <tr>
+                                                                                    {% with dateFormatted=date|date:'j.n.Y' %}
+                                                                                        <td class="w-100">
+                                                                                            <input id="{{ dateFormatted }}"
+                                                                                                   type="checkbox" name="day"
+                                                                                                   {% if checked %}
+                                                                                                       checked {% endif %}
+                                                                                                   onchange="trainingDayToggled(this)"
+                                                                                                   value="{{ dateFormatted }}">
+                                                                                            <label class="font-weight-normal"
+                                                                                                   for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                    {% endwith %}
+                                                                                </td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        {% endwith %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endwith %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
+                    </div>
+                </form>
+{% endblock %}

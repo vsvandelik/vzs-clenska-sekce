@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% load render %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card elevation-2">
+                <div class="card-header">
+                    <div class="card-title h5">{% render permission "inline" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

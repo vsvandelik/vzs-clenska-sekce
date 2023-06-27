@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events_common.js' %}"></script>
+    <script src="{% static 'create_edit_one_time_event.js' %}"></script>
+{% endblock %}
+{% block title %}
+    {% if event %} Editace jednorázové {% else %} Nová jednorázová {% endif %}
+{% endblock %}
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST"
+                      action=" {% if event %} {% url 'events:edit_one_time_event' event.id %} {% else %} {% url 'events:add_one_time_event' %} {% endif %}"
+                      onsubmit="return beforeSubmit()">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">Přidání</div>
+                    </div>
+                    <div class="card-body">
+                        {% include "events/event_common_fields.html" %}
+                        <fieldset>
+                            <legend>Datum</legend>
+                            {{ form.time_start|as_crispy_field }}
+                            {{ form.time_end|as_crispy_field }}
+                        </fieldset>
+
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% if event %}Uložit{% else %}Vytvořit{% endif %}">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+{% endblock %}

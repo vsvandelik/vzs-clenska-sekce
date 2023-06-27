@@ -1,35 +1,52 @@
 {% extends "base.html" %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'index_events.js' %}"></script>
+{% endblock %}
+{% block title %}
+    Seznam událostí
+{% endblock %}
 {% block content %}
-    <a href="{% url 'events:add_training' %}">Nový trénink</a>
-    <hr>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Trénink</th>
-            <th>Akce</th>
-        </tr>
+    <div class="card">
+        <div class="card-header d-flex align-items-center">
+            <div class="card-title h5">Události</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <table id="events_list" class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Název</th>
+                                <th scope="col">Popis</th>
+                                <th scope="col">Trénink</th>
+                                <th scope="col" style="width: 40px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                                <tr>
+                                    <td><a href="{% url 'events:detail' event.id %}">{{ event.name }}</a></td>
+                                    <td>{{ event.description }}</td>
+                                    <td>{{ event.is_top_training|yesno:"Ano,Ne" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-info btn-sm" href="{% url 'events:detail' event.id %}"><i
+                                                class="fas fa-info"></i></a>
+                                            <a class="btn btn-success btn-sm" href="
+                                                                                    {% if event.is_top_training %}{% url 'events:edit_training' event.id %}{% else %}{% url 'events:edit_one_time_event' event.id %}{% endif %}"><i
+                                                class="fas fa-pen"></i></a>
+                                            <a class="btn btn-danger btn-sm" href="{% url 'events:delete' event.id %}"><i
+                                                class="fas fa-trash-alt"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        {% for event in events %}
-            <tr>
-                <td>{{ event.name }}</td>
-                <td>{{ event.description }}</td>
-                <td>{{ event.is_top_training|yesno:"Ano,Ne" }}</td>
-                <td>
-                    <a href="{% url 'events:detail' event.id %}">Detail</a> |
-                    {% if event.is_top_training %}
-                        <a href="{% url 'events:edit_training' event.id %}">Edit</a> |
-                    {% else %}
-                        {% comment %}
-                        TODO: pridat editaci jednorazove udalosti
-                        {% endcomment %}
-                    {% endif %}
-
-                    <a href="{% url 'events:delete' event.id %}">Smazat</a> |
-
-                </td>
-            </tr>
-        {% endfor %}
-        <tr></tr>
-    </table>
 {% endblock %}
