@@ -5,7 +5,12 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import models as auth_models
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.shortcuts import redirect
 
+from .backends import GoogleBackend
 from persons.models import Person
 from .models import User, Permission
 from . import forms
@@ -110,3 +115,25 @@ class PermissionAssignView(
         user.user_permissions.add(permission)
 
         return super().form_valid(form)
+
+
+class GoogleLoginView(generic.base.RedirectView):
+    http_method_names = ["post"]
+
+    def get_redirect_url(self, *args, **kwargs):
+        return GoogleBackend.get_redirect_url(self.request, "users:google-auth")
+
+
+class GoogleAuthView(generic.base.View):
+    def get(self, request, *args, **kwargs):
+        code = request.GET.get("code", "")
+
+        user = authenticate(request, code=code)
+
+        if user is not None:
+            auth_login(request, user)
+        else:
+            messages.error(request, _("Přihlášení se nezdařilo"))
+            return redirect("users:login")
+
+        return redirect("persons:detail", pk=request.user.person.pk)

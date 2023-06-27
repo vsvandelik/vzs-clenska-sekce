@@ -15,11 +15,23 @@
                             <p>Prosím, přihlašte se.</p>
                         {% endif %}
 
-                        <form action="{% url "users:login" %}" method="post">
+                        <form action="{% url "users:login" %}" method="post" id="form_password">
                             {% csrf_token %}
                             {{ form|crispy }}
-                            <button type="submit" class="btn btn-primary">Přihlásit</button>
                         </form>
+
+                        <form action="{% url "users:google-login" %}" method="post" id="form_google">
+                            {% csrf_token %}
+                        </form>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary" form="form_password">Přihlásit</button>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary float-right" form="form_google"><i class="fa fa-google" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

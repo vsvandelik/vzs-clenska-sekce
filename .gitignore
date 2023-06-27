@@ -144,3 +144,4 @@ package-lock.json
 
 # Credentials
 google_integration/service_account_file.json
+google_integration/secrets_file.json

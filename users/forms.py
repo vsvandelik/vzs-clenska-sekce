@@ -131,11 +131,12 @@ class LoginForm(AuthenticationForm):
     username = None
     email = forms.EmailField(label=_("E-mail"))
 
-    field_order = ["email", "password"]
+    error = ValidationError(
+        _("Prosím, zadejte správný e-mail a heslo"),
+        code="invalid_login",
+    )
 
-    error_messages = {
-        "inactive": _("Tento uživatel je deaktivovaný."),
-    }
+    field_order = ["email", "password"]
 
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
@@ -146,24 +147,16 @@ class LoginForm(AuthenticationForm):
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
 
-        if email and password:
-            person = Person.objects.filter(email=email).first()
+        if not email or not password:
+            raise error
 
-            if person:
-                self.user_cache = authenticate(
-                    self.request, person=person, password=password
-                )
-                if self.user_cache:
-                    self.confirm_login_allowed(self.user_cache)
-                    return self.cleaned_data
+        user = authenticate(self.request, email=email, password=password)
 
-        raise self.get_invalid_login_error()
+        if not user:
+            raise error
 
-    def get_invalid_login_error(self):
-        return ValidationError(
-            _("Prosím, zadejte správný e-mail a heslo"),
-            code="invalid_login",
-        )
+        self.user_cache = user
+        return self.cleaned_data
 
 
 class PermissionAssignForm(forms.Form):

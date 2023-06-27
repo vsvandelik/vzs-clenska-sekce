@@ -19,4 +19,6 @@ urlpatterns = [
         views.PermissionDetailView.as_view(),
         name="permission_detail",
     ),
+    path("google/login", views.GoogleLoginView.as_view(), name="google-login"),
+    path("google/auth", views.GoogleAuthView.as_view(), name="google-auth"),
 ]
