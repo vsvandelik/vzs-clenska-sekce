@@ -1,23 +1,17 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load render %}
 {% load radius_range %}
 
 {% block content %}
     <div class="card card-primary">
         <div class="card-header">
-            <h3 class="card-title">Hledat uživatele</h3>
+            <h3 class="card-title">Uživatelé</h3>
         </div>
 
         <div class="card-body">
-            <form action="{% url "users:index" %}" method="get">
-                {{ user_search_form.as_div }}
-                <button type="submit" class="btn btn-primary">Hledat</button>
-            </form>
-
-            <br>
-
-            <table class="table">
+            <table class="table" id="index_table">
                 <thead>
                     <tr>
                         <th>Osoba</th>
@@ -26,48 +20,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in page_obj %}
+                    {% for user in users %}
                         <tr>
                             <td>{% render user.person "inline" %}</td>
                             <td>TODO</td>
-                            <td><a href="{% url "users:detail" user.pk %}" class="btn btn-info">Detail</a></td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="3">Žádné výsledky</td>
+                            <td><a class="btn btn-info btn-sm" href="{% url "users:detail" user.pk %}"><i class="fas fa-info"></i></a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="card-footer">
-            <div class="pagination">
-                <form action="{% url "users:index" %}" method="get">
-                    {{ user_search_pagination_form.as_div }}
-
-                    <div class="btn-group">
-                        <button type="submit" name="page" {% if page_obj.has_previous %} value="{{ page_obj.previous_page_number }}" {% else %} disabled {% endif %} class="btn btn-outline-secondary btn-sm">&lsaquo;</button>
-                        <button type="submit" name="page" value="1" {% if page_obj.number == 1 %} disabled {% endif %} class="btn {% if page_obj.number == 1 %} btn-secondary {% else %} btn-outline-secondary {% endif %} btn-sm">1</button>
-                        {% if page_obj.number >= 6 %}
-                            <button type="submit" name="page" value="2" {% if page_obj.number != 6 %} disabled {% endif %} class="btn btn-outline-secondary btn-sm">{% if page_obj.number == 6 %}2{% else %}...{% endif %}</button>
-                        {% endif %}
-
-                        {% for i in page_obj.number|radius_range:3 %}
-                            {% if i >= 2 and i <= page_obj.paginator.num_pages|add:-1 %}
-                                <button type="submit" name="page" value="{{ i }}" {% if page_obj.number == i %} disabled {% endif %} class="btn {% if page_obj.number == i %} btn-secondary {% else %} btn-outline-secondary {% endif %} btn-sm">{{ i }}</button>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.number <= page_obj.paginator.num_pages|add:-5 %}
-                            <button type="submit" name="page" value="{{ page_obj.paginator.num_pages|add:-1 }}" {% if page_obj.number != page_obj.paginator.num_pages|add:-5 %} disabled {% endif %} class="btn btn-outline-secondary btn-sm">{% if page_obj.number == page_obj.paginator.num_pages|add:-5 %}{{ page_obj.paginator.num_pages|add:-1 }}{% else %}...{% endif %}</button>
-                        {% endif %}
-                        {% if page_obj.paginator.num_pages != 1 %}
-                            <button type="submit" name="page" value="{{ page_obj.paginator.num_pages }}" {% if page_obj.number == page_obj.paginator.num_pages %} disabled {% endif %} class="btn {% if page_obj.number == page_obj.paginator.num_pages %} btn-secondary {% else %} btn-outline-secondary {% endif %} btn-sm">{{ page_obj.paginator.num_pages }}</button>
-                        {% endif %}
-                        <button type="submit" name="page" {% if page_obj.has_next %} value="{{ page_obj.next_page_number }}" {% else %} disabled {% endif %} class="btn btn-outline-secondary btn-sm">&rsaquo;</button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script>datatables_enable("index_table", [0]);</script>
 {% endblock %}

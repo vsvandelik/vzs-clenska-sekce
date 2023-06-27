@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Povolení</h3>
+        </div>
+
+        <div class="card-body">
+            <table class="table" id="permissions_table">
+                <thead>
+                    <tr>
+                        <th>Název</th>
+                        <th>Popis</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for permission in permissions %}
+                        <tr>
+                            <td>{{ permission.name }}</td>
+                            <td>{{ permission.description }}</td>
+                            <td><a class="btn btn-info btn-sm" href="{% url "users:permission_detail" permission.pk %}"><i class="fas fa-info"></i></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script>datatables_enable("permissions_table", [0, 1]);</script>
+{% endblock %}

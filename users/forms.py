@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
-from .models import User
+from .models import User, Permission
 
 
 class NoRenderWidget(forms.Widget):
@@ -62,47 +62,10 @@ class CustomModelChoiceField(forms.ModelChoiceField):
         )
 
 
-class PersonSearchForm(forms.Form):
-    name = "person_search_form"
-
-    person = forms.ModelChoiceField(
-        required=False,
-        queryset=userless_people,
-        widget=forms.HiddenInput,
-    )
-    query = forms.CharField(required=False, label=_("Obsahuje"))
-    form_id = forms.CharField(required=False, initial=name, widget=forms.HiddenInput)
-
-    def search_people(self):
-        if not self.is_valid():
-            return userless_people.none()
-
-        query = self.cleaned_data["query"]
-
-        if query == "":
-            return userless_people.all()
-
-        return userless_people.filter(
-            Q(first_name__contains=query) | Q(last_name__contains=query)
-        )
-
-    def handle(self, request, context):
-        context["people"] = self.search_people()
-
-
 class PersonSelectForm(forms.Form):
-    name = "person_select_form"
-
     person = forms.ModelChoiceField(
         required=False, queryset=userless_people, **no_render_field
     )
-    query = forms.CharField(required=False, widget=forms.HiddenInput)
-    form_id = forms.CharField(
-        required=False, initial="person_select_form", widget=forms.HiddenInput
-    )
-
-    def handle(self, request, context):
-        pass
 
 
 class UserBaseForm(forms.ModelForm):
@@ -201,3 +164,7 @@ class LoginForm(AuthenticationForm):
             _("Prosím, zadejte správný e-mail a heslo"),
             code="invalid_login",
         )
+
+
+class PermissionAssignForm(forms.Form):
+    permission = forms.ModelChoiceField(queryset=Permission.objects.all())

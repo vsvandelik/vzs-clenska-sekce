@@ -1,5 +1,7 @@
 {% extends "users/base.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block body %}
     Povolení: {% comment %} TODO: display povoleni {% endcomment %}
 {% endblock %}
@@ -7,7 +9,7 @@
 {% block footer %}
     <form method="post">
         {% csrf_token %}
-        {{ form.as_div }}
+        {{ form|crispy }}
         <button type="submit" class="btn btn-primary">Uložit</button>
     </form>
 {% endblock %}
