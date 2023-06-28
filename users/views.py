@@ -157,7 +157,7 @@ class PermissionDetailView(generic.detail.DetailView):
 
 
 class UserAssignRemovePermissionView(
-    generic.detail.SingleObjectMixin, generic.edit.FormView
+    SuccessMessageMixin, generic.detail.SingleObjectMixin, generic.edit.FormView
 ):
     form_class = forms.UserAssignRemovePermissionForm
 
@@ -184,6 +184,7 @@ class UserAssignPermissionView(
     generic.list.MultipleObjectMixin, UserAssignRemovePermissionView
 ):
     template_name = "users/assign_permission.html"
+    success_message = _("Povolení úspěšně přidáno.")
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
@@ -201,6 +202,7 @@ class UserAssignPermissionView(
 
 class UserRemovePermissionView(UserAssignRemovePermissionView):
     http_method_names = ["post"]
+    success_message = _("Povolení úspěšně odebráno.")
 
     def _change_user_permission(self, user, permission):
         user.user_permissions.remove(permission)
