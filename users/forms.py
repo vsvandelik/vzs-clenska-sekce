@@ -168,3 +168,11 @@ class LoginForm(AuthenticationForm):
 
 class PermissionAssignForm(forms.Form):
     permission = forms.ModelChoiceField(queryset=Permission.objects.all())
+
+
+class ChangeActivePersonForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    person = forms.ModelChoiceField(queryset=Person.objects.all())

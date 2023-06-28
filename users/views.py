@@ -5,10 +5,14 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import models as auth_models
+from django.utils.functional import SimpleLazyObject
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from persons.models import Person
 from .models import User, Permission
 from . import forms
+from persons.models import Person
 
 
 class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
@@ -72,10 +76,47 @@ class UserEditView(SuccessMessageMixin, generic.edit.UpdateView):
         return reverse_lazy("users:detail", kwargs={"pk": self.object.pk})
 
 
+def set_active_person(request, person):
+    request.session["_active_person_pk"] = person.pk
+
+
 class LoginView(auth_views.LoginView):
     template_name = "users/login.html"
     authentication_form = forms.LoginForm
     redirect_authenticated_user = True
+
+    def form_valid(self, form):
+        set_active_person(self.request, self.request.user.person)
+
+        return super().form_valid(form)
+
+
+class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
+    http_method_names = ["post"]
+    form_class = forms.ChangeActivePersonForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        request = self.request
+        user = request.user
+
+        new_active_person = form.cleaned_data["person"]
+
+        if new_active_person in user.person.get_managed_persons():
+            set_active_person(request, new_active_person)
+            messages.success(request, _("Aktivní osoba úspěšně změněna."))
+        else:
+            return HttpResponseForbidden(
+                _("Vybraná osoba není spravována přihlášenou osobou.")
+            )
+
+        return HttpResponseRedirect(
+            request.META.get("HTTP_REFERER", reverse_lazy("persons:index"))
+        )
 
 
 class PermissionsView(generic.list.ListView):

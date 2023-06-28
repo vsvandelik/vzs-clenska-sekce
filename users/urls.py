@@ -19,4 +19,9 @@ urlpatterns = [
         views.PermissionDetailView.as_view(),
         name="permission_detail",
     ),
+    path(
+        "zmenit-aktivni-osobu/",
+        views.ChangeActivePersonView.as_view(),
+        name="change-active-person",
+    ),
 ]
