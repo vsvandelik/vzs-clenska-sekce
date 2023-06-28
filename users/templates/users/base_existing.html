@@ -1,0 +1,7 @@
+{% extends "users/base.html" %}
+
+{% load vzs_filters %}
+
+{% block header %}
+    {% render user "inline" capital=True %}
+{% endblock %}
