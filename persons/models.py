@@ -2,6 +2,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from itertools import chain
 
 from vzs import models as vzs_models
 
@@ -90,6 +91,9 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def get_managed_persons(self):
+        return list(chain(self.managed_persons.all(), [self]))
 
 
 class QualificationsManager(models.Manager):
