@@ -190,5 +190,6 @@ class GoogleAuthView(generic.base.View):
             return redirect("users:login")
 
         auth_login(request, user)
+        set_active_person(request, request.user.person)
 
         return redirect("persons:detail", pk=request.user.person.pk)
