@@ -14,6 +14,7 @@ from django.http import (
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import redirect
+from django.core.exceptions import ObjectDoesNotExist
 
 from .backends import GoogleBackend
 from persons.models import Person
@@ -171,12 +172,21 @@ class GoogleAuthView(generic.base.View):
     def get(self, request, *args, **kwargs):
         code = request.GET.get("code", "")
 
-        user = authenticate(request, code=code)
-
-        if user is not None:
-            auth_login(request, user)
-        else:
-            messages.error(request, _("Přihlášení se nezdařilo"))
+        try:
+            user = authenticate(request, code=code)
+        except ObjectDoesNotExist:
+            messages.error(
+                request,
+                _(
+                    "Přihlášení se nezdařilo, protože e-mailová adresa Google účtu není v systému registrovaná."
+                ),
+            )
             return redirect("users:login")
+
+        if user is None:
+            messages.error(request, _("Přihlášení se nezdařilo."))
+            return redirect("users:login")
+
+        auth_login(request, user)
 
         return redirect("persons:detail", pk=request.user.person.pk)

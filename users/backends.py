@@ -13,7 +13,7 @@ UserModel = get_user_model()
 
 
 class PasswordBackend(ModelBackend):
-    def authenticate(self, request, email=None, password=None, **kwargs):
+    def authenticate(self, request, email, password, **kwargs):
         person = Person.objects.filter(email=email).first()
         return super().authenticate(request, person=person, password=password, **kwargs)
 
@@ -32,7 +32,7 @@ class GoogleBackend(ModelBackend):
 
         return url
 
-    def authenticate(self, request, code=None, **kwargs):
+    def authenticate(self, request, code, **kwargs):
         if code is None:
             return
 
@@ -44,17 +44,11 @@ class GoogleBackend(ModelBackend):
 
         email = token["email"]
 
-        person = Person.objects.filter(email=email).first()
+        person = Person.objects.get(email=email)
 
-        if person is None:
+        user = UserModel._default_manager.get_by_natural_key(person)
+
+        if not self.user_can_authenticate(user):
             return
 
-        try:
-            user = UserModel._default_manager.get_by_natural_key(person)
-        except UserModel.DoesNotExist:
-            return
-        else:
-            if not self.user_can_authenticate(user):
-                return
-
-            return user
+        return user
