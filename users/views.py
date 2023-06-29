@@ -171,23 +171,32 @@ class GoogleLoginView(generic.base.RedirectView):
 
 
 class GoogleAuthView(generic.base.View):
+    def _error(self, request, message):
+        messages.error(request, message)
+        return redirect("users:login")
+
     def get(self, request, *args, **kwargs):
         code = request.GET.get("code", "")
 
         try:
             user = authenticate(request, code=code)
-        except ObjectDoesNotExist:
-            messages.error(
+        except User.DoesNotExist:
+            return self._error(
                 request,
                 _(
-                    "Přihlášení se nezdařilo, protože e-mailová adresa Google účtu není v systému registrovaná."
+                    "Přihlášení se nezdařilo, protože osoba s danou e-mailovou adresou nemá založený účet."
                 ),
             )
-            return redirect("users:login")
+        except Person.DoesNotExist:
+            return self._error(
+                request,
+                _(
+                    "Přihlášení se nezdařilo, protože osoba s danou e-mailovou adresou neexistuje."
+                ),
+            )
 
         if user is None:
-            messages.error(request, _("Přihlášení se nezdařilo."))
-            return redirect("users:login")
+            return self._error(request, _("Přihlášení se nezdařilo."))
 
         auth_login(request, user)
         set_active_person(request, request.user.person)
