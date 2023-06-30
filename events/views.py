@@ -1,12 +1,18 @@
 from django.urls import reverse_lazy
-from .models import Event
+from .models import Event, EventParticipation, Participation
 from django.views import generic
-from .forms import TrainingForm, OneTimeEventForm
+from .forms import TrainingForm, OneTimeEventForm, AddDeleteParticipantFromEvent
 from django.contrib.messages.views import SuccessMessageMixin
 from .mixin_extensions import FailureMessageMixin
+from django.shortcuts import get_object_or_404, redirect, reverse
+from persons.models import Person
 
 
-class EventMessagesMixin(SuccessMessageMixin, FailureMessageMixin):
+class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
+    pass
+
+
+class EventMessagesMixin(MessagesMixin):
     success_url = reverse_lazy("events:index")
 
 
@@ -55,6 +61,7 @@ class EventDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["persons"] = Person.objects.all()
         if context[self.context_object_name].is_top_training():
             context[self.context_object_name].extend_2_top_training()
             context["is_top_training"] = True
@@ -91,3 +98,44 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
         event.extend_2_top_training()
         context["dates"] = context["form"].generate_dates()
         return context
+
+
+class SignUpOrRemovePersonFromEvent(MessagesMixin, generic.FormView):
+    form_class = AddDeleteParticipantFromEvent
+
+    def get_success_url(self):
+        return reverse("events:detail", args=[self.event_id])
+
+    def process_form(self, form, op):
+        self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
+        self.event_id = form.cleaned_data["event_id"]
+        event = Event.objects.get(pk=self.event_id)
+        if op == "add":
+            try:
+                ep = EventParticipation.objects.get(person=self.person, event=event)
+                ep.state = Participation.State.APPROVED
+            except EventParticipation.DoesNotExist:
+                ep = EventParticipation.objects.create(
+                    person=self.person, event=event, state=Participation.State.APPROVED
+                )
+            ep.save()
+        else:
+            event.participants.remove(self.person)
+
+
+class SignUpPersonForEvent(SignUpOrRemovePersonFromEvent):
+    def get_success_message(self, cleaned_data):
+        return f"Osoba {self.person} přihlášena na událost"
+
+    def form_valid(self, form):
+        self.process_form(form, "add")
+        return super().form_valid(form)
+
+
+class RemoveParticipantFromEvent(SignUpOrRemovePersonFromEvent):
+    def get_success_message(self, cleaned_data):
+        return f"Osoba {self.person} odhlášena z události"
+
+    def form_valid(self, form):
+        self.process_form(form, "remove")
+        return super().form_valid(form)

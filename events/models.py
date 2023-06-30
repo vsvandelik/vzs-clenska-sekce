@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
+from persons.models import Person
 
 
 class Event(models.Model):
@@ -82,6 +83,16 @@ class Event(models.Model):
             child.time_start = timezone.localtime(child.time_start)
             child.time_end = timezone.localtime(child.time_end)
         return children
+
+    def get_not_signed_persons(self):
+        persons = Person.objects
+        return persons.difference(self.participants.all())
+
+    def get_approved_participants(self):
+        return self.participants.filter(state__exact=Participation.State.APPROVED)
+
+    def get_substitute_participants(self):
+        return self.participants.filter(state__exact=Participation.State.SUBSTITUTE)
 
     def __str__(self):
         return self.name

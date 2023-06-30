@@ -23,4 +23,14 @@ urlpatterns = [
         views.TrainingUpdateView.as_view(),
         name="edit_training",
     ),
+    path(
+        "<int:event_id>/prihlasit-osobu/",
+        views.SignUpPersonForEvent.as_view(),
+        name="signup_person",
+    ),
+    path(
+        "<int:event_id>/odhlasit-osobu/",
+        views.RemoveParticipantFromEvent.as_view(),
+        name="remove_participant",
+    ),
 ]

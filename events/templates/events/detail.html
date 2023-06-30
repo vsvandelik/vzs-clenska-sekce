@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% load tag_extensions %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events_detail.js' %}"></script>
+{% endblock %}
 {% block title %}
     Detail události
 {% endblock %}
@@ -14,6 +18,10 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="
+
+
+
+
 
                          {% if is_top_training %}{% url 'events:edit_training' event.id %}{% else %}{% url 'events:edit_one_time_event' event.id %}{% endif %}"
                    class="btn btn-success">Upravit</a>
@@ -137,5 +145,116 @@
                 </div>
             </div>
         {% endif %}
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přihlášené osoby</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'events:remove_participant' event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in event.participants.all %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' p.id %}">{{ p }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="person_id"
+                                                    value="{{ p.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signUpPersonForEvent">Přihlásit
+                        osobu</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Náhradníci</div>
+                </div>
+                <div class="card-body p-0">
+
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#addManagePersonModal">Přidat
+                        osobu</a>
+                </div>
+            </div>
+        </div>
     </div>
+
+
+    <div class="modal fade" id="signUpPersonForEvent" tabindex="-1" role="dialog" aria-labelledby="signUpPersonForEvent"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Přihlásit osobu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url "events:signup_person" event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped" id="signUpPersonForEventTable">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in persons %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' p.id %}" target="_blank">{{ p }}</a>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if p in event.participants.all %}
+                                                <button class="btn btn-info" type="submit" name="person_id" disabled
+                                                        value="{{ p.id }}">
+                                                    Již přihlášen
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-primary" type="submit" name="person_id"
+                                                        value="{{ p.id }}">
+                                                    Přidat
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

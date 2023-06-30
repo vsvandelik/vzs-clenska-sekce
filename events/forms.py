@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from django.forms import ModelForm, MultipleChoiceField
+from django.forms import Form, ModelForm, MultipleChoiceField
 from django import forms
 from .models import Event
 from .utils import (
@@ -10,7 +10,7 @@ from .utils import (
 )
 from datetime import timezone
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from persons.models import Person
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -410,3 +410,27 @@ class TrainingForm(OneTimeEventForm):
 
             dates_all[weekday] = dates
         return dates_all
+
+
+class AddDeleteParticipantFromEvent(Form):
+    person_id = forms.IntegerField()
+    event_id = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+        pid = self.cleaned_data["person_id"]
+        eid = self.cleaned_data["event_id"]
+        try:
+            Person.objects.get(pk=pid)
+            event = Event.objects.get(pk=eid)
+            if event.state in [Event.State.APPROVED, Event.State.FINISHED]:
+                raise forms.ValidationError(
+                    f"Událost {event} je uzavřena nebo schválena"
+                )
+        except Person.DoesNotExist:
+            raise forms.ValidationError(f"Osoba s id {pid} neexistuje")
+        except Event.DoesNotExist:
+            raise forms.ValidationError(f"Událost s id {eid} neexistuje")
