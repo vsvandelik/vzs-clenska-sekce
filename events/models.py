@@ -36,12 +36,23 @@ class Event(models.Model):
         "persons.Feature", through="events.EventRequirement"
     )
 
-    def is_top(self):
+    def _is_top(self):
         return self.parent == None
 
-    def is_top_training(self):
+    def _is_top_training(self):
         children = Event.objects.filter(parent__exact=self)
-        return self.is_top() and len(children) > 0
+        return self._is_top() and len(children) > 0
+
+    def _is_child_training(self):
+        return self.parent is not None
+
+    def _is_one_time_event(self):
+        return not self._is_top_training() and not self._is_child_training()
+
+    def set_type(self):
+        self.is_child_training = self._is_child_training()
+        self.is_top_training = self._is_top_training()
+        self.is_one_time_event = self._is_one_time_event()
 
     def get_weekdays_trainings_occur(self):
         weekdays = set()

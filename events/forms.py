@@ -412,7 +412,7 @@ class TrainingForm(OneTimeEventForm):
         return dates_all
 
 
-class AddDeleteParticipantFromEvent(Form):
+class AddDeleteParticipantFromOneTimeEvent(Form):
     person_id = forms.IntegerField()
     event_id = forms.IntegerField()
 
@@ -426,6 +426,11 @@ class AddDeleteParticipantFromEvent(Form):
         try:
             Person.objects.get(pk=pid)
             event = Event.objects.get(pk=eid)
+            event.set_type()
+            if not event.is_one_time_event:
+                raise forms.ValidationError(
+                    f"Událost {event} není jednorázovou událostí"
+                )
             if event.state in [Event.State.APPROVED, Event.State.FINISHED]:
                 raise forms.ValidationError(
                     f"Událost {event} je uzavřena nebo schválena"

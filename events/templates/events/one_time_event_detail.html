@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load tag_extensions %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'one_time_event_detail.js' %}"></script>
+{% endblock %}
+{% block title %}
+    Detail jednorázové události
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'events:edit_one_time_event' event.id %}"
+                   class="btn btn-success">Upravit</a>
+                <a href="{% url 'events:delete' event.id %}" class="btn btn-danger">Smazat</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Přehled</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Popis:</td>
+                                <td class="w-100">{{ event.description }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Účastníků</td>
+                                <td class="w-100">{{ view.event_participation_approved|length }} / {{ event.capacity }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Náhradníků</td>
+                                <td class="w-100">{{ view.event_participation_substitute|length }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Přihlášek ke schválení</td>
+                                <td class="w-100">TODO</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Minimální věk účastníků:</td>
+                                <td class="w-100">{{ event.age_limit }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Stav události:</td>
+                                <td class="w-100">{{ event.state }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Začíná:</td>
+                                <td class="w-100">{{ event.time_start|date:'j.n.Y' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Končí:</td>
+                                <td class="w-100">{{ event.time_end|date:'j.n.Y' }}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přihlášené osoby</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'events:remove_participant_from_one_time_event' event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ep in view.event_participation_approved %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' ep.person.id %}">{{ ep.person }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="person_id"
+                                                    value="{{ ep.person.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signUpPersonForOneTimeEvent">Přihlásit
+                        osobu</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Náhradníci</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'events:remove_substitute_from_one_time_event' event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ep in view.event_participation_substitute %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' ep.person.id %}">{{ ep.person }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="person_id"
+                                                    value="{{ ep.person.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#addSubtituteForOneTimeEvent">Přidat
+                        osobu</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přihlášky ke schválení</div>
+                </div>
+                <div class="card-body p-0">
+                    TODO
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+
+    <div class="modal fade" id="signUpPersonForOneTimeEvent" tabindex="-1" role="dialog"
+         aria-labelledby="signUpPersonForOneTimeEvent"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Přihlásit osobu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url "events:signup_person_for_one_time_event" event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped" id="signUpPersonForOneTimeEventTable">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in view.persons %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' p.id %}" target="_blank">{{ p }}</a>
+                                            {% if p|is_substitution_participant:event %}
+                                                <span class="badge badge-secondary">náhradník</span>
+                                            {% elif p|is_approved_participant:event %}
+                                                <span class="badge badge-success">přihlášen</span>
+                                            {% elif p|is_waiting_participant:event %}
+                                                <span class="badge badge-info">čeká na schválení</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary" type="submit" name="person_id"
+                                                    value="{{ p.id }}" {% if p|is_approved_participant:event %}disabled{% endif %}>
+                                                Přidat
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="addSubtituteForOneTimeEvent" tabindex="-1" role="dialog"
+         aria-labelledby="addSubtituteForOneTimeEvent"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Přidat náhradníky</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url "events:add_substitute_for_one_time_event" event.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <table class="table table-striped" id="addSubtituteForOneTimeEventTable">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in view.persons %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' p.id %}" target="_blank">{{ p }}</a>
+                                            {% if p|is_substitution_participant:event %}
+                                                <span class="badge badge-secondary">náhradník</span>
+                                            {% elif p|is_approved_participant:event %}
+                                                <span class="badge badge-success">přihlášen</span>
+                                            {% elif p|is_waiting_participant:event %}
+                                                <span class="badge badge-info">čeká na schválení</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary" type="submit" name="person_id"
+                                                    value="{{ p.id }}" {% if p|is_substitution_participant:event %}disabled{% endif %}>
+                                                Přidat
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

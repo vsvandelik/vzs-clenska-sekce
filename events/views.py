@@ -1,11 +1,20 @@
 from django.urls import reverse_lazy
 from .models import Event, EventParticipation, Participation
 from django.views import generic
-from .forms import TrainingForm, OneTimeEventForm, AddDeleteParticipantFromEvent
+from .forms import TrainingForm, OneTimeEventForm, AddDeleteParticipantFromOneTimeEvent
 from django.contrib.messages.views import SuccessMessageMixin
 from .mixin_extensions import FailureMessageMixin
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
+
+
+class EventConditionMixin:
+    def get(self, request, *args, **kwargs):
+        event = get_object_or_404(Event, pk=kwargs["pk"])
+        event.set_type()
+        if not self.event_condition(event):
+            return redirect(self.event_condition_failed_redirect_url)
+        return super().get(request, *args, **kwargs)
 
 
 class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
@@ -20,10 +29,11 @@ class EventCreateMixin(EventMessagesMixin, generic.FormView):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
-class EventUpdateMixin(EventMessagesMixin, generic.FormView):
+class EventUpdateMixin(EventMessagesMixin, EventConditionMixin, generic.FormView):
     context_object_name = "event"
     model = Event
     success_message = "Událost %(name)s úspěšně upravena."
+    event_condition_failed_redirect_url = reverse_lazy("events:index")
 
 
 class EventIndexView(generic.ListView):
@@ -34,7 +44,7 @@ class EventIndexView(generic.ListView):
     def get_queryset(self):
         events = Event.objects.filter(parent__isnull=True)
         for event in events:
-            event.is_top_training = event.is_top_training()
+            event.set_type()
         return events
 
 
@@ -43,29 +53,44 @@ class EventDeleteView(EventMessagesMixin, generic.DeleteView):
     template_name = "events/delete.html"
     context_object_name = "event"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["children"] = context[
-            self.context_object_name
-        ].get_children_trainings_sorted()
-        return context
+    def children(self):
+        return self.object.get_children_trainings_sorted()
 
     def get_success_message(self, cleaned_data):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-class EventDetailView(generic.DetailView):
+class EventDetailViewMixin(EventConditionMixin, generic.DetailView):
     model = Event
-    template_name = "events/detail.html"
+    event_condition_failed_redirect_url = reverse_lazy("events:index")
     context_object_name = "event"
+
+
+class TrainingDetailView(EventDetailViewMixin):
+    template_name = "events/training_detail.html"
+    event_condition = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["persons"] = Person.objects.all()
-        if context[self.context_object_name].is_top_training():
-            context[self.context_object_name].extend_2_top_training()
-            context["is_top_training"] = True
+        context[self.context_object_name].extend_2_top_training()
         return context
+
+
+class OneTimeEventDetailView(EventDetailViewMixin):
+    template_name = "events/one_time_event_detail.html"
+    event_condition = lambda _, e: e.is_one_time_event
+
+    def persons(self):
+        return Person.objects.all()
+
+    def event_participation(self):
+        return EventParticipation.objects.filter(event=self.object)
+
+    def event_participation_approved(self):
+        return self.event_participation().filter(state=Participation.State.APPROVED)
+
+    def event_participation_substitute(self):
+        return self.event_participation().filter(state=Participation.State.SUBSTITUTE)
 
 
 class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
@@ -76,6 +101,14 @@ class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
 class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_one_time_event.html"
     form_class = OneTimeEventForm
+    event_condition = lambda _, e: e.is_one_time_event
+
+    def get(self, request, *args, **kwargs):
+        event = get_object_or_404(Event, pk=kwargs["pk"])
+        event.set_type()
+        if not event.is_one_time_event:
+            return redirect(self.success_url)
+        return super().get(request, *args, **kwargs)
 
 
 class TrainingCreateView(generic.CreateView, EventCreateMixin):
@@ -91,6 +124,7 @@ class TrainingCreateView(generic.CreateView, EventCreateMixin):
 class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_training.html"
     form_class = TrainingForm
+    event_condition = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -100,42 +134,60 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
         return context
 
 
-class SignUpOrRemovePersonFromEvent(MessagesMixin, generic.FormView):
-    form_class = AddDeleteParticipantFromEvent
+class SignUpOrRemovePersonFromOneTimeEvent(MessagesMixin, generic.FormView):
+    form_class = AddDeleteParticipantFromOneTimeEvent
 
     def get_success_url(self):
-        return reverse("events:detail", args=[self.event_id])
+        return reverse("events:detail_one_time_event", args=[self.event_id])
 
-    def process_form(self, form, op):
+    def process_form(self, form, op, state):
         self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
         self.event_id = form.cleaned_data["event_id"]
         event = Event.objects.get(pk=self.event_id)
         if op == "add":
             try:
                 ep = EventParticipation.objects.get(person=self.person, event=event)
-                ep.state = Participation.State.APPROVED
+                ep.state = state
             except EventParticipation.DoesNotExist:
                 ep = EventParticipation.objects.create(
-                    person=self.person, event=event, state=Participation.State.APPROVED
+                    person=self.person, event=event, state=state
                 )
             ep.save()
         else:
             event.participants.remove(self.person)
 
 
-class SignUpPersonForEvent(SignUpOrRemovePersonFromEvent):
+class SignUpPersonForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} přihlášena na událost"
 
     def form_valid(self, form):
-        self.process_form(form, "add")
+        self.process_form(form, "add", Participation.State.APPROVED)
         return super().form_valid(form)
 
 
-class RemoveParticipantFromEvent(SignUpOrRemovePersonFromEvent):
+class RemoveParticipantFromOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} odhlášena z události"
 
     def form_valid(self, form):
-        self.process_form(form, "remove")
+        self.process_form(form, "remove", Participation.State.APPROVED)
+        return super().form_valid(form)
+
+
+class AddSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+    def get_success_message(self, cleaned_data):
+        return f"Osoba {self.person} přidána mezi náhradníky události"
+
+    def form_valid(self, form):
+        self.process_form(form, "add", Participation.State.SUBSTITUTE)
+        return super().form_valid(form)
+
+
+class RemoveSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+    def get_success_message(self, cleaned_data):
+        return f"Osoba {self.person} smazána ze seznamu náhradníků události"
+
+    def form_valid(self, form):
+        self.process_form(form, "remove", Participation.State.SUBSTITUTE)
         return super().form_valid(form)
