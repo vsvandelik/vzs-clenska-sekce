@@ -87,8 +87,8 @@
                                     {% with day_shortcut=weekday|weekday_2_day_shortcut %}
                                         {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
                                             {% with from_time=event|getattribute:from_var_name to_time=event|getattribute:to_var_name %}
-                                                <td class="w-100">{{ from_time|date:'H:i' }}
-                                                    – {{ to_time|date:'H:i' }}</td>
+                                                <td class="w-100">{{ from_time|date:'G:i' }}
+                                                    – {{ to_time|date:'G:i' }}</td>
                                             {% endwith %}
                                         {% endwith %}
                                     {% endwith %}

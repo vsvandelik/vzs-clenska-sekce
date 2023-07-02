@@ -58,11 +58,11 @@
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Začíná:</td>
-                                <td class="w-100">{{ event.time_start|date:'j.n.Y' }}</td>
+                                <td class="w-100">{{ event.time_start|date:'j.n.Y G:m' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Končí:</td>
-                                <td class="w-100">{{ event.time_end|date:'j.n.Y' }}</td>
+                                <td class="w-100">{{ event.time_end|date:'j.n.Y G:m' }}</td>
                             </tr>
 
                         </tbody>
@@ -73,7 +73,7 @@
         <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">Přihlášené osoby</div>
+                    <div class="card-title h5">Přihlášení účastníci</div>
                 </div>
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'events:remove_participant_from_one_time_event' event.id %}">
@@ -106,7 +106,7 @@
                 </div>
                 <div class="card-footer text-center">
                     <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signUpPersonForOneTimeEvent">Přihlásit
-                        osobu</a>
+                        účastníka</a>
                 </div>
             </div>
         </div>

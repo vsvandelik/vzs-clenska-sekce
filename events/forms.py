@@ -412,7 +412,7 @@ class TrainingForm(OneTimeEventForm):
         return dates_all
 
 
-class AddDeleteParticipantFromOneTimeEvent(Form):
+class AddDeleteParticipantFromOneTimeEventForm(Form):
     person_id = forms.IntegerField()
     event_id = forms.IntegerField()
 

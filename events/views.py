@@ -1,11 +1,19 @@
 from django.urls import reverse_lazy
 from .models import Event, EventParticipation, Participation
 from django.views import generic
-from .forms import TrainingForm, OneTimeEventForm, AddDeleteParticipantFromOneTimeEvent
+from .forms import (
+    TrainingForm,
+    OneTimeEventForm,
+    AddDeleteParticipantFromOneTimeEventForm,
+)
 from django.contrib.messages.views import SuccessMessageMixin
 from .mixin_extensions import FailureMessageMixin
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
+
+
+class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
+    pass
 
 
 class EventConditionMixin:
@@ -17,23 +25,17 @@ class EventConditionMixin:
         return super().get(request, *args, **kwargs)
 
 
-class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
-    pass
-
-
-class EventMessagesMixin(MessagesMixin):
+class EventCreateMixin(MessagesMixin, generic.FormView):
+    success_message = "Událost %(name)s úspěšně přidána."
     success_url = reverse_lazy("events:index")
 
 
-class EventCreateMixin(EventMessagesMixin, generic.FormView):
-    success_message = "Událost %(name)s úspěšně přidána."
-
-
-class EventUpdateMixin(EventMessagesMixin, EventConditionMixin, generic.FormView):
+class EventUpdateMixin(MessagesMixin, EventConditionMixin, generic.FormView):
     context_object_name = "event"
     model = Event
     success_message = "Událost %(name)s úspěšně upravena."
     event_condition_failed_redirect_url = reverse_lazy("events:index")
+    success_url = reverse_lazy("events:index")
 
 
 class EventIndexView(generic.ListView):
@@ -48,10 +50,11 @@ class EventIndexView(generic.ListView):
         return events
 
 
-class EventDeleteView(EventMessagesMixin, generic.DeleteView):
+class EventDeleteView(MessagesMixin, generic.DeleteView):
     model = Event
     template_name = "events/delete.html"
     context_object_name = "event"
+    success_url = reverse_lazy("events:index")
 
     def children(self):
         return self.object.get_children_trainings_sorted()
@@ -135,12 +138,12 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
 
 
 class SignUpOrRemovePersonFromOneTimeEvent(MessagesMixin, generic.FormView):
-    form_class = AddDeleteParticipantFromOneTimeEvent
+    form_class = AddDeleteParticipantFromOneTimeEventForm
 
     def get_success_url(self):
         return reverse("events:detail_one_time_event", args=[self.event_id])
 
-    def process_form(self, form, op, state):
+    def _process_form(self, form, op, state):
         self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
         self.event_id = form.cleaned_data["event_id"]
         event = Event.objects.get(pk=self.event_id)
@@ -162,7 +165,7 @@ class SignUpPersonForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return f"Osoba {self.person} přihlášena na událost"
 
     def form_valid(self, form):
-        self.process_form(form, "add", Participation.State.APPROVED)
+        self._process_form(form, "add", Participation.State.APPROVED)
         return super().form_valid(form)
 
 
@@ -171,7 +174,7 @@ class RemoveParticipantFromOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return f"Osoba {self.person} odhlášena z události"
 
     def form_valid(self, form):
-        self.process_form(form, "remove", Participation.State.APPROVED)
+        self._process_form(form, "remove", Participation.State.APPROVED)
         return super().form_valid(form)
 
 
@@ -180,7 +183,7 @@ class AddSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return f"Osoba {self.person} přidána mezi náhradníky události"
 
     def form_valid(self, form):
-        self.process_form(form, "add", Participation.State.SUBSTITUTE)
+        self._process_form(form, "add", Participation.State.SUBSTITUTE)
         return super().form_valid(form)
 
 
@@ -189,5 +192,5 @@ class RemoveSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return f"Osoba {self.person} smazána ze seznamu náhradníků události"
 
     def form_valid(self, form):
-        self.process_form(form, "remove", Participation.State.SUBSTITUTE)
+        self._process_form(form, "remove", Participation.State.SUBSTITUTE)
         return super().form_valid(form)
