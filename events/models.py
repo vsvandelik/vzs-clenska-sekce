@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
+from persons.models import Person
 
 
 class Event(models.Model):
@@ -35,12 +36,23 @@ class Event(models.Model):
         "persons.Feature", through="events.EventRequirement"
     )
 
-    def is_top(self):
+    def _is_top(self):
         return self.parent == None
 
-    def is_top_training(self):
+    def _is_top_training(self):
         children = Event.objects.filter(parent__exact=self)
-        return self.is_top() and len(children) > 0
+        return self._is_top() and len(children) > 0
+
+    def _is_child_training(self):
+        return self.parent is not None
+
+    def _is_one_time_event(self):
+        return not self._is_top_training() and not self._is_child_training()
+
+    def set_type(self):
+        self.is_child_training = self._is_child_training()
+        self.is_top_training = self._is_top_training()
+        self.is_one_time_event = self._is_one_time_event()
 
     def get_weekdays_trainings_occur(self):
         weekdays = set()
@@ -82,6 +94,16 @@ class Event(models.Model):
             child.time_start = timezone.localtime(child.time_start)
             child.time_end = timezone.localtime(child.time_end)
         return children
+
+    def get_not_signed_persons(self):
+        persons = Person.objects
+        return persons.difference(self.participants.all())
+
+    def get_approved_participants(self):
+        return self.participants.filter(state__exact=Participation.State.APPROVED)
+
+    def get_substitute_participants(self):
+        return self.participants.filter(state__exact=Participation.State.SUBSTITUTE)
 
     def __str__(self):
         return self.name

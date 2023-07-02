@@ -3,6 +3,7 @@ from django import template
 from ..utils import day_shortcut_2_weekday as day_shortcut_2_weekday_impl
 from ..utils import weekday_pretty as weekday_pretty_impl
 from ..utils import weekday_2_day_shortcut as weekday_2_day_shortcut_impl
+from ..models import EventParticipation
 
 numeric_test = re.compile("^\d+$")
 register = template.Library()
@@ -67,3 +68,33 @@ def field_value(fields, field_name):
 @register.filter
 def atoi(value):
     return int(value)
+
+
+@register.filter
+def is_approved_participant(person, event):
+    return (
+        EventParticipation.objects.filter(
+            event=event, person=person, state=EventParticipation.State.APPROVED
+        ).count()
+        == 1
+    )
+
+
+@register.filter
+def is_substitution_participant(person, event):
+    return (
+        EventParticipation.objects.filter(
+            event=event, person=person, state=EventParticipation.State.SUBSTITUTE
+        ).count()
+        == 1
+    )
+
+
+@register.filter
+def is_waiting_participant(person, event):
+    return (
+        EventParticipation.objects.filter(
+            event=event, person=person, state=EventParticipation.State.WAITING
+        ).count()
+        == 1
+    )
