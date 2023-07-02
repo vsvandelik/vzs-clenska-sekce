@@ -24,4 +24,6 @@ urlpatterns = [
         views.ChangeActivePersonView.as_view(),
         name="change-active-person",
     ),
+    path("google/login", views.GoogleLoginView.as_view(), name="google-login"),
+    path("google/auth", views.GoogleAuthView.as_view(), name="google-auth"),
 ]
