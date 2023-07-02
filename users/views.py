@@ -6,9 +6,17 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import models as auth_models
 from django.utils.functional import SimpleLazyObject
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import (
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+    HttpResponseBadRequest,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import authenticate, login as auth_login
+from django.shortcuts import redirect
+from django.core.exceptions import ObjectDoesNotExist
 
+from .backends import GoogleBackend
 from persons.models import Person
 from .models import User, Permission
 from . import forms
@@ -178,6 +186,47 @@ class UserAssignRemovePermissionView(
         self._change_user_permission(user, permission)
 
         return super().form_valid(form)
+
+
+class GoogleLoginView(generic.base.RedirectView):
+    http_method_names = ["post"]
+
+    def get_redirect_url(self, *args, **kwargs):
+        return GoogleBackend.get_redirect_url(self.request, "users:google-auth")
+
+
+class GoogleAuthView(generic.base.View):
+    def _error(self, request, message):
+        messages.error(request, message)
+        return redirect("users:login")
+
+    def get(self, request, *args, **kwargs):
+        code = request.GET.get("code", "")
+
+        try:
+            user = authenticate(request, code=code)
+        except User.DoesNotExist:
+            return self._error(
+                request,
+                _(
+                    "Přihlášení se nezdařilo, protože osoba s danou e-mailovou adresou nemá založený účet."
+                ),
+            )
+        except Person.DoesNotExist:
+            return self._error(
+                request,
+                _(
+                    "Přihlášení se nezdařilo, protože osoba s danou e-mailovou adresou neexistuje."
+                ),
+            )
+
+        if user is None:
+            return self._error(request, _("Přihlášení se nezdařilo."))
+
+        auth_login(request, user)
+        set_active_person(request, request.user.person)
+
+        return redirect("persons:detail", pk=request.user.person.pk)
 
 
 class UserAssignPermissionView(
