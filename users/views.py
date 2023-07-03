@@ -72,13 +72,9 @@ class IndexView(generic.list.ListView):
     context_object_name = "users"
 
 
-class DetailView(generic.detail.DetailView):
-    model = User
-    template_name = "users/detail.html"
-
-
 class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
     model = User
+    context_object_name = "user_object"
     template_name = "users/delete.html"
 
     def get_success_url(self):
@@ -97,6 +93,7 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
 class UserChangePasswordView(SuccessMessageMixin, generic.edit.UpdateView):
     model = User
+    context_object_name = "user_object"
     template_name = "users/change_password.html"
     form_class = forms.UserChangePasswordForm
     success_message = _("Heslo bylo úspěšně změněno.")
@@ -128,11 +125,6 @@ class LoginView(auth_views.LoginView):
 class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
     http_method_names = ["post"]
     form_class = forms.ChangeActivePersonForm
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
 
     def form_valid(self, form):
         request = self.request

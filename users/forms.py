@@ -173,8 +173,4 @@ class UserAssignRemovePermissionForm(forms.Form):
 
 
 class ChangeActivePersonForm(forms.Form):
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
     person = forms.ModelChoiceField(queryset=Person.objects.all())
