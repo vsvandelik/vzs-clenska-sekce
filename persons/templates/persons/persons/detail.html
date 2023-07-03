@@ -96,18 +96,40 @@
                 <div class="card-header">
                     <div class="card-title h5">Uživatelský účet</div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     {% if not person.user %}
                         <p class="text-center">Účet není zřízen.</p>
                     {% else %}
-                        Povolení: TODO
+                        <form method="post" action="{% url "persons:user-remove-permission" person.pk %}" id="permissionDeleteForm">
+                            {% csrf_token %}
+                        </form>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Povolení</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for permission in person.user.user_permissions.all %}
+                                    <tr>
+                                        <td class="align-middle">{{ permission.name }}</td>
+                                        <td class="text-center">
+                                            <button type="submit" form="permissionDeleteForm" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}">Odebrat</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
                     {% if not person.user %}
-                        <a href="#" class="btn-primary btn">Založit uživatelský účet (TODO)</a>
+                        <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
                     {% else %}
-                        <a href="#" class="btn-info btn">Přidat povolení (TODO)</a>
+                        <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-info">Přidat povolení</a>
+                        <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
+                        <a href="{% url "persons:user-delete" person.pk %}" class="btn btn-danger">Smazat uživatelský účet</a>
                     {% endif %}
                 </div>
             </div>

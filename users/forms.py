@@ -19,7 +19,6 @@ class NoRenderWidget(forms.Widget):
 
 
 no_render_field = {"widget": NoRenderWidget, "label": ""}
-userless_people = Person.objects.filter(user__isnull=True)
 
 
 class CustomModelChoiceInput(forms.HiddenInput):
@@ -64,7 +63,9 @@ class CustomModelChoiceField(forms.ModelChoiceField):
 
 class PersonSelectForm(forms.Form):
     person = forms.ModelChoiceField(
-        required=False, queryset=userless_people, **no_render_field
+        required=False,
+        queryset=Person.objects.filter(user__isnull=True),
+        **no_render_field
     )
 
 
@@ -87,18 +88,26 @@ class UserBaseForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
+
         if commit:
             user.save()
+
         return user
 
 
 class UserCreateForm(UserBaseForm):
-    class Meta(UserBaseForm.Meta):
-        fields = UserBaseForm.Meta.fields + ["person"]
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
 
-    person = CustomModelChoiceField(queryset=userless_people, label=_("Osoba"))
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.person = self.person
 
-    field_order = ["person", "password"]
+        if commit:
+            user.save()
+
+        return user
 
 
 class UserSearchForm(forms.Form):
@@ -123,7 +132,7 @@ class UserSearchPaginationForm(forms.Form):
     page = forms.IntegerField(required=False, min_value=1, **no_render_field)
 
 
-class UserEditForm(UserBaseForm):
+class UserChangePasswordForm(UserBaseForm):
     pass
 
 
@@ -159,13 +168,9 @@ class LoginForm(AuthenticationForm):
         return self.cleaned_data
 
 
-class PermissionAssignForm(forms.Form):
+class UserAssignRemovePermissionForm(forms.Form):
     permission = forms.ModelChoiceField(queryset=Permission.objects.all())
 
 
 class ChangeActivePersonForm(forms.Form):
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
     person = forms.ModelChoiceField(queryset=Person.objects.all())

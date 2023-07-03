@@ -64,9 +64,6 @@ class User(
     def __str__(self):
         return f"Uživatel osoby {str(self.person)}"
 
-    def get_absolute_url(self):
-        return reverse("users:detail", kwargs={"pk": self.pk})
-
 
 class Permission(RenderableModelMixin, auth_models.Permission):
     description = models.CharField(max_length=255)

@@ -1,6 +1,7 @@
 from django.urls import path, include
 
 from . import views
+from users import views as user_views
 
 app_name = "persons"
 
@@ -55,6 +56,25 @@ urlpatterns = [
     path("<int:pk>/", views.PersonDetailView.as_view(), name="detail"),
     path("<int:pk>/upravit", views.PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat", views.PersonDeleteView.as_view(), name="delete"),
+    path("<int:pk>/ucet/pridat", user_views.UserCreateView.as_view(), name="user-add"),
+    path(
+        "<int:pk>/ucet/smazat", user_views.UserDeleteView.as_view(), name="user-delete"
+    ),
+    path(
+        "<int:pk>/ucet/zmenit-heslo",
+        user_views.UserChangePasswordView.as_view(),
+        name="user-change-password",
+    ),
+    path(
+        "<int:pk>/ucet/pridat-povoleni",
+        user_views.UserAssignPermissionView.as_view(),
+        name="user-assign-permission",
+    ),
+    path(
+        "<int:pk>/ucet/odebrat-povoleni",
+        user_views.UserRemovePermissionView.as_view(),
+        name="user-remove-permission",
+    ),
     path(
         "<int:pk>/pridat-spravovanou-osobu",
         views.AddManagedPersonView.as_view(),

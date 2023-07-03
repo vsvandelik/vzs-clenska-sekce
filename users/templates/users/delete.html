@@ -1,9 +1,9 @@
-{% extends "users/base.html" %}
+{% extends "users/base_existing.html" %}
 
 {% load vzs_filters %}
 
 {% block body %}
-    Má být {% render user "inline" %} opravdu smazán?
+    Má být {% render user_object "inline" %} opravdu smazán?
 {% endblock %}
 
 {% block footer %}
