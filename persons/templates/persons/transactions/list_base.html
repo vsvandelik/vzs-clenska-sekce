@@ -1,0 +1,78 @@
+{% extends "persons/subview.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block subcontent %}
+    {% block buttons %}{% endblock %}
+    <div class="row">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Dluhy</div>
+                </div>
+                <div class="card-body">
+                    <table class="table" id="transactions_debt_table">
+                        <thead>
+                            <tr>
+                                <th>Suma</th>
+                                <th>Popis</th>
+                                <th>Datum splatnosti</th>
+                                {% block additional_debt_headers %}{% endblock %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions_debt %}
+                                <tr>
+                                    <td>{{ transaction.amount }}</td>
+                                    <td>{{ transaction.reason }}</td>
+                                    <td>{{ transaction.date_due }}</td>
+                                    {% block additional_debt_columns %}{% endblock %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% block debt_footer %}{%endblock%}
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Odměny</div>
+                </div>
+                <div class="card-body">
+                    <table class="table" id="transactions_reward_table">
+                        <thead>
+                            <tr>
+                                <th>Suma</th>
+                                <th>Popis</th>
+                                <th>Datum splatnosti</th>
+                                {% block additional_reward_headers %}{% endblock %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions_reward %}
+                                <tr>
+                                    <td>{{ transaction.amount }}</td>
+                                    <td>{{ transaction.reason }}</td>
+                                    <td>{{ transaction.date_due }}</td>
+                                    {% block additional_reward_columns %}{% endblock %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% block reward_footer %}{%endblock%}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script>
+        datatables_enable("transactions_debt_table", [1], [2, "asc"]);
+        datatables_enable("transactions_reward_table", [1], [2, "asc"]);
+    </script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "persons/subview.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}QR transakce{% endblock %}
+
+{% block subcontent %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Transakce</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Suma:</td>
+                                <td class="w-100">{{ transaction.amount }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Popis:</td>
+                                <td class="w-100">{{ transaction.reason }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Datum splatnosti:</td>
+                                <td class="w-100">{{ transaction.date_due }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="text-center">
+                        {% comment %} TODO: correct bank info {% endcomment %}
+                        <img src="http://api.paylibo.com/paylibo/generator/czech/image?accountNumber=222885&bankCode=5500&amount={{ transaction.amount }}&currency=CZK&vs={{ transaction.pk }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

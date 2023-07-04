@@ -9,7 +9,8 @@ from django.utils.translation import gettext_lazy as _
 from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
-from .models import Person, FeatureAssignment, Feature, StaticGroup
+from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
+from users.forms import no_render_field
 
 
 class PersonForm(ModelForm):
@@ -276,3 +277,28 @@ class AddManagedPersonForm(AddDeleteManagedPersonForm):
 
 class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
+
+
+class TransactionCreateForm(ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ["amount", "reason", "date_due", "is_reward"]
+        widgets = {
+            "date_due": widgets.DateInput(
+                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
+            ),
+        }
+
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        transaction.person = self.person
+
+        if commit:
+            transaction.save()
+
+        return transaction

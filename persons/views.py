@@ -3,12 +3,13 @@ import csv
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from django.core.exceptions import ImproperlyConfigured
 
 from google_integration import google_directory
 from .forms import (
@@ -19,6 +20,7 @@ from .forms import (
     AddMembersStaticGroupForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
+    TransactionCreateForm,
 )
 from .models import (
     Person,
@@ -27,6 +29,7 @@ from .models import (
     FeatureTypeTexts,
     Group,
     StaticGroup,
+    Transaction,
 )
 from .utils import sync_single_group_with_google
 
@@ -531,3 +534,102 @@ class ExportSelectedPersonsView(generic.View):
             writer.writerow([getattr(person, key) for key in keys])
 
         return response
+
+
+class TransactionCreateView(generic.edit.CreateView):
+    model = Transaction
+    form_class = TransactionCreateForm
+    template_name = "persons/transactions/create.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = get_object_or_404(Person, pk=self.kwargs["person"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if "person" not in context:
+            context["person"] = self.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:detail", kwargs={"pk": self.person.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs["person"] = self.person
+
+        return kwargs
+
+
+class TransactionListBaseMixin(generic.detail.DetailView):
+    model = Person
+
+    def _get_transactions(self, person):
+        raise ImproperlyConfigured("_get_transactions needs to be overridden.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        person = self.object
+        transactions = self._get_transactions(person)
+
+        self.transactions_debt = transactions.filter(is_reward=False)
+        self.transactions_reward = transactions.filter(is_reward=True)
+
+        if "transactions_debt" not in context:
+            context["transactions_debt"] = self.transactions_debt
+
+        if "transactions_reward" not in context:
+            context["transactions_reward"] = self.transactions_reward
+
+        return context
+
+
+class TransactionListDueView(TransactionListBaseMixin):
+    template_name = "persons/transactions/list_due.html"
+
+    def _get_transactions(self, person):
+        return person.transactions.filter(date_settled__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        total_debt = (
+            self.transactions_debt.aggregate(result=Sum("amount"))["result"] or 0
+        )
+        total_reward = (
+            self.transactions_reward.aggregate(result=Sum("amount"))["result"] or 0
+        )
+
+        if "total_debt" not in context:
+            context["total_debt"] = total_debt
+
+        if "total_reward" not in context:
+            context["total_reward"] = total_reward
+
+        return context
+
+
+class TransactionListSettledView(TransactionListBaseMixin):
+    template_name = "persons/transactions/list_settled.html"
+
+    def _get_transactions(self, person):
+        return person.transactions.filter(date_settled__isnull=False)
+
+
+class TransactionQRView(generic.detail.DetailView):
+    model = Transaction
+    template_name = "persons/transactions/QR.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        transaction = self.object
+
+        if "person" not in context:
+            context["person"] = transaction.person
+
+        return context
