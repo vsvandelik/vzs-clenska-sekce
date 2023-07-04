@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.forms import Form, ModelForm, MultipleChoiceField
 from django import forms
-from .models import Event
+from .models import Event, EventPosition
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -10,7 +10,7 @@ from .utils import (
 )
 from datetime import timezone
 from django.utils import timezone
-from persons.models import Person
+from persons.models import Person, Feature
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -416,9 +416,6 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
     person_id = forms.IntegerField()
     event_id = forms.IntegerField()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def clean(self):
         super().clean()
         pid = self.cleaned_data["person_id"]
@@ -428,14 +425,31 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
             event = Event.objects.get(pk=eid)
             event.set_type()
             if not event.is_one_time_event:
-                raise forms.ValidationError(
-                    f"Událost {event} není jednorázovou událostí"
-                )
+                self.add_error("event_id", "Událost {event} není jednorázovou událostí")
             if event.state in [Event.State.APPROVED, Event.State.FINISHED]:
-                raise forms.ValidationError(
-                    f"Událost {event} je uzavřena nebo schválena"
+                self.add_error(
+                    "event_id", f"Událost {event} je uzavřena nebo schválena"
                 )
         except Person.DoesNotExist:
-            raise forms.ValidationError(f"Osoba s id {pid} neexistuje")
+            self.add_error("person_id", f"Osoba s id {pid} neexistuje")
         except Event.DoesNotExist:
-            raise forms.ValidationError(f"Událost s id {eid} neexistuje")
+            self.add_error("event_id", f"Událost s id {eid} neexistuje")
+
+
+class AddFeatureRequirementToPositionForm(Form):
+    position_id = forms.IntegerField()
+    feature_id = forms.IntegerField()
+
+    def clean(self):
+        super().clean()
+        pid = self.cleaned_data["position_id"]
+        fid = self.cleaned_data["feature_id"]
+        try:
+            Feature.objects.get(pk=fid)
+        except EventPosition.DoesNotExist:
+            self.add_error("position_id", f"Pozice s id {pid} neexistuje")
+        except Feature.DoesNotExist:
+            self.add_error(
+                "feature_id",
+                f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
+            )

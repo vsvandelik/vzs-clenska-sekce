@@ -18,11 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 
 from persons import urls as persons_urls
+from events import urls as events_urls
 
 urlpatterns = [
     path("osoby/", include("persons.urls")),
     path("admin/", admin.site.urls),
     path("udalosti/", include("events.urls")),
+    path(
+        "pozice/",
+        include((events_urls.positions_urls, "positions"), namespace="positions"),
+    ),
     path("uzivatele/", include("users.urls")),
     path(
         "kvalifikace/",

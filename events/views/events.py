@@ -1,19 +1,14 @@
 from django.urls import reverse_lazy
-from .models import Event, EventParticipation, Participation
+from ..models import Event, EventParticipation, Participation
 from django.views import generic
-from .forms import (
+from ..forms import (
     TrainingForm,
     OneTimeEventForm,
     AddDeleteParticipantFromOneTimeEventForm,
 )
-from django.contrib.messages.views import SuccessMessageMixin
-from .mixin_extensions import FailureMessageMixin
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
-
-
-class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
-    pass
+from ..mixin_extensions import MessagesMixin
 
 
 class EventConditionMixin:
@@ -137,7 +132,7 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
         return context
 
 
-class SignUpOrRemovePersonFromOneTimeEvent(MessagesMixin, generic.FormView):
+class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
     form_class = AddDeleteParticipantFromOneTimeEventForm
 
     def get_success_url(self):
@@ -160,7 +155,7 @@ class SignUpOrRemovePersonFromOneTimeEvent(MessagesMixin, generic.FormView):
             event.participants.remove(self.person)
 
 
-class SignUpPersonForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+class SignUpPersonForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} přihlášena na událost"
 
@@ -169,7 +164,7 @@ class SignUpPersonForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return super().form_valid(form)
 
 
-class RemoveParticipantFromOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+class RemoveParticipantFromOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} odhlášena z události"
 
@@ -178,7 +173,7 @@ class RemoveParticipantFromOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return super().form_valid(form)
 
 
-class AddSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+class AddSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} přidána mezi náhradníky události"
 
@@ -187,7 +182,7 @@ class AddSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
         return super().form_valid(form)
 
 
-class RemoveSubtituteForOneTimeEvent(SignUpOrRemovePersonFromOneTimeEvent):
+class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.person} smazána ze seznamu náhradníků události"
 
