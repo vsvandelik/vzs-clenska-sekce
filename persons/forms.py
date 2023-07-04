@@ -1,7 +1,8 @@
 import datetime
 import re
 
-from crispy_forms.layout import Submit
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit, Layout, Div, Reset
 from django import forms
 from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
@@ -37,6 +38,9 @@ class PersonForm(ModelForm):
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
+        if not phone:
+            return phone
+
         phone = re.sub(r"\D", "", phone)  # remove non digits
 
         if phone.startswith("00420"):
@@ -51,6 +55,8 @@ class PersonForm(ModelForm):
 
     def clean_postcode(self):
         postcode = self.cleaned_data["postcode"]
+        if not postcode:
+            return postcode
 
         if len(str(postcode)) != 5:
             raise ValidationError(_("PSČ nemá platný formát."))
@@ -276,3 +282,49 @@ class AddManagedPersonForm(AddDeleteManagedPersonForm):
 
 class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
+
+
+class PersonsFilterForm(forms.Form):
+    name = forms.CharField(label=_("Jméno"), required=False)
+    email = forms.CharField(label=_("E-mailová adresa"), required=False)
+    qualifications = forms.ModelChoiceField(
+        label=_("Kvalifikace"), required=False, queryset=Feature.qualifications.all()
+    )
+    permissions = forms.ModelChoiceField(
+        label=_("Oprávnění"), required=False, queryset=Feature.permissions.all()
+    )
+    equipments = forms.ModelChoiceField(
+        label=_("Vybavení"), required=False, queryset=Feature.equipments.all()
+    )
+    person_type = forms.ChoiceField(
+        label=_("Typ osoby"),
+        required=False,
+        choices=[("", "---------")] + Person.Type.choices,
+    )
+    birth_year_from = forms.IntegerField(label=_("Rok narození od"), required=False)
+    birth_year_to = forms.IntegerField(label=_("Rok narození do"), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = "GET"
+        self.helper.layout = Layout(
+            Div(
+                Div("name", css_class="col-md-6"),
+                Div("email", css_class="col-md-6"),
+                css_class="row",
+            ),
+            Div(
+                Div("qualifications", css_class="col-md-4"),
+                Div("permissions", css_class="col-md-4"),
+                Div("equipments", css_class="col-md-4"),
+                css_class="row",
+            ),
+            Div(
+                Div("person_type", css_class="col-md-6"),
+                Div("birth_year_from", css_class="col-md-3"),
+                Div("birth_year_to", css_class="col-md-3"),
+                css_class="row",
+            ),
+            Submit("submit", "Filtrovat", css_class="btn btn-primary float-right"),
+        )

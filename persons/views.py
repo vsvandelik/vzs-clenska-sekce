@@ -19,6 +19,7 @@ from .forms import (
     AddMembersStaticGroupForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
+    PersonsFilterForm,
 )
 from .models import (
     Person,
@@ -36,6 +37,15 @@ class PersonIndexView(generic.ListView):
     template_name = "persons/persons/index.html"
     context_object_name = "persons"
     paginate_by = 20
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = PersonsFilterForm(self.request.GET)
+        context["filtered_get"] = self.request.GET.urlencode()
+        return context
+
+    def get_queryset(self):
+        return parse_persons_filter_queryset(self.request.GET)
 
 
 class PersonDetailView(generic.DetailView):
@@ -478,11 +488,7 @@ class SendEmailToSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        # selected_persons_id = request.GET.getlist('persons', [])
-        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
-
-        # TODO: Adjust this filtering person based on displayed persons in table
-        selected_persons = Person.objects.all()
+        selected_persons = parse_persons_filter_queryset(self.request.GET)
 
         recipients = [
             f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons
@@ -497,11 +503,7 @@ class ExportSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        # selected_persons_id = request.GET.getlist('persons', [])
-        # selected_persons = Person.objects.filter(pk__in=selected_persons_id)
-
-        # TODO: Adjust this filtering person based on displayed persons in table
-        selected_persons = Person.objects.all()
+        selected_persons = parse_persons_filter_queryset(self.request.GET)
 
         response = HttpResponse(
             content_type="text/csv",
@@ -531,3 +533,53 @@ class ExportSelectedPersonsView(generic.View):
             writer.writerow([getattr(person, key) for key in keys])
 
         return response
+
+
+def parse_persons_filter_queryset(params_dict):
+    persons = Person.objects
+
+    name = params_dict.get("name")
+    email = params_dict.get("email")
+    qualification = params_dict.get("qualifications")
+    permission = params_dict.get("permissions")
+    equipment = params_dict.get("equipments")
+    person_type = params_dict.get("person_type")
+    birth_year_from = params_dict.get("birth_year_from")
+    birth_year_to = params_dict.get("birth_year_to")
+
+    if name:
+        persons = persons.filter(
+            Q(first_name__icontains=name) | Q(last_name__icontains=name)
+        )
+
+    if email:
+        persons = persons.filter(email__icontains=email)
+
+    if qualification:
+        persons = persons.filter(
+            featureassignment__feature__feature_type=Feature.Type.QUALIFICATION.value,
+            featureassignment__feature__id=qualification,
+        )
+
+    if permission:
+        persons = persons.filter(
+            featureassignment__feature__feature_type=Feature.Type.PERMISSION.value,
+            featureassignment__feature__id=permission,
+        )
+
+    if equipment:
+        persons = persons.filter(
+            featureassignment__feature__feature_type=Feature.Type.EQUIPMENT.value,
+            featureassignment__feature__id=equipment,
+        )
+
+    if person_type:
+        persons = persons.filter(person_type=person_type)
+
+    if birth_year_from:
+        persons = persons.filter(date_of_birth__year__gte=birth_year_from)
+
+    if birth_year_to:
+        persons = persons.filter(date_of_birth__year__lte=birth_year_to)
+
+    return persons.order_by("last_name")

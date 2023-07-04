@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load vzs_filters %}
+{% load crispy_forms_tags %}
 
 {% block title %}Seznam všech osob{% endblock %}
 
@@ -11,11 +12,21 @@
                 <div class="card-header d-flex align-items-center">
                     <div class="card-title h5">Osoby</div>
                     <div class="card-tools ml-auto">
-                        <a class="btn btn-primary" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
-                        <a class="btn btn-primary" href="{% url "persons:export" %}">Vyexportovat všechny</a>
+                        {% if filtered_get %}
+                            <a class="btn btn-primary" href="{% url "persons:send-mail" %}?{{ filtered_get }}">Poslat vyfiltrovaným e-mail</a>
+                            <a class="btn btn-primary" href="{% url "persons:export" %}?{{ filtered_get }}">Vyexportovat vyfiltrované</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
+                            <a class="btn btn-primary" href="{% url "persons:export" %}">Vyexportovat všechny</a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {% crispy filter_form %}
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-12">
                             <table class="table table-hover table-striped">
