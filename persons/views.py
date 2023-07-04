@@ -38,14 +38,23 @@ class PersonIndexView(generic.ListView):
     context_object_name = "persons"
     paginate_by = 20
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.filter_form = None
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["filter_form"] = PersonsFilterForm(self.request.GET)
+        context["filter_form"] = self.filter_form
         context["filtered_get"] = self.request.GET.urlencode()
         return context
 
     def get_queryset(self):
-        return parse_persons_filter_queryset(self.request.GET)
+        self.filter_form = PersonsFilterForm(self.request.GET)
+
+        if self.filter_form.is_valid():
+            return parse_persons_filter_queryset(self.request.GET)
+        else:
+            return Person.objects.all()
 
 
 class PersonDetailView(generic.DetailView):

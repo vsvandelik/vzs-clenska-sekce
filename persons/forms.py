@@ -2,7 +2,7 @@ import datetime
 import re
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, Reset
+from crispy_forms.layout import Submit, Layout, Div
 from django import forms
 from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
@@ -286,7 +286,7 @@ class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
 
 class PersonsFilterForm(forms.Form):
     name = forms.CharField(label=_("Jméno"), required=False)
-    email = forms.CharField(label=_("E-mailová adresa"), required=False)
+    email = forms.EmailField(label=_("E-mailová adresa"), required=False)
     qualifications = forms.ModelChoiceField(
         label=_("Kvalifikace"), required=False, queryset=Feature.qualifications.all()
     )
@@ -328,3 +328,25 @@ class PersonsFilterForm(forms.Form):
             ),
             Submit("submit", "Filtrovat", css_class="btn btn-primary float-right"),
         )
+
+    def clean_birth_year_from(self):
+        if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
+            raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+
+        return self.cleaned_data["birth_year_from"]
+
+    def clean_birth_year_to(self):
+        if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
+            raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+
+        return self.cleaned_data["birth_year_to"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        birth_year_from = cleaned_data.get("birth_year_from")
+        birth_year_to = cleaned_data.get("birth_year_to")
+
+        if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
+            raise ValidationError(
+                _("Rok narození od musí být menší nebo roven roku narození do.")
+            )

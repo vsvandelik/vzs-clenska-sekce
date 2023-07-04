@@ -1,12 +1,10 @@
 from datetime import date
-from django.db.models.functions import ExtractMonth, ExtractDay, Now
-
+from itertools import chain
 
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from itertools import chain
 
 from vzs import models as vzs_models
 
