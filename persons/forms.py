@@ -310,43 +310,57 @@ class PersonsFilterForm(forms.Form):
         self.helper.form_method = "GET"
         self.helper.layout = Layout(
             Div(
-                Div("name", css_class="col-md-6"),
-                Div("email", css_class="col-md-6"),
-                css_class="row",
-            ),
-            Div(
-                Div("qualifications", css_class="col-md-4"),
-                Div("permissions", css_class="col-md-4"),
-                Div("equipments", css_class="col-md-4"),
-                css_class="row",
-            ),
-            Div(
-                Div("person_type", css_class="col-md-6"),
-                Div("birth_year_from", css_class="col-md-3"),
-                Div("birth_year_to", css_class="col-md-3"),
-                css_class="row",
-            ),
-            Submit("submit", "Filtrovat", css_class="btn btn-primary float-right"),
+                Div(
+                    Div("name", css_class="col-md-6"),
+                    Div("email", css_class="col-md-6"),
+                    css_class="row",
+                ),
+                Div(
+                    Div("qualifications", css_class="col-md-4"),
+                    Div("permissions", css_class="col-md-4"),
+                    Div("equipments", css_class="col-md-4"),
+                    css_class="row",
+                ),
+                Div(
+                    Div("person_type", css_class="col-md-6"),
+                    Div("birth_year_from", css_class="col-md-3"),
+                    Div("birth_year_to", css_class="col-md-3"),
+                    css_class="row",
+                ),
+                Div(
+                    Div(
+                        Submit(
+                            "submit",
+                            "Filtrovat",
+                            css_class="btn btn-primary float-right",
+                        ),
+                        css_class="col-12",
+                    ),
+                    css_class="row",
+                ),
+                css_class="p-2 border rounded bg-light",
+                style="box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);",
+            )
         )
 
-    def clean_birth_year_from(self):
-        if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
-            raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+        def clean_birth_year_from(self):
+            if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
+                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
 
-        return self.cleaned_data["birth_year_from"]
+            return self.cleaned_data["birth_year_from"]
 
-    def clean_birth_year_to(self):
-        if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
-            raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+        def clean_birth_year_to(self):
+            if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
+                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
 
-        return self.cleaned_data["birth_year_to"]
+            return self.cleaned_data["birth_year_to"]
 
-    def clean(self):
-        cleaned_data = super().clean()
-        birth_year_from = cleaned_data.get("birth_year_from")
-        birth_year_to = cleaned_data.get("birth_year_to")
+        def clean(self):
+            cleaned_data = super().clean()
+            birth_year_from = cleaned_data.get("birth_year_from")
+            birth_year_to = cleaned_data.get("birth_year_to")
 
-        if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
-            raise ValidationError(
-                _("Rok narození od musí být menší nebo roven roku narození do.")
-            )
+            if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
+                raise ValidationError(
+                    _("Rok narození od musí být menší nebo roven roku narození do.")
+                )
