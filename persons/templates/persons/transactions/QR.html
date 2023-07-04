@@ -31,7 +31,7 @@
 
                     <div class="text-center">
                         {% comment %} TODO: correct bank info {% endcomment %}
-                        <img src="http://api.paylibo.com/paylibo/generator/czech/image?accountNumber=222885&bankCode=5500&amount={{ transaction.amount }}&currency=CZK&vs={{ transaction.pk }}">
+                        <img src="http://api.paylibo.com/paylibo/generator/czech/image?accountNumber={{ account }}&bankCode=2010&amount={{ transaction.amount }}&currency=CZK&vs={{ transaction.pk }}">
                     </div>
                 </div>
             </div>

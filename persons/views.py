@@ -1,4 +1,5 @@
 import csv
+import datetime
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -31,7 +32,8 @@ from .models import (
     StaticGroup,
     Transaction,
 )
-from .utils import sync_single_group_with_google
+from .utils import sync_single_group_with_google, fetch_fio_transactions
+from vzs import settings
 
 
 class PersonIndexView(generic.ListView):
@@ -632,4 +634,16 @@ class TransactionQRView(generic.detail.DetailView):
         if "person" not in context:
             context["person"] = transaction.person
 
+        if "account" not in context:
+            context["account"] = settings.FIO_ACCOUNT_NUMBER
+
         return context
+
+
+class TransactionIndexView(generic.base.TemplateView):
+    template_name = "persons/transactions/index.html"
+
+    def post(self, request, *args, **kwargs):
+        today = datetime.date.today()
+        fetch_fio_transactions(today - datetime.timedelta(days=1), today)
+        return super().get(request, *args, **kwargs)

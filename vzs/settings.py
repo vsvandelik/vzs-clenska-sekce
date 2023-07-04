@@ -184,3 +184,6 @@ MESSAGE_TAGS = {
 GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = "vzs-praha15.cz"
+
+FIO_ACCOUNT_NUMBER = "2601743175"
+FIO_TOKEN = "D9fuBDstjTENqAb8NyjM6ovFogs18X8fgIkl6vShAuHCiEu9MTVPgbSvVHc9D9xN"
