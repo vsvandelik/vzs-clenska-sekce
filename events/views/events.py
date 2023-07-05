@@ -138,6 +138,14 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
     def get_success_url(self):
         return reverse("events:detail_one_time_event", args=[self.event_id])
 
+    def post(self, request, *args, **kwargs):
+        post_extended = request.POST.copy()
+        post_extended["event_id"] = kwargs["event_id"]
+        form = AddDeleteParticipantFromOneTimeEventForm(post_extended)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
     def _process_form(self, form, op, state):
         self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
         self.event_id = form.cleaned_data["event_id"]

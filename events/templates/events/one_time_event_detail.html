@@ -78,7 +78,6 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'events:remove_participant_from_one_time_event' event.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="event_id" value="{{ event.id }}">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -119,7 +118,6 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'events:remove_substitute_from_one_time_event' event.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="event_id" value="{{ event.id }}">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -181,7 +179,6 @@
                 <div class="modal-body">
                     <form method="POST" action="{% url "events:signup_person_for_one_time_event" event.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="event_id" value="{{ event.id }}">
                         <table class="table table-striped" id="signUpPersonForOneTimeEventTable">
                             <thead>
                                 <tr>
@@ -237,7 +234,6 @@
                 <div class="modal-body">
                     <form method="POST" action="{% url "events:add_substitute_for_one_time_event" event.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="event_id" value="{{ event.id }}">
                         <table class="table table-striped" id="addSubtituteForOneTimeEventTable">
                             <thead>
                                 <tr>

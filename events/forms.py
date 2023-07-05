@@ -446,6 +446,7 @@ class AddFeatureRequirementToPositionForm(Form):
         fid = self.cleaned_data["feature_id"]
         try:
             Feature.objects.get(pk=fid)
+            EventPosition.objects.get(pk=pid)
         except EventPosition.DoesNotExist:
             self.add_error("position_id", f"Pozice s id {pid} neexistuje")
         except Feature.DoesNotExist:
@@ -453,3 +454,4 @@ class AddFeatureRequirementToPositionForm(Form):
                 "feature_id",
                 f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
             )
+        return self.cleaned_data
