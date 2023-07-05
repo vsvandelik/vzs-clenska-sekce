@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'position_detail.js' %}"></script>
+{% endblock %}
+{% block title %}
+    Detail pozice
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ position.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'positions:edit' position.id %}"
+                   class="btn btn-success">Změna jména</a>
+                <a href="{% url 'positions:delete' position.id %}" class="btn btn-danger">Smazat</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Vyžadované kvalifikace</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                        {% csrf_token %}
+                        <table id="addedQualificationsTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for q in position.required_qualifications %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'qualifications:detail' q.id %}">{{ q }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="feature_id"
+                                                    value="{{ q.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" onclick="addQualificationClicked()" data-toggle="modal"
+                       data-target="#addFeatures">Přidat</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Vyžadované oprávnění</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                        {% csrf_token %}
+                        <table id="addedPermissionsTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in position.required_permissions %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'permissions:detail' p.id %}">{{ p }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="feature_id"
+                                                    value="{{ p.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" onclick="addPermissionClicked()" data-toggle="modal"
+                       data-target="#addFeatures">Přidat</a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Vyžadované vybavení</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                        {% csrf_token %}
+                        <table id="addedPermissionsTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in position.required_equipment %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'permissions:detail' e.id %}">{{ e }}</a>
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn btn-danger" name="feature_id"
+                                                    value="{{ e.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" onclick="addEquipmentClicked()" data-toggle="modal"
+                       data-target="#addFeatures">Přidat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addFeatures" tabindex="-1" role="dialog"
+         aria-labelledby="addFeatures"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="modalTitle" class="modal-title">Přidat kvalifikaci</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'positions:add_feature' position.id %}">
+                        {% csrf_token %}
+                        <table class="table table-striped" id="addFeatureTable">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="qualificationsBody" style="display: none">
+                                {% include 'positions/feature_tbody.html' with features=view.qualifications.all features_not_required=view.qualifications_not_required detail_name='qualifications:detail' %}
+                            </tbody>
+
+                            <tbody id="permissionsBody" style="display: none">
+                                {% include 'positions/feature_tbody.html' with features=view.permissions.all features_not_required=view.permissions_not_required detail_name='permissions:detail' %}
+                            </tbody>
+
+                            <tbody id="equipmentBody" style="display: none">
+                                {% include 'positions/feature_tbody.html' with features=view.equipment.all features_not_required=view.equipment_not_required detail_name='equipments:detail' %}
+                            </tbody>
+
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

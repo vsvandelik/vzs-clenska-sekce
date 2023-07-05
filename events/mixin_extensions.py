@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 
 
 class FailureMessageMixin:
@@ -15,3 +16,7 @@ class FailureMessageMixin:
 
     def get_failure_message(self, errors):
         return errors
+
+
+class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
+    pass
