@@ -19,7 +19,7 @@
                       onsubmit="return beforeSubmit()">
                     {% csrf_token %}
                     <div class="card-header">
-                        <div class="card-title h5">Přidání</div>
+                        <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}

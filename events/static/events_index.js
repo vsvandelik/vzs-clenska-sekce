@@ -1,9 +1,9 @@
-const oneTimeEventsList = new DataTable('#one_time_events_list', {
+const oneTimeEventsList = new DataTable('#oneTimeEventsTable', {
     responsive: true,
     searching: true
 })
 
-const trainingsList = new DataTable('#trainings_list', {
+const trainingsList = new DataTable('#trainingsTable', {
     responsive: true,
     searching: true
 })

@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
-from persons.models import Person
+from persons.models import Person, Feature
 
 
 class Event(models.Model):
@@ -96,8 +96,7 @@ class Event(models.Model):
         return children
 
     def get_not_signed_persons(self):
-        persons = Person.objects
-        return persons.difference(self.participants.all())
+        return Person.objects.all().difference(self.participants.all())
 
     def get_approved_participants(self):
         return self.participants.filter(state__exact=Participation.State.APPROVED)
@@ -110,8 +109,20 @@ class Event(models.Model):
 
 
 class EventPosition(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(_("Jméno"), max_length=50)
     required_features = models.ManyToManyField("persons.Feature")
+
+    def required_qualifications(self):
+        return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
+
+    def required_permissions(self):
+        return self.required_features.filter(feature_type=Feature.Type.PERMISSION)
+
+    def required_equipment(self):
+        return self.required_features.filter(feature_type=Feature.Type.EQUIPMENT)
+
+    def __str__(self):
+        return self.name
 
 
 class EventPositionAssignment(models.Model):

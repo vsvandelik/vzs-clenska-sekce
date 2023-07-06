@@ -1,7 +1,8 @@
 import datetime
 import re
 
-from crispy_forms.layout import Submit
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit, Layout, Div
 from django import forms
 from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
@@ -38,6 +39,9 @@ class PersonForm(ModelForm):
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
+        if not phone:
+            return phone
+
         phone = re.sub(r"\D", "", phone)  # remove non digits
 
         if phone.startswith("00420"):
@@ -52,6 +56,8 @@ class PersonForm(ModelForm):
 
     def clean_postcode(self):
         postcode = self.cleaned_data["postcode"]
+        if not postcode:
+            return postcode
 
         if len(str(postcode)) != 5:
             raise ValidationError(_("PSČ nemá platný formát."))
@@ -277,6 +283,88 @@ class AddManagedPersonForm(AddDeleteManagedPersonForm):
 
 class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
+
+
+class PersonsFilterForm(forms.Form):
+    name = forms.CharField(label=_("Jméno"), required=False)
+    email = forms.EmailField(label=_("E-mailová adresa"), required=False)
+    qualifications = forms.ModelChoiceField(
+        label=_("Kvalifikace"), required=False, queryset=Feature.qualifications.all()
+    )
+    permissions = forms.ModelChoiceField(
+        label=_("Oprávnění"), required=False, queryset=Feature.permissions.all()
+    )
+    equipments = forms.ModelChoiceField(
+        label=_("Vybavení"), required=False, queryset=Feature.equipments.all()
+    )
+    person_type = forms.ChoiceField(
+        label=_("Typ osoby"),
+        required=False,
+        choices=[("", "---------")] + Person.Type.choices,
+    )
+    birth_year_from = forms.IntegerField(label=_("Rok narození od"), required=False)
+    birth_year_to = forms.IntegerField(label=_("Rok narození do"), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = "GET"
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Div("name", css_class="col-md-6"),
+                    Div("email", css_class="col-md-6"),
+                    css_class="row",
+                ),
+                Div(
+                    Div("qualifications", css_class="col-md-4"),
+                    Div("permissions", css_class="col-md-4"),
+                    Div("equipments", css_class="col-md-4"),
+                    css_class="row",
+                ),
+                Div(
+                    Div("person_type", css_class="col-md-6"),
+                    Div("birth_year_from", css_class="col-md-3"),
+                    Div("birth_year_to", css_class="col-md-3"),
+                    css_class="row",
+                ),
+                Div(
+                    Div(
+                        Submit(
+                            "submit",
+                            "Filtrovat",
+                            css_class="btn btn-primary float-right",
+                        ),
+                        css_class="col-12",
+                    ),
+                    css_class="row",
+                ),
+                css_class="p-2 border rounded bg-light",
+                style="box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);",
+            )
+        )
+
+        def clean_birth_year_from(self):
+            if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
+                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+
+            return self.cleaned_data["birth_year_from"]
+
+        def clean_birth_year_to(self):
+            if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
+                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+
+            return self.cleaned_data["birth_year_to"]
+
+        def clean(self):
+            cleaned_data = super().clean()
+            birth_year_from = cleaned_data.get("birth_year_from")
+            birth_year_to = cleaned_data.get("birth_year_to")
+
+            if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
+                raise ValidationError(
+                    _("Rok narození od musí být menší nebo roven roku narození do.")
+                )
 
 
 class TransactionCreateEditBaseForm(ModelForm):

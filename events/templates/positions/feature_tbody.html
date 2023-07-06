@@ -1,0 +1,17 @@
+{% for f in features %}
+    <tr>
+        <td>
+            <a href="{% url detail_name f.id %}" target="_blank">{{ f }}</a>
+            {% if f not in features_not_required %}
+                <span class="badge badge-success">přidána</span>
+            {% endif %}
+        </td>
+        <td class="text-center">
+            <button class="btn btn-primary" type="submit" name="feature_id"
+                    value="{{ f.id }}"
+                    {% if f not in features_not_required %}disabled{% endif %}>
+                Přidat
+            </button>
+        </td>
+    </tr>
+{% endfor %}
