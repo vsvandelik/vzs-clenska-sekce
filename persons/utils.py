@@ -83,7 +83,7 @@ def fetch_fio(date_start, date_end):
         if transaction.date_settled is not None:
             continue
 
-        if transaction.amount != received_amount:
+        if -transaction.amount != received_amount:
             accountant_users = (
                 Permission.objects.get(codename="ucetni")
                 .user_set.select_related("person__email")
@@ -94,7 +94,7 @@ def fetch_fio(date_start, date_end):
                 "Suma přijaté transakce se liší od zadané.",
                 (
                     f"Přijatá transakce číslo {transaction.pk} zadaná osobě {str(transaction.person)} se liší v sumě od zadané transakce.\n"
-                    f"Zadaná suma je {abs(transaction.amount)} Kč a přijatá suma je {received_amount} Kč"
+                    f"Zadaná suma je {-transaction.amount} Kč a přijatá suma je {received_amount} Kč"
                 ),
                 None,
                 accountant_users.values_list("person__email", flat=True),

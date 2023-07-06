@@ -4,8 +4,11 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 from vzs import models as vzs_models
+
+from datetime import datetime
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
@@ -291,3 +294,9 @@ class Transaction(models.Model):
     )
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
     date_settled = models.DateField(_("Datum realizace"), null=True)
+
+
+class FioSettings(vzs_models.DatabaseSettingsMixin):
+    last_fio_fetch_time = models.DateTimeField(
+        default=timezone.make_aware(datetime(1900, 1, 1))
+    )
