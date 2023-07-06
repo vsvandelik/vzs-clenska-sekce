@@ -1,10 +1,15 @@
-import requests
-import datetime
+from persons.models import Person, Transaction
+
+from vzs import settings
 
 from google_integration import google_directory
-from persons.models import Person, Transaction
-from vzs import settings
+
+from django.core.mail import send_mail
 from django.utils import dateparse
+from django.contrib.auth.models import Permission
+
+import requests
+import datetime
 
 
 def sync_single_group_with_google(local_group):
@@ -64,7 +69,7 @@ def fetch_fio_transactions(date_start, date_end):
         if len(variabilni) == 0 or variabilni[0] == "0":
             continue
 
-        amount = int(transaction["column1"]["value"])
+        received_amount = int(transaction["column1"]["value"])
         date_settled = datetime.datetime.strptime(
             transaction["column0"]["value"], "%Y-%m-%d%z"
         ).date()
@@ -73,13 +78,30 @@ def fetch_fio_transactions(date_start, date_end):
         transaction = Transaction.objects.filter(pk=transaction_pk).first()
 
         if transaction is None:
+            # TODO: Found a transaction of {received_amount} with VS {transaction_pk} without a DB entry.
             continue
 
         if transaction.date_settled is not None:
             continue
 
-        if transaction.amount != amount:
-            # TODO: what to do if only amounts differ?
+        if transaction.amount != received_amount:
+            accountant_users = (
+                Permission.objects.get(codename="ucetni")
+                .user_set.select_related("person__email")
+                .all()
+            )
+
+            send_mail(
+                "Suma přijaté transakce se liší od zadané.",
+                (
+                    f"Přijatá transakce číslo {transaction.pk} zadaná osobě {str(transaction.person)} se liší v sumě od zadané transakce.\n"
+                    f"Zadaná suma je {abs(transaction.amount)} Kč a přijatá suma je {received_amount} Kč"
+                ),
+                None,
+                accountant_users.values_list("person__email", flat=True),
+                fail_silently=False,
+            )
+
             continue
 
         transaction.date_settled = date_settled
