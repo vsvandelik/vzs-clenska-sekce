@@ -1,23 +1,15 @@
 from django.urls import reverse_lazy
-from ..models import Event, EventParticipation, Participation
+from ..models import Event, EventParticipation, Participation, EventPositionAssignment
 from django.views import generic
 from ..forms import (
     TrainingForm,
     OneTimeEventForm,
     AddDeleteParticipantFromOneTimeEventForm,
+    EventPositionAssignmentForm,
 )
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
-from ..mixin_extensions import MessagesMixin
-
-
-class EventConditionMixin:
-    def get(self, request, *args, **kwargs):
-        event = get_object_or_404(Event, pk=kwargs["pk"])
-        event.set_type()
-        if not self.event_condition(event):
-            return redirect(self.event_condition_failed_redirect_url)
-        return super().get(request, *args, **kwargs)
+from ..mixin_extensions import MessagesMixin, InvariantMixin
 
 
 class EventCreateMixin(MessagesMixin, generic.FormView):
@@ -25,11 +17,11 @@ class EventCreateMixin(MessagesMixin, generic.FormView):
     success_url = reverse_lazy("events:index")
 
 
-class EventUpdateMixin(MessagesMixin, EventConditionMixin, generic.FormView):
+class EventUpdateMixin(MessagesMixin, InvariantMixin, generic.FormView):
     context_object_name = "event"
     model = Event
     success_message = "Událost %(name)s úspěšně upravena."
-    event_condition_failed_redirect_url = reverse_lazy("events:index")
+    invariant_failed_redirect_url = reverse_lazy("events:index")
     success_url = reverse_lazy("events:index")
 
 
@@ -58,15 +50,18 @@ class EventDeleteView(MessagesMixin, generic.DeleteView):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-class EventDetailViewMixin(EventConditionMixin, generic.DetailView):
+class EventDetailViewMixin(InvariantMixin, generic.DetailView):
     model = Event
-    event_condition_failed_redirect_url = reverse_lazy("events:index")
+    invariant_failed_redirect_url = reverse_lazy("events:index")
     context_object_name = "event"
+
+    def event_position_assignments(self):
+        return EventPositionAssignment.objects.filter(event=self.object)
 
 
 class TrainingDetailView(EventDetailViewMixin):
     template_name = "events/training_detail.html"
-    event_condition = lambda _, e: e.is_top_training
+    invariant = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -76,7 +71,7 @@ class TrainingDetailView(EventDetailViewMixin):
 
 class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "events/one_time_event_detail.html"
-    event_condition = lambda _, e: e.is_one_time_event
+    invariant = lambda _, e: e.is_one_time_event
 
     def persons(self):
         return Person.objects.all()
@@ -99,7 +94,7 @@ class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
 class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_one_time_event.html"
     form_class = OneTimeEventForm
-    event_condition = lambda _, e: e.is_one_time_event
+    invariant = lambda _, e: e.is_one_time_event
 
     def get(self, request, *args, **kwargs):
         event = get_object_or_404(Event, pk=kwargs["pk"])
@@ -122,7 +117,7 @@ class TrainingCreateView(generic.CreateView, EventCreateMixin):
 class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_training.html"
     form_class = TrainingForm
-    event_condition = lambda _, e: e.is_top_training
+    invariant = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -197,3 +192,36 @@ class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventVie
     def form_valid(self, form):
         self._process_form(form, "remove", Participation.State.SUBSTITUTE)
         return super().form_valid(form)
+
+
+class EventPositionAssignmentCreateView(generic.CreateView):
+    model = EventPositionAssignment
+    form_class = EventPositionAssignmentForm
+    template_name = "events/create_edit_event_position_assignment.html"
+    context_object_name = "position_assignment"
+
+    def post(self, request, *args, **kwargs):
+        post_extended = request.POST.copy()
+        post_extended["event_id"] = kwargs["event_id"]
+        form = EventPositionAssignmentForm(post_extended)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+
+class EventPositionAssignmentUpdateView(generic.UpdateView):
+    model = EventPositionAssignment
+    form_class = EventPositionAssignmentForm
+    template_name = "events/create_edit_event_position_assignment.html"
+    context_object_name = "position_assignment"
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        post_extended = request.POST.copy()
+        post_extended["event_id"] = kwargs["event_id"]
+        post_extended["position"] = self.object.position.id
+        form = EventPositionAssignmentForm(post_extended)
+
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)

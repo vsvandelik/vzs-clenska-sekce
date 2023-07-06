@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "widget_tweaks",
+    "django_select2",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",

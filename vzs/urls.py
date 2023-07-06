@@ -21,6 +21,7 @@ from persons import urls as persons_urls
 from events import urls as events_urls
 
 urlpatterns = [
+    path("select2/", include("django_select2.urls")),
     path("osoby/", include("persons.urls")),
     path("admin/", admin.site.urls),
     path("udalosti/", include("events.urls")),

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
 from persons.models import Person, Feature
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Event(models.Model):
@@ -108,9 +109,18 @@ class Event(models.Model):
         return self.name
 
 
+class EventPositionTemplateManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_template=True)
+
+
 class EventPosition(models.Model):
     name = models.CharField(_("Jméno"), max_length=50)
     required_features = models.ManyToManyField("persons.Feature")
+    is_template = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    templates = EventPositionTemplateManager()
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
@@ -128,7 +138,9 @@ class EventPosition(models.Model):
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     position = models.ForeignKey("events.EventPosition", on_delete=models.CASCADE)
-    count = models.PositiveSmallIntegerField(default=1)
+    count = models.PositiveSmallIntegerField(
+        _("Počet"), default=1, validators=[MinValueValidator(1)]
+    )
     organizers = models.ManyToManyField(
         "persons.Person", through="events.EventOrganization"
     )

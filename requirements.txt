@@ -3,6 +3,7 @@ django-widget-tweaks
 django-active-link
 django-macros
 django-crispy-forms
+django-select2
 crispy-bootstrap4
 google-auth
 google-auth-oauthlib

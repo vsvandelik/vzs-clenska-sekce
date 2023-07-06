@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.forms import Form, ModelForm, MultipleChoiceField
 from django import forms
-from .models import Event, EventPosition
+from .models import Event, EventPosition, EventPositionAssignment
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -11,6 +11,7 @@ from .utils import (
 from datetime import timezone
 from django.utils import timezone
 from persons.models import Person, Feature
+from django_select2.forms import Select2Widget
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -455,3 +456,59 @@ class AddFeatureRequirementToPositionForm(Form):
                 f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
             )
         return self.cleaned_data
+
+
+class EventPositionAssignmentForm(ModelForm):
+    event_id = forms.IntegerField()
+
+    class Meta:
+        model = EventPositionAssignment
+        fields = [
+            "position",
+            "count",
+        ]
+        labels = {"position": "Pozice"}
+        widgets = {
+            "position": Select2Widget(attrs={"onchange": "positionChanged(this)"})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["count"].widget.attrs["min"] = 1
+        if (
+            len(args) > 0
+            and (
+                ("instance" in args[0] and args[0]["instance"] is not None)
+                or "csrfmiddlewaretoken" in args[0]
+            )
+        ) or ("instance" in kwargs and kwargs["instance"] is not None):
+            self.fields["position"].widget.attrs["disabled"] = True
+        else:
+            self.fields["position"].queryset = EventPosition.templates
+
+    def clean(self):
+        super().clean()
+        eid = self.cleaned_data["event_id"]
+        try:
+            Event.objects.get(pk=eid)
+        except Event.DoesNotExist:
+            self.add_error("event_id", f"Událost s id {eid} neexistuje")
+        return self.cleaned_data
+
+    def save(self, commit=True):
+        instance = self.instance
+        if self.instance.id is None:
+            pos = self.cleaned_data["position"]
+            pos.pk = None
+            pos.is_template = False
+            pos.save()
+            instance = EventPositionAssignment(
+                event_id=self.cleaned_data["event_id"],
+                position_id=pos.id,
+                count=self.cleaned_data["count"],
+            )
+        else:
+            instance.count = self.cleaned_data["count"]
+        if commit:
+            instance.save()
+        return instance

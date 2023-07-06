@@ -63,8 +63,8 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event" %}">
-                    <a href="#" class="nav-link {% active_link "events:index || events:add_training || events:add_one_time_event" %}">
+                <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index" %}">
+                    <a href="#" class="nav-link {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add" %}">
                         <i class="nav-icon fas fa-calendar"></i>
                         <p>
                             Události
@@ -88,6 +88,18 @@
                             <a href="{% url "events:add_training" %}" class="nav-link {% active_link "events:add_training" %}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Přidat trénink</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "positions:index" %}" class="nav-link {% active_link "positions:index" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Seznam šablon pozic</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "positions:add" %}" class="nav-link {% active_link "positions:add" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Přidat šablonu pozice</p>
                             </a>
                         </li>
                     </ul>
