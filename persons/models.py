@@ -1,16 +1,13 @@
-from datetime import date
-from itertools import chain
-
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
 from django.utils import timezone
 
 from vzs import models as vzs_models
 
-from datetime import datetime
+from datetime import datetime, date
+from itertools import chain
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
