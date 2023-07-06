@@ -122,6 +122,16 @@ urlpatterns = [
         name="transaction-qr",
     ),
     path(
+        "transakce/<int:pk>/upravit/",
+        views.TransactionEditView.as_view(),
+        name="transaction-edit",
+    ),
+    path(
+        "transakce/<int:pk>/smazat/",
+        views.TransactionDeleteView.as_view(),
+        name="transaction-delete",
+    ),
+    path(
         "transakce/",
         views.TransactionIndexView.as_view(),
         name="transaction-index",

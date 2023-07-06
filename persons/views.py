@@ -22,6 +22,7 @@ from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     TransactionCreateForm,
+    TransactionEditForm,
 )
 from .models import (
     Person,
@@ -644,3 +645,46 @@ class TransactionIndexView(generic.base.TemplateView):
         today = datetime.date.today()
         fetch_fio_transactions(today - datetime.timedelta(days=1), today)
         return super().get(request, *args, **kwargs)
+
+
+class TransactionEditView(generic.edit.UpdateView):
+    model = Transaction
+    form_class = TransactionEditForm
+    template_name = "persons/transactions/edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        transaction = self.object
+
+        if "person" not in context:
+            context["person"] = transaction.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse(
+            "persons:transaction-list-due", kwargs={"pk": self.object.person.pk}
+        )
+
+
+class TransactionDeleteView(generic.edit.DeleteView):
+    model = Transaction
+    template_name = "persons/transactions/delete.html"
+
+    def form_valid(self, form):
+        # success_message is sent after object deletion so we need to save the data
+        # we will need later
+        self.person = self.object.person
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if "person" not in context:
+            context["person"] = self.object.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:transaction-list-due", kwargs={"pk": self.person.pk})

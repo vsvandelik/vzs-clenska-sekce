@@ -1,0 +1,26 @@
+{% extends "persons/subview.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Upravit transakci{% endblock %}
+
+{% block subcontent %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Transakce {{ transaction.pk }}</div>
+                </div>
+                <form method="post" id="assign-form">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer">
+                        <input type="submit" value="Uložit" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

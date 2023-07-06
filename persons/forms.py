@@ -279,7 +279,7 @@ class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
 
 
-class TransactionCreateForm(ModelForm):
+class TransactionCreateEditBaseForm(ModelForm):
     class Meta:
         model = Transaction
         fields = ["amount", "reason", "date_due"]
@@ -294,6 +294,19 @@ class TransactionCreateForm(ModelForm):
     )
     is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
 
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        if not self.cleaned_data["is_reward"]:
+            transaction.amount *= -1
+
+        if commit:
+            transaction.save()
+
+        return transaction
+
+
+class TransactionCreateForm(TransactionCreateEditBaseForm):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.person = person
@@ -301,12 +314,19 @@ class TransactionCreateForm(ModelForm):
     def save(self, commit=True):
         transaction = super().save(False)
 
-        if not self.cleaned_data["is_reward"]:
-            transaction.amount *= -1
-
         transaction.person = self.person
 
         if commit:
             transaction.save()
 
         return transaction
+
+
+class TransactionEditForm(TransactionCreateEditBaseForm):
+    def __init__(self, instance, initial, *args, **kwargs):
+        if instance.amount > 0:
+            if "is_reward" not in initial:
+                initial["is_reward"] = True
+
+        instance.amount = abs(instance.amount)
+        super().__init__(instance=instance, initial=initial, *args, **kwargs)
