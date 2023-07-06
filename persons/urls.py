@@ -131,9 +131,4 @@ urlpatterns = [
         views.TransactionDeleteView.as_view(),
         name="transaction-delete",
     ),
-    path(
-        "transakce/",
-        views.TransactionIndexView.as_view(),
-        name="transaction-index",
-    ),
 ]

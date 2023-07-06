@@ -4,12 +4,16 @@ from vzs import settings
 
 from google_integration import google_directory
 
+from fiobank import FioBank
+
 from django.core.mail import send_mail
 from django.utils import dateparse
 from django.contrib.auth.models import Permission
+from django.utils import timezone
 
 import requests
 import datetime
+import zoneinfo
 
 
 def sync_single_group_with_google(local_group):
@@ -45,40 +49,35 @@ def sync_single_group_with_google(local_group):
             local_group.members.remove(Person.objects.get(email=email))
 
 
-_scanned_transactions = [8]
+_fio_client = FioBank(settings.FIO_TOKEN)
+_received_transactions_filter = ["Příjem převodem uvnitř banky"]
 
 
-def fetch_fio_transactions(date_start, date_end):
-    result = requests.get(
-        f"https://www.fio.cz/ib_api/rest/periods/{settings.FIO_TOKEN}/{date_start}/{date_end}/transactions.json"
-    ).json()
+def _date_prague(date):
+    return timezone.localdate(date, timezone=zoneinfo.ZoneInfo("Europe/Prague"))
 
-    for transaction in result["accountStatement"]["transactionList"]["transaction"]:
-        transaction_type = int(transaction["column8"]["id"])
 
-        if transaction_type not in _scanned_transactions:
+def fetch_fio(date_start, date_end):
+    date_start = _date_prague(date_start)
+    date_end = _date_prague(date_end)
+
+    for received_transaction in _fio_client.period(date_start, date_end):
+        if received_transaction["type"] not in _received_transactions_filter:
             continue
 
-        column_variabilni = transaction["column5"]
+        variabilni = received_transaction["variable_symbol"]
 
-        if column_variabilni is None:
+        if variabilni is None or len(variabilni) == 0 or variabilni[0] == "0":
             continue
 
-        variabilni = column_variabilni["value"]
-
-        if len(variabilni) == 0 or variabilni[0] == "0":
-            continue
-
-        received_amount = int(transaction["column1"]["value"])
-        date_settled = datetime.datetime.strptime(
-            transaction["column0"]["value"], "%Y-%m-%d%z"
-        ).date()
+        received_amount = int(received_transaction["amount"])
+        received_date = received_transaction["date"]
 
         transaction_pk = int(variabilni)
         transaction = Transaction.objects.filter(pk=transaction_pk).first()
 
         if transaction is None:
-            # TODO: Found a transaction of {received_amount} with VS {transaction_pk} without a DB entry.
+            # TODO: decide what to do if we found a transaction of {received_amount} with VS {transaction_pk} without a DB entry
             continue
 
         if transaction.date_settled is not None:
@@ -104,5 +103,5 @@ def fetch_fio_transactions(date_start, date_end):
 
             continue
 
-        transaction.date_settled = date_settled
+        transaction.date_settled = received_date
         transaction.save()

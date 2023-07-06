@@ -33,7 +33,7 @@ from .models import (
     StaticGroup,
     Transaction,
 )
-from .utils import sync_single_group_with_google, fetch_fio_transactions
+from .utils import sync_single_group_with_google
 from vzs import settings
 
 
@@ -636,15 +636,6 @@ class TransactionQRView(generic.detail.DetailView):
             context["person"] = transaction.person
 
         return context
-
-
-class TransactionIndexView(generic.base.TemplateView):
-    template_name = "persons/transactions/index.html"
-
-    def post(self, request, *args, **kwargs):
-        today = datetime.date.today()
-        fetch_fio_transactions(today - datetime.timedelta(days=1), today)
-        return super().get(request, *args, **kwargs)
 
 
 class TransactionEditView(generic.edit.UpdateView):
