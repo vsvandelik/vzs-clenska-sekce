@@ -634,9 +634,6 @@ class TransactionQRView(generic.detail.DetailView):
         if "person" not in context:
             context["person"] = transaction.person
 
-        if "account" not in context:
-            context["account"] = settings.FIO_ACCOUNT_NUMBER
-
         return context
 
 
