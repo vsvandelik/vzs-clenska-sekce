@@ -578,8 +578,8 @@ class TransactionListBaseMixin(generic.detail.DetailView):
         person = self.object
         transactions = self._get_transactions(person)
 
-        self.transactions_debt = transactions.filter(is_reward=False)
-        self.transactions_reward = transactions.filter(is_reward=True)
+        self.transactions_debt = transactions.filter(amount__lt=0)
+        self.transactions_reward = transactions.filter(amount__gt=0)
 
         if "transactions_debt" not in context:
             context["transactions_debt"] = self.transactions_debt

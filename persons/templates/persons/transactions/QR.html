@@ -1,6 +1,7 @@
 {% extends "persons/subview.html" %}
 
 {% load crispy_forms_tags %}
+{% load vzs_filters %}
 
 {% block title %}QR transakce{% endblock %}
 
@@ -16,7 +17,7 @@
                         <tbody>
                             <tr>
                                 <td class="text-nowrap text-bold">Suma:</td>
-                                <td class="w-100">{{ transaction.amount }}</td>
+                                <td class="w-100">{{ transaction.amount|absolute }}</td>
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Popis:</td>

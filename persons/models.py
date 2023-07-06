@@ -280,15 +280,14 @@ class DynamicGroup(Group):
 
 
 class Transaction(models.Model):
-    amount = models.PositiveIntegerField(_("Suma"), validators=[MinValueValidator(1)])
+    class Meta:
+        permissions = [("ucetni", _("Účetní"))]
+
+    amount = models.IntegerField(_("Suma"))
     reason = models.CharField(_("Popis transakce"), max_length=150)
     date_due = models.DateField(_("Datum splatnosti"))
-    is_reward = models.BooleanField(_("Je transakce odměna?"), default=False)
     person = models.ForeignKey(
         "persons.Person", on_delete=models.CASCADE, related_name="transactions"
     )
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
     date_settled = models.DateField(_("Datum realizace"), null=True)
-
-    class Meta:
-        permissions = [("ucetni", _("Účetní"))]

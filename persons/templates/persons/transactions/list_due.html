@@ -1,5 +1,7 @@
 {% extends "persons/transactions/list_base.html" %}
 
+{% load vzs_filters %}
+
 {% block title %}Transakce{% endblock %}
 
 {% block buttons %}
@@ -19,7 +21,7 @@
 
 {% block debt_footer %}
     <div class="card-footer">
-        Spolu: {{ total_debt }}
+        Spolu: {{ total_debt|absolute }}
     </div>
 {% endblock %}
 

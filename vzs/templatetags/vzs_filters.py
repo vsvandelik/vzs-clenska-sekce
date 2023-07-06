@@ -24,3 +24,8 @@ def radius_range(center, radius):
 @register.filter
 def neq(left, right):
     return left != right
+
+
+@register.filter
+def absolute(number):
+    return abs(number)

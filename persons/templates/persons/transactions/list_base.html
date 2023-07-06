@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load crispy_forms_tags %}
+{% load vzs_filters %}
 
 {% block subcontent %}
     {% block buttons %}{% endblock %}
@@ -24,7 +25,7 @@
                         <tbody>
                             {% for transaction in transactions_debt %}
                                 <tr>
-                                    <td>{{ transaction.amount }}</td>
+                                    <td>{{ transaction.amount|absolute }}</td>
                                     <td>{{ transaction.reason }}</td>
                                     <td>{{ transaction.date_due }}</td>
                                     {% block additional_debt_columns %}{% endblock %}

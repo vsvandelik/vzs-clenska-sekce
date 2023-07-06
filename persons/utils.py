@@ -84,5 +84,3 @@ def fetch_fio_transactions(date_start, date_end):
 
         transaction.date_settled = date_settled
         transaction.save()
-
-        print(f"paired{variabilni, amount, date_settled} with {transaction}")
