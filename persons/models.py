@@ -307,10 +307,17 @@ class Transaction(models.Model):
         "persons.Person", on_delete=models.CASCADE, related_name="transactions"
     )
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
-    date_settled = models.DateField(_("Datum realizace"), null=True)
+    fio_transaction = models.ForeignKey(
+        "FioTransaction", on_delete=models.SET_NULL, null=True
+    )
 
     def is_settled(self):
-        return self.date_settled is not None
+        return self.fio_transaction is not None
+
+
+class FioTransaction(models.Model):
+    date_settled = models.DateField(null=True)
+    fio_id = models.PositiveIntegerField(unique=True)
 
 
 class FioSettings(vzs_models.DatabaseSettingsMixin):

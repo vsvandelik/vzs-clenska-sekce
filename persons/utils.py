@@ -1,4 +1,4 @@
-from persons.models import Person, Transaction
+from persons.models import Person, Transaction, FioTransaction
 
 from vzs import settings
 
@@ -53,6 +53,22 @@ _fio_client = FioBank(settings.FIO_TOKEN)
 _received_transactions_filter = ["Příjem převodem uvnitř banky"]
 
 
+def _send_mail_to_accountants(subject, body):
+    accountant_emails = (
+        Permission.objects.get(codename="ucetni")
+        .user_set.select_related("person__email")
+        .values_list("person__email", flat=True)
+    )
+
+    send_mail(
+        subject,
+        body,
+        None,
+        accountant_emails,
+        fail_silently=False,
+    )
+
+
 def _date_prague(date):
     return timezone.localdate(date, timezone=zoneinfo.ZoneInfo("Europe/Prague"))
 
@@ -62,46 +78,57 @@ def fetch_fio(date_start, date_end):
     date_end = _date_prague(date_end)
 
     for received_transaction in _fio_client.period(date_start, date_end):
-        if received_transaction["type"] not in _received_transactions_filter:
-            continue
-
-        variabilni = received_transaction["variable_symbol"]
-
-        if variabilni is None or len(variabilni) == 0 or variabilni[0] == "0":
-            continue
-
+        received_type = received_transaction["type"]
+        recevied_variabilni = received_transaction["variable_symbol"]
         received_amount = int(received_transaction["amount"])
         received_date = received_transaction["date"]
+        received_id = int(received_transaction["transaction_id"])
 
-        transaction_pk = int(variabilni)
+        if received_type not in _received_transactions_filter:
+            continue
+
+        if recevied_variabilni is None or recevied_variabilni[0] == "0":
+            continue
+
+        try:
+            transaction_pk = int(recevied_variabilni)
+        except ValueError:
+            continue
+
         transaction = Transaction.objects.filter(pk=transaction_pk).first()
 
         if transaction is None:
-            # TODO: decide what to do if we found a transaction of {received_amount} with VS {transaction_pk} without a DB entry
+            # received a transaction with a VS that doesn't have a matching transaction in the DB: ignore
             continue
 
-        if transaction.date_settled is not None:
+        if transaction.fio_transaction is not None:
+            print(transaction.pk, transaction.fio_transaction.fio_id, received_id)
+            if transaction.fio_transaction.fio_id != received_id:
+                # the account has multiple transactions with the same VS
+                _send_mail_to_accountants(
+                    "Transakce se stejným VS.",
+                    (
+                        f"Přijatá transakce s Fio ID {received_id} má stejný VS"
+                        f" jako transakce s Fio ID {transaction.fio_transaction.fio_id}.\n"
+                        f"Transakce s Fio ID {transaction.fio_transaction.fio_id} je v systému registrovaná jako transakce {transaction.pk} osoby {str(transaction.person)}.\n"
+                    ),
+                )
+
+            # IDs match, so we just fetched the same transaction sometime in the past: ignore
             continue
 
         if -transaction.amount != received_amount:
-            accountant_users = (
-                Permission.objects.get(codename="ucetni")
-                .user_set.select_related("person__email")
-                .all()
-            )
-
-            send_mail(
+            _send_mail_to_accountants(
                 "Suma přijaté transakce se liší od zadané.",
                 (
                     f"Přijatá transakce číslo {transaction.pk} zadaná osobě {str(transaction.person)} se liší v sumě od zadané transakce.\n"
                     f"Zadaná suma je {-transaction.amount} Kč a přijatá suma je {received_amount} Kč"
                 ),
-                None,
-                accountant_users.values_list("person__email", flat=True),
-                fail_silently=False,
             )
-
             continue
 
-        transaction.date_settled = received_date
+        fio_transaction = FioTransaction.objects.create(
+            date_settled=received_date, fio_id=received_id
+        )
+        transaction.fio_transaction = fio_transaction
         transaction.save()

@@ -647,7 +647,7 @@ class TransactionListView(generic.detail.DetailView):
         transactions_debt = transactions.filter(Q_debt)
         transactions_reward = transactions.filter(Q_award)
 
-        transactions_due = transactions.filter(date_settled__isnull=True)
+        transactions_due = transactions.filter(fio_transaction__isnull=True)
         transactions_current_debt = transactions_due.filter(Q_debt)
         transactions_due_reward = transactions_due.filter(Q_award)
 
@@ -675,7 +675,7 @@ class TransactionListView(generic.detail.DetailView):
 
 class TransactionQRView(generic.detail.DetailView):
     queryset = Transaction.objects.filter(
-        Q(date_settled__isnull=True) & Q(amount__lt=0)
+        Q(fio_transaction__isnull=True) & Q(amount__lt=0)
     )
     template_name = "persons/transactions/QR.html"
 
