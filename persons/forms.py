@@ -382,6 +382,14 @@ class TransactionCreateEditBaseForm(ModelForm):
     )
     is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
 
+    def clean_date_due(self):
+        date_due = self.cleaned_data["date_due"]
+
+        if date_due < datetime.date.today():
+            raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
+
+        return date_due
+
     def save(self, commit=True):
         transaction = super().save(False)
 
