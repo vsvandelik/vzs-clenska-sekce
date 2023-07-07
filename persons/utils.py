@@ -50,7 +50,6 @@ def sync_single_group_with_google(local_group):
 
 
 _fio_client = FioBank(settings.FIO_TOKEN)
-_received_transactions_filter = ["Příjem převodem uvnitř banky"]
 
 
 def _send_mail_to_accountants(subject, body):
@@ -78,14 +77,10 @@ def fetch_fio(date_start, date_end):
     date_end = _date_prague(date_end)
 
     for received_transaction in _fio_client.period(date_start, date_end):
-        received_type = received_transaction["type"]
         recevied_variabilni = received_transaction["variable_symbol"]
         received_amount = int(received_transaction["amount"])
         received_date = received_transaction["date"]
         received_id = int(received_transaction["transaction_id"])
-
-        if received_type not in _received_transactions_filter:
-            continue
 
         if recevied_variabilni is None or recevied_variabilni[0] == "0":
             continue
@@ -119,10 +114,10 @@ def fetch_fio(date_start, date_end):
 
         if -transaction.amount != received_amount:
             _send_mail_to_accountants(
-                "Suma přijaté transakce se liší od zadané.",
+                "Suma transakce na účtu se liší od zadané transakce v systému.",
                 (
-                    f"Přijatá transakce číslo {transaction.pk} zadaná osobě {str(transaction.person)} se liší v sumě od zadané transakce.\n"
-                    f"Zadaná suma je {-transaction.amount} Kč a přijatá suma je {received_amount} Kč"
+                    f"Transakce číslo {transaction.pk} osoby {str(transaction.person)} se liší v sumě od zadané transakce v systému.\n"
+                    f"Zadaná suma je {abs(transaction.amount)} Kč a reálná suma je {abs(received_amount)} Kč"
                 ),
             )
             continue
