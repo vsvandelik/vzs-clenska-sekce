@@ -1,18 +1,8 @@
-{% extends 'base.html' %}
+{% extends "persons/subview.html" %}
 
 {% block title %}Smazání přiřazení {{ texts.name_2 }}{% endblock %}
 
-{% block content %}
-
-    <div class="row">
-        <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block subcontent %}
     <div class="row">
         <div class="col-12">
             <div class="card">

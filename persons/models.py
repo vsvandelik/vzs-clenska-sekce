@@ -1,12 +1,13 @@
-from datetime import date
-from itertools import chain
-
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from vzs import models as vzs_models
+
+from datetime import datetime, date
+from itertools import chain
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
@@ -296,11 +297,30 @@ class DynamicGroup(Group):
 
 
 class Transaction(models.Model):
-    amount = models.IntegerField()
-    reason = models.CharField(max_length=150)
-    date = models.DateField()
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
-
     class Meta:
         permissions = [("ucetni", _("Účetní"))]
+
+    amount = models.IntegerField(_("Suma"))
+    reason = models.CharField(_("Popis transakce"), max_length=150)
+    date_due = models.DateField(_("Datum splatnosti"))
+    person = models.ForeignKey(
+        "persons.Person", on_delete=models.CASCADE, related_name="transactions"
+    )
+    event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
+    fio_transaction = models.ForeignKey(
+        "FioTransaction", on_delete=models.SET_NULL, null=True
+    )
+
+    def is_settled(self):
+        return self.fio_transaction is not None
+
+
+class FioTransaction(models.Model):
+    date_settled = models.DateField(null=True)
+    fio_id = models.PositiveIntegerField(unique=True)
+
+
+class FioSettings(vzs_models.DatabaseSettingsMixin):
+    last_fio_fetch_time = models.DateTimeField(
+        default=timezone.make_aware(datetime(1900, 1, 1))
+    )

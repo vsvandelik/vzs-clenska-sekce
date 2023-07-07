@@ -10,7 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
-from .models import Person, FeatureAssignment, Feature, StaticGroup
+from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
+from users.forms import no_render_field
 
 
 class PersonForm(ModelForm):
@@ -364,3 +365,64 @@ class PersonsFilterForm(forms.Form):
                 raise ValidationError(
                     _("Rok narození od musí být menší nebo roven roku narození do.")
                 )
+
+
+class TransactionCreateEditBaseForm(ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ["amount", "reason", "date_due"]
+        widgets = {
+            "date_due": widgets.DateInput(
+                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
+            ),
+        }
+
+    amount = forms.IntegerField(
+        min_value=1, label=Transaction._meta.get_field("amount").verbose_name
+    )
+    is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
+
+    def clean_date_due(self):
+        date_due = self.cleaned_data["date_due"]
+
+        if date_due < datetime.date.today():
+            raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
+
+        return date_due
+
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        if not self.cleaned_data["is_reward"]:
+            transaction.amount *= -1
+
+        if commit:
+            transaction.save()
+
+        return transaction
+
+
+class TransactionCreateForm(TransactionCreateEditBaseForm):
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        transaction.person = self.person
+
+        if commit:
+            transaction.save()
+
+        return transaction
+
+
+class TransactionEditForm(TransactionCreateEditBaseForm):
+    def __init__(self, instance, initial, *args, **kwargs):
+        if instance.amount > 0:
+            if "is_reward" not in initial:
+                initial["is_reward"] = True
+
+        instance.amount = abs(instance.amount)
+        super().__init__(instance=instance, initial=initial, *args, **kwargs)

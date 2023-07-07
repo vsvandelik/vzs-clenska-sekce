@@ -1,0 +1,26 @@
+{% extends "persons/subview.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Smazat transakci{% endblock %}
+
+{% block subcontent %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-danger">
+                <div class="card-header">
+                    <div class="card-title h5">Potvrzení smazání transakce</div>
+                </div>
+                <div class="card-body">
+                    Opravdu chcetet smazat transakci {{ transaction.pk }}?
+                </div>
+                <div class="card-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Ano, smazat.</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

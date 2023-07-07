@@ -1,4 +1,5 @@
 from django.template.loader import render_to_string
+from django.db import models
 
 
 class RenderableModelMixin:
@@ -10,3 +11,20 @@ class RenderableModelMixin:
             kwargs[meta.model_name] = self
 
         return render_to_string(template_name, kwargs)
+
+
+class DatabaseSettingsMixin(models.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

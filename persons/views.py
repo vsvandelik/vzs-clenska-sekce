@@ -1,14 +1,16 @@
 import csv
+import datetime
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from django.core.exceptions import ImproperlyConfigured
 
 from google_integration import google_directory
 from .forms import (
@@ -20,6 +22,8 @@ from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     PersonsFilterForm,
+    TransactionCreateForm,
+    TransactionEditForm,
 )
 from .models import (
     Person,
@@ -28,8 +32,10 @@ from .models import (
     FeatureTypeTexts,
     Group,
     StaticGroup,
+    Transaction,
 )
 from .utils import sync_single_group_with_google
+from vzs import settings
 
 
 class PersonIndexView(generic.ListView):
@@ -592,3 +598,134 @@ def parse_persons_filter_queryset(params_dict):
         persons = persons.filter(date_of_birth__year__lte=birth_year_to)
 
     return persons.order_by("last_name")
+
+
+class TransactionCreateView(generic.edit.CreateView):
+    model = Transaction
+    form_class = TransactionCreateForm
+    template_name = "persons/transactions/create.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = get_object_or_404(Person, pk=self.kwargs["person"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if "person" not in context:
+            context["person"] = self.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        kwargs["person"] = self.person
+
+        return kwargs
+
+
+class TransactionListView(generic.detail.DetailView):
+    model = Person
+    template_name = "persons/transactions/list.html"
+
+    def _get_transactions(self, person):
+        raise ImproperlyConfigured("_get_transactions needs to be overridden.")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        person = self.object
+        transactions = person.transactions
+
+        Q_debt = Q(amount__lt=0)
+        Q_award = Q(amount__gt=0)
+
+        transactions_debt = transactions.filter(Q_debt)
+        transactions_reward = transactions.filter(Q_award)
+
+        transactions_due = transactions.filter(fio_transaction__isnull=True)
+        transactions_current_debt = transactions_due.filter(Q_debt)
+        transactions_due_reward = transactions_due.filter(Q_award)
+
+        current_debt = (
+            transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
+        )
+        due_reward = (
+            transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
+        )
+
+        if "transactions_debt" not in context:
+            context["transactions_debt"] = transactions_debt
+
+        if "transactions_reward" not in context:
+            context["transactions_reward"] = transactions_reward
+
+        if "current_debt" not in context:
+            context["current_debt"] = current_debt
+
+        if "due_reward" not in context:
+            context["due_reward"] = due_reward
+
+        return context
+
+
+class TransactionQRView(generic.detail.DetailView):
+    queryset = Transaction.objects.filter(
+        Q(fio_transaction__isnull=True) & Q(amount__lt=0)
+    )
+    template_name = "persons/transactions/QR.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        transaction = self.object
+
+        if "person" not in context:
+            context["person"] = transaction.person
+
+        return context
+
+
+class TransactionEditView(generic.edit.UpdateView):
+    model = Transaction
+    form_class = TransactionEditForm
+    template_name = "persons/transactions/edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        transaction = self.object
+
+        if "person" not in context:
+            context["person"] = transaction.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
+
+
+class TransactionDeleteView(generic.edit.DeleteView):
+    model = Transaction
+    template_name = "persons/transactions/delete.html"
+
+    def form_valid(self, form):
+        # success_message is sent after object deletion so we need to save the data
+        # we will need later
+        self.person = self.object.person
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if "person" not in context:
+            context["person"] = self.object.person
+
+        return context
+
+    def get_success_url(self):
+        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})

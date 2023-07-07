@@ -1,5 +1,7 @@
 from django import template
 
+from vzs import settings
+
 register = template.Library()
 
 
@@ -24,3 +26,20 @@ def radius_range(center, radius):
 @register.filter
 def neq(left, right):
     return left != right
+
+
+@register.filter
+def absolute(number):
+    return abs(number)
+
+
+@register.simple_tag
+def qr(transaction):
+    return (
+        f"http://api.paylibo.com/paylibo/generator/czech/image"
+        f"?currency=CZK"
+        f"&accountNumber={settings.FIO_ACCOUNT_NUMBER}"
+        f"&bankCode={settings.FIO_BANK_NUMBER}"
+        f"&amount={abs(transaction.amount)}"
+        f"&vs={transaction.pk}"
+    )
