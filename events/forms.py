@@ -459,11 +459,10 @@ class AddFeatureRequirementToPositionForm(Form):
 
 
 class EventPositionAssignmentForm(ModelForm):
-    event_id = forms.IntegerField()
-
     class Meta:
         model = EventPositionAssignment
         fields = [
+            "event",
             "position",
             "count",
         ]
@@ -486,29 +485,18 @@ class EventPositionAssignmentForm(ModelForm):
         else:
             self.fields["position"].queryset = EventPosition.templates
 
-    def clean(self):
-        super().clean()
-        eid = self.cleaned_data["event_id"]
-        try:
-            Event.objects.get(pk=eid)
-        except Event.DoesNotExist:
-            self.add_error("event_id", f"Událost s id {eid} neexistuje")
-        return self.cleaned_data
-
     def save(self, commit=True):
         instance = self.instance
         if self.instance.id is None:
             pos = self.cleaned_data["position"]
-            pos.pk = None
-            pos.is_template = False
-            pos.save()
+            non_template_pos = EventPosition(name=pos.name, is_template=False)
+            non_template_pos.save()
+            non_template_pos.required_features.add(*pos.required_features.all())
             instance = EventPositionAssignment(
-                event_id=self.cleaned_data["event_id"],
-                position_id=pos.id,
+                event=self.cleaned_data["event"],
+                position=non_template_pos,
                 count=self.cleaned_data["count"],
             )
-        else:
-            instance.count = self.cleaned_data["count"]
         if commit:
             instance.save()
         return instance

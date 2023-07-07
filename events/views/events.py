@@ -194,34 +194,48 @@ class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventVie
         return super().form_valid(form)
 
 
-class EventPositionAssignmentCreateView(generic.CreateView):
+class EventPositionAssignmentMixin:
     model = EventPositionAssignment
-    form_class = EventPositionAssignmentForm
-    template_name = "events/create_edit_event_position_assignment.html"
     context_object_name = "position_assignment"
+
+    def get_success_url(self):
+        return reverse("events:detail_one_time_event", args=[self.object.event_id])
+
+
+class EventPositionAssignmentCreateView(
+    EventPositionAssignmentMixin, generic.CreateView
+):
+    template_name = "events/create_edit_event_position_assignment.html"
+    form_class = EventPositionAssignmentForm
 
     def post(self, request, *args, **kwargs):
         post_extended = request.POST.copy()
-        post_extended["event_id"] = kwargs["event_id"]
+        post_extended["event"] = kwargs["event_id"]
         form = EventPositionAssignmentForm(post_extended)
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
 
 
-class EventPositionAssignmentUpdateView(generic.UpdateView):
-    model = EventPositionAssignment
-    form_class = EventPositionAssignmentForm
+class EventPositionAssignmentUpdateView(
+    EventPositionAssignmentMixin, generic.UpdateView
+):
     template_name = "events/create_edit_event_position_assignment.html"
-    context_object_name = "position_assignment"
+    form_class = EventPositionAssignmentForm
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         post_extended = request.POST.copy()
-        post_extended["event_id"] = kwargs["event_id"]
         post_extended["position"] = self.object.position.id
-        form = EventPositionAssignmentForm(post_extended)
+        post_extended["event"] = kwargs["event_id"]
+        form = EventPositionAssignmentForm(post_extended, instance=self.object)
 
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
+
+
+class EventPositionAssignmentDeleteView(
+    EventPositionAssignmentMixin, generic.DeleteView
+):
+    template_name = "events/delete_event_position_assignment.html"

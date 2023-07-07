@@ -96,7 +96,8 @@
                                                href="{% url 'events:edit_position_assignment' event.id pa.id %}">
                                                 <i class="fas fa-pen"></i>
                                             </a>
-                                            <a class="btn btn-danger btn-sm" href="">
+                                            <a class="btn btn-danger btn-sm"
+                                               href="{% url 'events:delete_position_assignment' event.id pa.id %}">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </div>

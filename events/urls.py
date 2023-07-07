@@ -66,6 +66,11 @@ one_time_event_urls = [
         views.EventPositionAssignmentUpdateView.as_view(),
         name="edit_position_assignment",
     ),
+    path(
+        "<int:event_id>/smazat/pozice/<int:pk>/",
+        views.EventPositionAssignmentDeleteView.as_view(),
+        name="delete_position_assignment",
+    ),
 ]
 
 urlpatterns = event_common_urls + training_urls + one_time_event_urls
