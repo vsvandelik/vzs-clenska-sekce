@@ -302,13 +302,14 @@ class PersonsFilterForm(forms.Form):
         required=False,
         choices=[("", "---------")] + Person.Type.choices,
     )
-    birth_year_from = forms.IntegerField(label=_("Rok narození od"), required=False)
-    birth_year_to = forms.IntegerField(label=_("Rok narození do"), required=False)
+    age_from = forms.IntegerField(label=_("Věk od"), required=False)
+    age_to = forms.IntegerField(label=_("Věk do"), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "GET"
+        self.helper.form_id = "persons-filter-form"
         self.helper.layout = Layout(
             Div(
                 Div(
@@ -324,8 +325,8 @@ class PersonsFilterForm(forms.Form):
                 ),
                 Div(
                     Div("person_type", css_class="col-md-6"),
-                    Div("birth_year_from", css_class="col-md-3"),
-                    Div("birth_year_to", css_class="col-md-3"),
+                    Div("age_from", css_class="col-md-3"),
+                    Div("age_to", css_class="col-md-3"),
                     css_class="row",
                 ),
                 Div(
@@ -344,27 +345,25 @@ class PersonsFilterForm(forms.Form):
             )
         )
 
-        def clean_birth_year_from(self):
-            if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
-                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+    def clean_age_from(self):
+        if self.cleaned_data["age_from"] <= 0:
+            raise ValidationError(_("Věk musí být kladné celé číslo."))
 
-            return self.cleaned_data["birth_year_from"]
+        return self.cleaned_data["age_from"]
 
-        def clean_birth_year_to(self):
-            if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
-                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+    def clean_age_to(self):
+        if self.cleaned_data["age_to"] <= 0:
+            raise ValidationError(_("Věk musí být kladné celé číslo."))
 
-            return self.cleaned_data["birth_year_to"]
+        return self.cleaned_data["age_to"]
 
-        def clean(self):
-            cleaned_data = super().clean()
-            birth_year_from = cleaned_data.get("birth_year_from")
-            birth_year_to = cleaned_data.get("birth_year_to")
+    def clean(self):
+        cleaned_data = super().clean()
+        age_from = cleaned_data.get("age_from")
+        age_to = cleaned_data.get("age_to")
 
-            if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
-                raise ValidationError(
-                    _("Rok narození od musí být menší nebo roven roku narození do.")
-                )
+        if age_from and age_to and age_from > age_to:
+            raise ValidationError(_("Věk od musí být menší nebo roven věku do."))
 
 
 class TransactionCreateEditBaseForm(ModelForm):

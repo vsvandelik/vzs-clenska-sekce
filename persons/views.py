@@ -551,7 +551,7 @@ class ExportSelectedPersonsView(generic.View):
 
 
 def parse_persons_filter_queryset(params_dict):
-    persons = Person.objects
+    persons = Person.objects.with_age()
 
     name = params_dict.get("name")
     email = params_dict.get("email")
@@ -559,8 +559,8 @@ def parse_persons_filter_queryset(params_dict):
     permission = params_dict.get("permissions")
     equipment = params_dict.get("equipments")
     person_type = params_dict.get("person_type")
-    birth_year_from = params_dict.get("birth_year_from")
-    birth_year_to = params_dict.get("birth_year_to")
+    age_from = params_dict.get("age_from")
+    age_to = params_dict.get("age_to")
 
     if name:
         persons = persons.filter(
@@ -591,11 +591,11 @@ def parse_persons_filter_queryset(params_dict):
     if person_type:
         persons = persons.filter(person_type=person_type)
 
-    if birth_year_from:
-        persons = persons.filter(date_of_birth__year__gte=birth_year_from)
+    if age_from:
+        persons = persons.filter(age__gte=age_from)
 
-    if birth_year_to:
-        persons = persons.filter(date_of_birth__year__lte=birth_year_to)
+    if age_to:
+        persons = persons.filter(age__lte=age_to)
 
     return persons.order_by("last_name")
 
