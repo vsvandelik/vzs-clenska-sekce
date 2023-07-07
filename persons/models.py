@@ -309,6 +309,9 @@ class Transaction(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
     date_settled = models.DateField(_("Datum realizace"), null=True)
 
+    def is_settled(self):
+        return self.date_settled is not None
+
 
 class FioSettings(vzs_models.DatabaseSettingsMixin):
     last_fio_fetch_time = models.DateTimeField(

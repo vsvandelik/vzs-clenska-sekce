@@ -16,19 +16,35 @@
                     <table class="table" id="transactions_debt_table">
                         <thead>
                             <tr>
+                                <th>Zaplaceno</th>
                                 <th>Suma</th>
                                 <th>Popis</th>
                                 <th>Datum splatnosti</th>
-                                {% block additional_debt_headers %}{% endblock %}
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for transaction in transactions_debt %}
                                 <tr>
+                                    <td>{{ transaction.is_settled|yesno }}</td>
                                     <td>{{ transaction.amount|absolute }}</td>
                                     <td>{{ transaction.reason }}</td>
                                     <td>{{ transaction.date_due }}</td>
-                                    {% block additional_debt_columns %}{% endblock %}
+                                    <td>
+                                        <div class="btn-group float-right">
+                                            {% if not transaction.is_settled %}
+                                                <a href="{% url "persons:transaction-qr" transaction.pk %}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-qrcode" aria-hidden="true"></i>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{% url "persons:transaction-delete" transaction.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -46,25 +62,35 @@
                     <table class="table" id="transactions_reward_table">
                         <thead>
                             <tr>
+                                <th>Zaplaceno</th>
                                 <th>Suma</th>
                                 <th>Popis</th>
                                 <th>Datum splatnosti</th>
-                                {% block additional_reward_headers %}{% endblock %}
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for transaction in transactions_reward %}
                                 <tr>
+                                    <td>{{ transaction.is_settled|yesno }}</td>
                                     <td>{{ transaction.amount }}</td>
                                     <td>{{ transaction.reason }}</td>
                                     <td>{{ transaction.date_due }}</td>
-                                    {% block additional_reward_columns %}{% endblock %}
+                                    <td>
+                                        <div class="btn-group float-right">
+                                            <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                            <a href="{% url "persons:transaction-delete" transaction.pk %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% block reward_footer %}{%endblock%}
             </div>
         </div>
     </div>
@@ -73,7 +99,7 @@
 {% block scripts %}
     <script src="{% static "users/datatables_enable.js" %}"></script>
     <script>
-        datatables_enable("transactions_debt_table", [1], [2, "asc"]);
-        datatables_enable("transactions_reward_table", [1], [2, "asc"]);
+        datatables_enable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatables_enable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
     </script>
 {% endblock %}

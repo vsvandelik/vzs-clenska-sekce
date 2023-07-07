@@ -103,13 +103,8 @@ urlpatterns = [
     path("skupiny/", include((groups_urlpatterns, "groups"))),
     path(
         "<int:pk>/transakce/",
-        views.TransactionListDueView.as_view(),
-        name="transaction-list-due",
-    ),
-    path(
-        "<int:pk>/transakce-zaplacene/",
-        views.TransactionListSettledView.as_view(),
-        name="transaction-list-settled",
+        views.TransactionListView.as_view(),
+        name="transaction-list",
     ),
     path(
         "<int:person>/pridat-transakci/",

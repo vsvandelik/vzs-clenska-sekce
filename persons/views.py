@@ -618,7 +618,7 @@ class TransactionCreateView(generic.edit.CreateView):
         return context
 
     def get_success_url(self):
-        return reverse("persons:detail", kwargs={"pk": self.person.pk})
+        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -628,8 +628,9 @@ class TransactionCreateView(generic.edit.CreateView):
         return kwargs
 
 
-class TransactionListBaseMixin(generic.detail.DetailView):
+class TransactionListView(generic.detail.DetailView):
     model = Person
+    template_name = "persons/transactions/list.html"
 
     def _get_transactions(self, person):
         raise ImproperlyConfigured("_get_transactions needs to be overridden.")
@@ -638,54 +639,44 @@ class TransactionListBaseMixin(generic.detail.DetailView):
         context = super().get_context_data(**kwargs)
 
         person = self.object
-        transactions = self._get_transactions(person)
+        transactions = person.transactions
 
-        self.transactions_debt = transactions.filter(amount__lt=0)
-        self.transactions_reward = transactions.filter(amount__gt=0)
+        Q_debt = Q(amount__lt=0)
+        Q_award = Q(amount__gt=0)
+
+        transactions_debt = transactions.filter(Q_debt)
+        transactions_reward = transactions.filter(Q_award)
+
+        transactions_due = transactions.filter(date_settled__isnull=True)
+        transactions_current_debt = transactions_due.filter(Q_debt)
+        transactions_due_reward = transactions_due.filter(Q_award)
+
+        current_debt = (
+            transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
+        )
+        due_reward = (
+            transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
+        )
 
         if "transactions_debt" not in context:
-            context["transactions_debt"] = self.transactions_debt
+            context["transactions_debt"] = transactions_debt
 
         if "transactions_reward" not in context:
-            context["transactions_reward"] = self.transactions_reward
+            context["transactions_reward"] = transactions_reward
+
+        if "current_debt" not in context:
+            context["current_debt"] = current_debt
+
+        if "due_reward" not in context:
+            context["due_reward"] = due_reward
 
         return context
-
-
-class TransactionListDueView(TransactionListBaseMixin):
-    template_name = "persons/transactions/list_due.html"
-
-    def _get_transactions(self, person):
-        return person.transactions.filter(date_settled__isnull=True)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        total_debt = (
-            self.transactions_debt.aggregate(result=Sum("amount"))["result"] or 0
-        )
-        total_reward = (
-            self.transactions_reward.aggregate(result=Sum("amount"))["result"] or 0
-        )
-
-        if "total_debt" not in context:
-            context["total_debt"] = total_debt
-
-        if "total_reward" not in context:
-            context["total_reward"] = total_reward
-
-        return context
-
-
-class TransactionListSettledView(TransactionListBaseMixin):
-    template_name = "persons/transactions/list_settled.html"
-
-    def _get_transactions(self, person):
-        return person.transactions.filter(date_settled__isnull=False)
 
 
 class TransactionQRView(generic.detail.DetailView):
-    model = Transaction
+    queryset = Transaction.objects.filter(
+        Q(date_settled__isnull=True) & Q(amount__lt=0)
+    )
     template_name = "persons/transactions/QR.html"
 
     def get_context_data(self, **kwargs):
@@ -715,9 +706,7 @@ class TransactionEditView(generic.edit.UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse(
-            "persons:transaction-list-due", kwargs={"pk": self.object.person.pk}
-        )
+        return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
 
 
 class TransactionDeleteView(generic.edit.DeleteView):
@@ -739,4 +728,4 @@ class TransactionDeleteView(generic.edit.DeleteView):
         return context
 
     def get_success_url(self):
-        return reverse("persons:transaction-list-due", kwargs={"pk": self.person.pk})
+        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
