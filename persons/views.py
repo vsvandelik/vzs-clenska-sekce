@@ -178,9 +178,11 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
-        context["persons_to_manage"] = Person.objects.exclude(
-            managed_by=self.kwargs["pk"]
-        ).exclude(pk=self.kwargs["pk"])
+        context["persons_to_manage"] = (
+            self._filter_queryset_by_permission()
+            .exclude(managed_by=self.kwargs["pk"])
+            .exclude(pk=self.kwargs["pk"])
+        )
         return context
 
     def get_queryset(self):
@@ -601,13 +603,18 @@ class SyncGroupMembersWithGoogleView(GroupPermissionMixin, generic.View):
             return redirect(reverse("persons:groups:index"))
 
 
-class AddDeleteManagedPersonMixin(generic.View):
+class AddDeleteManagedPersonMixin(PersonPermissionMixin, generic.View):
     http_method_names = ["post"]
 
     def process_form(self, request, form, pk, op, success_message, error_message):
         if form.is_valid():
             managing_person = form.cleaned_data["managing_person_instance"]
             new_managed_person = form.cleaned_data["managed_person_instance"]
+
+            try:
+                self._filter_queryset_by_permission().get(pk=new_managed_person.pk)
+            except Person.DoesNotExist:
+                raise Http404()
 
             if op == "add":
                 managing_person.managed_persons.add(new_managed_person)
@@ -656,7 +663,8 @@ class SendEmailToSelectedPersonsView(generic.View):
 
     def get(self, request, *args, **kwargs):
         selected_persons = parse_persons_filter_queryset(
-            self.request.GET, Person.objects
+            self.request.GET,
+            PersonPermissionMixin.get_queryset_by_permission(self.request.user),
         )
 
         recipients = [
@@ -673,7 +681,8 @@ class ExportSelectedPersonsView(generic.View):
 
     def get(self, request, *args, **kwargs):
         selected_persons = parse_persons_filter_queryset(
-            self.request.GET, Person.objects
+            self.request.GET,
+            PersonPermissionMixin.get_queryset_by_permission(self.request.user),
         )
 
         response = HttpResponse(
