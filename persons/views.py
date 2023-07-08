@@ -113,6 +113,7 @@ class PersonDeleteView(generic.edit.DeleteView):
     template_name = "persons/persons/confirm_delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
+    http_method_names = ["post"]
 
 
 class FeatureAssignEditView(generic.edit.UpdateView):

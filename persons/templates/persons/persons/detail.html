@@ -16,7 +16,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
-                <a href="{% url 'persons:delete' person.id %}" class="btn btn-danger">Smazat osobu</a>
+                <a href="#" data-toggle="modal" data-target="#deletePersonModal" class="btn btn-danger">Smazat osobu</a>
                 <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
                 <a href="{% url 'persons:permissions:add' person.id %}" class="btn btn-info">Přidat oprávnění</a>
                 <a href="{% url 'persons:equipments:add' person.id %}" class="btn btn-info">Přidat vybavení</a>
@@ -115,7 +115,7 @@
                                     <tr>
                                         <td class="align-middle">{{ permission.name }}</td>
                                         <td class="text-center">
-                                            <button type="submit" form="permissionDeleteForm" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}">Odebrat</button>
+                                            <button type="submit" form="permissionDeleteForm" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -176,7 +176,7 @@
                                             <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="person" value="{{ person.pk }}">
-                                                <input type="submit" name="submit" value="Odebrat" class="btn btn-primary btn-sm">
+                                                <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
                                             </form>
                                         </td>
                                     </tr>
@@ -372,6 +372,29 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal modal-danger fade" id="deletePersonModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Smazat osobu</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Opravdu chcete smazat osobu {{ person.first_name }} {{ person.last_name }}?
+
+                    <form method="post" action="{% url "persons:delete" person.pk %}" id="deleteForm">
+                        {% csrf_token %}
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="submit" form="deleteForm" class="btn btn-danger">Smazat</button>
                 </div>
             </div>
         </div>
