@@ -1,8 +1,10 @@
 import csv
-import datetime
+from functools import reduce
 
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
 from django.db.models import Q, Sum
 from django.http import HttpResponse
@@ -10,7 +12,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
-from django.core.exceptions import ImproperlyConfigured
 
 from google_integration import google_directory
 from .forms import (
@@ -35,10 +36,104 @@ from .models import (
     Transaction,
 )
 from .utils import sync_single_group_with_google
-from vzs import settings
 
 
-class PersonIndexView(generic.ListView):
+class PersonPermissionMixin(PermissionRequiredMixin):
+    def has_permission(self):
+        permission_required = (
+            "persons.spravce-clenske-zakladny",
+            "persons.spravce-detske-clenske-zakladny",
+            "persons.spravce-bazenove-detske-clenske-zakladny",
+            "persons.spravce-lezecke-detske-clenske-zakladny",
+            "persons.spravce-dospele-clenske-zakladny",
+        )
+        for permission in permission_required:
+            if self.request.user.has_perm(permission):
+                return True
+
+        return False
+
+    def _filter_queryset_by_permission(self):
+        if self.request.user.has_perm("persons.spravce-clenske-zakladny"):
+            return Person.objects
+
+        conditions = []
+
+        if self.request.user.has_perm("persons.spravce-detske-clenske-zakladny"):
+            conditions.append(
+                Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
+            )
+
+        if self.request.user.has_perm(
+            "persons.spravce-bazenove-detske-clenske-zakladny"
+        ):
+            # TODO: omezit jen na bazenove treninky
+            conditions.append(
+                Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
+            )
+
+        if self.request.user.has_perm(
+            "persons.spravce-lezecke-detske-clenske-zakladny"
+        ):
+            # TODO: omezit jen na lezecke treninky
+            conditions.append(
+                Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
+            )
+
+        if self.request.user.has_perm("persons.spravce-dospele-clenske-zakladny"):
+            conditions.append(
+                Q(
+                    person_type__in=[
+                        Person.Type.ADULT,
+                        Person.Type.EXTERNAL,
+                        Person.Type.EXPECTANT,
+                        Person.Type.HONORARY,
+                    ]
+                )
+            )
+
+        return Person.objects.filter(reduce(lambda x, y: x | y, conditions))
+
+    def _get_available_person_types(self):
+        available_person_types = set()
+
+        if self.request.user.has_perm("persons.spravce-clenske-zakladny"):
+            available_person_types.update(
+                [
+                    Person.Type.ADULT,
+                    Person.Type.CHILD,
+                    Person.Type.EXTERNAL,
+                    Person.Type.EXPECTANT,
+                    Person.Type.HONORARY,
+                    Person.Type.PARENT,
+                ]
+            )
+
+        if (
+            self.request.user.has_perm("persons.spravce-detske-clenske-zakladny")
+            or self.request.user.has_perm(
+                "persons.spravce-bazenove-detske-clenske-zakladny"
+            )
+            or self.request.user.has_perm(
+                "persons.spravce-lezecke-detske-clenske-zakladny"
+            )
+        ):
+            available_person_types.update([Person.Type.CHILD, Person.Type.PARENT])
+
+        if self.request.user.has_perm("persons.spravce-dospele-clenske-zakladny"):
+            available_person_types.update(
+                [
+                    Person.Type.ADULT,
+                    Person.Type.EXTERNAL,
+                    Person.Type.EXPECTANT,
+                    Person.Type.HONORARY,
+                ]
+            )
+
+        return list(available_person_types)
+
+
+class PersonIndexView(PersonPermissionMixin, generic.ListView):
     model = Person
     template_name = "persons/persons/index.html"
     context_object_name = "persons"
@@ -55,15 +150,17 @@ class PersonIndexView(generic.ListView):
         return context
 
     def get_queryset(self):
+        persons_objects = self._filter_queryset_by_permission()
+
         self.filter_form = PersonsFilterForm(self.request.GET)
 
         if self.filter_form.is_valid():
-            return parse_persons_filter_queryset(self.request.GET)
+            return parse_persons_filter_queryset(self.request.GET, persons_objects)
         else:
-            return Person.objects.all()
+            return persons_objects
 
 
-class PersonDetailView(generic.DetailView):
+class PersonDetailView(PersonPermissionMixin, generic.DetailView):
     model = Person
     template_name = "persons/persons/detail.html"
 
@@ -86,8 +183,13 @@ class PersonDetailView(generic.DetailView):
         ).exclude(pk=self.kwargs["pk"])
         return context
 
+    def get_queryset(self):
+        return self._filter_queryset_by_permission()
 
-class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
+
+class PersonCreateView(
+    PersonPermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+):
     model = Person
     template_name = "persons/persons/edit.html"
     form_class = PersonForm
@@ -100,8 +202,15 @@ class PersonCreateView(SuccessMessageMixin, generic.edit.CreateView):
         )
         return super().form_invalid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["available_person_types"] = self._get_available_person_types()
+        return kwargs
 
-class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
+
+class PersonUpdateView(
+    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
+):
     model = Person
     template_name = "persons/persons/edit.html"
     form_class = PersonForm
@@ -113,12 +222,23 @@ class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
         )
         return super().form_invalid(form)
 
+    def get_queryset(self):
+        return self._filter_queryset_by_permission()
 
-class PersonDeleteView(generic.edit.DeleteView):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["available_person_types"] = self._get_available_person_types()
+        return kwargs
+
+
+class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
     model = Person
     template_name = "persons/persons/confirm_delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
+
+    def get_queryset(self):
+        return self._filter_queryset_by_permission()
 
 
 class FeatureAssignEditView(generic.edit.UpdateView):
@@ -503,7 +623,9 @@ class SendEmailToSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(self.request.GET)
+        selected_persons = parse_persons_filter_queryset(
+            self.request.GET, Person.objects
+        )
 
         recipients = [
             f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons
@@ -518,7 +640,9 @@ class ExportSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(self.request.GET)
+        selected_persons = parse_persons_filter_queryset(
+            self.request.GET, Person.objects
+        )
 
         response = HttpResponse(
             content_type="text/csv",
@@ -550,9 +674,7 @@ class ExportSelectedPersonsView(generic.View):
         return response
 
 
-def parse_persons_filter_queryset(params_dict):
-    persons = Person.objects
-
+def parse_persons_filter_queryset(params_dict, persons):
     name = params_dict.get("name")
     email = params_dict.get("email")
     qualification = params_dict.get("qualifications")

@@ -11,6 +11,21 @@ from itertools import chain
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
+    class Meta:
+        permissions = [
+            ("spravce-clenske-zakladny", _("Správce členské základny")),
+            ("spravce-detske-clenske-zakladny", _("Správce dětské členské základny")),
+            (
+                "spravce-bazenove-detske-clenske-zakladny",
+                _("Správce bazénové dětské členské základny"),
+            ),
+            (
+                "spravce-lezecke-detske-clenske-zakladny",
+                _("Správce lezecké dětské členské základny"),
+            ),
+            ("spravce-dospele-clenske-zakladny", _("Správce dospělé členské základny")),
+        ]
+
     class Type(models.TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")
