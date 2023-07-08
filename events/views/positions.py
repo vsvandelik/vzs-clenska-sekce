@@ -70,12 +70,15 @@ class AddRemoveFeatureFromPosition(MessagesMixin, generic.FormView):
         return reverse("positions:detail", args=[self.position.id])
 
     def post(self, request, *args, **kwargs):
-        post_extended = request.POST.copy()
-        post_extended["position_id"] = kwargs["position_id"]
-        form = AddFeatureRequirementToPositionForm(post_extended)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+        self.position_id = kwargs["position_id"]
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        if self.request.method == "POST":
+            post_extended = self.request.POST.copy()
+            post_extended["position_id"] = self.position_id
+            return AddFeatureRequirementToPositionForm(post_extended)
+        return super().get_form(form_class)
 
     def _process_form(self, form, op):
         fid = form.cleaned_data["feature_id"]

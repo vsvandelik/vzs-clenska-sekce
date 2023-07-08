@@ -134,12 +134,15 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
         return reverse("events:detail_one_time_event", args=[self.event_id])
 
     def post(self, request, *args, **kwargs):
-        post_extended = request.POST.copy()
-        post_extended["event_id"] = kwargs["event_id"]
-        form = AddDeleteParticipantFromOneTimeEventForm(post_extended)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+        self.event_id = kwargs["event_id"]
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        if self.request.method == "POST":
+            post_extended = self.request.POST.copy()
+            post_extended["event_id"] = self.event_id
+            return AddDeleteParticipantFromOneTimeEventForm(post_extended)
+        return super().get_form(form_class)
 
     def _process_form(self, form, op, state):
         self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
@@ -194,7 +197,7 @@ class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventVie
         return super().form_valid(form)
 
 
-class EventPositionAssignmentMixin:
+class EventPositionAssignmentMixin(MessagesMixin):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
 
@@ -207,35 +210,40 @@ class EventPositionAssignmentCreateView(
 ):
     template_name = "events/create_edit_event_position_assignment.html"
     form_class = EventPositionAssignmentForm
+    success_message = "Organizátorská pozice %(position)s přidána"
 
     def post(self, request, *args, **kwargs):
-        post_extended = request.POST.copy()
-        post_extended["event"] = kwargs["event_id"]
-        form = EventPositionAssignmentForm(post_extended)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+        self.event_id = kwargs["event_id"]
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        if self.request.method == "POST":
+            post_extended = self.request.POST.copy()
+            post_extended["event"] = self.event_id
+            return EventPositionAssignmentForm(post_extended)
+        return super().get_form(form_class)
 
 
 class EventPositionAssignmentUpdateView(
     EventPositionAssignmentMixin, generic.UpdateView
 ):
     template_name = "events/create_edit_event_position_assignment.html"
+    success_message = "Organizátorská pozice %(position)s upravena"
     form_class = EventPositionAssignmentForm
 
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        post_extended = request.POST.copy()
-        post_extended["position"] = self.object.position.id
-        post_extended["event"] = kwargs["event_id"]
-        form = EventPositionAssignmentForm(post_extended, instance=self.object)
-
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+    def get_form(self, form_class=None):
+        if self.request.method == "POST":
+            post_extended = self.request.POST.copy()
+            post_extended["position"] = self.object.position.id
+            post_extended["event"] = self.object.event.id
+            return EventPositionAssignmentForm(post_extended, instance=self.object)
+        return super().get_form(form_class)
 
 
 class EventPositionAssignmentDeleteView(
     EventPositionAssignmentMixin, generic.DeleteView
 ):
     template_name = "events/delete_event_position_assignment.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Organizátorská pozice {self.object.position} smazána"

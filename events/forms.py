@@ -484,19 +484,3 @@ class EventPositionAssignmentForm(ModelForm):
             self.fields["position"].widget.attrs["disabled"] = True
         else:
             self.fields["position"].queryset = EventPosition.templates
-
-    def save(self, commit=True):
-        instance = self.instance
-        if self.instance.id is None:
-            pos = self.cleaned_data["position"]
-            non_template_pos = EventPosition(name=pos.name, is_template=False)
-            non_template_pos.save()
-            non_template_pos.required_features.add(*pos.required_features.all())
-            instance = EventPositionAssignment(
-                event=self.cleaned_data["event"],
-                position=non_template_pos,
-                count=self.cleaned_data["count"],
-            )
-        if commit:
-            instance.save()
-        return instance
