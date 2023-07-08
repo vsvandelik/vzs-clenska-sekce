@@ -7,7 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
 from django.db.models import Q, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
@@ -53,34 +53,31 @@ class PersonPermissionMixin(PermissionRequiredMixin):
 
         return False
 
-    def _filter_queryset_by_permission(self):
-        if self.request.user.has_perm("persons.spravce-clenske-zakladny"):
+    @staticmethod
+    def get_queryset_by_permission(user):
+        if user.has_perm("persons.spravce-clenske-zakladny"):
             return Person.objects
 
         conditions = []
 
-        if self.request.user.has_perm("persons.spravce-detske-clenske-zakladny"):
+        if user.has_perm("persons.spravce-detske-clenske-zakladny"):
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if self.request.user.has_perm(
-            "persons.spravce-bazenove-detske-clenske-zakladny"
-        ):
+        if user.has_perm("persons.spravce-bazenove-detske-clenske-zakladny"):
             # TODO: omezit jen na bazenove treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if self.request.user.has_perm(
-            "persons.spravce-lezecke-detske-clenske-zakladny"
-        ):
+        if user.has_perm("persons.spravce-lezecke-detske-clenske-zakladny"):
             # TODO: omezit jen na lezecke treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if self.request.user.has_perm("persons.spravce-dospele-clenske-zakladny"):
+        if user.has_perm("persons.spravce-dospele-clenske-zakladny"):
             conditions.append(
                 Q(
                     person_type__in=[
@@ -93,6 +90,9 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         return Person.objects.filter(reduce(lambda x, y: x | y, conditions))
+
+    def _filter_queryset_by_permission(self):
+        return self.get_queryset_by_permission(self.request.user)
 
     def _get_available_person_types(self):
         available_person_types = set()
@@ -241,13 +241,46 @@ class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
         return self._filter_queryset_by_permission()
 
 
-class FeatureAssignEditView(generic.edit.UpdateView):
+class FeaturePermissionMixin(PermissionRequiredMixin):
+    def __init__(self):
+        super().__init__()
+        self.feature_type = None
+        self.feature_type_texts = None
+        self.person = None
+
+    def dispatch(self, request, feature_type, *args, **kwargs):
+        self.feature_type = feature_type
+        self.feature_type_texts = FeatureTypeTexts[feature_type]
+        if "person" in kwargs:
+            self.person = kwargs["person"]
+        return super().dispatch(request, feature_type, *args, **kwargs)
+
+    def has_permission(self):
+        user = self.request.user
+        return user.has_perm(self.feature_type_texts.permission_name)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["texts"] = self.feature_type_texts
+
+        return context
+
+    def get_person_with_permission_check(self):
+        try:
+            return PersonPermissionMixin.get_queryset_by_permission(
+                self.request.user
+            ).get(id=self.person)
+        except Person.DoesNotExist:
+            raise Http404()
+
+
+class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
     model = FeatureAssignment
     form_class = FeatureAssignmentForm
     template_name = "persons/features_assignment/edit.html"
 
     def get_success_url(self):
-        return reverse("persons:detail", args=[self.kwargs["person"]])
+        return reverse("persons:detail", args=[self.person])
 
     def get_object(self, queryset=None):
         try:
@@ -257,17 +290,17 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
-        context["texts"] = feature_type_texts
+
+        context["person"] = self.get_person_with_permission_check()
         context["features"] = Feature.objects.filter(
-            feature_type=feature_type_texts.shortcut, assignable=True
+            feature_type=self.feature_type_texts.shortcut, assignable=True
         )
-        context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
+
         return context
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form_labels = FeatureTypeTexts[self.kwargs["feature_type"]].form_labels
+        form_labels = self.feature_type_texts.form_labels
         if form_labels:
             for field, label in form_labels.items():
                 if field in form.fields:
@@ -276,13 +309,12 @@ class FeatureAssignEditView(generic.edit.UpdateView):
         return form
 
     def form_valid(self, form):
-        form.instance.person = get_object_or_404(Person, id=self.kwargs["person"])
-        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        form.instance.person = self.get_person_with_permission_check()
 
         if not form.instance.pk:
-            success_message = feature_type_texts.success_message_assigned
+            success_message = self.feature_type_texts.success_message_assigned
         else:
-            success_message = feature_type_texts.success_message_assigning_updated
+            success_message = self.feature_type_texts.success_message_assigning_updated
 
         try:
             response = super().form_valid(form)
@@ -291,42 +323,41 @@ class FeatureAssignEditView(generic.edit.UpdateView):
 
         except IntegrityError:
             messages.error(
-                self.request, feature_type_texts.duplicated_message_assigning
+                self.request, self.feature_type_texts.duplicated_message_assigning
             )
             return super().form_invalid(form)
 
     def form_invalid(self, form):
-        feature_name_4 = FeatureTypeTexts[self.kwargs["feature_type"]].name_4
+        feature_name_4 = self.feature_type_texts.name_4
         messages.error(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
 
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["feature_type"] = FeatureTypeTexts[self.kwargs["feature_type"]].shortcut
+        kwargs["feature_type"] = self.feature_type_texts.shortcut
         return kwargs
 
 
-class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+class FeatureAssignDeleteView(
+    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+):
     model = FeatureAssignment
     template_name = "persons/features_assignment/delete.html"
 
     def get_success_url(self):
-        return reverse("persons:detail", args=[self.kwargs["person"]])
+        return reverse("persons:detail", args=[self.person])
 
     def get_success_message(self, cleaned_data):
-        return FeatureTypeTexts[
-            self.kwargs["feature_type"]
-        ].success_message_assigning_delete
+        return self.feature_type_texts.success_message_assigning_delete
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
-        context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
+        context["person"] = self.get_person_with_permission_check()
         return context
 
 
-class FeatureIndexView(generic.ListView):
+class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
     model = Feature
     context_object_name = "features"
 
@@ -335,12 +366,11 @@ class FeatureIndexView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
-        context["feature_type"] = self.kwargs["feature_type"]
+        context["feature_type"] = self.feature_type
         return context
 
     def get_queryset(self):
-        feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
+        feature_type_params = self.feature_type_texts
         return (
             super()
             .get_queryset()
@@ -348,7 +378,7 @@ class FeatureIndexView(generic.ListView):
         )
 
 
-class FeatureDetailView(generic.DetailView):
+class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
 
     def get_template_names(self):
@@ -356,26 +386,20 @@ class FeatureDetailView(generic.DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
-        context["feature_type"] = self.kwargs["feature_type"]
+        context["feature_type"] = self.feature_type
         return context
 
     def get_queryset(self):
-        feature_type_params = FeatureTypeTexts[self.kwargs["feature_type"]]
+        feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
-class FeatureEditView(generic.edit.UpdateView):
+class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):
     model = Feature
     form_class = FeatureForm
 
     def get_template_names(self):
         return f"persons/features/edit.html"
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
-        return context
 
     def get_object(self, queryset=None):
         try:
@@ -384,10 +408,10 @@ class FeatureEditView(generic.edit.UpdateView):
             return None
 
     def get_success_url(self):
-        return reverse(f"{self.kwargs['feature_type']}:detail", args=(self.object.pk,))
+        return reverse(f"{self.feature_type}:detail", args=(self.object.pk,))
 
     def form_valid(self, form):
-        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        feature_type_texts = self.feature_type_texts
         form.instance.feature_type = feature_type_texts.shortcut
         messages.success(self.request, feature_type_texts.success_message_save)
         return super().form_valid(form)
@@ -400,7 +424,7 @@ class FeatureEditView(generic.edit.UpdateView):
         return super().form_invalid(form)
 
     def get_form(self, form_class=None):
-        feature_type_texts = FeatureTypeTexts[self.kwargs["feature_type"]]
+        feature_type_texts = self.feature_type_texts
         form = super().get_form(form_class)
         if feature_type_texts.form_labels:
             for field, label in feature_type_texts.form_labels.items():
@@ -411,26 +435,23 @@ class FeatureEditView(generic.edit.UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["feature_type"] = FeatureTypeTexts[self.kwargs["feature_type"]].shortcut
+        kwargs["feature_type"] = self.feature_type_texts.shortcut
         return kwargs
 
 
-class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+class FeatureDeleteView(
+    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+):
     model = Feature
 
     def get_template_names(self):
         return f"persons/features/delete.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
-        return context
-
     def get_success_url(self):
-        return reverse(f"{self.kwargs['feature_type']}:index")
+        return reverse(f"{self.feature_type}:index")
 
     def get_success_message(self, cleaned_data):
-        return FeatureTypeTexts[self.kwargs["feature_type"]].success_message_delete
+        return self.feature_type_texts.success_message_delete
 
 
 class GroupIndexView(generic.ListView):
