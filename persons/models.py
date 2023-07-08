@@ -302,6 +302,9 @@ class FeatureAssignment(models.Model):
 
 
 class Group(models.Model):
+    class Meta:
+        permissions = [("spravce-skupin", _("Správce skupin"))]
+
     name = models.CharField(_("Název skupiny"), max_length=255)
     google_email = models.EmailField(
         _("E-mailová adresa skupiny v Google Workspace"),

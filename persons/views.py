@@ -454,7 +454,11 @@ class FeatureDeleteView(
         return self.feature_type_texts.success_message_delete
 
 
-class GroupIndexView(generic.ListView):
+class GroupPermissionMixin(PermissionRequiredMixin):
+    permission_required = "persons.spravce-skupin"
+
+
+class GroupIndexView(GroupPermissionMixin, generic.ListView):
     model = Group
     template_name = "persons/groups/index.html"
 
@@ -465,7 +469,9 @@ class GroupIndexView(generic.ListView):
         return context
 
 
-class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+class GroupDeleteView(
+    GroupPermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+):
     model = StaticGroup
     template_name = "persons/groups/delete.html"
     success_url = reverse_lazy("persons:groups:index")
@@ -473,7 +479,10 @@ class GroupDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
 
 class StaticGroupDetailView(
-    SuccessMessageMixin, generic.DetailView, generic.edit.UpdateView
+    GroupPermissionMixin,
+    SuccessMessageMixin,
+    generic.DetailView,
+    generic.edit.UpdateView,
 ):
     model = StaticGroup
     form_class = AddMembersStaticGroupForm
@@ -513,7 +522,9 @@ class StaticGroupDetailView(
         return super().form_invalid(form)
 
 
-class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
+class StaticGroupEditView(
+    GroupPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
+):
     model = StaticGroup
     form_class = StaticGroupForm
     template_name = "persons/groups/edit_static.html"
@@ -533,7 +544,7 @@ class StaticGroupEditView(SuccessMessageMixin, generic.edit.UpdateView):
         return super().form_invalid(form)
 
 
-class StaticGroupRemoveMemberView(generic.View):
+class StaticGroupRemoveMemberView(GroupPermissionMixin, generic.View):
     success_message = "Osoba byla odebrána."
 
     def get_success_url(self):
@@ -554,7 +565,7 @@ class StaticGroupRemoveMemberView(generic.View):
         return redirect(self.get_success_url())
 
 
-class SyncGroupMembersWithGoogleView(generic.View):
+class SyncGroupMembersWithGoogleView(GroupPermissionMixin, generic.View):
     http_method_names = ["get"]
 
     def get(self, request, group=None):
