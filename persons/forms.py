@@ -346,13 +346,13 @@ class PersonsFilterForm(forms.Form):
         )
 
     def clean_age_from(self):
-        if self.cleaned_data["age_from"] <= 0:
+        if self.cleaned_data["age_from"] and self.cleaned_data["age_from"] <= 0:
             raise ValidationError(_("Věk musí být kladné celé číslo."))
 
         return self.cleaned_data["age_from"]
 
     def clean_age_to(self):
-        if self.cleaned_data["age_to"] <= 0:
+        if self.cleaned_data["age_to"] and self.cleaned_data["age_to"] <= 0:
             raise ValidationError(_("Věk musí být kladné celé číslo."))
 
         return self.cleaned_data["age_to"]
