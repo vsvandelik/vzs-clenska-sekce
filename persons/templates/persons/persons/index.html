@@ -47,10 +47,7 @@
                                                 <div class="btn-group">
                                                     <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
                                                     <a class="btn btn-success btn-sm" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
-                                                    <a href="#" data-toggle="modal" data-target="#deletePersonModal" class="btn btn-danger btn-sm"
-                                                       data-first-name="{{ person.first_name }}"
-                                                       data-last-name="{{ person.last_name }}"
-                                                       data-action="{% url "persons:delete" person.pk %}">
+                                                    <a href="#" data-toggle="modal" data-target="#deletePersonModal" data-action="{% url "persons:delete" person.pk %}" class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </a>
                                                 </div>
@@ -87,27 +84,10 @@
         </div>
     </div>
 
-    <div class="modal modal-danger fade" id="deletePersonModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Smazat osobu</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="deletePersonModalBody"></div>
-                <div class="modal-footer justify-content-center">
-                    <form method="post" id="deletePersonForm">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Smazat</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include "modal_include.html" with id="deletePersonModal" %}
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "persons/index.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("deletePersonModal")</script>
 {% endblock %}

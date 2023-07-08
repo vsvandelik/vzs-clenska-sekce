@@ -234,7 +234,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:qualifications:delete' person=person.id pk=qualification.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:qualifications:delete" person.pk qualification.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -279,7 +279,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:permissions:delete' person=person.id pk=permission.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:permissions:delete" person.pk permission.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -316,7 +316,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:equipments:delete' person=person.id pk=equipment.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:equipments:delete" person.pk equipment.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -420,8 +420,12 @@
             </div>
         </div>
     </div>
+
+    {% include "modal_include.html" with id="removeFeaturesAssignmentModal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "persons/add-managed-person.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("removeFeaturesAssignmentModal")</script>
 {% endblock %}

@@ -110,10 +110,9 @@ class PersonUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
 
 class PersonDeleteView(generic.edit.DeleteView):
     model = Person
-    template_name = "persons/persons/confirm_delete.html"
+    template_name = "persons/persons/delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
-    http_method_names = ["post"]
 
 
 class FeatureAssignEditView(generic.edit.UpdateView):
@@ -196,7 +195,11 @@ class FeatureAssignDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+
+        feature_type = self.kwargs["feature_type"]
+
+        context["feature_type"] = feature_type
+        context["texts"] = FeatureTypeTexts[feature_type]
         context["person"] = get_object_or_404(Person, id=self.kwargs["person"])
         return context
 
