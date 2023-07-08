@@ -16,9 +16,14 @@
                         <div class="row">
                             <p class="px-4">Chcete opravdu smazat pozici "{{ position.name }}"?</p>
                         </div>
+                        <div class="row">
+                            <div class="alert alert-warning" style="display: inline">
+                                TODO přidat warning ohledně událostí, které tuto pozici využívají
+                            </div>
+                        </div>
                         {% if position.required_features.all|length > 0 %}
                             <div class="row">
-                                <div class="alert alert-warning" style="display: inline">
+                                <div class="alert alert-secondary" style="display: inline">
                                     Tato událost zahrnuje
                                     <ul>
                                         <li>Kvalifikace: {{ position.required_qualifications|length }}</li>
@@ -26,9 +31,6 @@
                                         <li>Vybavení: {{ position.required_equipment|length }}</li>
                                     </ul>
                                 </div>
-                            </div>
-                            <div class="row">
-
                             </div>
                         {% endif %}
                     </div>
