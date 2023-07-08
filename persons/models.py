@@ -13,17 +13,17 @@ from vzs import models as vzs_models
 class Person(vzs_models.RenderableModelMixin, models.Model):
     class Meta:
         permissions = [
-            ("spravce-clenske-zakladny", _("Správce členské základny")),
-            ("spravce-detske-clenske-zakladny", _("Správce dětské členské základny")),
+            ("clenska_zakladna", _("Správce členské základny")),
+            ("detska_clenska_zakladna", _("Správce dětské členské základny")),
             (
-                "spravce-bazenove-detske-clenske-zakladny",
+                "bazenova_clenska_zakladna",
                 _("Správce bazénové dětské členské základny"),
             ),
             (
-                "spravce-lezecke-detske-clenske-zakladny",
+                "lezecka_clenska_zakladna",
                 _("Správce lezecké dětské členské základny"),
             ),
-            ("spravce-dospele-clenske-zakladny", _("Správce dospělé členské základny")),
+            ("dospela_clenska_zakladna", _("Správce dospělé členské základny")),
         ]
 
     class Type(models.TextChoices):
@@ -147,9 +147,9 @@ class EquipmentsManager(models.Manager):
 class Feature(models.Model):
     class Meta:
         permissions = [
-            ("spravce-kvalifikaci", _("Správce kvalifikací")),
-            ("spravce-opravneni", _("Správce oprávnění")),
-            ("spravce-vybaveni", _("Správce vybavení")),
+            ("spravce_kvalifikaci", _("Správce kvalifikací")),
+            ("spravce_opravneni", _("Správce oprávnění")),
+            ("spravce_vybaveni", _("Správce vybavení")),
         ]
 
     class Type(models.TextChoices):
@@ -303,7 +303,7 @@ class FeatureAssignment(models.Model):
 
 class Group(models.Model):
     class Meta:
-        permissions = [("spravce-skupin", _("Správce skupin"))]
+        permissions = [("spravce_skupin", _("Správce skupin"))]
 
     name = models.CharField(_("Název skupiny"), max_length=255)
     google_email = models.EmailField(
@@ -328,7 +328,7 @@ class DynamicGroup(Group):
 
 class Transaction(models.Model):
     class Meta:
-        permissions = [("spravce-plateb", _("Správce plateb"))]
+        permissions = [("spravce_transakci", _("Správce transakcí"))]
 
     amount = models.IntegerField(_("Suma"))
     reason = models.CharField(_("Popis transakce"), max_length=150)

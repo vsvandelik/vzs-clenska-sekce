@@ -7,9 +7,11 @@
 {% block title %}Transakce{% endblock %}
 
 {% block subcontent %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
-    </div>
+    {% if perms.persons.spravce_transakci %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-6">
             <div class="card">

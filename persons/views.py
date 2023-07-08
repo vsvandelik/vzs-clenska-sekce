@@ -41,11 +41,11 @@ from .utils import sync_single_group_with_google
 class PersonPermissionMixin(PermissionRequiredMixin):
     def has_permission(self):
         permission_required = (
-            "persons.spravce-clenske-zakladny",
-            "persons.spravce-detske-clenske-zakladny",
-            "persons.spravce-bazenove-detske-clenske-zakladny",
-            "persons.spravce-lezecke-detske-clenske-zakladny",
-            "persons.spravce-dospele-clenske-zakladny",
+            "persons.clenska_zakladna",
+            "persons.detska_clenska_zakladna",
+            "persons.bazenova_clenska_zakladna",
+            "persons.lezecka_clenska_zakladna",
+            "persons.dospela_clenska_zakladna",
         )
         for permission in permission_required:
             if self.request.user.has_perm(permission):
@@ -55,29 +55,29 @@ class PersonPermissionMixin(PermissionRequiredMixin):
 
     @staticmethod
     def get_queryset_by_permission(user):
-        if user.has_perm("persons.spravce-clenske-zakladny"):
+        if user.has_perm("persons.clenska_zakladna"):
             return Person.objects
 
         conditions = []
 
-        if user.has_perm("persons.spravce-detske-clenske-zakladny"):
+        if user.has_perm("persons.detska_clenska_zakladna"):
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.spravce-bazenove-detske-clenske-zakladny"):
+        if user.has_perm("persons.bazenova_clenska_zakladna"):
             # TODO: omezit jen na bazenove treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.spravce-lezecke-detske-clenske-zakladny"):
+        if user.has_perm("persons.lezecka_clenska_zakladna"):
             # TODO: omezit jen na lezecke treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.spravce-dospele-clenske-zakladny"):
+        if user.has_perm("persons.dospela_clenska_zakladna"):
             conditions.append(
                 Q(
                     person_type__in=[
@@ -89,6 +89,9 @@ class PersonPermissionMixin(PermissionRequiredMixin):
                 )
             )
 
+        if not conditions:
+            return Person.objects.none()
+
         return Person.objects.filter(reduce(lambda x, y: x | y, conditions))
 
     def _filter_queryset_by_permission(self):
@@ -97,7 +100,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
     def _get_available_person_types(self):
         available_person_types = set()
 
-        if self.request.user.has_perm("persons.spravce-clenske-zakladny"):
+        if self.request.user.has_perm("persons.clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -110,17 +113,13 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         if (
-            self.request.user.has_perm("persons.spravce-detske-clenske-zakladny")
-            or self.request.user.has_perm(
-                "persons.spravce-bazenove-detske-clenske-zakladny"
-            )
-            or self.request.user.has_perm(
-                "persons.spravce-lezecke-detske-clenske-zakladny"
-            )
+            self.request.user.has_perm("persons.detska_clenska_zakladna")
+            or self.request.user.has_perm("persons.bazenova_clenska_zakladna")
+            or self.request.user.has_perm("persons.lezecka_clenska_zakladna")
         ):
             available_person_types.update([Person.Type.CHILD, Person.Type.PARENT])
 
-        if self.request.user.has_perm("persons.spravce-dospele-clenske-zakladny"):
+        if self.request.user.has_perm("persons.dospela_clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -457,7 +456,7 @@ class FeatureDeleteView(
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
-    permission_required = "persons.spravce-skupin"
+    permission_required = "persons.spravce_skupin"
 
 
 class GroupIndexView(GroupPermissionMixin, generic.ListView):
@@ -764,7 +763,7 @@ def parse_persons_filter_queryset(params_dict, persons):
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
-    permission_required = "persons.spravce-plateb"
+    permission_required = "persons.spravce_transakci"
 
 
 class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateView):
@@ -840,7 +839,7 @@ class TransactionListView(generic.detail.DetailView):
         return context
 
     def get_queryset(self):
-        if self.request.user.has_perm("persons.spravce-plateb"):
+        if self.request.user.has_perm("persons.spravce_transakci"):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
@@ -863,7 +862,7 @@ class TransactionQRView(generic.detail.DetailView):
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Q(amount__lt=0)
         )
-        if not self.request.user.has_perm("persons.spravce-plateb"):
+        if not self.request.user.has_perm("persons.spravce_transakci"):
             queryset = queryset.filter(
                 person__in=PersonPermissionMixin.get_queryset_by_permission(
                     self.request.user

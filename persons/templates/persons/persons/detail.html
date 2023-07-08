@@ -17,13 +17,21 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
                 <a href="{% url 'persons:delete' person.id %}" class="btn btn-danger">Smazat osobu</a>
-                <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
-                <a href="{% url 'persons:permissions:add' person.id %}" class="btn btn-info">Přidat oprávnění</a>
-                <a href="{% url 'persons:equipments:add' person.id %}" class="btn btn-info">Přidat vybavení</a>
+                {% if perms.persons.spravce_kvalifikaci %}
+                    <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
+                {% endif %}
+                {% if perms.persons.spravce_opravneni %}
+                    <a href="{% url 'persons:permissions:add' person.id %}" class="btn btn-info">Přidat oprávnění</a>
+                {% endif %}
+                {% if perms.persons.spravce_vybaveni %}
+                    <a href="{% url 'persons:equipments:add' person.id %}" class="btn btn-info">Přidat vybavení</a>
+                {% endif %}
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:transaction-list' person.id %}" class="btn btn-info">Transakce</a>
-                <a href="{% url 'persons:transaction-add' person.id %}" class="btn btn-info">Přidat transakci</a>
+                {% if perms.persons.spravce_transakci %}
+                    <a href="{% url 'persons:transaction-add' person.id %}" class="btn btn-info">Přidat transakci</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -153,9 +161,11 @@
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="#" class="btn-info btn">Přidat do skupiny (TODO)</a>
-                </div>
+                {% if perms.persons.spravce_skupin %}
+                    <div class="card-footer text-center">
+                        <a href="#" class="btn-info btn">Přidat do skupiny (TODO)</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="col-12 col-md-6">
@@ -254,9 +264,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'persons:qualifications:add' person.id %}" class="btn-info btn">Přidat kvalifikaci</a>
-                </div>
+                {% if perms.persons.spravce_kvalifikaci %}
+                    <div class="card-footer text-center">
+                        <a href="{% url 'persons:qualifications:add' person.id %}" class="btn-info btn">Přidat kvalifikaci</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="col-12 col-md-4">
@@ -291,9 +303,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'persons:permissions:add' person.id %}" class="btn-info btn">Přidat oprávnění</a>
-                </div>
+                {% if perms.persons.spravce_opravneni %}
+                    <div class="card-footer text-center">
+                        <a href="{% url 'persons:permissions:add' person.id %}" class="btn-info btn">Přidat oprávnění</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="col-12 col-md-4">
@@ -335,9 +349,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'persons:equipments:add' person.id %}" class="btn-info btn">Přidat vybavení</a>
-                </div>
+                {% if perms.persons.spravce_vybaveni %}
+                    <div class="card-footer text-center">
+                        <a href="{% url 'persons:equipments:add' person.id %}" class="btn-info btn">Přidat vybavení</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
