@@ -238,7 +238,7 @@ FeatureTypeTexts = {
         _("Přiřazení kvalifikace bylo úspěšně upraveno."),
         _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
-        "persons.spravce-kvalifikaci",
+        "persons.spravce_kvalifikaci",
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
@@ -258,7 +258,7 @@ FeatureTypeTexts = {
         _("Přiřazení oprávnění bylo úspěšně upraveno."),
         _("Přiřazení oprávnění bylo úspěšně odstraněno."),
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
-        "persons.spravce-opravneni",
+        "persons.spravce_opravneni",
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
@@ -280,7 +280,7 @@ FeatureTypeTexts = {
         _("Přiřazení vybavení bylo úspěšně upraveno."),
         _("Přiřazení vybavení bylo úspěšně odstraněno."),
         _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
-        "persons.spravce-vybaveni",
+        "persons.spravce_vybaveni",
     ),
 }
 
