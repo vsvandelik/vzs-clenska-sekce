@@ -9,11 +9,11 @@
         <div class="row">
             <p class="px-4">Chcete opravdu smazat událost "{{ event.name }}"?</p>
         </div>
-        {% if view.children %}
+        {% if event.get_children_trainings_sorted %}
             <div class="row">
                 <div class="alert alert-warning" style="display: inline">
                     Tato událost zahrnuje pravidelné tréninky
-                    (celkem {{ view.children.count }})
+                    (celkem {{ event.get_children_trainings_sorted.count }})
                 </div>
             </div>
         {% endif %}
