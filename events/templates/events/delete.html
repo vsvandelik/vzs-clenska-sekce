@@ -1,35 +1,27 @@
-{% extends "base.html" %}
-{% block title %}
-    Smazání události
-{% endblock %}
-{% block content %}
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-danger">
-                    <div class="card-title h5">Potvrzení smazání události</div>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <div class="row">
-                            <p class="px-4">Chcete opravdu smazat událost "{{ event.name }}"?</p>
-                        </div>
-                        {% if view.children %}
-                            <div class="row">
-                                <div class="alert alert-warning" style="display: inline">
-                                    Tato událost zahrnuje pravidelné tréninky
-                                    (celkem {{ view.children.count }})
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-center">
-                        <input type="submit" value="Smazat" class="btn btn-danger"/>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Potvrzení smazání události</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
-{% endblock %}
+    <div class="modal-body">
+        <div class="row">
+            <p class="px-4">Chcete opravdu smazat událost "{{ event.name }}"?</p>
+        </div>
+        {% if view.children %}
+            <div class="row">
+                <div class="alert alert-warning" style="display: inline">
+                    Tato událost zahrnuje pravidelné tréninky
+                    (celkem {{ view.children.count }})
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <form method="post" action="{% url "events:delete" event.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Smazat</button>
+        </form>
+    </div>
+</div>
