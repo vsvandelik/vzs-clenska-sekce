@@ -754,7 +754,11 @@ def parse_persons_filter_queryset(params_dict, persons):
     return persons.order_by("last_name")
 
 
-class TransactionCreateView(generic.edit.CreateView):
+class TransactionEditPermissionMixin(PermissionRequiredMixin):
+    permission_required = "persons.spravce-plateb"
+
+
+class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateView):
     model = Transaction
     form_class = TransactionCreateForm
     template_name = "persons/transactions/create.html"
@@ -826,11 +830,14 @@ class TransactionListView(generic.detail.DetailView):
 
         return context
 
+    def get_queryset(self):
+        if self.request.user.has_perm("persons.spravce-plateb"):
+            return super().get_queryset()
+        else:
+            return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
+
 
 class TransactionQRView(generic.detail.DetailView):
-    queryset = Transaction.objects.filter(
-        Q(fio_transaction__isnull=True) & Q(amount__lt=0)
-    )
     template_name = "persons/transactions/QR.html"
 
     def get_context_data(self, **kwargs):
@@ -843,8 +850,21 @@ class TransactionQRView(generic.detail.DetailView):
 
         return context
 
+    def get_queryset(self):
+        queryset = Transaction.objects.filter(
+            Q(fio_transaction__isnull=True) & Q(amount__lt=0)
+        )
+        if not self.request.user.has_perm("persons.spravce-plateb"):
+            queryset = queryset.filter(
+                person__in=PersonPermissionMixin.get_queryset_by_permission(
+                    self.request.user
+                )
+            )
 
-class TransactionEditView(generic.edit.UpdateView):
+        return queryset
+
+
+class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateView):
     model = Transaction
     form_class = TransactionEditForm
     template_name = "persons/transactions/edit.html"
@@ -863,7 +883,7 @@ class TransactionEditView(generic.edit.UpdateView):
         return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
 
 
-class TransactionDeleteView(generic.edit.DeleteView):
+class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteView):
     model = Transaction
     template_name = "persons/transactions/delete.html"
 

@@ -328,7 +328,7 @@ class DynamicGroup(Group):
 
 class Transaction(models.Model):
     class Meta:
-        permissions = [("ucetni", _("Účetní"))]
+        permissions = [("spravce-plateb", _("Správce plateb"))]
 
     amount = models.IntegerField(_("Suma"))
     reason = models.CharField(_("Popis transakce"), max_length=150)
