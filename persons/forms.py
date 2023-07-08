@@ -309,6 +309,7 @@ class PersonsFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "GET"
+        self.helper.form_id = "persons-filter-form"
         self.helper.layout = Layout(
             Div(
                 Div(
