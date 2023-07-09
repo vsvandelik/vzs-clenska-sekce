@@ -13,7 +13,7 @@
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                <table class="table" id="permissions_table">
+                <table class="table" id="permissions-table">
                     <thead>
                         <tr>
                             <th>Název</th>
@@ -38,5 +38,5 @@
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    <script>datatableEnable("permissions_table", [0, 1], [0, 1]);</script>
+    <script>datatableEnable("permissions-table", [0, 1], [0, 1]);</script>
 {% endblock %}
