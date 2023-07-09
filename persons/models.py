@@ -3,11 +3,36 @@ from itertools import chain
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import ExpressionWrapper, Case, When, Value, Q
+from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from vzs import models as vzs_models
+
+
+class PersonsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def with_age(self):
+        return self.get_queryset().annotate(
+            age=ExpressionWrapper(
+                date.today().year
+                - ExtractYear("date_of_birth")
+                - Case(
+                    When(Q(date_of_birth__month__gt=date.today().month), then=Value(1)),
+                    When(
+                        Q(date_of_birth__month=date.today().month)
+                        & Q(date_of_birth__day__gt=date.today().day),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                ),
+                output_field=models.IntegerField(),
+            )
+        )
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
@@ -49,6 +74,8 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
     class Sex(models.TextChoices):
         M = "M", _("muž")
         F = "F", _("žena")
+
+    objects = PersonsManager()
 
     email = models.EmailField(_("E-mailová adressa"), unique=True)
     first_name = models.CharField(_("Křestní jméno"), max_length=50)
@@ -103,21 +130,6 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
             return None
 
         return f"{self.street}, {self.city}, {self.postcode}"
-
-    @property
-    def age(self):
-        if not self.date_of_birth:
-            return None
-
-        today = date.today()
-        return (
-            today.year
-            - self.date_of_birth.year
-            - (
-                (today.month, today.day)
-                < (self.date_of_birth.month, self.date_of_birth.day)
-            )
-        )
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})

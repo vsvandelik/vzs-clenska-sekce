@@ -136,7 +136,6 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
     model = Person
     template_name = "persons/persons/index.html"
     context_object_name = "persons"
-    paginate_by = 20
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -181,6 +180,7 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
             self._filter_queryset_by_permission()
             .exclude(managed_by=self.kwargs["pk"])
             .exclude(pk=self.kwargs["pk"])
+            .order_by("last_name", "first_name")
         )
         return context
 
@@ -721,8 +721,8 @@ def parse_persons_filter_queryset(params_dict, persons):
     permission = params_dict.get("permissions")
     equipment = params_dict.get("equipments")
     person_type = params_dict.get("person_type")
-    birth_year_from = params_dict.get("birth_year_from")
-    birth_year_to = params_dict.get("birth_year_to")
+    age_from = params_dict.get("age_from")
+    age_to = params_dict.get("age_to")
 
     if name:
         persons = persons.filter(
@@ -753,11 +753,11 @@ def parse_persons_filter_queryset(params_dict, persons):
     if person_type:
         persons = persons.filter(person_type=person_type)
 
-    if birth_year_from:
-        persons = persons.filter(date_of_birth__year__gte=birth_year_from)
+    if age_from:
+        persons = persons.filter(age__gte=age_from)
 
-    if birth_year_to:
-        persons = persons.filter(date_of_birth__year__lte=birth_year_to)
+    if age_to:
+        persons = persons.filter(age__lte=age_to)
 
     return persons.order_by("last_name")
 

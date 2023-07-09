@@ -2,6 +2,7 @@
 
 {% load vzs_filters %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block title %}Seznam všech osob{% endblock %}
 
@@ -24,12 +25,13 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-12">
+                            <a class="text-bold text-body" id="filter-toggler" href="#">Filtrování&nbsp;<span><i class="fas fa-angle-right" data-status="closed"></i><i class="fas fa-angle-down" data-status="open"></i></span></a>
                             {% crispy filter_form %}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-12">
-                            <table class="table table-hover table-striped">
+                            <table class="table table-hover table-striped" id="personsTable">
                                 <thead>
                                     <tr>
                                         <th scope="col">Jméno</th>
@@ -55,24 +57,6 @@
                             </table>
                         </div>
                     </div>
-                    <div class="row align-items-center">
-                        <div class="col-sm-12 col-md-5">
-                            Zobrazují se řádky {{ page_obj.start_index }} až {{ page_obj.end_index }} z {{ page_obj.paginator.count }}.
-                        </div>
-                        <div class="col-sm-12 col-md-7">
-                            <ul class="pagination float-right mb-0">
-                                <li class="paginate_button page-item previous {% if not page_obj.has_previous %}disabled{% endif %}">
-                                    <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}" class="page-link">Předchozí</a>
-                                </li>
-                                {% for page in page_obj.paginator.get_elided_page_range %}
-                                    <li class="paginate_button page-item {% if page == page_obj.number %}active{% endif %}"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
-                                {% endfor %}
-                                <li class="paginate_button page-item next {% if not page_obj.has_next %}disabled{% endif %}">
-                                    <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}" class="page-link">Další</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
                 <div class="card-footer text-center">
                     <a href="{% url 'persons:add' %}" class="btn btn-primary">Přidat osobu</a>
@@ -81,4 +65,9 @@
         </div>
     </div>
 
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static "persons/persons-filter.js" %}"></script>
+    <script>datatableEnable("personsTable", [0, 1], [0, 1]);</script>
 {% endblock %}
