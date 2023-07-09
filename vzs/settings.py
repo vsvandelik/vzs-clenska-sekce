@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
+    "pages.apps.PagesConfig",
     # Template tags
     "vzs",
 ]

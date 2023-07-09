@@ -51,4 +51,5 @@ urlpatterns = [
         ),
         {"feature_type": "equipments"},
     ),
+    path("", include("pages.urls")),
 ]
