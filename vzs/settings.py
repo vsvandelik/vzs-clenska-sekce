@@ -183,6 +183,8 @@ MESSAGE_TAGS = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+ADMIN_EMAIL = "system@vzs-praha15.cz"
+
 # Settings for Google Integration
 
 GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"

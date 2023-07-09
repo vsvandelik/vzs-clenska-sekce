@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.urls import path, include
 
-from persons import urls as persons_urls
 from events import urls as events_urls
+from pages import views as pages_views
+from persons import urls as persons_urls
 
 urlpatterns = [
     path("osoby/", include("persons.urls")),
@@ -53,3 +54,8 @@ urlpatterns = [
     ),
     path("", include("pages.urls")),
 ]
+
+handler400 = pages_views.ErrorPage400View.as_view()
+handler403 = pages_views.ErrorPage403View.as_view()
+handler404 = pages_views.ErrorPage404View.as_view()
+handler500 = pages_views.ErrorPage500View.as_view()

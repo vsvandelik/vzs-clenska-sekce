@@ -1,18 +1,14 @@
-{% extends "base.html" %}
+{% extends "pages/_simple_page_subview.html" %}
 
 {% block title %}{{ object.title }}{% endblock %}
 
-{% block content %}
+{% block buttons %}
     <div class="btn-group-md btn-group mb-3 elevation-2">
         <a href="{% url 'pages:edit' object.slug %}" class="btn btn-info">Upravit stránku</a>
     </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    {{ object.content }}
-                </div>
-            </div>
-        </div>
-    </div>
 {% endblock %}
+
+{% block subcontent %}
+    {{ object.content }}
+{% endblock %}
+
