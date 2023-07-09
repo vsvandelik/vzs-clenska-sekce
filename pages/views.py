@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView, DetailView, UpdateView
@@ -16,7 +17,8 @@ class PageDetailView(DetailView):
     model = Page
 
 
-class PageEditView(SuccessMessageMixin, UpdateView):
+class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+    permission_required = "pages.stranky"
     template_name = "pages/edit.html"
     model = Page
     form_class = PageEditForm
