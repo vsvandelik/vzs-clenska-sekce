@@ -1,8 +1,10 @@
 {% extends "pages/_simple_page_subview.html" %}
 
+{% load vzs_filters %}
+
 {% block title %}Vaše vlna požadavku ztroskotala na břehu{% endblock %}
 
 {% block subcontent %}
-    <p>Omlouváme se, ale váš požadavek byl neplatný. Prosím, zkontrolujte své zadání a zkuste to znovu. Pokud se problém opakuje, kontaktujte prosím <a href="mailto:{{ admin_email }}">správce systému</a>.</p>
+    <p>Omlouváme se, ale váš požadavek byl neplatný. Prosím, zkontrolujte své zadání a zkuste to znovu. Pokud se problém opakuje, kontaktujte prosím {% link_to_admin_email "správce systému" %}.</p>
 {% endblock %}
 

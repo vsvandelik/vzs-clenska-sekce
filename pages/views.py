@@ -5,7 +5,6 @@ from django.views.generic import TemplateView, DetailView, UpdateView
 
 from pages.forms import PageEditForm
 from pages.models import Page
-from vzs import settings
 
 
 class HomeView(TemplateView):
@@ -25,24 +24,17 @@ class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Stránka byla úspěšně upravena.")
 
 
-class ErrorPageMixin(TemplateView):
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["admin_email"] = settings.ADMIN_EMAIL
-        return context
-
-
-class ErrorPage400View(ErrorPageMixin):
+class ErrorPage400View(TemplateView):
     template_name = "pages/errors/400.html"
 
 
-class ErrorPage403View(ErrorPageMixin):
+class ErrorPage403View(TemplateView):
     template_name = "pages/errors/403.html"
 
 
-class ErrorPage404View(ErrorPageMixin):
+class ErrorPage404View(TemplateView):
     template_name = "pages/errors/404.html"
 
 
-class ErrorPage500View(ErrorPageMixin):
+class ErrorPage500View(TemplateView):
     template_name = "pages/errors/500.html"

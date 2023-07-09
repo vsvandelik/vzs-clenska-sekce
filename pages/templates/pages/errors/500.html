@@ -1,8 +1,10 @@
 {% extends "pages/_simple_page_subview.html" %}
 
+{% load vzs_filters %}
+
 {% block title %}Vlny nezkrotné! Server se utopil{% endblock %}
 
 {% block subcontent %}
-    <p>Nastala vnitřní chyba serveru, která brání správnému zobrazení požadované stránky. Omlouváme se za nepříjemnosti. Prosím, informujte o této chybě <a href="mailto:{{ admin_email }}">správce systému</a> a budeme se snažit co nejdříve ji vyřešit.</p>
+    <p>Nastala vnitřní chyba serveru, která brání správnému zobrazení požadované stránky. Omlouváme se za nepříjemnosti. Prosím, informujte o této chybě {% link_to_admin_email "správce systému" %} a budeme se snažit co nejdříve ji vyřešit.</p>
 {% endblock %}
 
