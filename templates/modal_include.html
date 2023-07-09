@@ -1,7 +1,7 @@
 <div class="modal modal-danger fade" id="{{ id }}" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document" id="{{ id }}Dialog">
-        {% if static_modal_template %}
-            {% include static_modal_template %}
+    <div class="modal-dialog {{ classes }}" role="document" id="{{ id }}Dialog">
+        {% if template %}
+            {% include template %}
         {% endif %}
     </div>
 </div>

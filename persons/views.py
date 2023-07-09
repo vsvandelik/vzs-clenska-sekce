@@ -307,7 +307,12 @@ class FeatureDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["texts"] = FeatureTypeTexts[self.kwargs["feature_type"]]
+
+        feature_type = self.kwargs["feature_type"]
+
+        context["feature_type"] = feature_type
+        context["texts"] = FeatureTypeTexts[feature_type]
+
         return context
 
     def get_success_url(self):

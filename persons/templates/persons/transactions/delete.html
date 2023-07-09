@@ -1,26 +1,9 @@
-{% extends "persons/subview.html" %}
+{% extends "modal_delete.html" %}
 
-{% load crispy_forms_tags %}
+{% block modal_title %}Potvrzení smazání transakce{% endblock %}
 
-{% block title %}Smazat transakci{% endblock %}
-
-{% block subcontent %}
-    <div class="row">
-        <div class="col-12">
-            <div class="card card-danger">
-                <div class="card-header">
-                    <div class="card-title h5">Potvrzení smazání transakce</div>
-                </div>
-                <div class="card-body">
-                    Opravdu chcetet smazat transakci {{ transaction.pk }}?
-                </div>
-                <div class="card-footer">
-                    <form method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Ano, smazat.</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block modal_body %}
+    Opravdu chcetet smazat transakci {{ transaction.pk }}?
 {% endblock %}
+
+{% block delete_action %}{% url "persons:transaction-delete" transaction.pk %}{% endblock %}

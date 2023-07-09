@@ -38,9 +38,7 @@
                                                 <a class="btn btn-success btn-sm" href="{% url 'events:edit_one_time_event' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
-                                                <a href="#" data-toggle="modal" data-target="#deleteEventModal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </a>
+                                                {% include "delete_button_icon.html" with id="deleteEventModal" pattern="events:delete" object=event %}
                                             </div>
                                         </td>
                                     </tr>
@@ -52,9 +50,6 @@
             </div>
         </div>
     </div>
-
-
-
 
     <div class="card">
         <div class="card-header d-flex align-items-center">

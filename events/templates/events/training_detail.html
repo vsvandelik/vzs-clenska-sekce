@@ -18,7 +18,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'events:edit_training' event.id %}" class="btn btn-success">Upravit</a>
-                <a href="#" data-toggle="modal" data-target="#deleteEventModal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger">Smazat</a>
+                {% include "delete_button_text.html" with id="deleteEventModal" %}
             </div>
         </div>
     </div>
@@ -138,5 +138,5 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deleteEventModal" static_modal_template="events/delete.html" %}
+    {% include "modal_include.html" with id="deleteEventModal" template="events/delete.html" %}
 {% endblock %}

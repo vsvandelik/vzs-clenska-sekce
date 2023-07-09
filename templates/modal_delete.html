@@ -1,0 +1,10 @@
+{% extends "modal.html" %}
+
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+
+{% block modal_footer %}
+    <form method="post" action="{% block delete_action %}{% endblock %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Smazat</button>
+    </form>
+{% endblock %}

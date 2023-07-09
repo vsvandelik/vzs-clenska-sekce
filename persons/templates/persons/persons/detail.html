@@ -16,7 +16,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
-                <a href="#" data-toggle="modal" data-target="#deletePersonModal" class="btn btn-danger">Smazat osobu</a>
+                {% include "delete_button_text.html" with id="deletePersonModal" additional_text="osobu" %}
                 <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
                 <a href="{% url 'persons:permissions:add' person.id %}" class="btn btn-info">Přidat oprávnění</a>
                 <a href="{% url 'persons:equipments:add' person.id %}" class="btn btn-info">Přidat vybavení</a>
@@ -381,30 +381,8 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deletePersonModal" static_modal_template="persons/persons/delete.html" %}
-
-    <div class="modal modal-danger fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Smazat uživatelský účet</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Opravdu chcete smazat uživatelský účet osoby {{ person.first_name }} {{ person.last_name }}?
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <form method="post" action="{% url "persons:user-delete" person.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Smazat</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    {% include "modal_include.html" with id="deletePersonModal" template="persons/persons/delete.html" %}
+    {% include "modal_include.html" with id="deleteUserModal" template="users/delete.html" %}
     {% include "modal_include.html" with id="removeFeaturesAssignmentModal" %}
 {% endblock %}
 

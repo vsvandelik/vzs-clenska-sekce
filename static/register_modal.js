@@ -3,8 +3,6 @@ function register_modal(id) {
         var action = $(event.relatedTarget).data('action');
         var modal = $(`#${id}Dialog`);
 
-        console.log(action)
-
         fetch(action)
             .then((response) => {
                 return response.text();

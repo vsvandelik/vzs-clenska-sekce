@@ -18,7 +18,7 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'positions:edit' position.id %}"
                    class="btn btn-success">Změna jména</a>
-                <a href="{% url 'positions:delete' position.id %}" class="btn btn-danger">Smazat</a>
+                {% include "delete_button_text.html" with id="deletePositionModal" %}
             </div>
         </div>
     </div>
@@ -190,4 +190,5 @@
         </div>
     </div>
 
+    {% include "modal_include.html" with id="deletePositionModal" template="positions/delete.html" %}
 {% endblock %}
