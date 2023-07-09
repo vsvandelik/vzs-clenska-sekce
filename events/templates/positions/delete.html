@@ -1,39 +1,27 @@
-{% extends "base.html" %}
-{% block title %}
-    Smazání pozice
-{% endblock %}
-{% block content %}
+{% extends "modal_delete.html" %}
 
+{% block modal_title %}
+    Potvrzení smazání pozice
+{% endblock %}
+
+{% block modal_body %}
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-danger">
-                    <div class="card-title h5">Potvrzení smazání pozice</div>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <div class="row">
-                            <p class="px-4">Chcete opravdu smazat pozici "{{ position.name }}"?</p>
-                        </div>
-                        {% if position.required_features.all|length > 0 %}
-                            <div class="row">
-                                <div class="alert alert-warning" style="display: inline">
-                                    Tato událost zahrnuje
-                                    <ul>
-                                        <li>Kvalifikace: {{ position.required_qualifications|length }}</li>
-                                        <li>Oprávnění: {{ position.required_permissions|length }}</li>
-                                        <li>Vybavení: {{ position.required_equipment|length }}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-center">
-                        <input type="submit" value="Smazat" class="btn btn-danger"/>
-                    </div>
-                </form>
+        <p class="px-4">Chcete opravdu smazat pozici "{{ position.name }}"?</p>
+    </div>
+    {% if position.required_features.all|length > 0 %}
+        <div class="row">
+            <div class="alert alert-warning" style="display: inline">
+                Tato pozice zahrnuje
+                <ul>
+                    <li>Kvalifikace: {{ position.required_qualifications|length }}</li>
+                    <li>Oprávnění: {{ position.required_permissions|length }}</li>
+                    <li>Vybavení: {{ position.required_equipment|length }}</li>
+                </ul>
             </div>
         </div>
-    </div>
+    {% endif %}
+{% endblock %}
+
+{% block delete_action %}
+    {% url "positions:delete" position.pk %}
 {% endblock %}

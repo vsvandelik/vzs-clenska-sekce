@@ -46,9 +46,7 @@
                                             <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            <a href="{% url "persons:transaction-delete" transaction.pk %}" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
-                                            </a>
+                                            {% include "delete_button_icon.html" with id="deleteTransactionModal" pattern="persons:transaction-delete" object=transaction %}
                                         </div>
                                     </td>
                                 </tr>
@@ -86,9 +84,7 @@
                                             <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            <a href="{% url "persons:transaction-delete" transaction.pk %}" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
-                                            </a>
+                                            {% include "delete_button_icon.html" with id="deleteTransactionModal" pattern="persons:transaction-delete" object=transaction %}
                                         </div>
                                     </td>
                                 </tr>
@@ -99,6 +95,8 @@
             </div>
         </div>
     </div>
+
+    {% include "modal_include.html" with id="deleteTransactionModal" %}
 {% endblock %}
 
 {% block scripts %}
@@ -107,4 +105,6 @@
         datatableEnable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
         datatableEnable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
     </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("deleteTransactionModal")</script>
 {% endblock %}

@@ -1,0 +1,11 @@
+<a
+    href="#"
+    data-toggle="modal"
+    data-target="#{{ id }}"
+    {% if pattern %}
+        data-action="{% url pattern object.pk %}"
+    {% endif %}
+    class="btn btn-danger {% block classes %}{% endblock %}"
+>
+    {% block body %}{% endblock %}
+</a>

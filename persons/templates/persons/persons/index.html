@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load vzs_filters %}
 {% load crispy_forms_tags %}
-{% load static %}
 
 {% block title %}Seznam všech osob{% endblock %}
 
@@ -48,7 +48,7 @@
                                                 <div class="btn-group">
                                                     <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
                                                     <a class="btn btn-success btn-sm" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
-                                                    <a class="btn btn-danger btn-sm" href="{% url "persons:delete" person.pk %}"><i class="fas fa-trash-alt"></i></a>
+                                                    {% include "delete_button_icon.html" with id="deletePersonModal" pattern="persons:delete" object=person %}
                                                 </div>
                                             </td>
                                         </tr>
@@ -65,9 +65,15 @@
         </div>
     </div>
 
+    {% include "modal_include.html" with id="deletePersonModal" %}
 {% endblock %}
+
 {% block scripts %}
-    <script src="{% static "datatables.js" %}"></script>
     <script src="{% static "persons/persons-filter.js" %}"></script>
-    <script>datatableEnable("personsTable", [0, 1], [0, 1]);</script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+      register_modal("deletePersonModal");
+      datatableEnable("personsTable", [0, 1], [0, 1]);
+    </script>
 {% endblock %}

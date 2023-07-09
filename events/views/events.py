@@ -51,9 +51,6 @@ class EventDeleteView(MessagesMixin, generic.DeleteView):
     context_object_name = "event"
     success_url = reverse_lazy("events:index")
 
-    def children(self):
-        return self.object.get_children_trainings_sorted()
-
     def get_success_message(self, cleaned_data):
         return f"Událost {self.object.name} úspěšně smazána"
 
