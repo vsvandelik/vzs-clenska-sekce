@@ -92,6 +92,12 @@ class FeatureAssignmentForm(ModelForm):
             if self.instance.feature.never_expires is True:
                 self.fields.pop("date_expire")
 
+            if self.instance.feature.collect_issuers is False:
+                self.fields.pop("issuer")
+
+            if self.instance.feature.collect_codes is False:
+                self.fields.pop("code")
+
         if feature_type == Feature.Type.PERMISSION:
             self.fields.pop("issuer")
             self.fields.pop("code")
