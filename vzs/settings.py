@@ -12,24 +12,28 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-tt@v%o(1jep1*$hataucvbjl(v2217_@#=1%xbtq%oc4+l(uya"
+SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -85,12 +89,7 @@ WSGI_APPLICATION = "vzs.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": env.db()}
 
 AUTH_USER_MODEL = "users.User"
 
@@ -180,8 +179,18 @@ MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
 
+# Emails
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 # Settings for Google Integration
 
 GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
-GOOGLE_DOMAIN = "vzs-praha15.cz"
+GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
+
+# Settings for FIO bank
+
+FIO_ACCOUNT_NUMBER = "2601743175"
+FIO_BANK_NUMBER = "2010"
+FIO_TOKEN = env.str("FIO_TOKEN")

@@ -10,7 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
-from .models import Person, FeatureAssignment, Feature, StaticGroup
+from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
+from users.forms import no_render_field
 
 
 class PersonForm(ModelForm):
@@ -24,9 +25,16 @@ class PersonForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.available_person_types = kwargs.pop("available_person_types", [])
+
         super().__init__(*args, **kwargs)
+
         self.helper = VZSDefaultFormHelper()
         self.helper.add_input(Submit("submit", "Uložit"))
+
+        self.fields["person_type"].choices = [("", "---------")] + [
+            (pt, pt.label) for pt in self.available_person_types
+        ]
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
@@ -90,6 +98,12 @@ class FeatureAssignmentForm(ModelForm):
 
             if self.instance.feature.never_expires is True:
                 self.fields.pop("date_expire")
+
+            if self.instance.feature.collect_issuers is False:
+                self.fields.pop("issuer")
+
+            if self.instance.feature.collect_codes is False:
+                self.fields.pop("code")
 
         if feature_type == Feature.Type.PERMISSION:
             self.fields.pop("issuer")
@@ -301,13 +315,14 @@ class PersonsFilterForm(forms.Form):
         required=False,
         choices=[("", "---------")] + Person.Type.choices,
     )
-    birth_year_from = forms.IntegerField(label=_("Rok narození od"), required=False)
-    birth_year_to = forms.IntegerField(label=_("Rok narození do"), required=False)
+    age_from = forms.IntegerField(label=_("Věk od"), required=False)
+    age_to = forms.IntegerField(label=_("Věk do"), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "GET"
+        self.helper.form_id = "persons-filter-form"
         self.helper.layout = Layout(
             Div(
                 Div(
@@ -323,8 +338,8 @@ class PersonsFilterForm(forms.Form):
                 ),
                 Div(
                     Div("person_type", css_class="col-md-6"),
-                    Div("birth_year_from", css_class="col-md-3"),
-                    Div("birth_year_to", css_class="col-md-3"),
+                    Div("age_from", css_class="col-md-3"),
+                    Div("age_to", css_class="col-md-3"),
                     css_class="row",
                 ),
                 Div(
@@ -343,24 +358,83 @@ class PersonsFilterForm(forms.Form):
             )
         )
 
-        def clean_birth_year_from(self):
-            if not (1900 <= self.cleaned_data["birth_year_from"] <= 2100):
-                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+    def clean_age_from(self):
+        if self.cleaned_data["age_from"] and self.cleaned_data["age_from"] <= 0:
+            raise ValidationError(_("Věk musí být kladné celé číslo."))
 
-            return self.cleaned_data["birth_year_from"]
+        return self.cleaned_data["age_from"]
 
-        def clean_birth_year_to(self):
-            if not (1900 <= self.cleaned_data["birth_year_to"] <= 2100):
-                raise ValidationError(_("Rok narození musí být v rozmezí 1900-2100."))
+    def clean_age_to(self):
+        if self.cleaned_data["age_to"] and self.cleaned_data["age_to"] <= 0:
+            raise ValidationError(_("Věk musí být kladné celé číslo."))
 
-            return self.cleaned_data["birth_year_to"]
+        return self.cleaned_data["age_to"]
 
-        def clean(self):
-            cleaned_data = super().clean()
-            birth_year_from = cleaned_data.get("birth_year_from")
-            birth_year_to = cleaned_data.get("birth_year_to")
+    def clean(self):
+        cleaned_data = super().clean()
+        age_from = cleaned_data.get("age_from")
+        age_to = cleaned_data.get("age_to")
 
-            if birth_year_from and birth_year_to and birth_year_from > birth_year_to:
-                raise ValidationError(
-                    _("Rok narození od musí být menší nebo roven roku narození do.")
-                )
+        if age_from and age_to and age_from > age_to:
+            raise ValidationError(_("Věk od musí být menší nebo roven věku do."))
+
+
+class TransactionCreateEditBaseForm(ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ["amount", "reason", "date_due"]
+        widgets = {
+            "date_due": widgets.DateInput(
+                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
+            ),
+        }
+
+    amount = forms.IntegerField(
+        min_value=1, label=Transaction._meta.get_field("amount").verbose_name
+    )
+    is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
+
+    def clean_date_due(self):
+        date_due = self.cleaned_data["date_due"]
+
+        if date_due < datetime.date.today():
+            raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
+
+        return date_due
+
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        if not self.cleaned_data["is_reward"]:
+            transaction.amount *= -1
+
+        if commit:
+            transaction.save()
+
+        return transaction
+
+
+class TransactionCreateForm(TransactionCreateEditBaseForm):
+    def __init__(self, person, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.person = person
+
+    def save(self, commit=True):
+        transaction = super().save(False)
+
+        transaction.person = self.person
+
+        if commit:
+            transaction.save()
+
+        return transaction
+
+
+class TransactionEditForm(TransactionCreateEditBaseForm):
+    def __init__(self, instance, initial, *args, **kwargs):
+        if instance.amount > 0:
+            if "is_reward" not in initial:
+                initial["is_reward"] = True
+
+        instance.amount = abs(instance.amount)
+        super().__init__(instance=instance, initial=initial, *args, **kwargs)

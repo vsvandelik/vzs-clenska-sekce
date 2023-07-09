@@ -1,13 +1,13 @@
 {% extends "modal_delete.html" %}
 
 {% block modal_title %}
-    Potvrzení smazání skupiny
+    Potvrzení smazání transakce
 {% endblock %}
 
 {% block modal_body %}
-    Opravdu chcete smazat skupinu {{ object.name }}?
+    Opravdu chcete smazat transakci {{ transaction.pk }}?
 {% endblock %}
 
 {% block delete_action %}
-    {% url "persons:groups:delete" object.pk %}
+    {% url "persons:transaction-delete" transaction.pk %}
 {% endblock %}

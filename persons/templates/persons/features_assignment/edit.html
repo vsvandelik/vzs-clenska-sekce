@@ -1,25 +1,16 @@
-{% extends 'base.html' %}
+{% extends "persons/subview.html" %}
 
 {% load crispy_forms_tags %}
 {% load static %}
 
 {% block title %}Přiřazení {{ texts.name_2 }}{% endblock %}
 
-{% block content %}
-    <div class="row">
-        <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block subcontent %}
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace{% else %}Přiřazení nové kvalifikace{% endif %}</div>
+                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace - {{ object.feature.name }}{% else %}Přiřazení nové kvalifikace{% endif %}</div>
                 </div>
                 <form method="post" id="assign-form">
                     {% csrf_token %}

@@ -47,7 +47,7 @@ one_time_event_urls = [
         name="remove_participant_from_one_time_event",
     ),
     path(
-        "<int:event_id>/jednorazova/pridat/nahradnik",
+        "<int:event_id>/jednorazova/pridat/nahradnik/",
         views.AddSubtituteForOneTimeEventView.as_view(),
         name="add_substitute_for_one_time_event",
     ),
@@ -81,12 +81,12 @@ positions_urls = [
     path("<int:pk>/smazat/", views.PositionDeleteView.as_view(), name="delete"),
     path("<int:pk>/", views.PositionDetailView.as_view(), name="detail"),
     path(
-        "<int:position_id>/pridat/feature",
+        "<int:position_id>/pridat/feature/",
         views.AddFeatureRequirementToPositionView.as_view(),
         name="add_feature",
     ),
     path(
-        "<int:position_id>/smazat/feature",
+        "<int:position_id>/smazat/feature/",
         views.RemoveFeatureRequirementToPositionView.as_view(),
         name="remove_feature",
     ),

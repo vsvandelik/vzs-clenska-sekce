@@ -1,8 +1,10 @@
-{% extends "base.html" %}
+{% extends "persons/subview.html" %}
 
 {% load static %}
 
-{% block content %}
+{% block title %}Přidat povolení{% endblock %}
+
+{% block subcontent %}
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title">Povolení</h3>
@@ -35,6 +37,6 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "users/datatables_enable.js" %}"></script>
-    <script>datatables_enable("permissions_table", [0, 1]);</script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("permissions_table", [0, 1], [0, 1]);</script>
 {% endblock %}
