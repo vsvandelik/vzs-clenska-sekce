@@ -1,9 +1,13 @@
 {% extends "modal_delete.html" %}
 
-{% block modal_title %}Potvrzení smazání transakce{% endblock %}
-
-{% block modal_body %}
-    Opravdu chcetet smazat transakci {{ transaction.pk }}?
+{% block modal_title %}
+    Potvrzení smazání transakce
 {% endblock %}
 
-{% block delete_action %}{% url "persons:transaction-delete" transaction.pk %}{% endblock %}
+{% block modal_body %}
+    Opravdu chcete smazat transakci {{ transaction.pk }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "persons:transaction-delete" transaction.pk %}
+{% endblock %}

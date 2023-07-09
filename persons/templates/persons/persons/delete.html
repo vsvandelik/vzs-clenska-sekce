@@ -1,9 +1,13 @@
 {% extends "modal_delete.html" %}
 
-{% block modal_title %}Potvrzení smazání osoby{% endblock %}
+{% block modal_title %}
+    Potvrzení smazání osoby
+{% endblock %}
 
 {% block modal_body %}
     Opravdu chcete smazat osobu {{ person.first_name }} {{ person.last_name }}?
 {% endblock %}
 
-{% block delete_action %}{% url "persons:delete" person.pk %}{% endblock %}
+{% block delete_action %}
+    {% url "persons:delete" person.pk %}
+{% endblock %}
