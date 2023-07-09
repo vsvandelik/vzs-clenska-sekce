@@ -42,7 +42,6 @@ class PersonIndexView(generic.ListView):
     model = Person
     template_name = "persons/persons/index.html"
     context_object_name = "persons"
-    paginate_by = 20
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -81,9 +80,11 @@ class PersonDetailView(generic.DetailView):
             person=self.kwargs["pk"],
             feature__feature_type=Feature.Type.EQUIPMENT.value,
         )
-        context["persons_to_manage"] = Person.objects.exclude(
-            managed_by=self.kwargs["pk"]
-        ).exclude(pk=self.kwargs["pk"])
+        context["persons_to_manage"] = (
+            Person.objects.exclude(managed_by=self.kwargs["pk"])
+            .exclude(pk=self.kwargs["pk"])
+            .order_by("last_name", "first_name")
+        )
         return context
 
 

@@ -100,9 +100,9 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
     <script>
-        datatables_enable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
-        datatables_enable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
     </script>
 {% endblock %}
