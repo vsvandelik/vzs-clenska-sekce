@@ -1,12 +1,38 @@
-from datetime import date
-from itertools import chain
-
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import ExpressionWrapper, Case, When, Value, Q
+from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from vzs import models as vzs_models
+
+from datetime import datetime, date
+from itertools import chain
+
+
+class PersonsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def with_age(self):
+        return self.get_queryset().annotate(
+            age=ExpressionWrapper(
+                date.today().year
+                - ExtractYear("date_of_birth")
+                - Case(
+                    When(Q(date_of_birth__month__gt=date.today().month), then=Value(1)),
+                    When(
+                        Q(date_of_birth__month=date.today().month)
+                        & Q(date_of_birth__day__gt=date.today().day),
+                        then=Value(1),
+                    ),
+                    default=Value(0),
+                ),
+                output_field=models.IntegerField(),
+            )
+        )
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
@@ -33,6 +59,8 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
     class Sex(models.TextChoices):
         M = "M", _("muž")
         F = "F", _("žena")
+
+    objects = PersonsManager()
 
     email = models.EmailField(_("E-mailová adressa"), unique=True)
     first_name = models.CharField(_("Křestní jméno"), max_length=50)
@@ -87,21 +115,6 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
             return None
 
         return f"{self.street}, {self.city}, {self.postcode}"
-
-    @property
-    def age(self):
-        if not self.date_of_birth:
-            return None
-
-        today = date.today()
-        return (
-            today.year
-            - self.date_of_birth.year
-            - (
-                (today.month, today.day)
-                < (self.date_of_birth.month, self.date_of_birth.day)
-            )
-        )
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
@@ -296,11 +309,30 @@ class DynamicGroup(Group):
 
 
 class Transaction(models.Model):
-    amount = models.IntegerField()
-    reason = models.CharField(max_length=150)
-    date = models.DateField()
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
-
     class Meta:
         permissions = [("ucetni", _("Účetní"))]
+
+    amount = models.IntegerField(_("Suma"))
+    reason = models.CharField(_("Popis transakce"), max_length=150)
+    date_due = models.DateField(_("Datum splatnosti"))
+    person = models.ForeignKey(
+        "persons.Person", on_delete=models.CASCADE, related_name="transactions"
+    )
+    event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
+    fio_transaction = models.ForeignKey(
+        "FioTransaction", on_delete=models.SET_NULL, null=True
+    )
+
+    def is_settled(self):
+        return self.fio_transaction is not None
+
+
+class FioTransaction(models.Model):
+    date_settled = models.DateField(null=True)
+    fio_id = models.PositiveIntegerField(unique=True)
+
+
+class FioSettings(vzs_models.DatabaseSettingsMixin):
+    last_fio_fetch_time = models.DateTimeField(
+        default=timezone.make_aware(datetime(1900, 1, 1))
+    )

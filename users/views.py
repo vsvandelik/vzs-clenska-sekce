@@ -229,7 +229,7 @@ class UserAssignPermissionView(
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
-        return super().get_context_data(**kwargs)
+        return super().get_context_data(**kwargs, person=self.object.person)
 
     def get_queryset(self):
         # TODO should be:

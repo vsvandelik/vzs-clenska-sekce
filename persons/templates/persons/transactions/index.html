@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Transakce{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">TEST</button>
+    </form>
+{% endblock%}

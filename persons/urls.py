@@ -103,4 +103,29 @@ urlpatterns = [
         {"feature_type": "equipments"},
     ),
     path("skupiny/", include((groups_urlpatterns, "groups"))),
+    path(
+        "<int:pk>/transakce/",
+        views.TransactionListView.as_view(),
+        name="transaction-list",
+    ),
+    path(
+        "<int:person>/pridat-transakci/",
+        views.TransactionCreateView.as_view(),
+        name="transaction-add",
+    ),
+    path(
+        "transakce/<int:pk>/qr/",
+        views.TransactionQRView.as_view(),
+        name="transaction-qr",
+    ),
+    path(
+        "transakce/<int:pk>/upravit/",
+        views.TransactionEditView.as_view(),
+        name="transaction-edit",
+    ),
+    path(
+        "transakce/<int:pk>/smazat/",
+        views.TransactionDeleteView.as_view(),
+        name="transaction-delete",
+    ),
 ]
