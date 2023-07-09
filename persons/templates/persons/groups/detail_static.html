@@ -88,10 +88,10 @@
                         {% csrf_token %}
                         {{ form.non_field_errors }}
                         {{ form.members.errors }}
-                        <strong>Vybrané osoby:</strong>
-                        <ul id="selected-persons" style="list-style: none" class="p-0"></ul>
+                        <p><strong>Vybrané osoby:</strong></p>
+                        <ul id="selected-persons" style="list-style: none" class="p-0 d-inline-block"></ul>
 
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="members-to-add-table">
                             <thead>
                                 <tr>
                                     <th scope="col">Osoba</th>
@@ -103,14 +103,12 @@
                                     <tr data-person-id="{{ person.pk }}">
                                         <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
                                         <td>
-                                            <button type="button" class="btn btn-info btn-sm" value="{{ person.pk }}">+</button>
+                                            <button type="button" class="btn btn-info btn-sm" value="{{ person.pk }}">Vybrat</button>
                                         </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-
-
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" value="Přidat osoby" class="btn btn-primary">
@@ -124,4 +122,6 @@
 
 {% block scripts %}
     <script src="{% static 'persons/add-members.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("members-to-add-table",[0],[0]);</script>
 {% endblock %}
