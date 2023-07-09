@@ -1,8 +1,7 @@
 {% extends "base.html" %}
+
 {% load static %}
-{% block scripts %}
-    <script src="{% static 'events_index.js' %}"></script>
-{% endblock %}
+
 {% block title %}
     Seznam událostí
 {% endblock %}
@@ -39,9 +38,7 @@
                                                 <a class="btn btn-success btn-sm" href="{% url 'events:edit_one_time_event' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
-                                                <a class="btn btn-danger btn-sm" href="{% url 'events:delete' event.id %}">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </a>
+                                                {% include "delete_button_icon.html" with id="deleteEventModal" pattern="events:delete" object=event %}
                                             </div>
                                         </td>
                                     </tr>
@@ -53,9 +50,6 @@
             </div>
         </div>
     </div>
-
-
-
 
     <div class="card">
         <div class="card-header d-flex align-items-center">
@@ -89,7 +83,7 @@
                                                 <a class="btn btn-success btn-sm" href="{% url 'events:edit_training' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
-                                                <a class="btn btn-danger btn-sm" href="{% url 'events:delete' event.id %}">
+                                                <a href="#" data-toggle="modal" data-target="#deleteEventModal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </a>
                                             </div>
@@ -104,4 +98,11 @@
         </div>
     </div>
 
+    {% include "modal_include.html" with id="deleteEventModal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'events_index.js' %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("deleteEventModal")</script>
 {% endblock %}

@@ -237,7 +237,7 @@ class PersonUpdateView(
 
 class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
     model = Person
-    template_name = "persons/persons/confirm_delete.html"
+    template_name = "persons/persons/delete.html"
     success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
 
@@ -266,6 +266,7 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["texts"] = self.feature_type_texts
+        context["feature_type"] = self.feature_type
 
         return context
 
@@ -368,11 +369,6 @@ class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
     def get_template_names(self):
         return f"persons/features/index.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["feature_type"] = self.feature_type
-        return context
-
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
         return (
@@ -387,11 +383,6 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
 
     def get_template_names(self):
         return f"persons/features/detail.html"
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["feature_type"] = self.feature_type
-        return context
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts

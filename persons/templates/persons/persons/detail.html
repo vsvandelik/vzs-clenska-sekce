@@ -16,7 +16,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
-                <a href="{% url 'persons:delete' person.id %}" class="btn btn-danger">Smazat osobu</a>
+                {% include "delete_button_text.html" with id="deletePersonModal" additional_text="osobu" %}
                 {% if perms.persons.spravce_kvalifikaci %}
                     <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
                 {% endif %}
@@ -127,7 +127,7 @@
                                     <tr>
                                         <td class="align-middle">{{ permission.name }}</td>
                                         <td class="text-center">
-                                            <button type="submit" form="permissionDeleteForm" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}">Odebrat</button>
+                                            <button type="submit" form="permissionDeleteForm" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -141,7 +141,7 @@
                     {% else %}
                         <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-info">Přidat povolení</a>
                         <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
-                        <a href="{% url "persons:user-delete" person.pk %}" class="btn btn-danger">Smazat uživatelský účet</a>
+                        <a href="#" data-toggle="modal" data-target="#deleteUserModal" class="btn btn-danger">Smazat uživatelský účet</a>
                     {% endif %}
                 </div>
             </div>
@@ -190,7 +190,7 @@
                                             <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="person" value="{{ person.pk }}">
-                                                <input type="submit" name="submit" value="Odebrat" class="btn btn-primary btn-sm">
+                                                <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
                                             </form>
                                         </td>
                                     </tr>
@@ -248,7 +248,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:qualifications:delete' person=person.id pk=qualification.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:qualifications:delete" person.pk qualification.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -295,7 +295,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:permissions:delete' person=person.id pk=permission.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:permissions:delete" person.pk permission.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -334,7 +334,7 @@
                                     <td>
                                         <div class="btn-group">
                                             <a class="btn btn-success btn-sm" href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"><i class="fas fa-pen"></i></a>
-                                            <a class="btn btn-danger btn-sm" href="{% url 'persons:equipments:delete' person=person.id pk=equipment.id %}"><i class="fas fa-trash-alt"></i></a>
+                                            <a href="#" data-toggle="modal" data-target="#removeFeaturesAssignmentModal" data-action="{% url "persons:equipments:delete" person.pk equipment.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -396,9 +396,18 @@
             </div>
         </div>
     </div>
+
+    {% include "modal_include.html" with id="deletePersonModal" template="persons/persons/delete.html" %}
+    {% include "modal_include.html" with id="deleteUserModal" template="users/delete.html" %}
+    {% include "modal_include.html" with id="removeFeaturesAssignmentModal" %}
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static "persons/add-managed-person.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "datatables.js" %}"></script>
-    <script>datatableEnable("addManagedPersonTable", [0], [0]);</script>
+    <script>
+      register_modal("removeFeaturesAssignmentModal");
+      datatableEnable("addManagedPersonTable", [0], [0]);
+    </script>
 {% endblock %}

@@ -18,7 +18,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:groups:edit-static' object.pk %}" class="btn btn-success">Upravit skupinu</a>
-                <a href="{% url 'persons:groups:delete' object.pk %}" class="btn btn-danger">Smazat skupinu</a>
+                {% include "delete_button_text.html" with id="deleteGroupModal" additional_text="skupinu" %}
                 {% if object.google_email %}
                     <a href="{% url 'persons:groups:sync-group-members-google' object.pk %}" class="btn btn-info">Synchronizovat s Google</a>
                 {% endif %}
@@ -117,8 +117,9 @@
             </div>
         </div>
     </div>
-{% endblock %}
 
+    {% include "modal_include.html" with id="deleteGroupModal" template="persons/groups/delete.html" %}
+{% endblock %}
 
 {% block scripts %}
     <script src="{% static 'persons/add-members.js' %}"></script>

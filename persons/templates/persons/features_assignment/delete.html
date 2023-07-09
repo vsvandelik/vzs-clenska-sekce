@@ -1,24 +1,13 @@
-{% extends "persons/subview.html" %}
+{% extends "modal_delete.html" %}
 
-{% block title %}Smazání přiřazení {{ texts.name_2 }}{% endblock %}
+{% block modal_title %}
+    Potvrzení smazání přiřazení {{ texts.name_2 }}
+{% endblock %}
 
-{% block subcontent %}
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary">
-                    <div class="card-title h5">Potvrzení smazání přiřazení {{ texts.name_2 }}</div>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        Opravdu chcete smazat {{ texts.name_4 }} <strong>{{ object.feature.name }}</strong> osoby {{ person.first_name }} {{ person.last_name }}?
-                    </div>
-                    <div class="card-footer text-center">
-                        <input type="submit" value="Smazat" class="btn btn-primary"/>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+{% block modal_body %}
+    Opravdu chcete smazat {{ texts.name_4 }} <strong>{{ object.feature.name }}</strong> osoby {{ person.first_name }} {{ person.last_name }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "persons:"|add:feature_type|add:":delete" person.pk object.pk %}
 {% endblock %}

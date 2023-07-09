@@ -16,7 +16,7 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url feature_type|add:':edit' object.pk %}" class="btn btn-success">Upravit {{ texts.name_4 }}</a>
-                <a href="{% url feature_type|add:':delete' object.pk %}" class="btn btn-danger">Smazat {{ texts.name_4 }}</a>
+                {% include "delete_button_text.html" with id="deleteFeatureModal" additional_text=texts.name_4 %}
             </div>
         </div>
     </div>
@@ -78,4 +78,5 @@
         </div>
     </div>
 
+    {% include "modal_include.html" with id="deleteFeatureModal" template="persons/features/delete.html" %}
 {% endblock %}

@@ -1,35 +1,23 @@
-{% extends "base.html" %}
-{% block title %}
-    Smazání události
-{% endblock %}
-{% block content %}
+{% extends "modal_delete.html" %}
 
+{% block modal_title %}
+    Potvrzení smazání události
+{% endblock %}
+
+{% block modal_body %}
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-danger">
-                    <div class="card-title h5">Potvrzení smazání události</div>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <div class="row">
-                            <p class="px-4">Chcete opravdu smazat událost "{{ event.name }}"?</p>
-                        </div>
-                        {% if view.children %}
-                            <div class="row">
-                                <div class="alert alert-warning" style="display: inline">
-                                    Tato událost zahrnuje pravidelné tréninky
-                                    (celkem {{ view.children.count }})
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-center">
-                        <input type="submit" value="Smazat" class="btn btn-danger"/>
-                    </div>
-                </form>
+        <p class="px-4">Chcete opravdu smazat událost "{{ event.name }}"?</p>
+    </div>
+    {% if event.get_children_trainings_sorted %}
+        <div class="row">
+            <div class="alert alert-warning" style="display: inline">
+                Tato událost zahrnuje pravidelné tréninky
+                (celkem {{ event.get_children_trainings_sorted.count }})
             </div>
         </div>
-    </div>
+    {% endif %}
+{% endblock %}
+
+{% block delete_action %}
+    {% url "events:delete" event.pk %}
 {% endblock %}

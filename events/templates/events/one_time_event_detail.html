@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% load tag_extensions %}
+
 {% load static %}
-{% block scripts %}
-    <script src="{% static 'one_time_event_detail.js' %}"></script>
-{% endblock %}
+{% load tag_extensions %}
+
 {% block title %}
     Detail jednorázové události
 {% endblock %}
+
 {% block content %}
     <div class="row">
         <div class="col-12">
@@ -19,7 +19,7 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'events:edit_one_time_event' event.id %}"
                    class="btn btn-success">Upravit</a>
-                <a href="{% url 'events:delete' event.id %}" class="btn btn-danger">Smazat</a>
+                {% include "delete_button_text.html" with id="deleteEventModal" %}
             </div>
         </div>
     </div>
@@ -273,4 +273,9 @@
         </div>
     </div>
 
+    {% include "modal_include.html" with id="deleteEventModal" template="events/delete.html" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'one_time_event_detail.js' %}"></script>
 {% endblock %}

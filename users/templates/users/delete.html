@@ -1,14 +1,13 @@
-{% extends "users/base_existing.html" %}
+{% extends "modal_delete.html" %}
 
-{% load vzs_filters %}
-
-{% block body %}
-    Má být {% render user_object "inline" %} opravdu smazán?
+{% block modal_title %}
+    Potvrzení smazání uživatelského účtu
 {% endblock %}
 
-{% block footer %}
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Ano, smazat</button>
-    </form>
+{% block modal_body %}
+    Opravdu chcete smazat uživatelský účet osoby {{ person.first_name }} {{ person.last_name }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "persons:user-delete" person.pk %}
 {% endblock %}
