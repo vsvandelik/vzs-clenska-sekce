@@ -12,6 +12,6 @@ jobs:
       uses: D3rHase/ssh-command-action@v0.2.2
       with:
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
+        user: ${{ secrets.USERNAME }}
         private_key: ${{ secrets.PRIVATE_KEY }}
-        script: /home/vzs/update-web-app.sh
+        command: /home/vzs/update-web-app.sh
