@@ -19,7 +19,7 @@
                     <div class="card-title h5">Dluhy</div>
                 </div>
                 <div class="card-body">
-                    <table class="table" id="transactions_debt_table">
+                    <table class="table" id="transactions-debt-table">
                         <thead>
                             <tr>
                                 <th>Zaplaceno</th>
@@ -46,7 +46,7 @@
                                             <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            {% include "delete_button_icon.html" with id="deleteTransactionModal" pattern="persons:transaction-delete" object=transaction %}
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="persons:transaction-delete" object=transaction %}
                                         </div>
                                     </td>
                                 </tr>
@@ -62,7 +62,7 @@
                     <div class="card-title h5">Odměny</div>
                 </div>
                 <div class="card-body">
-                    <table class="table" id="transactions_reward_table">
+                    <table class="table" id="transactions-reward-table">
                         <thead>
                             <tr>
                                 <th>Zaplaceno</th>
@@ -84,7 +84,7 @@
                                             <a href="{% url "persons:transaction-edit" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            {% include "delete_button_icon.html" with id="deleteTransactionModal" pattern="persons:transaction-delete" object=transaction %}
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="persons:transaction-delete" object=transaction %}
                                         </div>
                                     </td>
                                 </tr>
@@ -96,15 +96,15 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deleteTransactionModal" %}
+    {% include "modal_include.html" with id="delete-transaction-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
-        datatableEnable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
-        datatableEnable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions-debt-table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions-reward-table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
     </script>
     <script src="{% static "register_modal.js" %}"></script>
-    <script>register_modal("deleteTransactionModal")</script>
+    <script>register_modal("delete-transaction-modal")</script>
 {% endblock %}
