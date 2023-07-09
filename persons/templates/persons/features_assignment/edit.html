@@ -10,7 +10,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace{% else %}Přiřazení nové kvalifikace{% endif %}</div>
+                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace - {{ object.feature.name }}{% else %}Přiřazení nové kvalifikace{% endif %}</div>
                 </div>
                 <form method="post" id="assign-form">
                     {% csrf_token %}
