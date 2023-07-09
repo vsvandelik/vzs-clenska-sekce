@@ -1,15 +1,15 @@
+from datetime import datetime, date
+from itertools import chain
+
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import ExpressionWrapper, Case, When, Value, Q
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from vzs import models as vzs_models
-
-from datetime import datetime, date
-from itertools import chain
 
 
 class PersonsManager(models.Manager):
@@ -36,6 +36,21 @@ class PersonsManager(models.Manager):
 
 
 class Person(vzs_models.RenderableModelMixin, models.Model):
+    class Meta:
+        permissions = [
+            ("clenska_zakladna", _("Správce členské základny")),
+            ("detska_clenska_zakladna", _("Správce dětské členské základny")),
+            (
+                "bazenova_clenska_zakladna",
+                _("Správce bazénové dětské členské základny"),
+            ),
+            (
+                "lezecka_clenska_zakladna",
+                _("Správce lezecké dětské členské základny"),
+            ),
+            ("dospela_clenska_zakladna", _("Správce dospělé členské základny")),
+        ]
+
     class Type(models.TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")
@@ -142,6 +157,13 @@ class EquipmentsManager(models.Manager):
 
 
 class Feature(models.Model):
+    class Meta:
+        permissions = [
+            ("spravce_kvalifikaci", _("Správce kvalifikací")),
+            ("spravce_opravneni", _("Správce oprávnění")),
+            ("spravce_vybaveni", _("Správce vybavení")),
+        ]
+
     class Type(models.TextChoices):
         QUALIFICATION = "K", _("kvalifikace")
         EQUIPMENT = "V", _("vybavení")
@@ -189,6 +211,7 @@ class FeatureTypeTextsClass:
         success_message_assigning_updated,
         success_message_assigning_delete,
         duplicated_message_assigning,
+        permission_name,
     ):
         self.shortcut = feature_type.value
         self.name_1 = feature_type.label
@@ -202,6 +225,7 @@ class FeatureTypeTextsClass:
         self.success_message_assigning_updated = success_message_assigning_updated
         self.success_message_assigning_delete = success_message_assigning_delete
         self.duplicated_message_assigning = duplicated_message_assigning
+        self.permission_name = permission_name
 
 
 FeatureTypeTexts = {
@@ -226,6 +250,7 @@ FeatureTypeTexts = {
         _("Přiřazení kvalifikace bylo úspěšně upraveno."),
         _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
+        "persons.spravce_kvalifikaci",
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
@@ -245,6 +270,7 @@ FeatureTypeTexts = {
         _("Přiřazení oprávnění bylo úspěšně upraveno."),
         _("Přiřazení oprávnění bylo úspěšně odstraněno."),
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
+        "persons.spravce_opravneni",
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
@@ -266,6 +292,7 @@ FeatureTypeTexts = {
         _("Přiřazení vybavení bylo úspěšně upraveno."),
         _("Přiřazení vybavení bylo úspěšně odstraněno."),
         _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
+        "persons.spravce_vybaveni",
     ),
 }
 
@@ -287,6 +314,9 @@ class FeatureAssignment(models.Model):
 
 
 class Group(models.Model):
+    class Meta:
+        permissions = [("spravce_skupin", _("Správce skupin"))]
+
     name = models.CharField(_("Název skupiny"), max_length=255)
     google_email = models.EmailField(
         _("E-mailová adresa skupiny v Google Workspace"),
@@ -310,7 +340,7 @@ class DynamicGroup(Group):
 
 class Transaction(models.Model):
     class Meta:
-        permissions = [("ucetni", _("Účetní"))]
+        permissions = [("spravce_transakci", _("Správce transakcí"))]
 
     amount = models.IntegerField(_("Suma"))
     reason = models.CharField(_("Popis transakce"), max_length=150)

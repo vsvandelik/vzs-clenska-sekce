@@ -25,9 +25,16 @@ class PersonForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.available_person_types = kwargs.pop("available_person_types", [])
+
         super().__init__(*args, **kwargs)
+
         self.helper = VZSDefaultFormHelper()
         self.helper.add_input(Submit("submit", "Uložit"))
+
+        self.fields["person_type"].choices = [("", "---------")] + [
+            (pt, pt.label) for pt in self.available_person_types
+        ]
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
