@@ -54,9 +54,12 @@ class PersonPermissionMixin(PermissionRequiredMixin):
         return False
 
     @staticmethod
-    def get_queryset_by_permission(user):
+    def get_queryset_by_permission(user, queryset=None):
+        if queryset is None:
+            queryset = Person.objects
+
         if user.has_perm("persons.clenska_zakladna"):
-            return Person.objects
+            return queryset
 
         conditions = []
 
@@ -90,12 +93,12 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         if not conditions:
-            return Person.objects.none()
+            return queryset.none()
 
-        return Person.objects.filter(reduce(lambda x, y: x | y, conditions))
+        return queryset.filter(reduce(lambda x, y: x | y, conditions))
 
-    def _filter_queryset_by_permission(self):
-        return self.get_queryset_by_permission(self.request.user)
+    def _filter_queryset_by_permission(self, queryset=None):
+        return self.get_queryset_by_permission(self.request.user, queryset)
 
     def _get_available_person_types(self):
         available_person_types = set()
@@ -148,7 +151,7 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
         return context
 
     def get_queryset(self):
-        persons_objects = self._filter_queryset_by_permission()
+        persons_objects = self._filter_queryset_by_permission(Person.objects.with_age())
 
         self.filter_form = PersonsFilterForm(self.request.GET)
 
@@ -663,7 +666,9 @@ class SendEmailToSelectedPersonsView(generic.View):
     def get(self, request, *args, **kwargs):
         selected_persons = parse_persons_filter_queryset(
             self.request.GET,
-            PersonPermissionMixin.get_queryset_by_permission(self.request.user),
+            PersonPermissionMixin.get_queryset_by_permission(
+                self.request.user, Person.objects.with_age()
+            ),
         )
 
         recipients = [
@@ -681,7 +686,9 @@ class ExportSelectedPersonsView(generic.View):
     def get(self, request, *args, **kwargs):
         selected_persons = parse_persons_filter_queryset(
             self.request.GET,
-            PersonPermissionMixin.get_queryset_by_permission(self.request.user),
+            PersonPermissionMixin.get_queryset_by_permission(
+                self.request.user, Person.objects.with_age()
+            ),
         )
 
         response = HttpResponse(
