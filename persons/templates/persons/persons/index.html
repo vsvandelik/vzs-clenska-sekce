@@ -3,7 +3,6 @@
 {% load static %}
 {% load vzs_filters %}
 {% load crispy_forms_tags %}
-{% load static %}
 
 {% block title %}Seznam všech osob{% endblock %}
 
@@ -90,9 +89,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static "persons/show-persons-filter.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>register_modal("deletePersonModal")</script>
-{% endblock %}
-{% block scripts %}
-    <script src="{% static "persons/show-persons-filter.js" %}"></script>
 {% endblock %}
