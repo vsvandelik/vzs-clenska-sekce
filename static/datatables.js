@@ -4,12 +4,12 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
-function datatables_enable(id, searchable_columns, orderable_columns, order = []) {
+function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
     $(document).ready(function () {
         $("#" + id).DataTable({
             "columnDefs": [
-                {"targets": searchable_columns, "searchable": true},
-                {"targets": orderable_columns, "orderable": true},
+                {"targets": searchableColumns, "searchable": true},
+                {"targets": orderableColumns, "orderable": true},
                 {"targets": "_all", "searchable": false, "orderable": false},
             ],
             "order": order,

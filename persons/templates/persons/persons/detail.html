@@ -384,7 +384,5 @@
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    <script>
-        datatables_enable("addManagedPersonTable", [0], [0]);
-    </script>
+    <script>datatableEnable("addManagedPersonTable", [0], [0]);</script>
 {% endblock %}

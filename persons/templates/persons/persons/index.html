@@ -69,7 +69,5 @@
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script src="{% static "persons/persons-filter.js" %}"></script>
-    <script>
-        datatables_enable("personsTable", [0, 1], [0, 1]);
-    </script>
+    <script>datatableEnable("personsTable", [0, 1], [0, 1]);</script>
 {% endblock %}
