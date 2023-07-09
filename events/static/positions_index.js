@@ -1,4 +1,4 @@
-const positions = new DataTable('#positionsTable', {
+const positions = new DataTable('#positions-table', {
     responsive: true,
     searching: true
 })
