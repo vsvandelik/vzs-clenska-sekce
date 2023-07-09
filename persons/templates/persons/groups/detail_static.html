@@ -59,7 +59,7 @@
                     <div class="card-title h5">Členové</div>
                 </div>
                 <div class="card-body">
-                    <table class="table table-hover">
+                    <table class="table table-hover" id="members-table">
                         <thead>
                             <tr>
                                 <th scope="col">Osoba</th>
@@ -123,5 +123,8 @@
 {% block scripts %}
     <script src="{% static 'persons/add-members.js' %}"></script>
     <script src="{% static "datatables.js" %}"></script>
-    <script>datatableEnable("members-to-add-table",[0],[0]);</script>
+    <script>
+        datatableEnable("members-to-add-table",[0],[0]);
+        datatableEnable("members-table",[0],[0]);
+    </script>
 {% endblock %}
