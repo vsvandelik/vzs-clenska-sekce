@@ -5,6 +5,9 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Page(models.Model):
+    class Meta:
+        permissions = [("stranky", _("Správce textových stránek"))]
+
     title = models.CharField(_("Titulek"), max_length=255)
     content = models.TextField(_("Obsah"))
     slug = models.SlugField(_("URL"), max_length=255, unique=True)

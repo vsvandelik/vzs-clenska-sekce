@@ -2,13 +2,16 @@
 
 {% block title %}{{ object.title }}{% endblock %}
 
+
 {% block buttons %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url 'pages:edit' object.slug %}" class="btn btn-info">Upravit stránku</a>
-    </div>
+    {% if perms.pages.stranky %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{% url 'pages:edit' object.slug %}" class="btn btn-info">Upravit stránku</a>
+        </div>
+    {% endif %}
 {% endblock %}
+
 
 {% block subcontent %}
     {{ object.content }}
 {% endblock %}
-
