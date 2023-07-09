@@ -301,7 +301,6 @@ class TrainingForm(OneTimeEventForm):
     def save(self, commit=True):
         instance = self.instance
         if self.instance.id is None:
-            instance = Event.objects.create()
             instance.state = Event.State.FUTURE
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
@@ -415,11 +414,15 @@ class TrainingForm(OneTimeEventForm):
 
 class AddDeleteParticipantFromOneTimeEventForm(Form):
     person_id = forms.IntegerField()
-    event_id = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self._event_id = kwargs.pop("event_id")
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         super().clean()
         pid = self.cleaned_data["person_id"]
+        self.cleaned_data["event_id"] = self._event_id
         eid = self.cleaned_data["event_id"]
         try:
             Person.objects.get(pk=pid)
@@ -438,11 +441,15 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
 
 
 class AddFeatureRequirementToPositionForm(Form):
-    position_id = forms.IntegerField()
     feature_id = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self._position_id = kwargs.pop("position_id")
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         super().clean()
+        self.cleaned_data["position_id"] = self._position_id
         pid = self.cleaned_data["position_id"]
         fid = self.cleaned_data["feature_id"]
         try:
@@ -462,7 +469,6 @@ class EventPositionAssignmentForm(ModelForm):
     class Meta:
         model = EventPositionAssignment
         fields = [
-            "event",
             "position",
             "count",
         ]
@@ -472,15 +478,18 @@ class EventPositionAssignmentForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        self.position = kwargs.pop("position", None)
         super().__init__(*args, **kwargs)
         self.fields["count"].widget.attrs["min"] = 1
-        if (
-            len(args) > 0
-            and (
-                ("instance" in args[0] and args[0]["instance"] is not None)
-                or "csrfmiddlewaretoken" in args[0]
-            )
-        ) or ("instance" in kwargs and kwargs["instance"] is not None):
+        if self.position is not None:
             self.fields["position"].widget.attrs["disabled"] = True
+        self.fields["position"].queryset = EventPosition.templates
+
+    def save(self, commit=True):
+        instance = self.instance
+        if self.instance.id is None:
+            instance.event = self.event
         else:
-            self.fields["position"].queryset = EventPosition.templates
+            instance.position = self.position
+        instance.save()

@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block scripts %}
+    <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'create_edit_event_position_assignment.js' %}"></script>
 {% endblock %}
 {% block title %}
@@ -28,7 +29,7 @@
                         {{ form.count|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">
-                        <input type="submit" class="btn btn-primary"
+                        <input type="submit" class="btn btn-primary" onclick="beforeSubmit()"
                                value="{% if position_assignment %}Uložit{% else %}Vytvořit{% endif %}">
                     </div>
                 </form>
