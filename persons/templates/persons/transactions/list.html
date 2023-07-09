@@ -7,9 +7,11 @@
 {% block title %}Transakce{% endblock %}
 
 {% block subcontent %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
-    </div>
+    {% if perms.persons.spravce_transakci %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-6">
             <div class="card">
@@ -98,10 +100,10 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "users/datatables_enable.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
     <script>
-        datatables_enable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
-        datatables_enable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions_debt_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
+        datatableEnable("transactions_reward_table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>register_modal("deleteTransactionModal")</script>
