@@ -62,34 +62,6 @@ class Command(CreateSuperuserCommand):
                         help="Specifies the %s for the superuser." % field_name,
                     )
 
-    def _handle_model_fields(self):
-        for model, model_fields in self.models:
-            for field_name in model_fields:
-                field = self.UserModel._meta.get_field(field_name)
-                user_data[field_name] = options[field_name]
-                if user_data[field_name] is not None:
-                    user_data[field_name] = field.clean(user_data[field_name], None)
-                while user_data[field_name] is None:
-                    message = self._get_input_message(field)
-                    input_value = self.get_input_data(field, message)
-                    user_data[field_name] = input_value
-                    if field.many_to_many and input_value:
-                        if not input_value.strip():
-                            user_data[field_name] = None
-                            self.stderr.write("Error: This field cannot be blank.")
-                            continue
-                        user_data[field_name] = [
-                            pk.strip() for pk in input_value.split(",")
-                        ]
-
-                if not field.many_to_many:
-                    fake_user_data[field_name] = user_data[field_name]
-                # Wrap any foreign keys in fake model instances.
-                if field.many_to_one:
-                    fake_user_data[field_name] = field.remote_field.model(
-                        user_data[field_name]
-                    )
-
     def handle(self, *args, **options):
         database = options["database"]
         user_data = {}
