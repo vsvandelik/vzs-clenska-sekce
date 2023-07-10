@@ -52,6 +52,7 @@ urlpatterns = [
         ),
         {"feature_type": "equipments"},
     ),
+    path("tinymce/", include("tinymce.urls")),
     path("", include("pages.urls")),
 ]
 
