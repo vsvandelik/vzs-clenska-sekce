@@ -28,6 +28,10 @@ jobs:
     - name: Prepare config
       run: |
         cp .env.dist .env
+    - name: Prepare secrets files
+      run: |
+        cp google_integration/secrets_file.json.dist google_integration/secrets_file.json
+        cp google_integration/service_account_file.json.dist google_integration/service_account_file.json
     - name: Run Tests
       run: |
         python manage.py test
