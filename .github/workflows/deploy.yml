@@ -1,0 +1,17 @@
+name: Deploy to VPS
+on:
+  push:
+    branches: [ "master" ]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands to deploy
+      uses: D3rHase/ssh-command-action@v0.2.2
+      with:
+        host: ${{ secrets.HOST }}
+        user: ${{ secrets.USERNAME }}
+        private_key: ${{ secrets.PRIVATE_KEY }}
+        command: /home/vzs/update-web-app.sh

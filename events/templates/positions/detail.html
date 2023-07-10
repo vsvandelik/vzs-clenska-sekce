@@ -18,7 +18,7 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'positions:edit' position.id %}"
                    class="btn btn-success">Změna jména</a>
-                {% include "delete_button_text.html" with id="deletePositionModal" %}
+                {% include "delete_button_text.html" with id="delete-position-modal" %}
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="addedQualificationsTable" class="table table-striped">
+                        <table id="added-qualifications-table" class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Jméno</th>
@@ -58,7 +58,7 @@
                 </div>
                 <div class="card-footer text-center">
                     <a href="#" class="btn-primary btn" onclick="addQualificationClicked()" data-toggle="modal"
-                       data-target="#addFeatures">Přidat</a>
+                       data-target="#add-features">Přidat</a>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="addedPermissionsTable" class="table table-striped">
+                        <table id="added-permissions-table" class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Jméno</th>
@@ -99,7 +99,7 @@
                 </div>
                 <div class="card-footer text-center">
                     <a href="#" class="btn-primary btn" onclick="addPermissionClicked()" data-toggle="modal"
-                       data-target="#addFeatures">Přidat</a>
+                       data-target="#add-features">Přidat</a>
                 </div>
             </div>
         </div>
@@ -113,7 +113,7 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="addedPermissionsTable" class="table table-striped">
+                        <table id="added-equipments-table" class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Jméno</th>
@@ -140,19 +140,19 @@
                 </div>
                 <div class="card-footer text-center">
                     <a href="#" class="btn-primary btn" onclick="addEquipmentClicked()" data-toggle="modal"
-                       data-target="#addFeatures">Přidat</a>
+                       data-target="#add-features">Přidat</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="addFeatures" tabindex="-1" role="dialog"
-         aria-labelledby="addFeatures"
+    <div class="modal fade" id="add-features" tabindex="-1" role="dialog"
+         aria-labelledby="add-features"
          aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="modalTitle" class="modal-title">Přidat kvalifikaci</h5>
+                    <h5 id="modal-title" class="modal-title">Přidat kvalifikaci</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -160,7 +160,7 @@
                 <div class="modal-body">
                     <form method="POST" action="{% url 'positions:add_feature' position.id %}">
                         {% csrf_token %}
-                        <table class="table table-striped" id="addFeatureTable">
+                        <table class="table table-striped" id="add-feature-table">
                             <thead>
                                 <tr>
                                     <th>Jméno</th>
@@ -168,15 +168,15 @@
                                 </tr>
                             </thead>
 
-                            <tbody id="qualificationsBody" style="display: none">
+                            <tbody id="qualifications-body" style="display: none">
                                 {% include 'positions/feature_tbody.html' with features=view.qualifications.all features_not_required=view.qualifications_not_required detail_name='qualifications:detail' %}
                             </tbody>
 
-                            <tbody id="permissionsBody" style="display: none">
+                            <tbody id="permissions-body" style="display: none">
                                 {% include 'positions/feature_tbody.html' with features=view.permissions.all features_not_required=view.permissions_not_required detail_name='permissions:detail' %}
                             </tbody>
 
-                            <tbody id="equipmentBody" style="display: none">
+                            <tbody id="equipment-body" style="display: none">
                                 {% include 'positions/feature_tbody.html' with features=view.equipment.all features_not_required=view.equipment_not_required detail_name='equipments:detail' %}
                             </tbody>
 
@@ -190,5 +190,5 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deletePositionModal" template="positions/delete.html" %}
+    {% include "modal_include.html" with id="delete-position-modal" template="positions/delete.html" %}
 {% endblock %}
