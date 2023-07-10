@@ -105,14 +105,7 @@ class FeatureAssignmentForm(ModelForm):
 
         self._remove_not_collected_field()
         self._remove_non_valid_fields_by_type(feature_type)
-
-        if self.instance and hasattr(self.instance, "transaction"):
-            self.fields["tier"].initial = -self.instance.transaction.amount
-            self.fields["due_date"].initial = self.instance.transaction.date_due
-
-            if self.instance.transaction.is_settled():
-                self.fields["tier"].disabled = True
-                self.fields["due_date"].disabled = True
+        self._setup_tier_field()
 
     def _remove_not_collected_field(self):
         if self.instance.pk is None:
@@ -146,6 +139,17 @@ class FeatureAssignmentForm(ModelForm):
             if feature_type == type:
                 for field in fields:
                     self.fields.pop(field)
+
+    def _setup_tier_field(self):
+        if not self.instance or not hasattr(self.instance, "transaction"):
+            return
+
+        self.fields["tier"].initial = -self.instance.transaction.amount
+        self.fields["due_date"].initial = self.instance.transaction.date_due
+
+        if self.instance.transaction.is_settled():
+            self.fields["tier"].disabled = True
+            self.fields["due_date"].disabled = True
 
     def _get_feature(self, cleaned_data):
         if self.instance.pk is not None:
