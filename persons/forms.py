@@ -91,7 +91,7 @@ class FeatureAssignmentForm(ModelForm):
             ),
             "date_expire": widgets.DateInput(
                 format=settings.DATE_INPUT_FORMATS,
-                attrs={"type": "date", "value": datetime.date.today()},
+                attrs={"type": "date"},
             ),
         }
 
@@ -145,6 +145,36 @@ class FeatureAssignmentForm(ModelForm):
         else:
             return cleaned_data["feature"]
 
+    def clean_tier(self):
+        tier_value = self.cleaned_data.get("tier")
+        feature_value = self._get_feature(self.cleaned_data)
+
+        if not feature_value.tier and tier_value:
+            raise ValidationError(
+                _("Je vyplněn poplatek u vlastnosti, která nemá poplatek.")
+            )
+
+        if tier_value and tier_value < 0:
+            raise ValidationError(_("Poplatek nemůže být záporný."))
+
+        if tier_value and feature_value.feature_type != Feature.Type.EQUIPMENT:
+            raise ValidationError(
+                _("Poplatek může být vyplněn pouze u vlastnosti typu vybavení.")
+            )
+
+        return tier_value
+
+    def clean_due_date(self):
+        due_date = self.cleaned_data.get("due_date")
+        feature_value = self._get_feature(self.cleaned_data)
+
+        if due_date and feature_value.feature_type != Feature.Type.EQUIPMENT:
+            raise ValidationError(
+                _("Poplatek může být vyplněn pouze u vlastnosti typu vybavení.")
+            )
+
+        return due_date
+
     def clean_date_expire(self):
         date_expire_value = self.cleaned_data["date_expire"]
         feature_value = self._get_feature(self.cleaned_data)
@@ -155,20 +185,6 @@ class FeatureAssignmentForm(ModelForm):
             )
 
         return date_expire_value
-
-    def clean(self):
-        cleaned_data = super().clean()
-        date_expire_value = cleaned_data.get("date_expire")
-        date_assigned_value = cleaned_data.get("date_assigned")
-
-        if (
-            date_expire_value
-            and date_assigned_value
-            and date_assigned_value > date_expire_value
-        ):
-            self.add_error(
-                "date_expire", _("Datum expirace je nižší než datum přiřazení.")
-            )
 
     def clean_issuer(self):
         issuer = self.cleaned_data["issuer"]
@@ -193,6 +209,46 @@ class FeatureAssignmentForm(ModelForm):
             )
 
         return code
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date_expire_value = cleaned_data.get("date_expire")
+        date_assigned_value = cleaned_data.get("date_assigned")
+        tier = cleaned_data.get("tier")
+        due_date = cleaned_data.get("due_date")
+
+        if (
+            date_expire_value
+            and date_assigned_value
+            and date_assigned_value > date_expire_value
+        ):
+            self.add_error(
+                "date_expire", _("Datum expirace je nižší než datum přiřazení.")
+            )
+
+        if tier and not due_date:
+            self.add_error(
+                "due_date", _("Datum splatnosti poplatku musí být vyplněno.")
+            )
+        elif not tier and due_date:
+            self.cleaned_data["due_date"] = None
+
+    def add_transaction_if_necessary(self):
+        tier = self.cleaned_data.get("tier")
+        if not tier or tier == 0:
+            return False
+
+        feature = self._get_feature(self.cleaned_data)
+        date_due = self.cleaned_data.get("due_date")
+
+        Transaction.objects.create(
+            amount=-tier,
+            reason=_(f"Poplatek za zapůjčení vybavení - {feature.name}"),
+            date_due=date_due,
+            person=self.instance.person,
+        ).save()
+
+        return True
 
 
 class FeatureForm(ModelForm):

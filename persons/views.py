@@ -323,6 +323,7 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
 
         try:
             response = super().form_valid(form)
+            form.add_transaction_if_necessary()
             messages.success(self.request, success_message)
             return response
 
