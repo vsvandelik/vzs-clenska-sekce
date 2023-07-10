@@ -184,7 +184,7 @@ class Feature(models.Model):
         related_name="children",
         verbose_name=_("Nadřazená kategorie"),
     )
-    name = models.CharField(_("Název"), max_length=50, unique=True)
+    name = models.CharField(_("Název"), max_length=50)
     never_expires = models.BooleanField(default=False)
     tier = models.PositiveSmallIntegerField(_("Poplatek"), default=0)
     assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
