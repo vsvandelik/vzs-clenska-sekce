@@ -11,7 +11,6 @@ from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
 from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
-from users.forms import no_render_field
 
 
 class PersonForm(ModelForm):
@@ -171,19 +170,37 @@ class FeatureAssignmentForm(ModelForm):
 class FeatureForm(ModelForm):
     class Meta:
         model = Feature
-        fields = "__all__"
-        exclude = ["feature_type"]
+        fields = [
+            "name",
+            "parent",
+            "assignable",
+            "tier",
+            "never_expires",
+            "collect_issuers",
+            "collect_codes",
+        ]
+        widgets = {
+            "never_expires": widgets.CheckboxInput(),
+            "collect_issuers": widgets.CheckboxInput(),
+            "collect_codes": widgets.CheckboxInput(),
+        }
 
     def __init__(self, *args, **kwargs):
         feature_type = kwargs.pop("feature_type", None)
         super().__init__(*args, **kwargs)
-        if feature_type:
-            self.fields["parent"].queryset = Feature.objects.filter(
-                feature_type=feature_type
-            )
-            self.feature_type = feature_type
+        if not feature_type:
+            return
 
-        if feature_type == Feature.Type.PERMISSION:
+        self.fields["parent"].queryset = Feature.objects.filter(
+            feature_type=feature_type
+        )
+        self.feature_type = feature_type
+
+        if feature_type == Feature.Type.QUALIFICATION:
+            self.fields.pop("tier")
+
+        elif feature_type == Feature.Type.PERMISSION:
+            self.fields.pop("tier")
             self.fields.pop("collect_issuers")
             self.fields.pop("collect_codes")
 
@@ -209,6 +226,36 @@ class FeatureForm(ModelForm):
             raise ValidationError(_("Je vyplněno zadávání kódů u oprávnění."))
 
         return collect_codes
+
+    def clean_tier(self):
+        tier = self.cleaned_data["tier"]
+
+        if self.feature_type != Feature.Type.EQUIPMENT and tier is not None:
+            raise ValidationError(
+                _("Je vyplněn poplatek u jiných vlastností osob než jsou vybavení.")
+            )
+
+        return tier
+
+    def clean(self):
+        assignable = self.cleaned_data["assignable"]
+        tier = self.cleaned_data.get("tier")
+        never_expires = self.cleaned_data.get("never_expires")
+        collect_issuers = self.cleaned_data.get("collect_issuers")
+        collect_codes = self.cleaned_data.get("collect_codes")
+
+        if not assignable and (
+            tier or never_expires or collect_issuers or collect_codes
+        ):
+            raise ValidationError(
+                _(
+                    "Je vyplněna vlastnost, která se vztahuje pouze na přiřaditelné vlastnosti."
+                )
+            )
+        elif not assignable:
+            self.cleaned_data["never_expires"] = None
+            self.cleaned_data["collect_issuers"] = None
+            self.cleaned_data["collect_codes"] = None
 
 
 class StaticGroupForm(ModelForm):

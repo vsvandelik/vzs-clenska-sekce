@@ -184,14 +184,14 @@ class Feature(models.Model):
         related_name="children",
         verbose_name=_("Nadřazená kategorie"),
     )
-    name = models.CharField(_("Název"), max_length=50, unique=True)
-    never_expires = models.BooleanField(default=False)
-    tier = models.PositiveSmallIntegerField(_("Poplatek"), default=0)
+    name = models.CharField(_("Název"), max_length=50)
     assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
+    never_expires = models.BooleanField(blank=True, null=True)
+    tier = models.PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
     collect_issuers = models.BooleanField(
-        _("Evidovat vydavatele kvalifikace"), default=False
+        _("Evidovat vydavatele kvalifikace"), blank=True, null=True
     )
-    collect_codes = models.BooleanField(default=False)
+    collect_codes = models.BooleanField(blank=True, null=True)
 
     def __str__(self):
         return self.name
