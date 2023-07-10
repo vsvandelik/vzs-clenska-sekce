@@ -11,7 +11,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">{% if object %}Úprava přiřazení kvalifikace - {{ object.feature.name }}{% else %}Přiřazení nové kvalifikace{% endif %}</div>
+                    <div class="card-title h5">{% if object %}Úprava přiřazení {{ texts.name_2 }} - {{ object.feature.name }}{% else %}Přidání přiřazení {{ texts.name_2 }}{% endif %}</div>
                 </div>
                 <form method="post" id="assign-form">
                     {% csrf_token %}
@@ -29,23 +29,26 @@
 
 
 {% block scripts %}
-    <script>
-        const features = {
-            {% for feature in features %}
-                {{ feature.pk }}: {
-                    fields_visibility: {
-                        code: {{ feature.collect_codes|bool_js }},
-                        issuer: {{ feature.collect_issuers|bool_js }},
-                        date_expire: {{ feature.never_expires|bool_js:True }},
-                        tier: {{ feature.tier|bool_js }},
-                        due_date: {{ feature.tier|bool_js }},
+    {% if not object %}
+        <script>
+            const features = {
+                {% for feature in features %}
+                    {{ feature.pk }}: {
+                        fields_visibility: {
+                            code: {{ feature.collect_codes|bool_js }},
+                            issuer: {{ feature.collect_issuers|bool_js }},
+                            date_expire: {{ feature.never_expires|bool_js:True }},
+                            tier: {{ feature.tier|bool_js }},
+                            due_date: {{ feature.tier|bool_js }},
+                        }
+                        ,
+                        {% if feature.tier %}
+                            tier: {{ feature.tier }},
+                        {% endif %}
                     },
-                    {% if feature.tier %}
-                        tier: {{ feature.tier }},
-                    {% endif %}
-                },
-            {% endfor %}
-        }
-    </script>
-    <script src="{% static "persons/assign-feature.js" %}"></script>
+                {% endfor %}
+            }
+        </script>
+        <script src="{% static "persons/assign-feature.js" %}"></script>
+    {% endif %}
 {% endblock %}

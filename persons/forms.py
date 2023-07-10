@@ -106,6 +106,10 @@ class FeatureAssignmentForm(ModelForm):
         self._remove_not_collected_field()
         self._remove_non_valid_fields_by_type(feature_type)
 
+        if self.instance and hasattr(self.instance, "transaction"):
+            self.fields["tier"].initial = -self.instance.transaction.amount
+            self.fields["due_date"].initial = self.instance.transaction.date_due
+
     def _remove_not_collected_field(self):
         if self.instance.pk is None:
             return
@@ -235,18 +239,31 @@ class FeatureAssignmentForm(ModelForm):
 
     def add_transaction_if_necessary(self):
         tier = self.cleaned_data.get("tier")
-        if not tier or tier == 0:
+        if tier is None:
             return False
 
         feature = self._get_feature(self.cleaned_data)
         date_due = self.cleaned_data.get("due_date")
 
-        Transaction.objects.create(
-            amount=-tier,
-            reason=_(f"Poplatek za zapůjčení vybavení - {feature.name}"),
-            date_due=date_due,
-            person=self.instance.person,
-        ).save()
+        transaction_data = {
+            "amount": -tier,
+            "reason": _(f"Poplatek za zapůjčení vybavení - {feature.name}"),
+            "date_due": date_due,
+        }
+
+        if tier == 0:
+            self.instance.transaction.delete()
+        elif hasattr(self.instance, "transaction"):
+            self.instance.transaction.__dict__.update(transaction_data)
+            self.instance.transaction.save()
+        else:
+            transaction_data.update(
+                {
+                    "person": self.instance.person,
+                    "feature_assigment": self.instance,
+                }
+            )
+            Transaction.objects.create(**transaction_data)
 
         return True
 
