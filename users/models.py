@@ -21,7 +21,17 @@ class UserManager(auth_models.BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, person, password=None):
+    def create_superuser(
+        self, email, first_name, last_name, sex, person_type, password=None
+    ):
+        person = Person.objects.create(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            sex=sex,
+            person_type=person_type,
+        )
+
         user = self.create_user(
             person,
             password=password,
