@@ -23,7 +23,8 @@
                         <form action="{% url "users:google-login" %}" method="post" id="form-google">
                             {% csrf_token %}
                         </form>
-
+                    </div>
+                    <div class="card-footer">
                         <div class="row">
                             <div class="col-6">
                                 <button type="submit" class="btn btn-primary" form="form-password">Přihlásit</button>
