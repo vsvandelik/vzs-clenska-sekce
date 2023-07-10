@@ -2,6 +2,7 @@
 
 {% load crispy_forms_tags %}
 {% load static %}
+{% load vzs_filters %}
 
 {% block title %}Přiřazení {{ texts.name_2 }}{% endblock %}
 
@@ -32,9 +33,16 @@
         const features = {
             {% for feature in features %}
                 {{ feature.pk }}: {
-                    code: {{ feature.collect_codes|lower }},
-                    issuer: {{ feature.collect_issuers|lower }},
-                    date_expire: {% if feature.never_expires %}false{% else %}true{% endif %}
+                    fields_visibility: {
+                        code: {{ feature.collect_codes|bool_js }},
+                        issuer: {{ feature.collect_issuers|bool_js }},
+                        date_expire: {{ feature.never_expires|bool_js:True }},
+                        tier: {{ feature.tier|bool_js }},
+                        due_date: {{ feature.tier|bool_js }},
+                    },
+                    {% if feature.tier %}
+                        tier: {{ feature.tier }},
+                    {% endif %}
                 },
             {% endfor %}
         }

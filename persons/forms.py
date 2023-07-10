@@ -72,6 +72,16 @@ class PersonForm(ModelForm):
 
 
 class FeatureAssignmentForm(ModelForm):
+    tier = forms.IntegerField(label=_("Poplatek"), required=False)
+    due_date = forms.DateField(
+        label=_("Datum splatnosti poplatku"),
+        required=False,
+        initial=datetime.date.today() + settings.VZS_DEFAULT_DUE_DATE,
+        widget=widgets.DateInput(
+            format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
+        ),
+    )
+
     class Meta:
         model = FeatureAssignment
         fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
@@ -80,7 +90,8 @@ class FeatureAssignmentForm(ModelForm):
                 format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
             ),
             "date_expire": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
+                format=settings.DATE_INPUT_FORMATS,
+                attrs={"type": "date", "value": datetime.date.today()},
             ),
         }
 
@@ -92,24 +103,41 @@ class FeatureAssignmentForm(ModelForm):
                 feature_type=feature_type, assignable=True
             )
 
-        if self.instance.pk is not None:
-            self.fields.pop("feature")
+        self._remove_not_collected_field()
+        self._remove_non_valid_fields_by_type(feature_type)
 
-            if self.instance.feature.never_expires is True:
-                self.fields.pop("date_expire")
+    def _remove_not_collected_field(self):
+        if self.instance.pk is None:
+            return
+        else:
+            feature = self.instance.feature
 
-            if self.instance.feature.collect_issuers is False:
-                self.fields.pop("issuer")
+        self.fields.pop("feature")
 
-            if self.instance.feature.collect_codes is False:
-                self.fields.pop("code")
+        if feature.never_expires is True:
+            self.fields.pop("date_expire")
 
-        if feature_type == Feature.Type.PERMISSION:
+        if feature.collect_issuers is False:
             self.fields.pop("issuer")
+
+        if feature.collect_codes is False:
             self.fields.pop("code")
 
-        elif feature_type == Feature.Type.EQUIPMENT:
-            self.fields.pop("issuer")
+        if not feature.tier:
+            self.fields.pop("tier")
+            self.fields.pop("due_date")
+
+    def _remove_non_valid_fields_by_type(self, feature_type):
+        non_valid_fields_for_feature_type = {
+            Feature.Type.QUALIFICATION: ["tier", "due_date"],
+            Feature.Type.PERMISSION: ["issuer", "code", "tier", "due_date"],
+            Feature.Type.EQUIPMENT: ["issuer"],
+        }
+
+        for type, fields in non_valid_fields_for_feature_type.items():
+            if feature_type == type:
+                for field in fields:
+                    self.fields.pop(field)
 
     def _get_feature(self, cleaned_data):
         if self.instance.pk is not None:
@@ -233,6 +261,13 @@ class FeatureForm(ModelForm):
         if self.feature_type != Feature.Type.EQUIPMENT and tier is not None:
             raise ValidationError(
                 _("Je vyplněn poplatek u jiných vlastností osob než jsou vybavení.")
+            )
+
+        if tier is not None and tier <= 0:
+            raise ValidationError(
+                _(
+                    "Poplatek musí být kladné celé číslo. Pro nulový poplatek nechte pole prázdné."
+                )
             )
 
         return tier
