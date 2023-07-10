@@ -7,6 +7,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>VZS Členská sekce</title>
 
+    <!-- CSS from installed Django apps -->
+        {{ form.media.css }}
     <!-- Google Font: Source Sans Pro -->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome Icons -->
@@ -70,6 +72,7 @@
         <script src="{% static "datatables.net-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
 
 <!-- CUSTOM SCRIPTS -->
+        {{ form.media.js }}
         <script src="{% static "script.js" %}"></script>
         {% block scripts %}{% endblock %}
         <script>

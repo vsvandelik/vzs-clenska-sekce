@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}
+    Smazání organizátorské pozice
+{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger">
+                    <div class="card-title h5">Potvrzení smazání organizátorské pozice</div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <p class="px-4">Chcete opravdu smazat organizátorskou pozici "{{ position_assignment.position }}"?</p>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Smazat" class="btn btn-danger"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
 from persons.models import Person, Feature
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class Event(models.Model):
@@ -128,7 +129,9 @@ class EventPosition(models.Model):
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     position = models.ForeignKey("events.EventPosition", on_delete=models.CASCADE)
-    count = models.PositiveSmallIntegerField(default=1)
+    count = models.PositiveSmallIntegerField(
+        _("Počet"), default=1, validators=[MinValueValidator(1)]
+    )
     organizers = models.ManyToManyField(
         "persons.Person", through="events.EventOrganization"
     )

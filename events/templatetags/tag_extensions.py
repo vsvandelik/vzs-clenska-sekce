@@ -71,30 +71,5 @@ def atoi(value):
 
 
 @register.filter
-def is_approved_participant(person, event):
-    return (
-        EventParticipation.objects.filter(
-            event=event, person=person, state=EventParticipation.State.APPROVED
-        ).count()
-        == 1
-    )
-
-
-@register.filter
-def is_substitution_participant(person, event):
-    return (
-        EventParticipation.objects.filter(
-            event=event, person=person, state=EventParticipation.State.SUBSTITUTE
-        ).count()
-        == 1
-    )
-
-
-@register.filter
-def is_waiting_participant(person, event):
-    return (
-        EventParticipation.objects.filter(
-            event=event, person=person, state=EventParticipation.State.WAITING
-        ).count()
-        == 1
-    )
+def event_participation(person, event):
+    return EventParticipation.objects.filter(event=event, person=person).all().first()
