@@ -25,10 +25,20 @@ class GoogleBackend(ModelBackend):
     )
 
     @classmethod
-    def get_redirect_url(cls, request, view_name):
+    def _state_encode(cls, state):
+        return "x" + state
+
+    @classmethod
+    def state_decode(cls, state):
+        return state[1:]
+
+    @classmethod
+    def get_redirect_url(cls, request, view_name, next_redirect):
         cls._flow.redirect_uri = request.build_absolute_uri(reverse(view_name))
 
-        url, _ = cls._flow.authorization_url(prompt="consent")
+        url, _ = cls._flow.authorization_url(
+            prompt="consent", state=cls._state_encode(next_redirect)
+        )
 
         return url
 

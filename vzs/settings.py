@@ -163,6 +163,7 @@ ACTIVE_LINK_STRICT = True
 # Settings for Django authenticator
 
 LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "persons:index"
 LOGOUT_REDIRECT_URL = "users:login"
 
 # Settings for CrispyForms
