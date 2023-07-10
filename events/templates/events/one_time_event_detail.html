@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 
-{% load static %}
 {% load tag_extensions %}
+{% load static %}
 
 {% block title %}
     Detail jednorázové události
 {% endblock %}
 
 {% block content %}
+    <input type="hidden" id="sign-url" data-url="{% url 'events:signup_person_for_one_time_event' event.id %}">
+    <input type="hidden" id="substitute-url" data-url="{% url 'events:add_substitute_for_one_time_event' event.id %}">
+
     <div class="row">
         <div class="col-12">
             <div class="elevation-2 card">
@@ -70,10 +73,55 @@
                 </div>
             </div>
         </div>
+
         <div class="col-12 col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">Přihlášení účastníci</div>
+                    <div class="card-title h5">Organizátorské pozice</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Pozice</th>
+                                <th>Přihlášených / pozic</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pa in view.event_position_assignments.all %}
+                                <tr>
+                                    <td><a href="{% url 'positions:detail' pa.position.id %}">{{ pa.position }}</a></td>
+                                    <td>{{ pa.organizers|length }} / {{ pa.count }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-success btn-sm"
+                                               href="{% url 'events:edit_position_assignment' event.id pa.id %}">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
+                                            <a class="btn btn-danger btn-sm"
+                                               href="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat
+                        pozici</a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div id="signup-person-modal-title" class="card-title h5">Přihlášení účastníci</div>
                 </div>
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'events:remove_participant_from_one_time_event' event.id %}">
@@ -104,8 +152,11 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signUpPersonForOneTimeEvent">Přihlásit
-                        účastníka</a>
+                    <button class="btn p-0" onclick="signupPersonClicked()">
+                        <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signup-person">
+                            Přihlásit účastníka
+                        </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -144,138 +195,90 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#addSubtituteForOneTimeEvent">Přidat
-                        osobu</a>
+                    <button class="btn p-0" onclick="addSubstituteClicked()">
+                        <a href="#" class="btn-primary btn" data-toggle="modal"
+                           data-target="#signup-person">Přidat
+                            náhradníka</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">Přihlášky ke schválení</div>
+                    </div>
+                    <div class="card-body p-0">
+                        TODO
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Přihlášky ke schválení</div>
-                </div>
-                <div class="card-body p-0">
-                    TODO
-                </div>
-            </div>
-        </div>
-    </div>
 
-    </div>
-
-
-    <div class="modal fade" id="signUpPersonForOneTimeEvent" tabindex="-1" role="dialog"
-         aria-labelledby="signUpPersonForOneTimeEvent"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Přihlásit osobu</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" action="{% url "events:signup_person_for_one_time_event" event.id %}">
-                        {% csrf_token %}
-                        <table class="table table-striped" id="signUpPersonForOneTimeEventTable">
-                            <thead>
-                                <tr>
-                                    <th>Osoba</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in view.persons %}
+        <div class="modal fade" id="signup-person" tabindex="-1" role="dialog"
+             aria-labelledby="signup-person"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 id="signup-person-title" class="modal-title">Přihlásit osobu</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="signup-person-form" method="POST" action="">
+                            {% csrf_token %}
+                            <table class="table table-striped" id="signup-person-table">
+                                <thead>
                                     <tr>
-                                        <td class="align-middle">
-                                            <a href="{% url 'persons:detail' p.id %}" target="_blank">{{ p }}</a>
-                                            {% if p|is_substitution_participant:event %}
-                                                <span class="badge badge-secondary">náhradník</span>
-                                            {% elif p|is_approved_participant:event %}
-                                                <span class="badge badge-success">přihlášen</span>
-                                            {% elif p|is_waiting_participant:event %}
-                                                <span class="badge badge-info">čeká na schválení</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary" type="submit" name="person_id"
-                                                    value="{{ p.id }}" {% if p|is_approved_participant:event %}disabled{% endif %}>
-                                                Přidat
-                                            </button>
-                                        </td>
+                                        <th>Osoba</th>
+                                        <th></th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                                </thead>
+                                <tbody id="signup-person-tbody">
+                                    {% for person in view.persons %}
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{% url 'persons:detail' person.id %}" target="_blank">{{ person }}</a>
+                                                {% with p=person|event_participation:event %}
+                                                    {% if p %}
+                                                        {% if p.state == p.State.SUBSTITUTE %}
+                                                            <span class="badge badge-secondary">náhradník</span>
+                                                        {% endif %}
+                                                        {% if p.state == p.State.APPROVED %}
+                                                            <span class="badge badge-success">přihlášen</span>
+                                                        {% endif %}
+                                                        {% if p.state == p.State.WAITING %}
+                                                            <span class="badge badge-info">čeká na schválení</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endwith %}
+
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-primary" type="submit" name="person_id"
+                                                        value="{{ person.id }}">Přidat
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-
-
-    <div class="modal fade" id="addSubtituteForOneTimeEvent" tabindex="-1" role="dialog"
-         aria-labelledby="addSubtituteForOneTimeEvent"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Přidat náhradníky</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" action="{% url "events:add_substitute_for_one_time_event" event.id %}">
-                        {% csrf_token %}
-                        <table class="table table-striped" id="addSubtituteForOneTimeEventTable">
-                            <thead>
-                                <tr>
-                                    <th>Osoba</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in view.persons %}
-                                    <tr>
-                                        <td class="align-middle">
-                                            <a href="{% url 'persons:detail' p.id %}" target="_blank">{{ p }}</a>
-                                            {% if p|is_substitution_participant:event %}
-                                                <span class="badge badge-secondary">náhradník</span>
-                                            {% elif p|is_approved_participant:event %}
-                                                <span class="badge badge-success">přihlášen</span>
-                                            {% elif p|is_waiting_participant:event %}
-                                                <span class="badge badge-info">čeká na schválení</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-primary" type="submit" name="person_id"
-                                                    value="{{ p.id }}" {% if p|is_substitution_participant:event %}disabled{% endif %}>
-                                                Přidat
-                                            </button>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {% include "modal_include.html" with id="deleteEventModal" template="events/delete.html" %}
+    {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'one_time_event_detail.js' %}"></script>
 {% endblock %}

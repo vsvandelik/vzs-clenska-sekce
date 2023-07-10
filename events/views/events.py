@@ -1,23 +1,15 @@
 from django.urls import reverse_lazy
-from ..models import Event, EventParticipation, Participation
+from ..models import Event, EventParticipation, Participation, EventPositionAssignment
 from django.views import generic
 from ..forms import (
     TrainingForm,
     OneTimeEventForm,
     AddDeleteParticipantFromOneTimeEventForm,
+    EventPositionAssignmentForm,
 )
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
-from ..mixin_extensions import MessagesMixin
-
-
-class EventConditionMixin:
-    def get(self, request, *args, **kwargs):
-        event = get_object_or_404(Event, pk=kwargs["pk"])
-        event.set_type()
-        if not self.event_condition(event):
-            return redirect(self.event_condition_failed_redirect_url)
-        return super().get(request, *args, **kwargs)
+from ..mixin_extensions import MessagesMixin, InvariantMixin
 
 
 class EventCreateMixin(MessagesMixin, generic.FormView):
@@ -25,11 +17,11 @@ class EventCreateMixin(MessagesMixin, generic.FormView):
     success_url = reverse_lazy("events:index")
 
 
-class EventUpdateMixin(MessagesMixin, EventConditionMixin, generic.FormView):
+class EventUpdateMixin(MessagesMixin, InvariantMixin, generic.FormView):
     context_object_name = "event"
     model = Event
     success_message = "Událost %(name)s úspěšně upravena."
-    event_condition_failed_redirect_url = reverse_lazy("events:index")
+    invariant_failed_redirect_url = reverse_lazy("events:index")
     success_url = reverse_lazy("events:index")
 
 
@@ -55,15 +47,18 @@ class EventDeleteView(MessagesMixin, generic.DeleteView):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-class EventDetailViewMixin(EventConditionMixin, generic.DetailView):
+class EventDetailViewMixin(InvariantMixin, generic.DetailView):
     model = Event
-    event_condition_failed_redirect_url = reverse_lazy("events:index")
+    invariant_failed_redirect_url = reverse_lazy("events:index")
     context_object_name = "event"
+
+    def event_position_assignments(self):
+        return EventPositionAssignment.objects.filter(event=self.object)
 
 
 class TrainingDetailView(EventDetailViewMixin):
     template_name = "events/training_detail.html"
-    event_condition = lambda _, e: e.is_top_training
+    invariant = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,7 +68,7 @@ class TrainingDetailView(EventDetailViewMixin):
 
 class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "events/one_time_event_detail.html"
-    event_condition = lambda _, e: e.is_one_time_event
+    invariant = lambda _, e: e.is_one_time_event
 
     def persons(self):
         return Person.objects.all()
@@ -96,7 +91,7 @@ class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
 class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_one_time_event.html"
     form_class = OneTimeEventForm
-    event_condition = lambda _, e: e.is_one_time_event
+    invariant = lambda _, e: e.is_one_time_event
 
     def get(self, request, *args, **kwargs):
         event = get_object_or_404(Event, pk=kwargs["pk"])
@@ -119,7 +114,7 @@ class TrainingCreateView(generic.CreateView, EventCreateMixin):
 class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "events/create_edit_training.html"
     form_class = TrainingForm
-    event_condition = lambda _, e: e.is_top_training
+    invariant = lambda _, e: e.is_top_training
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -133,15 +128,12 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
     form_class = AddDeleteParticipantFromOneTimeEventForm
 
     def get_success_url(self):
-        return reverse("events:detail_one_time_event", args=[self.event_id])
+        return reverse("events:detail_one_time_event", args=[self.kwargs["event_id"]])
 
-    def post(self, request, *args, **kwargs):
-        post_extended = request.POST.copy()
-        post_extended["event_id"] = kwargs["event_id"]
-        form = AddDeleteParticipantFromOneTimeEventForm(post_extended)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event_id"] = self.kwargs["event_id"]
+        return kwargs
 
     def _process_form(self, form, op, state):
         self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
@@ -194,3 +186,51 @@ class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventVie
     def form_valid(self, form):
         self._process_form(form, "remove", Participation.State.SUBSTITUTE)
         return super().form_valid(form)
+
+
+class EventPositionAssignmentMixin(MessagesMixin):
+    model = EventPositionAssignment
+    context_object_name = "position_assignment"
+
+    def get_success_url(self):
+        return reverse("events:detail_one_time_event", args=[self.kwargs["event_id"]])
+
+
+class EventPositionAssignmentCreateView(
+    EventPositionAssignmentMixin, generic.CreateView
+):
+    template_name = "events/create_edit_event_position_assignment.html"
+    form_class = EventPositionAssignmentForm
+    success_message = "Organizátorská pozice %(position)s přidána"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
+
+
+class EventPositionAssignmentUpdateView(
+    EventPositionAssignmentMixin, generic.UpdateView
+):
+    template_name = "events/create_edit_event_position_assignment.html"
+    success_message = "Organizátorská pozice %(position)s upravena"
+    form_class = EventPositionAssignmentForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["position"] = self.object.position
+        kwargs["event"] = self.object.event
+        return kwargs
+
+
+class EventPositionAssignmentDeleteView(
+    EventPositionAssignmentMixin, generic.DeleteView
+):
+    template_name = "events/delete_event_position_assignment.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Organizátorská pozice {self.object.position} smazána"

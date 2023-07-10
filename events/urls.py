@@ -56,6 +56,21 @@ one_time_event_urls = [
         views.RemoveSubtituteForOneTimeEventView.as_view(),
         name="remove_substitute_from_one_time_event",
     ),
+    path(
+        "<int:event_id>/pridat/pozice/",
+        views.EventPositionAssignmentCreateView.as_view(),
+        name="add_position_assignment",
+    ),
+    path(
+        "<int:event_id>/upravit/pozice/<int:pk>",
+        views.EventPositionAssignmentUpdateView.as_view(),
+        name="edit_position_assignment",
+    ),
+    path(
+        "<int:event_id>/smazat/pozice/<int:pk>/",
+        views.EventPositionAssignmentDeleteView.as_view(),
+        name="delete_position_assignment",
+    ),
 ]
 
 urlpatterns = event_common_urls + training_urls + one_time_event_urls

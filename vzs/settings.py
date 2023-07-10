@@ -34,6 +34,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 # Application definition
 
 INSTALLED_APPS = [
+    "overridden_django_commands",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     "widget_tweaks",
     "tinymce",
+    "django_select2",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -143,6 +145,8 @@ DATE_INPUT_FORMATS = "%Y-%m-%d"
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATIC_ROOT = env.str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",

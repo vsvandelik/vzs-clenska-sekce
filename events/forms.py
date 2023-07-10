@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.forms import Form, ModelForm, MultipleChoiceField
 from django import forms
-from .models import Event, EventPosition
+from .models import Event, EventPosition, EventPositionAssignment
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -11,6 +11,7 @@ from .utils import (
 from datetime import timezone
 from django.utils import timezone
 from persons.models import Person, Feature
+from django_select2.forms import Select2Widget
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -300,7 +301,6 @@ class TrainingForm(OneTimeEventForm):
     def save(self, commit=True):
         instance = self.instance
         if self.instance.id is None:
-            instance = Event.objects.create()
             instance.state = Event.State.FUTURE
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
@@ -414,11 +414,15 @@ class TrainingForm(OneTimeEventForm):
 
 class AddDeleteParticipantFromOneTimeEventForm(Form):
     person_id = forms.IntegerField()
-    event_id = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self._event_id = kwargs.pop("event_id")
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         super().clean()
         pid = self.cleaned_data["person_id"]
+        self.cleaned_data["event_id"] = self._event_id
         eid = self.cleaned_data["event_id"]
         try:
             Person.objects.get(pk=pid)
@@ -437,11 +441,15 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
 
 
 class AddFeatureRequirementToPositionForm(Form):
-    position_id = forms.IntegerField()
     feature_id = forms.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        self._position_id = kwargs.pop("position_id")
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         super().clean()
+        self.cleaned_data["position_id"] = self._position_id
         pid = self.cleaned_data["position_id"]
         fid = self.cleaned_data["feature_id"]
         try:
@@ -455,3 +463,42 @@ class AddFeatureRequirementToPositionForm(Form):
                 f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
             )
         return self.cleaned_data
+
+
+class EventPositionAssignmentForm(ModelForm):
+    class Meta:
+        model = EventPositionAssignment
+        fields = [
+            "position",
+            "count",
+        ]
+        labels = {"position": "Pozice"}
+        widgets = {
+            "position": Select2Widget(attrs={"onchange": "positionChanged(this)"})
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        self.position = kwargs.pop("position", None)
+        super().__init__(*args, **kwargs)
+        self.fields["count"].widget.attrs["min"] = 1
+        if self.position is not None:
+            self.fields["position"].widget.attrs["disabled"] = True
+        else:
+            self.fields["position"].queryset = EventPosition.objects.filter(
+                pk__in=EventPosition.objects.all()
+                .values_list("pk", flat=True)
+                .difference(
+                    EventPositionAssignment.objects.filter(
+                        event=self.event
+                    ).values_list("position_id", flat=True)
+                )
+            )
+
+    def save(self, commit=True):
+        instance = self.instance
+        if self.instance.id is None:
+            instance.event = self.event
+        else:
+            instance.position = self.position
+        instance.save()
