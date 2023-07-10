@@ -19,7 +19,7 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'events:edit_one_time_event' event.id %}"
                    class="btn btn-success">Upravit</a>
-                {% include "delete_button_text.html" with id="deleteEventModal" %}
+                {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signUpPersonForOneTimeEvent">Přihlásit
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#sign-up-person-for-one-time-event">Přihlásit
                         účastníka</a>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#addSubtituteForOneTimeEvent">Přidat
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#add-subtitute-for-one-time-event">Přidat
                         osobu</a>
                 </div>
             </div>
@@ -165,8 +165,8 @@
     </div>
 
 
-    <div class="modal fade" id="signUpPersonForOneTimeEvent" tabindex="-1" role="dialog"
-         aria-labelledby="signUpPersonForOneTimeEvent"
+    <div class="modal fade" id="sign-up-person-for-one-time-event" tabindex="-1" role="dialog"
+         aria-labelledby="sign-up-person-for-one-time-event"
          aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -179,7 +179,7 @@
                 <div class="modal-body">
                     <form method="POST" action="{% url "events:signup_person_for_one_time_event" event.id %}">
                         {% csrf_token %}
-                        <table class="table table-striped" id="signUpPersonForOneTimeEventTable">
+                        <table class="table table-striped" id="sign-up-person-for-one-time-event-table">
                             <thead>
                                 <tr>
                                     <th>Osoba</th>
@@ -220,8 +220,8 @@
 
 
 
-    <div class="modal fade" id="addSubtituteForOneTimeEvent" tabindex="-1" role="dialog"
-         aria-labelledby="addSubtituteForOneTimeEvent"
+    <div class="modal fade" id="add-subtitute-for-one-time-event" tabindex="-1" role="dialog"
+         aria-labelledby="add-subtitute-for-one-time-event"
          aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -234,7 +234,7 @@
                 <div class="modal-body">
                     <form method="POST" action="{% url "events:add_substitute_for_one_time_event" event.id %}">
                         {% csrf_token %}
-                        <table class="table table-striped" id="addSubtituteForOneTimeEventTable">
+                        <table class="table table-striped" id="add-subtitute-for-one-time-event-table">
                             <thead>
                                 <tr>
                                     <th>Osoba</th>
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deleteEventModal" template="events/delete.html" %}
+    {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
 {% endblock %}
 
 {% block scripts %}

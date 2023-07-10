@@ -16,7 +16,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-12">
-                    <table id="oneTimeEventsTable" class="table table-hover table-striped">
+                    <table id="one-time-events-table" class="table table-hover table-striped">
                         <thead>
                             <tr>
                                 <th scope="col">Název</th>
@@ -38,7 +38,7 @@
                                                 <a class="btn btn-success btn-sm" href="{% url 'events:edit_one_time_event' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
-                                                {% include "delete_button_icon.html" with id="deleteEventModal" pattern="events:delete" object=event %}
+                                                {% include "delete_button_icon.html" with id="delete-event-modal" pattern="events:delete" object=event %}
                                             </div>
                                         </td>
                                     </tr>
@@ -61,7 +61,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-12">
-                    <table id="trainingsTable" class="table table-hover table-striped">
+                    <table id="trainings-table" class="table table-hover table-striped">
                         <thead>
                             <tr>
                                 <th scope="col">Název</th>
@@ -83,7 +83,7 @@
                                                 <a class="btn btn-success btn-sm" href="{% url 'events:edit_training' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
-                                                <a href="#" data-toggle="modal" data-target="#deleteEventModal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger btn-sm">
+                                                <a href="#" data-toggle="modal" data-target="#delete-event-modal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger btn-sm">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </a>
                                             </div>
@@ -98,11 +98,11 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deleteEventModal" %}
+    {% include "modal_include.html" with id="delete-event-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static 'events_index.js' %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
-    <script>register_modal("deleteEventModal")</script>
+    <script>register_modal("delete-event-modal")</script>
 {% endblock %}
