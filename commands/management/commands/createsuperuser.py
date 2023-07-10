@@ -9,6 +9,9 @@ from django.contrib.auth.management.commands.createsuperuser import (
     NotRunningInTTYException,
 )
 from django.core import exceptions
+from django.contrib.auth.password_validation import validate_password
+
+import getpass
 
 
 class Command(CreateSuperuserCommand):
@@ -17,7 +20,7 @@ class Command(CreateSuperuserCommand):
         self.PersonModel = django_apps.get_model("persons.Person", require_ready=False)
 
         self.models = [
-            (self.UserModel, ["password"]),
+            (self.UserModel, self.UserModel.REQUIRED_FIELDS),
             (
                 self.PersonModel,
                 ["email", "first_name", "last_name", "sex", "person_type"],
