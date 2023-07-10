@@ -362,6 +362,15 @@ class FeatureAssignDeleteView(
         context["person"] = self.get_person_with_permission_check()
         return context
 
+    def form_valid(self, form):
+        if (
+            hasattr(self.object, "transaction")
+            and not self.object.transaction.is_settled()
+        ):
+            self.object.transaction.delete()
+
+        return super().form_valid(form)
+
 
 class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
     model = Feature

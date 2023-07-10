@@ -110,6 +110,10 @@ class FeatureAssignmentForm(ModelForm):
             self.fields["tier"].initial = -self.instance.transaction.amount
             self.fields["due_date"].initial = self.instance.transaction.date_due
 
+            if self.instance.transaction.is_settled():
+                self.fields["tier"].disabled = True
+                self.fields["due_date"].disabled = True
+
     def _remove_not_collected_field(self):
         if self.instance.pk is None:
             return
@@ -166,6 +170,15 @@ class FeatureAssignmentForm(ModelForm):
                 _("Poplatek může být vyplněn pouze u vlastnosti typu vybavení.")
             )
 
+        if (
+            tier_value
+            and self.instance
+            and hasattr(self.instance, "transaction")
+            and self.instance.transaction.is_settled()
+            and -tier_value != self.instance.transaction.amount
+        ):
+            raise ValidationError(_("Poplatek nelze změnit, protože je již uhrazen."))
+
         return tier_value
 
     def clean_due_date(self):
@@ -175,6 +188,17 @@ class FeatureAssignmentForm(ModelForm):
         if due_date and feature_value.feature_type != Feature.Type.EQUIPMENT:
             raise ValidationError(
                 _("Poplatek může být vyplněn pouze u vlastnosti typu vybavení.")
+            )
+
+        if (
+            due_date
+            and self.instance
+            and hasattr(self.instance, "transaction")
+            and self.instance.transaction.is_settled()
+            and due_date != self.instance.transaction.date_due
+        ):
+            raise ValidationError(
+                _("Datum splatnosti nelze změnit, protože poplatek je již uhrazen.")
             )
 
         return due_date
