@@ -17,7 +17,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-12">
-                    <table id="positionsTable" class="table table-hover table-striped">
+                    <table id="positions-table" class="table table-hover table-striped">
                         <thead>
                             <tr>
                                 <th scope="col">Název</th>
@@ -34,7 +34,7 @@
                                                 <i class="fas fa-info"></i>
                                             </a>
 
-                                            {% include "delete_button_icon.html" with id="deletePositionModal" pattern="positions:delete" object=position %}
+                                            {% include "delete_button_icon.html" with id="delete-position-modal" pattern="positions:delete" object=position %}
                                         </div>
                                     </td>
                                 </tr>
@@ -46,11 +46,11 @@
         </div>
     </div>
 
-    {% include "modal_include.html" with id="deletePositionModal" %}
+    {% include "modal_include.html" with id="delete-position-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static 'positions_index.js' %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
-    <script>register_modal("deletePositionModal")</script>
+    <script>register_modal("delete-position-modal")</script>
 {% endblock %}

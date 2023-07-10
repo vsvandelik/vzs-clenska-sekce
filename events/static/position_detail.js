@@ -1,4 +1,4 @@
-const addFeatureTable = new DataTable('#addFeatureTable', {
+const addFeatureTable = new DataTable('#add-feature-table', {
     responsive: true,
     searching: true
 })
@@ -33,13 +33,13 @@ function getModalTitleElement() {
 }
 
 function getQualificationBody() {
-    return document.getElementById('qualificationsBody')
+    return document.getElementById('qualifications-body')
 }
 
 function getPermissionsBody() {
-    return document.getElementById('permissionsBody')
+    return document.getElementById('permissions-body')
 }
 
 function getEquipmentBody() {
-    return document.getElementById('equipmentBody')
+    return document.getElementById('equipment-body')
 }
