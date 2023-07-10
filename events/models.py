@@ -109,18 +109,9 @@ class Event(models.Model):
         return self.name
 
 
-class EventPositionTemplateManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_template=True)
-
-
 class EventPosition(models.Model):
     name = models.CharField(_("Jméno"), max_length=50)
     required_features = models.ManyToManyField("persons.Feature")
-    is_template = models.BooleanField(default=True)
-
-    objects = models.Manager()
-    templates = EventPositionTemplateManager()
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)

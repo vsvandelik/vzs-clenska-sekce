@@ -484,7 +484,16 @@ class EventPositionAssignmentForm(ModelForm):
         self.fields["count"].widget.attrs["min"] = 1
         if self.position is not None:
             self.fields["position"].widget.attrs["disabled"] = True
-        self.fields["position"].queryset = EventPosition.templates
+        else:
+            self.fields["position"].queryset = EventPosition.objects.filter(
+                pk__in=EventPosition.objects.all()
+                .values_list("pk", flat=True)
+                .difference(
+                    EventPositionAssignment.objects.filter(
+                        event=self.event
+                    ).values_list("position_id", flat=True)
+                )
+            )
 
     def save(self, commit=True):
         instance = self.instance

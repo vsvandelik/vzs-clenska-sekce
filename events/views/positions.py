@@ -21,9 +21,6 @@ class PositionIndexView(PositionMixin, generic.ListView):
     template_name = "positions/index.html"
     context_object_name = "positions"
 
-    def get_queryset(self):
-        return EventPosition.templates.all()
-
 
 class PositionCreateView(PositionCreateUpdateMixin, generic.CreateView):
     success_url = reverse_lazy("positions:index")
