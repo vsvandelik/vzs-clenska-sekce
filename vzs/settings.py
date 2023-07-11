@@ -47,11 +47,13 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "widget_tweaks",
+    "tinymce",
     "django_select2",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
+    "pages.apps.PagesConfig",
     # Template tags
     "vzs",
 ]
@@ -152,6 +154,20 @@ STATICFILES_DIRS = [
     BASE_DIR / "node_modules",
 ]
 
+# TinyMCE
+
+TINYMCE_DEFAULT_CONFIG = {
+    "menubar": "file edit view insert format tools table help",
+    "plugins": "advlist autolink lists link image charmap preview anchor searchreplace  code "
+    "fullscreen  media table paste code help wordcount spellchecker",
+    "toolbar": "undo redo | bold italic underline strikethrough | fontsizeselect formatselect | alignleft "
+    "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
+    "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
+    "insertfile image media pageembed template link anchor codesample | "
+    "a11ycheck ltr rtl",
+    "custom_undo_redo_levels": 10,
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -187,6 +203,8 @@ MESSAGE_TAGS = {
 # Emails
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+ADMIN_EMAIL = "system@vzs-praha15.cz"
 
 # Settings for Google Integration
 
