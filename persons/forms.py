@@ -8,6 +8,7 @@ from django.forms import ModelForm, widgets, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
 from google_integration import google_directory
+from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
 from vzs.widgets import DatePickerWithIcon
 from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
