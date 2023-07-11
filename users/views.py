@@ -20,6 +20,7 @@ from .backends import GoogleBackend
 from persons.models import Person
 from .models import User, Permission
 from . import forms
+from vzs import settings
 
 
 class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
@@ -111,9 +112,6 @@ class LoginView(auth_views.LoginView):
     authentication_form = forms.LoginForm
     redirect_authenticated_user = True
 
-    def get_success_url(self):
-        return reverse("persons:detail", kwargs={"pk": self.request.user.person.pk})
-
     def form_valid(self, form):
         response = super().form_valid(form)
 
@@ -141,7 +139,7 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
             )
 
         return HttpResponseRedirect(
-            request.META.get("HTTP_REFERER", reverse_lazy("persons:index"))
+            request.META.get("HTTP_REFERER", reverse_lazy("pages:home"))
         )
 
 
@@ -184,10 +182,17 @@ class GoogleLoginView(generic.base.RedirectView):
     http_method_names = ["post"]
 
     def get_redirect_url(self, *args, **kwargs):
-        return GoogleBackend.get_redirect_url(self.request, "users:google-auth")
+        next_redirect = self.request.POST.get("next", "")
+
+        return GoogleBackend.get_redirect_url(
+            self.request, "users:google-auth", next_redirect
+        )
 
 
-class GoogleAuthView(generic.base.View):
+class GoogleAuthView(auth_views.RedirectURLMixin, generic.base.View):
+    redirect_field_name = "state"
+    next_page = settings.LOGIN_REDIRECT_URL
+
     def _error(self, request, message):
         messages.error(request, message)
         return redirect("users:login")
@@ -218,7 +223,10 @@ class GoogleAuthView(generic.base.View):
         auth_login(request, user)
         set_active_person(request, request.user.person)
 
-        return redirect("persons:detail", pk=request.user.person.pk)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_redirect_url(self):
+        return GoogleBackend.state_decode(super().get_redirect_url())
 
 
 class UserAssignPermissionView(

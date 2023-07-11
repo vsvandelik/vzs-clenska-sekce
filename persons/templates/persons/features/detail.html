@@ -30,25 +30,33 @@
                     <table class="mb-1 table">
                         <tbody>
                             <tr>
-                                <td class="text-nowrap text-bold">{{ texts.form_labels.never_expires }}:</td>
-                                <td class="w-100">{{ object.never_expires|bool_cz }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Poplatek:</td>
-                                <td class="w-100">{{ object.fee }}</td>
-                            </tr>
-                            <tr>
                                 <td class="text-nowrap text-bold">Přiřaditelné osobě:</td>
-                                <td class="w-100">{{ object.assignable|bool_cz }}</td>
+                                <td class="w-100">{{ object.assignable|yesno|capfirst }}</td>
                             </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Evidovat vydavatele kvalifikace:</td>
-                                <td class="w-100">{{ object.collect_issuers|bool_cz }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">{{ texts.form_labels.collect_codes }}:</td>
-                                <td class="w-100">{{ object.collect_codes|bool_cz }}</td>
-                            </tr>
+                            {% if object.never_expires is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">{{ texts.form_labels.never_expires }}:</td>
+                                    <td class="w-100">{{ object.never_expires|yesno|capfirst }}</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.tier is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Poplatek:</td>
+                                    <td class="w-100">{{ object.tier }} Kč</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.collect_issuers is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Evidovat vydavatele kvalifikace:</td>
+                                    <td class="w-100">{{ object.collect_issuers|yesno|capfirst }}</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.collect_codes is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">{{ texts.form_labels.collect_codes }}:</td>
+                                    <td class="w-100">{{ object.collect_codes|yesno|capfirst }}</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
