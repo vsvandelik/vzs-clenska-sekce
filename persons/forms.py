@@ -469,8 +469,7 @@ class TransactionCreateForm(TransactionCreateEditBaseForm):
 class TransactionEditForm(TransactionCreateEditBaseForm):
     def __init__(self, instance, initial, *args, **kwargs):
         if instance.amount > 0:
-            if "is_reward" not in initial:
-                initial["is_reward"] = True
+            initial.setdefault("is_reward", True)
 
         instance.amount = abs(instance.amount)
         super().__init__(instance=instance, initial=initial, *args, **kwargs)
