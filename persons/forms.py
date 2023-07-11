@@ -72,7 +72,7 @@ class PersonForm(ModelForm):
 
 
 class FeatureAssignmentForm(ModelForm):
-    fee = forms.IntegerField(label=_("Poplatek"), required=False)
+    fee = forms.IntegerField(label=_("Poplatek"), required=False, min_value=0)
     due_date = forms.DateField(
         label=_("Datum splatnosti poplatku"),
         required=False,
@@ -165,9 +165,6 @@ class FeatureAssignmentForm(ModelForm):
             raise ValidationError(
                 _("Je vyplněn poplatek u vlastnosti, která nemá poplatek.")
             )
-
-        if fee_value and fee_value < 0:
-            raise ValidationError(_("Poplatek nemůže být záporný."))
 
         if fee_value and feature_value.feature_type != Feature.Type.EQUIPMENT:
             raise ValidationError(
@@ -364,12 +361,8 @@ class FeatureForm(ModelForm):
                 _("Je vyplněn poplatek u jiných vlastností osob než jsou vybavení.")
             )
 
-        if fee is not None and fee <= 0:
-            raise ValidationError(
-                _(
-                    "Poplatek musí být kladné celé číslo. Pro nulový poplatek nechte pole prázdné."
-                )
-            )
+        if fee == 0:
+            fee = None
 
         return fee
 
@@ -498,8 +491,8 @@ class PersonsFilterForm(forms.Form):
         required=False,
         choices=[("", "---------")] + Person.Type.choices,
     )
-    age_from = forms.IntegerField(label=_("Věk od"), required=False)
-    age_to = forms.IntegerField(label=_("Věk do"), required=False)
+    age_from = forms.IntegerField(label=_("Věk od"), required=False, min_value=1)
+    age_to = forms.IntegerField(label=_("Věk do"), required=False, min_value=1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -540,18 +533,6 @@ class PersonsFilterForm(forms.Form):
                 style="box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);",
             )
         )
-
-    def clean_age_from(self):
-        if self.cleaned_data["age_from"] and self.cleaned_data["age_from"] <= 0:
-            raise ValidationError(_("Věk musí být kladné celé číslo."))
-
-        return self.cleaned_data["age_from"]
-
-    def clean_age_to(self):
-        if self.cleaned_data["age_to"] and self.cleaned_data["age_to"] <= 0:
-            raise ValidationError(_("Věk musí být kladné celé číslo."))
-
-        return self.cleaned_data["age_to"]
 
     def clean(self):
         cleaned_data = super().clean()
