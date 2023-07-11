@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load mptt_tags %}
 
 {% load crispy_forms_tags %}
 {% load vzs_filters %}
@@ -68,9 +69,10 @@
                     <div class="card-title h5">Stromová struktura</div>
                 </div>
                 <div class="card-body">
+                    {% drilldown_tree_for_node object as tree_structure2 all_descendants %}
                     <ul class="list-unstyled">
-                        {% for indention, feature in tree_structure %}
-                            <li>{{ indention }}
+                        {% for feature in tree_structure2 %}
+                            <li>{% indentation_by_level feature.level %}
                                 {% if feature == object %}{{ feature.name }}{% else %}
                                     <a href="{% url feature_type|add:':detail' feature.id %}">{{ feature.name }}</a>
                                 {% endif %}

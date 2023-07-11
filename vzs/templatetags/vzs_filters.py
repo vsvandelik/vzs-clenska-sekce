@@ -16,7 +16,7 @@ def bool_js(value, opposite=False):
     else:
         return "false"
 
-      
+
 @register.simple_tag
 def render(instance, style, **kwargs):
     return instance.render(style, **kwargs)
@@ -55,3 +55,8 @@ def link_to_admin_email(link_text=None):
         link_text = settings.ADMIN_EMAIL
 
     return mark_safe(f"<a href='mailto:{settings.ADMIN_EMAIL}'>{link_text}</a>")
+
+
+@register.simple_tag
+def indentation_by_level(level):
+    return "—" * level + " "
