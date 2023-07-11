@@ -381,11 +381,7 @@ class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
-        return (
-            super()
-            .get_queryset()
-            .filter(feature_type=feature_type_params.shortcut, parent=None)
-        )
+        return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
 class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
