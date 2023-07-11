@@ -5,14 +5,6 @@ from vzs import settings
 register = template.Library()
 
 
-@register.filter
-def bool_cz(value):
-    if value:
-        return "Ano"
-    else:
-        return "Ne"
-
-
 @register.simple_tag
 def render(instance, style, **kwargs):
     return instance.render(style, **kwargs)
