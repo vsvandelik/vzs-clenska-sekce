@@ -16,7 +16,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
-                <li class="nav-item {% active_link "persons:index || persons:add || persons:groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" %}">
+                <li class="nav-item {% active_link "persons:index || persons:add || persons:groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "persons:index || persons:add || persons:groups:index || qualifications:index || permissions:index || equipments:index" %}">
                         <i class="nav-icon fas fa-user"></i>
                         <p>
@@ -63,7 +63,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index" %}">
+                <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add" %}">
                         <i class="nav-icon fas fa-calendar"></i>
                         <p>
