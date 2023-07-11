@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     "widget_tweaks",
     "django_select2",
+    "tempus_dominus",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -198,3 +199,9 @@ GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
 FIO_ACCOUNT_NUMBER = "2601743175"
 FIO_BANK_NUMBER = "2010"
 FIO_TOKEN = env.str("FIO_TOKEN")
+
+# Settings for Datepicker Tempus Dominus
+
+TEMPUS_DOMINUS_DATE_FORMAT = "DD. MM. YYYY"
+TEMPUS_DOMINUS_DATETIME_FORMAT = "DD. MM. YYYY HH:mm"
+TEMPUS_DOMINUS_TIME_FORMAT = "DD. MM. YYYY HH:mm"
