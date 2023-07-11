@@ -38,12 +38,12 @@
                             code: {{ feature.collect_codes|bool_js }},
                             issuer: {{ feature.collect_issuers|bool_js }},
                             date_expire: {{ feature.never_expires|bool_js:True }},
-                            tier: {{ feature.tier|bool_js }},
-                            due_date: {{ feature.tier|bool_js }},
+                            fee: {{ feature.fee|bool_js }},
+                            due_date: {{ feature.fee|bool_js }},
                         }
                         ,
-                        {% if feature.tier %}
-                            tier: {{ feature.tier }},
+                        {% if feature.fee %}
+                            fee: {{ feature.fee }},
                         {% endif %}
                     },
                 {% endfor %}

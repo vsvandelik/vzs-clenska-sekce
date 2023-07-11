@@ -1,5 +1,5 @@
 const featureTypeSelectBox = $("#id_feature");
-const tierField = $("#id_tier");
+const feeField = $("#id_fee");
 const assignForm = $("#assign-form");
 
 function changedSelectBox() {
@@ -9,7 +9,7 @@ function changedSelectBox() {
         $("input", assignForm).each(function () {
             $(this).parent().parent().show();
         });
-        tierField.val("");
+        feeField.val("");
         return;
     }
 
@@ -18,7 +18,7 @@ function changedSelectBox() {
         value ? inputDivFormGroup.show() : inputDivFormGroup.hide();
     });
 
-    tierField.val(features[selectedFeature].tier);
+    feeField.val(features[selectedFeature].fee);
 }
 
 $(function () {
