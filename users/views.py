@@ -103,6 +103,16 @@ class UserChangePasswordView(SuccessMessageMixin, generic.edit.UpdateView):
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
 
 
+class UserGenerateNewPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
+    http_method_names = ["post"]
+    model = User
+    context_object_name = "user_object"
+    success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
+
+    def get_success_url(self):
+        return reverse("persons:detail", kwargs={"pk": self.object.pk})
+
+
 def set_active_person(request, person):
     request.session["_active_person_pk"] = person.pk
 
