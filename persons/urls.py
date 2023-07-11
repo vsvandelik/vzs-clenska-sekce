@@ -68,6 +68,11 @@ urlpatterns = [
         name="user-change-password",
     ),
     path(
+        "<int:pk>/ucet/generovat-nove-heslo/",
+        user_views.UserGenerateNewPasswordView.as_view(),
+        name="user-generate-new-password",
+    ),
+    path(
         "<int:pk>/ucet/pridat-povoleni/",
         user_views.UserAssignPermissionView.as_view(),
         name="user-assign-permission",

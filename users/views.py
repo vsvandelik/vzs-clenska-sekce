@@ -15,12 +15,16 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
 
 from .backends import GoogleBackend
 from persons.models import Person
 from .models import User, Permission
 from . import forms
 from vzs import settings
+
+import string
 
 
 class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
@@ -93,10 +97,35 @@ class UserGenerateNewPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
     http_method_names = ["post"]
     model = User
     context_object_name = "user_object"
+    form_class = forms.UserChangePasswordForm
     success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        self.password = (
+            get_random_string(2, string.ascii_uppercase)
+            + get_random_string(2, string.ascii_lowercase)
+            + get_random_string(4, string.digits)
+        )
+
+        kwargs.update({"data": {"password": self.password}})
+
+        return kwargs
+
+    def form_valid(self, form):
+        send_mail(
+            _("Vaše heslo bylo změněno"),
+            _(f"Vaše heslo bylo změněno administrátorem na {self.password}."),
+            None,
+            [self.object.person.email],
+            fail_silently=False,
+        )
+
+        return super().form_valid(form)
 
 
 def set_active_person(request, person):

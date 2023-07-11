@@ -143,6 +143,10 @@
                     {% endif %}
                 </div>
                 <div class="card-footer text-center">
+                    <form method="post" action="{% url "persons:user-generate-new-password" person.pk %}" id="generate-new-password-form">
+                        {% csrf_token %}
+                    </form>
+
                     {% if not person.user %}
                         <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
                     {% else %}
@@ -150,6 +154,7 @@
                             <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-info">Přidat povolení</a>
                         {% endif %}
                         <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
+                        <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
                         <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
                     {% endif %}
                 </div>
