@@ -235,7 +235,6 @@ function setTimeFieldsState(day, state) {
     const fields = parent.getElementsByTagName('input')
     fields[0].disabled = !state
     fields[1].disabled = !state
-
 }
 
 function formatCzechDate(date) {
