@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}{{ object.title }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">Úprava stránky</div>
+                    </div>
+                    <div class="card-body">
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Uložit" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ form.media }}
+{% endblock %}

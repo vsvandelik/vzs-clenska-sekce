@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 
 import environ
+from dateutil.relativedelta import relativedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,12 +47,14 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap4",
     "widget_tweaks",
+    "tinymce",
     "django_select2",
     "tempus_dominus",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
+    "pages.apps.PagesConfig",
     # Template tags
     "vzs",
 ]
@@ -158,6 +161,20 @@ STATICFILES_DIRS = [
     BASE_DIR / "node_modules",
 ]
 
+# TinyMCE
+
+TINYMCE_DEFAULT_CONFIG = {
+    "menubar": "file edit view insert format tools table help",
+    "plugins": "advlist autolink lists link image charmap preview anchor searchreplace  code "
+    "fullscreen  media table paste code help wordcount spellchecker",
+    "toolbar": "undo redo | bold italic underline strikethrough | fontsizeselect formatselect | alignleft "
+    "aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor "
+    "backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | "
+    "insertfile image media pageembed template link anchor codesample | "
+    "a11ycheck ltr rtl",
+    "custom_undo_redo_levels": 10,
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -194,6 +211,8 @@ MESSAGE_TAGS = {
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+ADMIN_EMAIL = "system@vzs-praha15.cz"
+
 # Settings for Google Integration
 
 GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
@@ -211,3 +230,7 @@ FIO_TOKEN = env.str("FIO_TOKEN")
 TEMPUS_DOMINUS_DATE_FORMAT = "DD. MM. YYYY"
 TEMPUS_DOMINUS_DATETIME_FORMAT = "DD. MM. YYYY HH:mm"
 TEMPUS_DOMINUS_TIME_FORMAT = "HH:mm"
+
+# Transactions settings
+
+VZS_DEFAULT_DUE_DATE = relativedelta(months=1)

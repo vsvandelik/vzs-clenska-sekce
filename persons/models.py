@@ -187,7 +187,7 @@ class Feature(models.Model):
     name = models.CharField(_("Název"), max_length=50)
     assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
     never_expires = models.BooleanField(blank=True, null=True)
-    tier = models.PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
+    fee = models.PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
     collect_issuers = models.BooleanField(
         _("Evidovat vydavatele kvalifikace"), blank=True, null=True
     )
@@ -349,6 +349,9 @@ class Transaction(models.Model):
         "persons.Person", on_delete=models.CASCADE, related_name="transactions"
     )
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
+    feature_assigment = models.OneToOneField(
+        "FeatureAssignment", on_delete=models.SET_NULL, null=True
+    )
     fio_transaction = models.ForeignKey(
         "FioTransaction", on_delete=models.SET_NULL, null=True
     )

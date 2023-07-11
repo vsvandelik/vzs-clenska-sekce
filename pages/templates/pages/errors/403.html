@@ -1,0 +1,10 @@
+{% extends "pages/_simple_page_subview.html" %}
+
+{% load vzs_filters %}
+
+{% block title %}Zakázán přístup do hlubin{% endblock %}
+
+{% block subcontent %}
+    <p>Omlouváme se, ale nemáte oprávnění ke vstupu na tuto stránku. Je jako zákaz plavání do hlubokých vod. Pokud máte podezření, že se jedná o chybu, neváhejte kontaktovat {% link_to_admin_email "správce systému" %}.</p>
+{% endblock %}
+
