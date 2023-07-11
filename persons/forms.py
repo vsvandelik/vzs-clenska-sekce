@@ -264,7 +264,10 @@ class FeatureAssignmentForm(ModelForm):
 
     def add_transaction_if_necessary(self):
         fee = self.cleaned_data.get("fee")
-        if fee is None:
+        if fee is None or (
+            hasattr(self.instance, "transaction")
+            and self.instance.transaction.is_settled()
+        ):
             return False
 
         feature = self._get_feature(self.cleaned_data)
