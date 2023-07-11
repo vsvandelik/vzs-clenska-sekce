@@ -1,6 +1,4 @@
 from django import forms
-from django import forms
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.db.models import Q
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -25,9 +23,9 @@ class UserBaseForm(forms.ModelForm):
         widgets = {"password": forms.PasswordInput}
 
     def clean_password(self):
-        raw_password = self.cleaned_data["password"]
-        password_validation.validate_password(raw_password)
-        return raw_password
+        password = self.cleaned_data["password"]
+        password_validation.validate_password(password)
+        return password
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -47,6 +45,43 @@ class UserCreateForm(UserBaseForm):
 
 class UserChangePasswordForm(UserBaseForm):
     pass
+
+
+class UserChangePasswordForm2(UserBaseForm):
+    class Meta(UserBaseForm.Meta):
+        labels = {"password": _("Nové heslo")}
+
+    password_old = forms.CharField(
+        label=_("Vaše staré heslo"), widget=forms.PasswordInput
+    )
+    password_repeat = forms.CharField(
+        label=_("Zopakujte nové heslo"), widget=forms.PasswordInput
+    )
+
+    field_order = ["password_old", "", "password"]
+
+    def clean_password_old(self):
+        password_old = self.cleaned_data["password_old"]
+
+        user = self.instance
+
+        print(password_old)
+
+        if not user.check_password(password_old):
+            raise ValidationError(_("Staré heslo se neshoduje."))
+
+        return password_old
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        password = cleaned_data.get("password")
+        password_repeat = cleaned_data.get("password_repeat")
+
+        if password != password_repeat:
+            raise ValidationError(_("Nová hesla se neshodují."))
+
+        return cleaned_data
 
 
 class LoginForm(AuthenticationForm):
