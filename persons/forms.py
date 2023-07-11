@@ -449,32 +449,21 @@ class TransactionCreateEditBaseForm(ModelForm):
 
         return date_due
 
-    def save(self, commit=True):
-        transaction = super().save(False)
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get("amount")
+        is_reward = cleaned_data.get("is_reward")
 
-        if not self.cleaned_data["is_reward"]:
-            transaction.amount *= -1
+        if not is_reward:
+            cleaned_data["amount"] = -amount
 
-        if commit:
-            transaction.save()
-
-        return transaction
+        return cleaned_data
 
 
 class TransactionCreateForm(TransactionCreateEditBaseForm):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.person = person
-
-    def save(self, commit=True):
-        transaction = super().save(False)
-
-        transaction.person = self.person
-
-        if commit:
-            transaction.save()
-
-        return transaction
+        self.instance.person = person
 
 
 class TransactionEditForm(TransactionCreateEditBaseForm):
