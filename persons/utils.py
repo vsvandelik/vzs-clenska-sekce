@@ -82,6 +82,10 @@ def fetch_fio(date_start, date_end):
         received_date = received_transaction["date"]
         received_id = int(received_transaction["transaction_id"])
 
+        if received_amount <= 0:
+            # we ignore outgoing transactions
+            continue
+
         if recevied_variabilni is None or recevied_variabilni[0] == "0":
             continue
 

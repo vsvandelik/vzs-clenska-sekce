@@ -323,6 +323,7 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
 
         try:
             response = super().form_valid(form)
+            form.add_transaction_if_necessary()
             messages.success(self.request, success_message)
             return response
 
@@ -360,6 +361,15 @@ class FeatureAssignDeleteView(
         context = super().get_context_data(**kwargs)
         context["person"] = self.get_person_with_permission_check()
         return context
+
+    def form_valid(self, form):
+        if (
+            hasattr(self.object, "transaction")
+            and not self.object.transaction.is_settled()
+        ):
+            self.object.transaction.delete()
+
+        return super().form_valid(form)
 
 
 class FeatureIndexView(FeaturePermissionMixin, generic.ListView):

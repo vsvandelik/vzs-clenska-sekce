@@ -12,4 +12,4 @@ google-api-python-client
 fiobank
 django-environ
 django-tinymce
-
+python-dateutil

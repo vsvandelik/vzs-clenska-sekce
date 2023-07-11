@@ -6,9 +6,19 @@
     <script src="{% static 'create_edit_event_position_assignment.js' %}"></script>
 {% endblock %}
 {% block title %}
-    Přidání organizátorské pozice
+    {% if position_assignment %}Úprava {% else %}Přidání {% endif %}organizátorské pozice
 {% endblock %}
 {% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{% if position_assignment %}{{ position_assignment.event }}{% else %}{{ view.event }}{% endif %}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <input type="hidden" id="url" data-url="{% url 'positions:detail' 1 %}">
     <div class="row">
         <div class="col-12">

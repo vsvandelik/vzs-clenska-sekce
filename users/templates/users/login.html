@@ -18,10 +18,12 @@
                         <form action="{% url "users:login" %}" method="post" id="form-password">
                             {% csrf_token %}
                             {{ form|crispy }}
+                            <input type="hidden" name="next" value="{{ next }}">
                         </form>
 
                         <form action="{% url "users:google-login" %}" method="post" id="form-google">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ next }}">
                         </form>
                     </div>
                     <div class="card-footer">

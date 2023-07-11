@@ -7,13 +7,16 @@ register = template.Library()
 
 
 @register.filter
-def bool_cz(value):
+def bool_js(value, opposite=False):
+    if opposite:
+        value = not value
+
     if value:
-        return "Ano"
+        return "true"
     else:
-        return "Ne"
+        return "false"
 
-
+      
 @register.simple_tag
 def render(instance, style, **kwargs):
     return instance.render(style, **kwargs)
