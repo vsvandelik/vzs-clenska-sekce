@@ -13,3 +13,4 @@ fiobank
 django-environ
 django-tinymce
 python-dateutil
+django-mptt

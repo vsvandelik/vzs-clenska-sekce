@@ -87,7 +87,30 @@
                     <div class="card-title h5">Přiřazení {{ texts.name_2 }}</div>
                 </div>
                 <div class="card-body">
-                    TODO: zobrazit v tabulce přidělení
+                    {% if assignment_matrix.rows %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    {% for feature in assignment_matrix.columns %}
+                                        <th class="text-center">{{ feature.name }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in assignment_matrix.rows %}
+                                    <tr>
+                                        <th>{% render row.person "inline" %}</th>
+                                        {% for feature in row.features %}
+                                            <td class="text-center">{% if feature %}<i class="fas fa-check"></i>{% endif %}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>{{ texts.name_2|capfirst }} ani potomky nemá nikdo přiřazen.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

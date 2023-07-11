@@ -6,8 +6,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
-from django.db import IntegrityError, connection
-from django.db.models import Q, Sum
+from django.db import IntegrityError
+from django.db.models import Q, Sum, Exists, OuterRef
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
@@ -395,7 +395,7 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tree_structure"] = self._get_tree_structure()
-        self._get_features_assignment_matrix()
+        context["assignment_matrix"] = self._get_features_assignment_matrix()
         return context
 
     def get_template_names(self):
@@ -464,54 +464,6 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
                 }
             )
 
-        return features_assignment_matrix
-
-    def _get_features_assignment_matrix2(self):
-        print(len(connection.queries))
-
-        all_features = []
-
-        stack = collections.deque()
-        stack.append(self.object)
-        while stack:
-            current = stack.pop()
-            if current.assignable:
-                all_features.append(current)
-            for child in current.children.all():
-                stack.append(child)
-
-        print(all_features)
-
-        all_persons = (
-            FeatureAssignment.objects.filter(feature__in=all_features)
-            .values_list("person", flat=True)
-            .distinct()
-        )
-
-        print(all_persons)
-
-        features_assignment_matrix = {
-            "columns": all_features,
-            "rows": [],
-        }
-
-        for person in all_persons:
-            features_assignment_matrix["rows"].append(
-                {
-                    "person": person,
-                    "features": [
-                        True
-                        if FeatureAssignment.objects.filter(
-                            person=person, feature=feature
-                        ).exists()
-                        else False
-                        for feature in all_features
-                    ],
-                }
-            )
-
-        print(len(connection.queries))
-        print(features_assignment_matrix)
         return features_assignment_matrix
 
 
