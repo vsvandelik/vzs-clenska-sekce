@@ -34,9 +34,6 @@ class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
     def get_success_message(self, cleaned_data):
         return _(f"{self.object} byl úspěšně přidán.")
 
-    def get_initial(self):
-        return {"person": self.request.GET.get("person")}
-
     def dispatch(self, request, *args, **kwargs):
         self.person = self.get_object()
         return super().dispatch(request, *args, **kwargs)
@@ -44,25 +41,14 @@ class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        if "person" not in kwargs:
-            kwargs["person"] = self.person
+        kwargs.setdefault("person", self.person)
 
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if "people" not in context:
-            context["people"] = Person.objects.filter(user__isnull=True)
-
-        if "user_create_form" not in context:
-            context["user_create_form"] = context["form"]
-
-        if "person_select_form" not in context:
-            context["person_select_form"] = forms.PersonSelectForm(self.request.GET)
-
-        if "person" not in context:
-            context["person"] = self.person
+        context.setdefault("person", self.person)
 
         return context
 

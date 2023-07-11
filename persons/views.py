@@ -776,8 +776,7 @@ class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateV
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if "person" not in context:
-            context["person"] = self.person
+        context.setdefault("person", self.person)
 
         return context
 
@@ -787,7 +786,7 @@ class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateV
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        kwargs["person"] = self.person
+        kwargs.setdefault("person", self.person)
 
         return kwargs
 
@@ -822,17 +821,10 @@ class TransactionListView(generic.detail.DetailView):
             transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
         )
 
-        if "transactions_debt" not in context:
-            context["transactions_debt"] = transactions_debt
-
-        if "transactions_reward" not in context:
-            context["transactions_reward"] = transactions_reward
-
-        if "current_debt" not in context:
-            context["current_debt"] = current_debt
-
-        if "due_reward" not in context:
-            context["due_reward"] = due_reward
+        context.setdefault("transactions_debt", transactions_debt)
+        context.setdefault("transactions_reward", transactions_reward)
+        context.setdefault("current_debt", current_debt)
+        context.setdefault("due_reward", due_reward)
 
         return context
 
@@ -849,10 +841,7 @@ class TransactionQRView(generic.detail.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        transaction = self.object
-
-        if "person" not in context:
-            context["person"] = transaction.person
+        context.setdefault("person", self.object.person)
 
         return context
 
@@ -878,10 +867,7 @@ class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateVie
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        transaction = self.object
-
-        if "person" not in context:
-            context["person"] = transaction.person
+        context.setdefault("person", self.object.person)
 
         return context
 
@@ -902,8 +888,7 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        if "person" not in context:
-            context["person"] = self.object.person
+        context.setdefault("person", self.object.person)
 
         return context
 
