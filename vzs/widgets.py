@@ -35,6 +35,6 @@ class TimePickerWithIcon(widgets.TimePicker):
             attrs = {}
 
         if "append" not in attrs:
-            attrs["append"] = "fas fa-calendar"
+            attrs["append"] = "far fa-clock"
 
         super().__init__(attrs, options, format)

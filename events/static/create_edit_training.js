@@ -151,7 +151,7 @@ function validateForm() {
 
 // Helper functions
 function getDateNulledHours(element) {
-    const date = new Date(element.value)
+    const date = convertCzechDate(element.value)
     date.setHours(0)
     return date
 }
@@ -230,7 +230,7 @@ function addTrainingDaysTo(parent) {
 
 function setTimeFieldsState(day, state) {
     const display = state ? 'block' : 'none'
-    const parent = document.getElementById(`id_from_${day}`).parentElement.parentElement.parentElement.parentElement
+    const parent = document.getElementById(`id_from_${day}`).parentElement.parentElement.parentElement.parentElement.parentElement
     parent.style.display = display
     const fields = parent.getElementsByTagName('input')
     fields[0].disabled = !state
@@ -239,7 +239,7 @@ function setTimeFieldsState(day, state) {
 }
 
 function formatCzechDate(date) {
-    return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+    return `${date.getDate()}. ${date.getMonth() + 1}. ${date.getFullYear()}`
 }
 
 function parseCzechDate(dateStr) {
