@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 
 import environ
+from dateutil.relativedelta import relativedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -198,3 +199,7 @@ GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
 FIO_ACCOUNT_NUMBER = "2601743175"
 FIO_BANK_NUMBER = "2010"
 FIO_TOKEN = env.str("FIO_TOKEN")
+
+# Transactions settings
+
+VZS_DEFAULT_DUE_DATE = relativedelta(months=1)
