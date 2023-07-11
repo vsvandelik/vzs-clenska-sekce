@@ -1,3 +1,4 @@
+import collections
 import csv
 from functools import reduce
 
@@ -391,12 +392,44 @@ class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
 class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tree_structure"] = self._get_tree_structure()
+        return context
+
     def get_template_names(self):
         return f"persons/features/detail.html"
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
+
+    def _get_tree_structure(self):
+        tree_structure = collections.deque()
+
+        root = self.object
+        while root.parent:
+            root = root.parent
+            tree_structure.appendleft(root)
+
+        tree_structure_with_levels = [
+            (i, feature) for i, feature in enumerate(tree_structure, start=0)
+        ]
+
+        level = len(tree_structure_with_levels)
+        queue = collections.deque()
+        queue.append(self.object)
+        parent = self.object.parent
+        while queue:
+            current = queue.pop()
+            if parent != current.parent:
+                parent, level = current.parent, level + 1
+            tree_structure_with_levels.append((level, current))
+
+            for child in current.children.all():
+                queue.append(child)
+
+        return [(level * "—", feature) for level, feature in tree_structure_with_levels]
 
 
 class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):

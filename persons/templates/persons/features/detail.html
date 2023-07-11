@@ -68,7 +68,14 @@
                     <div class="card-title h5">Stromová struktura</div>
                 </div>
                 <div class="card-body">
-                    TODO: přidat předchůdce
+                    <ul class="list-unstyled">
+                        {% for indention, feature in tree_structure %}
+                            <li>{{ indention }}
+                                {% if feature == object %}{{ feature.name }}{% else %}
+                                    <a href="{% url feature_type|add:':detail' feature.id %}">{{ feature.name }}</a>
+                                {% endif %}
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
