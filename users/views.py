@@ -86,7 +86,7 @@ class UserChangePasswordView(SuccessMessageMixin, generic.edit.UpdateView):
     model = User
     context_object_name = "user_object"
     template_name = "users/change_password.html"
-    form_class = forms.UserChangePasswordForm2
+    form_class = forms.UserChangePasswordOldAndRepeatForm
     success_message = _("Heslo bylo úspěšně změněno.")
 
     def get_success_url(self):

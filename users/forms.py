@@ -47,7 +47,7 @@ class UserChangePasswordForm(UserBaseForm):
     pass
 
 
-class UserChangePasswordForm2(UserBaseForm):
+class UserChangePasswordOldAndRepeatForm(UserBaseForm):
     class Meta(UserBaseForm.Meta):
         labels = {"password": _("Nové heslo")}
 
