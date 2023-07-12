@@ -47,8 +47,9 @@ class OneTimeEventForm(ModelForm):
             )
 
     def clean(self):
-        super().clean()
+        cleaned_data = super().clean()
         self._check_date_constraints()
+        return cleaned_data
 
     def save(self, commit=True):
         instance = self.instance
@@ -262,8 +263,9 @@ class TrainingForm(OneTimeEventForm):
         self._check_days_chosen_constraints()
 
     def clean(self):
-        super().clean()
+        cleaned_data = super().clean()
         self._check_constraints()
+        return cleaned_data
 
     def save(self, commit=True):
         instance = self.instance
@@ -387,28 +389,30 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
         super().__init__(*args, **kwargs)
 
     def clean(self):
-        super().clean()
-        pid = self.cleaned_data["person_id"]
-        self.cleaned_data["event_id"] = self._event_id
-        eid = self.cleaned_data["event_id"]
+        cleaned_data = super().clean()
+        pid = cleaned_data["person_id"]
+        cleaned_data["event_id"] = self._event_id
+        eid = cleaned_data["event_id"]
         try:
-            self.cleaned_data["person"] = Person.objects.get(pk=pid)
-            self.cleaned_data["event"] = Event.objects.get(pk=eid)
-            self.cleaned_data["event"].set_type()
-            if not self.cleaned_data["event"].is_one_time_event:
+            cleaned_data["person"] = Person.objects.get(pk=pid)
+            cleaned_data["event"] = Event.objects.get(pk=eid)
+            event = cleaned_data["event"]
+            event.set_type()
+            if not event.is_one_time_event:
                 self.add_error("event_id", "Událost {event} není jednorázovou událostí")
-            if self.cleaned_data["event"].state in [
+            if event.state in [
                 Event.State.APPROVED,
                 Event.State.FINISHED,
             ]:
                 self.add_error(
                     "event_id",
-                    f"Událost {self.cleaned_data['event']} je uzavřena nebo schválena",
+                    f"Událost {event} je uzavřena nebo schválena",
                 )
         except Person.DoesNotExist:
             self.add_error("person_id", f"Osoba s id {pid} neexistuje")
         except Event.DoesNotExist:
             self.add_error("event_id", f"Událost s id {eid} neexistuje")
+        return cleaned_data
 
 
 class EventPositionAssignmentForm(ModelForm):
