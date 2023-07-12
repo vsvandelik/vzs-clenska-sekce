@@ -14,7 +14,8 @@ from django.http import (
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import redirect
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
+
 
 from .backends import GoogleBackend
 from persons.models import Person
@@ -41,16 +42,14 @@ class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        kwargs.setdefault("person", self.person)
+        kwargs["person"] = self.person
 
         return kwargs
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.person)
 
-        context.setdefault("person", self.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
 
 class IndexView(generic.list.ListView):
@@ -153,7 +152,7 @@ class UserAssignRemovePermissionView(
         return reverse("persons:detail", kwargs={"pk": self.object.person.pk})
 
     def _change_user_permission(self, user, permission):
-        pass
+        raise ImproperlyConfigured("_change_user_permission needs to be overridden.")
 
     def form_valid(self, form):
         user = self.object
@@ -176,6 +175,7 @@ class GoogleLoginView(generic.base.RedirectView):
 
 
 class GoogleAuthView(auth_views.RedirectURLMixin, generic.base.View):
+    http_method_names = ["get"]
     redirect_field_name = "state"
     next_page = settings.LOGIN_REDIRECT_URL
 
@@ -184,7 +184,7 @@ class GoogleAuthView(auth_views.RedirectURLMixin, generic.base.View):
         return redirect("users:login")
 
     def get(self, request, *args, **kwargs):
-        code = request.GET.get("code", "")
+        code = request.GET.get("code")
 
         try:
             user = authenticate(request, code=code)
@@ -223,7 +223,10 @@ class UserAssignPermissionView(
 
     def get_context_data(self, **kwargs):
         self.object_list = self.get_queryset()
-        return super().get_context_data(**kwargs, person=self.object.person)
+
+        kwargs.setdefault("person", self.object.person)
+
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         # TODO should be:
