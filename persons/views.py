@@ -881,11 +881,9 @@ class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateV
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.person)
 
-        context.setdefault("person", self.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
@@ -906,8 +904,6 @@ class TransactionListView(generic.detail.DetailView):
         raise ImproperlyConfigured("_get_transactions needs to be overridden.")
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         person = self.object
         transactions = person.transactions
 
@@ -928,12 +924,12 @@ class TransactionListView(generic.detail.DetailView):
             transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
         )
 
-        context.setdefault("transactions_debt", transactions_debt)
-        context.setdefault("transactions_reward", transactions_reward)
-        context.setdefault("current_debt", current_debt)
-        context.setdefault("due_reward", due_reward)
+        kwargs.setdefault("transactions_debt", transactions_debt)
+        kwargs.setdefault("transactions_reward", transactions_reward)
+        kwargs.setdefault("current_debt", current_debt)
+        kwargs.setdefault("due_reward", due_reward)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         if self.request.user.has_perm("persons.spravce_transakci"):
@@ -946,11 +942,9 @@ class TransactionQRView(generic.detail.DetailView):
     template_name = "persons/transactions/QR.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         queryset = Transaction.objects.filter(
@@ -972,11 +966,9 @@ class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateVie
     template_name = "persons/transactions/edit.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
@@ -993,11 +985,9 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
