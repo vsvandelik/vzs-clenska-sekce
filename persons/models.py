@@ -287,6 +287,7 @@ FeatureTypeTexts = {
             "never_expires": _("Časově neomezená zápůjčka"),
             "collect_codes": _("Evidovat inventární číslo"),
             "code": _("Inventární číslo"),
+            "fee": _("Poplatek"),
         },
         _("Vybavení bylo úspěšně uloženo."),
         _("Vybavení bylo úspěšně odstraněno."),

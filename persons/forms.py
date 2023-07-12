@@ -130,7 +130,8 @@ class FeatureAssignmentForm(ModelForm):
         for type, fields in non_valid_fields_for_feature_type.items():
             if feature_type == type:
                 for field in fields:
-                    self.fields.pop(field)
+                    if field in self.fields:
+                        self.fields.pop(field)
 
     def _setup_fee_field(self):
         if not self.instance or not hasattr(self.instance, "transaction"):
@@ -471,6 +472,34 @@ class AddManagedPersonForm(AddDeleteManagedPersonForm):
 
 class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
+
+
+class AddRemovePersonToGroupForm(Form):
+    group = forms.ModelChoiceField(queryset=StaticGroup.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+
+class AddPersonToGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba je již ve skupině."))
+
+        return group
+
+
+class RemovePersonFromGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if not group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba není ve skupině přiřazena."))
+
+        return group
 
 
 class PersonsFilterForm(forms.Form):

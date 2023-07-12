@@ -57,6 +57,12 @@ def link_to_admin_email(link_text=None):
     return mark_safe(f"<a href='mailto:{settings.ADMIN_EMAIL}'>{link_text}</a>")
 
 
+@register.filter
+def negate(value):
+    return -value
+
+  
 @register.simple_tag
 def indentation_by_level(level):
     return "—" * level + " "
+
