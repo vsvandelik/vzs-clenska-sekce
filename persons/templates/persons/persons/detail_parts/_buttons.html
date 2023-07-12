@@ -20,7 +20,7 @@
 </div>
 <div class="btn-group-md btn-group mb-3 elevation-2">
     <a href="{% url 'persons:transaction-list' person.id %}" class="btn btn-info">Transakce</a>
-    {% if perms.persons.spravce_transakci %}
+    {% if perms.transactions.spravce_transakci %}
         <a href="{% url 'persons:transaction-add' person.id %}" class="btn btn-info">Přidat transakci</a>
     {% endif %}
 </div>

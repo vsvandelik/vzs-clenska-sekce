@@ -4,9 +4,8 @@ from functools import reduce
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
-from django.db.models import Q, Sum, Exists, OuterRef
+from django.db.models import Q, Exists, OuterRef
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
@@ -23,8 +22,6 @@ from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     PersonsFilterForm,
-    TransactionCreateForm,
-    TransactionEditForm,
     AddPersonToGroupForm,
     RemovePersonFromGroupForm,
 )
@@ -35,7 +32,6 @@ from .models import (
     FeatureTypeTexts,
     Group,
     StaticGroup,
-    Transaction,
 )
 from .utils import sync_single_group_with_google
 
@@ -146,11 +142,11 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
         super().__init__(**kwargs)
         self.filter_form = None
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["filter_form"] = self.filter_form
-        context["filtered_get"] = self.request.GET.urlencode()
-        return context
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("filter_form", self.filter_form)
+        kwargs.setdefault("filtered_get", self.request.GET.urlencode())
+
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         persons_objects = self._filter_queryset_by_permission(Person.objects.with_age())
@@ -168,32 +164,46 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
     template_name = "persons/persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["qualifications"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.QUALIFICATION.value,
+        kwargs.setdefault(
+            "qualifications",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.QUALIFICATION.value,
+            ),
         )
-        context["permissions"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.PERMISSION.value,
+
+        kwargs.setdefault(
+            "permissions",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.PERMISSION.value,
+            ),
         )
-        context["equipments"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.EQUIPMENT.value,
+
+        kwargs.setdefault(
+            "equipments",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.EQUIPMENT.value,
+            ),
         )
-        context["persons_to_manage"] = (
+
+        kwargs.setdefault(
+            "persons_to_manage",
             self._filter_queryset_by_permission()
             .exclude(managed_by=self.kwargs["pk"])
             .exclude(pk=self.kwargs["pk"])
-            .order_by("last_name", "first_name")
+            .order_by("last_name", "first_name"),
         )
 
         user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
-        context["available_groups"] = StaticGroup.objects.exclude(pk__in=user_groups)
+        kwargs.setdefault(
+            "available_groups", StaticGroup.objects.exclude(pk__in=user_groups)
+        )
 
-        context["features_texts"] = FeatureTypeTexts
+        kwargs.setdefault("features_texts", FeatureTypeTexts)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return self._filter_queryset_by_permission()
@@ -272,11 +282,10 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
         return user.has_perm(self.feature_type_texts.permission_name)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["texts"] = self.feature_type_texts
-        context["feature_type"] = self.feature_type
+        kwargs.setdefault("texts", self.feature_type_texts)
+        kwargs.setdefault("feature_type", self.feature_type)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_person_with_permission_check(self):
         try:
@@ -302,14 +311,15 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
             return None
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context["person"] = self.get_person_with_permission_check()
-        context["features"] = Feature.objects.filter(
-            feature_type=self.feature_type_texts.shortcut, assignable=True
+        kwargs.setdefault("person", self.get_person_with_permission_check())
+        kwargs.setdefault(
+            "features",
+            Feature.objects.filter(
+                feature_type=self.feature_type_texts.shortcut, assignable=True
+            ),
         )
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -366,9 +376,9 @@ class FeatureAssignDeleteView(
         return self.feature_type_texts.success_message_assigning_delete
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["person"] = self.get_person_with_permission_check()
-        return context
+        kwargs.setdefault("person", self.get_person_with_permission_check())
+
+        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         if (
@@ -396,9 +406,9 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["assignment_matrix"] = self._get_features_assignment_matrix()
-        return context
+        kwargs.setdefault("assignment_matrix", self._get_features_assignment_matrix())
+
+        return super().get_context_data(**kwargs)
 
     def get_template_names(self):
         return f"persons/features/detail.html"
@@ -510,11 +520,11 @@ class GroupIndexView(GroupPermissionMixin, generic.ListView):
     model = Group
     template_name = "persons/groups/index.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["static_groups"] = StaticGroup.objects.all()
-        context["dynamic_groups"] = StaticGroup.objects.all()
-        return context
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("static_groups", StaticGroup.objects.all())
+        kwargs.setdefault("dynamic_groups", [])
+
+        return super().get_context_data(**kwargs)
 
 
 class GroupDeleteView(
@@ -538,11 +548,14 @@ class StaticGroupDetailView(
     template_name = "persons/groups/detail_static.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["available_persons"] = Person.objects.exclude(
-            Q(groups__isnull=False) & Q(groups__id=self.object.pk)
+        kwargs.setdefault(
+            "available_persons",
+            Person.objects.exclude(
+                Q(groups__isnull=False) & Q(groups__id=self.object.pk)
+            ),
         )
-        return context
+
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:groups:detail", args=(self.object.pk,))
@@ -865,129 +878,3 @@ def parse_persons_filter_queryset(params_dict, persons):
         persons = persons.filter(age__lte=age_to)
 
     return persons.order_by("last_name")
-
-
-class TransactionEditPermissionMixin(PermissionRequiredMixin):
-    permission_required = "persons.spravce_transakci"
-
-
-class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateView):
-    model = Transaction
-    form_class = TransactionCreateForm
-    template_name = "persons/transactions/create.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.person = get_object_or_404(Person, pk=self.kwargs["person"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("person", self.person)
-
-        return super().get_context_data(**kwargs)
-
-    def get_success_url(self):
-        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-
-        kwargs.setdefault("person", self.person)
-
-        return kwargs
-
-
-class TransactionListView(generic.detail.DetailView):
-    model = Person
-    template_name = "persons/transactions/list.html"
-
-    def _get_transactions(self, person):
-        raise ImproperlyConfigured("_get_transactions needs to be overridden.")
-
-    def get_context_data(self, **kwargs):
-        person = self.object
-        transactions = person.transactions
-
-        Q_debt = Q(amount__lt=0)
-        Q_award = Q(amount__gt=0)
-
-        transactions_debt = transactions.filter(Q_debt)
-        transactions_reward = transactions.filter(Q_award)
-
-        transactions_due = transactions.filter(fio_transaction__isnull=True)
-        transactions_current_debt = transactions_due.filter(Q_debt)
-        transactions_due_reward = transactions_due.filter(Q_award)
-
-        current_debt = (
-            transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
-        )
-        due_reward = (
-            transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
-        )
-
-        kwargs.setdefault("transactions_debt", transactions_debt)
-        kwargs.setdefault("transactions_reward", transactions_reward)
-        kwargs.setdefault("current_debt", current_debt)
-        kwargs.setdefault("due_reward", due_reward)
-
-        return super().get_context_data(**kwargs)
-
-    def get_queryset(self):
-        if self.request.user.has_perm("persons.spravce_transakci"):
-            return super().get_queryset()
-        else:
-            return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
-
-
-class TransactionQRView(generic.detail.DetailView):
-    template_name = "persons/transactions/QR.html"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("person", self.object.person)
-
-        return super().get_context_data(**kwargs)
-
-    def get_queryset(self):
-        queryset = Transaction.objects.filter(
-            Q(fio_transaction__isnull=True) & Q(amount__lt=0)
-        )
-        if not self.request.user.has_perm("persons.spravce_transakci"):
-            queryset = queryset.filter(
-                person__in=PersonPermissionMixin.get_queryset_by_permission(
-                    self.request.user
-                )
-            )
-
-        return queryset
-
-
-class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateView):
-    model = Transaction
-    form_class = TransactionEditForm
-    template_name = "persons/transactions/edit.html"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("person", self.object.person)
-
-        return super().get_context_data(**kwargs)
-
-    def get_success_url(self):
-        return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
-
-
-class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteView):
-    model = Transaction
-    template_name = "persons/transactions/delete.html"
-
-    def form_valid(self, form):
-        # success_message is sent after object deletion so we need to save the data
-        # we will need later
-        self.person = self.object.person
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("person", self.object.person)
-
-        return super().get_context_data(**kwargs)
-
-    def get_success_url(self):
-        return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
