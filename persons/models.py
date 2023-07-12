@@ -8,6 +8,8 @@ from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from mptt.fields import TreeForeignKey
+from mptt.models import MPTTModel
 
 from vzs import models as vzs_models
 
@@ -156,7 +158,7 @@ class EquipmentsManager(models.Manager):
         return super().get_queryset().filter(feature_type=Feature.Type.EQUIPMENT)
 
 
-class Feature(models.Model):
+class Feature(MPTTModel):
     class Meta:
         permissions = [
             ("spravce_kvalifikaci", _("Správce kvalifikací")),
@@ -175,7 +177,7 @@ class Feature(models.Model):
     equipments = EquipmentsManager()
 
     feature_type = models.CharField(max_length=1, choices=Type.choices)
-    parent = models.ForeignKey(
+    parent = TreeForeignKey(
         "self",
         on_delete=models.CASCADE,
         default=None,

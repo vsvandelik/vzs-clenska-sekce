@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Exists, OuterRef
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
@@ -381,15 +381,16 @@ class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
-        return (
-            super()
-            .get_queryset()
-            .filter(feature_type=feature_type_params.shortcut, parent=None)
-        )
+        return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
 class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["assignment_matrix"] = self._get_features_assignment_matrix()
+        return context
 
     def get_template_names(self):
         return f"persons/features/detail.html"
@@ -397,6 +398,40 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
+
+    def _get_features_assignment_matrix(self):
+        all_features = (
+            self.object.get_descendants(include_self=True)
+            .filter(assignable=True)
+            .prefetch_related("featureassignment_set")
+        )
+
+        all_persons = Person.objects.filter(
+            featureassignment__feature__in=all_features
+        ).distinct()
+
+        features_assignment_matrix = {
+            "columns": all_features,
+            "rows": [],
+        }
+
+        for person in all_persons:
+            features = all_features.annotate(
+                is_assigned=Exists(
+                    FeatureAssignment.objects.filter(
+                        person=person, feature=OuterRef("pk")
+                    )
+                )
+            ).values_list("is_assigned", flat=True)
+
+            features_assignment_matrix["rows"].append(
+                {
+                    "person": person,
+                    "features": list(features),
+                }
+            )
+
+        return features_assignment_matrix
 
 
 class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):

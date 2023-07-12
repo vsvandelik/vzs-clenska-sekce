@@ -312,9 +312,13 @@ class FeatureForm(ModelForm):
         if not feature_type:
             return
 
-        self.fields["parent"].queryset = Feature.objects.filter(
-            feature_type=feature_type
-        )
+        features = Feature.objects.filter(feature_type=feature_type)
+
+        if self.instance is not None:
+            features = features.exclude(pk=self.instance.pk)
+
+        self.fields["parent"].queryset = features
+
         self.feature_type = feature_type
 
         if feature_type == Feature.Type.QUALIFICATION:
