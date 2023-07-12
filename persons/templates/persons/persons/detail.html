@@ -9,383 +9,42 @@
 
     <div class="row">
         <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
-                </div>
-            </div>
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
-                {% include "delete_button_text.html" with id="delete-person-modal" additional_text="osobu" %}
-            </div>
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                {% if perms.persons.spravce_kvalifikaci %}
-                    <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
-                {% endif %}
-                {% if perms.persons.spravce_opravneni %}
-                    <a href="{% url 'persons:permissions:add' person.id %}" class="btn btn-info">Přidat oprávnění</a>
-                {% endif %}
-                {% if perms.persons.spravce_vybaveni %}
-                    <a href="{% url 'persons:equipments:add' person.id %}" class="btn btn-info">Přidat vybavení</a>
-                {% endif %}
-            </div>
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'persons:transaction-list' person.id %}" class="btn btn-info">Transakce</a>
-                {% if perms.persons.spravce_transakci %}
-                    <a href="{% url 'persons:transaction-add' person.id %}" class="btn btn-info">Přidat transakci</a>
-                {% endif %}
-            </div>
+            {% include "persons/persons/detail_parts/_buttons.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-7">
-            <div class="card">
-                <div class="card-header border-0">
-                    <div class="card-title h5">Přehled osoby</div>
-                </div>
-                <div class="card-body p-0">
-                    <table class="mb-1 table">
-                        <tbody>
-                            {% if person.email %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">E-mailová adresa:</td>
-                                    <td class="w-100"><a href="mailto:{{ person.email }}">{{ person.email }}</a></td>
-                                </tr>
-                            {% endif %}
-                            {% if person.phone %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Telefon:</td>
-                                    <td class="w-100">{{ person.phone }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.date_of_birth %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Datum narození:</td>
-                                    <td class="w-100">{{ person.date_of_birth }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.sex %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Pohlaví:</td>
-                                    <td class="w-100">{{ person.get_sex_display }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.person_type %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Typ člena:</td>
-                                    <td class="w-100">{{ person.get_person_type_display }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.birth_number %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Rodné číslo:</td>
-                                    <td class="w-100">{{ person.birth_number }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.health_insurance_company %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Pojišťovna:</td>
-                                    <td class="w-100">{{ person.get_health_insurance_company_display }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.address %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Adresa:</td>
-                                    <td class="w-100">{{ person.address }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if person.swimming_time %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">Čas na 100m:</td>
-                                    <td class="w-100">{{ person.swimming_time }}</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {% include "persons/persons/detail_parts/_basic_info_card.html" %}
         </div>
         <div class="col-12 col-md-5">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Uživatelský účet</div>
-                </div>
-                <div class="card-body {% if person.user %}p-0{% endif %}">
-                    {% if not person.user %}
-                        <p class="text-center">Účet není zřízen.</p>
-                    {% else %}
-                        <form method="post" action="{% url "persons:user-remove-permission" person.pk %}" id="permission-delete-form">
-                            {% csrf_token %}
-                        </form>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Povolení</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if not person.user.is_superuser %}
-                                    {% for permission in person.user.user_permissions.all %}
-                                        <tr>
-                                            <td class="align-middle">{{ permission.name }}</td>
-                                            <td class="text-center">
-                                                <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td>Tato osoba má všechna povolení, protože je administrátor.</td>
-                                        <td></td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-                <div class="card-footer text-center">
-                    {% if not person.user %}
-                        <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
-                    {% else %}
-                        {% if not person.user.is_superuser %}
-                            <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-primary">Přidat povolení</a>
-                        {% endif %}
-                        <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
-                        <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
-                    {% endif %}
-                </div>
-            </div>
+            {% include "persons/persons/detail_parts/_user_account_card.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Skupiny</div>
-                </div>
-                <div class="card-body {% if person.groups.count %}p-0{% endif %}">
-                    {% if not person.groups.count %}
-                        <p class="text-center">Osoba není členem žádné skupiny.</p>
-                    {% else %}
-                        <form method="post" action="{% url "persons:remove-from-group" person.pk %}">
-                            {% csrf_token %}
-                            <table class="table table-striped m-0">
-                                <tbody>
-                                    {% for group in person.groups.all %}
-                                        <tr>
-                                            <td>
-                                                <a href="{% url "persons:groups:detail" group.pk %}">{{ group.name }}</a>
-                                            </td>
-                                            <td class="text-center">
-                                                <button type="submit" name="group" class="btn btn-danger btn-sm" value="{{ group.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </form>
-                    {% endif %}
-                </div>
-                {% if perms.persons.spravce_skupin %}
-                    <div class="card-footer text-center">
-                        <a href="#" data-toggle="modal" data-target="#add-person-to-group-modal" class="btn-primary btn">Přidat do skupiny</a>
-                    </div>
-                {% endif %}
-            </div>
+            {% include "persons/persons/detail_parts/_groups_membership_card.html" %}
         </div>
         <div class="col-12 col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Spravované osoby</div>
-                </div>
-                <div class="card-body p-0">
-                    {% if object.managed_persons.count %}
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Osoba spravuje</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for person in object.managed_persons.all %}
-                                    <tr>
-                                        <td class="align-middle"><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
-                                        <td class="text-center">
-                                            <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="person" value="{{ person.pk }}">
-                                                <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-
-                    {% if object.managed_by.count %}
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Osoba je spravována</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for person in object.managed_by.all %}
-                                    <tr>
-                                        <td class="align-middle"><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-
-                </div>
-                <div class="card-footer text-center">
-                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#add-manage-person-modal">Přidat spravovanou osobu</a>
-                </div>
-            </div>
+            {% include "persons/persons/detail_parts/_managed_persons_card.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Kvalifikace</div>
-                </div>
-                <div class="card-body {% if qualifications %}p-0{% endif %}">
-                    {% if not qualifications %}
-                        <p class="text-center">Žádná kvalifikace není přiřazena.</p>
-                    {% else %}
-                        <table class="table table-hover">
-                            <tbody>
-                                {% for qualification in qualifications %}
-                                    <tr {% if qualification.date_assigned or qualification.date_expire or qualification.issuer or qualification.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                                        <td>{{ qualification.feature.name }}</td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <a class="btn btn-success btn-sm" href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"><i class="fas fa-pen"></i></a>
-                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:qualifications:delete" person.pk qualification.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% if qualification.date_assigned or qualification.date_expire or qualification.issuer or qualification.code %}
-                                        <tr class="expandable-body">
-                                            <td colspan="2">
-                                                {% if qualification.date_assigned %}<p class="m-0 py-0"><strong>Platnost od:&nbsp;</strong>{{ qualification.date_assigned }}</p>{% endif %}
-                                                {% if qualification.date_expire %}<p class="m-0 py-0"><strong>Platnost do:&nbsp;</strong>{{ qualification.date_expire }}</p>{% endif %}
-                                                {% if qualification.issuer %}<p class="m-0 py-0"><strong>Vydavatel:&nbsp;</strong>{{ qualification.issuer }}</p>{% endif %}
-                                                {% if qualification.code %}<p class="m-0 py-0"><strong>Kód osvědčení:&nbsp;</strong>{{ qualification.code }}</p>{% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-                {% if perms.persons.spravce_kvalifikaci %}
-                    <div class="card-footer text-center">
-                        <a href="{% url 'persons:qualifications:add' person.id %}" class="btn-primary btn">Přidat kvalifikaci</a>
-                    </div>
-                {% endif %}
-            </div>
+            {% include "persons/persons/detail_parts/_feature_assignment_card.html" with title="Kvalifikace" no_items_message="Žádná kvalifikace není přiřazena." texts=features_texts.qualifications items=qualifications edit_url='persons:qualifications:edit' delete_url="persons:qualifications:delete" add_url='persons:qualifications:add' %}
         </div>
         <div class="col-12 col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Oprávnění</div>
-                </div>
-                <div class="card-body {% if permission %}p-0{% endif %}">
-                    {% if not permissions %}
-                        <p class="text-center">Žádné oprávnění není přiřazeno.</p>
-                    {% else %}
-                        <table class="table table-hover">
-                            <tbody>
-                                {% for permission in permissions %}
-                                    <tr{% if permission.date_assigned or permission.date_expire %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                                        <td>{{ permission.feature.name }}</td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <a class="btn btn-success btn-sm" href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"><i class="fas fa-pen"></i></a>
-                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:permissions:delete" person.pk permission.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% if permission.date_assigned or permission.date_expire %}
-                                        <tr class="expandable-body">
-                                            <td colspan="2">
-                                                {% if permission.date_assigned %}<p class="m-0 py-0"><strong>Platnost od:&nbsp;</strong>{{ permission.date_assigned }}</p>{% endif %}
-                                                {% if permission.date_expire %}<p class="m-0 py-0"><strong>Platnost do:&nbsp;</strong>{{ permission.date_expire }}</p>{% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-                {% if perms.persons.spravce_opravneni %}
-                    <div class="card-footer text-center">
-                        <a href="{% url 'persons:permissions:add' person.id %}" class="btn-primary btn">Přidat oprávnění</a>
-                    </div>
-                {% endif %}
-            </div>
+            {% include "persons/persons/detail_parts/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
         </div>
         <div class="col-12 col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Zapůjčené vybavení</div>
-                </div>
-                <div class="card-body {% if equipments %}p-0{% endif %}">
-                    {% if not equipments %}
-                        <p class="text-center">Žádné vybavení není přiřazeno.</p>
-                    {% else %}
-                        <table class="table table-hover">
-                            <tbody>
-                                {% for equipment in equipments %}
-                                    <tr {% if equipment.date_assigned or equipment.date_expire or equipment.code or equipment.transaction %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                                        <td>{{ equipment.feature.name }}</td>
-                                        <td>{{ equipment.date_assigned }}</td>
-                                        <td>{% if equipment.date_expire %}{{ equipment.date_expire }}{% endif %}</td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a class="btn btn-success btn-sm" href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"><i class="fas fa-pen"></i></a>
-                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:equipments:delete" person.pk equipment.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% if equipment.date_assigned or equipment.date_expire or equipment.code or equipment.transaction %}
-                                        <tr class="expandable-body">
-                                            <td colspan="4">
-                                                {% if equipment.date_assigned %}<p class="m-0 py-0"><strong>Zapůjčeno od:&nbsp;</strong>{{ equipment.date_assigned }}</p>{% endif %}
-                                                {% if equipment.date_expire %}<p class="m-0 py-0"><strong>Zapůjčeno do:&nbsp;</strong>{{ equipment.date_expire }}</p>{% endif %}
-                                                {% if equipment.code %}<p class="m-0 py-0"><strong>Inventární číslo:&nbsp;</strong>{{ equipment.code }}</p>{% endif %}
-                                                {% if equipment.transaction %}<p class="m-0 py-0"><strong>Poplatek:&nbsp;</strong>{{ equipment.transaction.amount|negate }} Kč ({% if not equipment.transaction.is_settled %}ne{% endif %}uhrazen)</p>{% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-                {% if perms.persons.spravce_vybaveni %}
-                    <div class="card-footer text-center">
-                        <a href="{% url 'persons:equipments:add' person.id %}" class="btn-primary btn">Přidat vybavení</a>
-                    </div>
-                {% endif %}
-            </div>
+            {% include "persons/persons/detail_parts/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' %}
         </div>
     </div>
 
     {% include "modal_include.html" with id="delete-person-modal" template="persons/persons/delete.html" %}
     {% include "modal_include.html" with id="delete-user-modal" template="users/delete.html" %}
     {% include "modal_include.html" with id="remove-features-assignment-modal" %}
-    {% include "modal_include.html" with id="add-person-to-group-modal" template="persons/persons/add_to_group.html" classes="modal-lg" %}
-    {% include "modal_include.html" with id="add-manage-person-modal" template="persons/persons/add_manage_person.html" classes="modal-lg" %}
+    {% include "modal_include.html" with id="add-person-to-group-modal" template="persons/persons/modals/add_to_group.html" classes="modal-lg" %}
+    {% include "modal_include.html" with id="add-manage-person-modal" template="persons/persons/modals/add_manage_person.html" classes="modal-lg" %}
 {% endblock %}
 
 {% block scripts %}

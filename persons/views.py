@@ -191,6 +191,8 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
         user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
         context["available_groups"] = StaticGroup.objects.exclude(pk__in=user_groups)
 
+        context["features_texts"] = FeatureTypeTexts
+
         return context
 
     def get_queryset(self):

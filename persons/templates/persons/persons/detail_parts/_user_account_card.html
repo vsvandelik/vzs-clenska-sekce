@@ -1,0 +1,50 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Uživatelský účet</div>
+    </div>
+    <div class="card-body {% if person.user %}p-0{% endif %}">
+        {% if not person.user %}
+            <p class="text-center">Účet není zřízen.</p>
+        {% else %}
+            <form method="post" action="{% url "persons:user-remove-permission" person.pk %}" id="permission-delete-form">
+                {% csrf_token %}
+            </form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Povolení</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if not person.user.is_superuser %}
+                        {% for permission in person.user.user_permissions.all %}
+                            <tr>
+                                <td class="align-middle">{{ permission.name }}</td>
+                                <td class="text-center">
+                                    <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>Tato osoba má všechna povolení, protože je administrátor.</td>
+                            <td></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <div class="card-footer text-center">
+        {% if not person.user %}
+            <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
+        {% else %}
+            {% if not person.user.is_superuser %}
+                <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-primary">Přidat povolení</a>
+            {% endif %}
+            <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
+            <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
+        {% endif %}
+    </div>
+</div>
