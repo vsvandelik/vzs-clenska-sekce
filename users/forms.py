@@ -65,8 +65,6 @@ class UserChangePasswordOldAndRepeatForm(UserBaseForm):
 
         user = self.instance
 
-        print(password_old)
-
         if not user.check_password(password_old):
             raise ValidationError(_("Staré heslo se neshoduje."))
 

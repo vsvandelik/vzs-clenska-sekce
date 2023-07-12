@@ -101,7 +101,6 @@ def fetch_fio(date_start, date_end):
             continue
 
         if transaction.fio_transaction is not None:
-            print(transaction.pk, transaction.fio_transaction.fio_id, received_id)
             if transaction.fio_transaction.fio_id != received_id:
                 # the account has multiple transactions with the same VS
                 _send_mail_to_accountants(
