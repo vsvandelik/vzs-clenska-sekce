@@ -58,4 +58,4 @@ def days_pretty_list():
 
 
 def parse_czech_date(date_str):
-    return datetime.strptime(date_str, "%d.%m.%Y")
+    return datetime.strptime(date_str, "%d. %m. %Y")

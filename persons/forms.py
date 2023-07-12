@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
+from vzs.widgets import DatePickerWithIcon
 from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
 
 
@@ -17,11 +18,7 @@ class PersonForm(ModelForm):
     class Meta:
         model = Person
         exclude = ["features", "managed_persons"]
-        widgets = {
-            "date_of_birth": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            )
-        }
+        widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
         self.available_person_types = kwargs.pop("available_person_types", [])
@@ -86,13 +83,8 @@ class FeatureAssignmentForm(ModelForm):
         model = FeatureAssignment
         fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
         widgets = {
-            "date_assigned": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            ),
-            "date_expire": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS,
-                attrs={"type": "date"},
-            ),
+            "date_assigned": DatePickerWithIcon(),
+            "date_expire": DatePickerWithIcon(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -551,9 +543,7 @@ class TransactionCreateEditBaseForm(ModelForm):
         model = Transaction
         fields = ["amount", "reason", "date_due"]
         widgets = {
-            "date_due": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            ),
+            "date_due": DatePickerWithIcon(),
         }
 
     amount = forms.IntegerField(
@@ -569,39 +559,27 @@ class TransactionCreateEditBaseForm(ModelForm):
 
         return date_due
 
-    def save(self, commit=True):
-        transaction = super().save(False)
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get("amount")
+        is_reward = cleaned_data.get("is_reward")
 
-        if not self.cleaned_data["is_reward"]:
-            transaction.amount *= -1
+        if not is_reward:
+            cleaned_data["amount"] = -amount
 
-        if commit:
-            transaction.save()
-
-        return transaction
+        return cleaned_data
 
 
 class TransactionCreateForm(TransactionCreateEditBaseForm):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.person = person
-
-    def save(self, commit=True):
-        transaction = super().save(False)
-
-        transaction.person = self.person
-
-        if commit:
-            transaction.save()
-
-        return transaction
+        self.instance.person = person
 
 
 class TransactionEditForm(TransactionCreateEditBaseForm):
     def __init__(self, instance, initial, *args, **kwargs):
         if instance.amount > 0:
-            if "is_reward" not in initial:
-                initial["is_reward"] = True
+            initial.setdefault("is_reward", True)
 
         instance.amount = abs(instance.amount)
         super().__init__(instance=instance, initial=initial, *args, **kwargs)

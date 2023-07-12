@@ -1,6 +1,14 @@
-from datetime import datetime, timedelta
-from django.forms import Form, ModelForm, MultipleChoiceField
+from datetime import datetime, timedelta, timezone
+
 from django import forms
+from django.forms import Form, ModelForm, MultipleChoiceField
+from django.utils import timezone
+from django_select2.forms import Select2Widget
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.forms.widgets import CheckboxInput
+
+from persons.models import Person, Feature
+from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPosition, EventPositionAssignment
 from .utils import (
     weekday_2_day_shortcut,
@@ -8,12 +16,6 @@ from .utils import (
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
-from datetime import timezone
-from django.utils import timezone
-from persons.models import Person, Feature
-from django_select2.forms import Select2Widget
-from django.forms.widgets import CheckboxInput
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -33,14 +35,10 @@ class OneTimeEventForm(ModelForm):
             "age_limit",
         ]
         widgets = {
-            "time_start": forms.DateTimeInput(
-                attrs={"type": "datetime-local", "onchange": "dateChanged()"},
-                format="%Y-%m-%dT%H:%M:%S",
+            "time_start": DateTimePickerWithIcon(
+                attrs={"onchange": "dateChanged()"},
             ),
-            "time_end": forms.DateTimeInput(
-                attrs={"type": "datetime-local", "onchange": "dateChanged()"},
-                format="%Y-%m-%dT%H:%M:%S",
-            ),
+            "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"}),
         }
 
     def _check_date_constraints(self):
@@ -82,19 +80,15 @@ class TrainingForm(OneTimeEventForm):
                 self.initial[day_shortcut] = True
             for attr, value in event.__dict__.items():
                 if attr[:5] == "from_" or attr[:3] == "to_":
-                    self.initial[attr] = value
+                    self.initial[attr] = value.time()
 
     starts_date = forms.DateField(
         label="Začíná",
-        widget=forms.DateInput(
-            attrs={"type": "date", "onchange": "dateChanged()"}, format="%Y-%m-%d"
-        ),
+        widget=DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
     )
     ends_date = forms.DateField(
         label="Končí",
-        widget=forms.DateInput(
-            attrs={"type": "date", "onchange": "dateChanged()"}, format="%Y-%m-%d"
-        ),
+        widget=DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
     )
     po = forms.BooleanField(
         label="Po",
@@ -135,106 +129,78 @@ class TrainingForm(OneTimeEventForm):
     from_po = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_po = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_ut = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_ut = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_st = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_st = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_ct = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_ct = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_pa = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_pa = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_so = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_so = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     from_ne = forms.TimeField(
         label="Od",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
     to_ne = forms.TimeField(
         label="Do",
         required=False,
-        widget=forms.TimeInput(
-            attrs={"type": "time", "onchange": "timeChanged(this)"}, format="%H:%M"
-        ),
+        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
     )
 
     day = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
