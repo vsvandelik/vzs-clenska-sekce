@@ -11,5 +11,6 @@ google-auth-httplib2
 google-api-python-client
 fiobank
 django-environ
+django-tempus-dominus
 django-tinymce
 python-dateutil
