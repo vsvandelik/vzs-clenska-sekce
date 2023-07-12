@@ -469,6 +469,34 @@ class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
 
 
+class AddRemovePersonToGroupForm(Form):
+    group = forms.ModelChoiceField(queryset=StaticGroup.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+
+class AddPersonToGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba je již ve skupině."))
+
+        return group
+
+
+class RemovePersonFromGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if not group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba není ve skupině přiřazena."))
+
+        return group
+
+
 class PersonsFilterForm(forms.Form):
     name = forms.CharField(label=_("Jméno"), required=False)
     email = forms.EmailField(label=_("E-mailová adresa"), required=False)

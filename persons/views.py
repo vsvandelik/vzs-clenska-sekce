@@ -25,6 +25,8 @@ from .forms import (
     PersonsFilterForm,
     TransactionCreateForm,
     TransactionEditForm,
+    AddPersonToGroupForm,
+    RemovePersonFromGroupForm,
 )
 from .models import (
     Person,
@@ -185,6 +187,10 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
             .exclude(pk=self.kwargs["pk"])
             .order_by("last_name", "first_name")
         )
+
+        user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
+        context["available_groups"] = StaticGroup.objects.exclude(pk__in=user_groups)
+
         return context
 
     def get_queryset(self):
@@ -658,6 +664,60 @@ class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
             "delete",
             _("Odebrání spravované osoby bylo úspěšné."),
             _("Nepodařilo se odebrat spravovanou osobu. "),
+        )
+
+
+class AddRemovePersonToGroupMixin(PersonPermissionMixin, generic.View):
+    http_method_names = ["post"]
+
+    ADD_TO_GROUP = "add"
+    REMOVE_FROM_GROUP = "remove"
+
+    def process_form(
+        self, request, form, person_pk, op, success_message, error_message
+    ):
+        if form.is_valid():
+            group = form.cleaned_data["group"]
+
+            if op == self.ADD_TO_GROUP:
+                group.members.add(person_pk)
+            else:
+                group.members.remove(person_pk)
+
+            messages.success(request, success_message)
+
+        else:
+            person_error_messages = " ".join(form.errors["group"])
+            messages.error(request, error_message + person_error_messages)
+
+        return redirect(reverse("persons:detail", args=[person_pk]))
+
+
+class AddPersonToGroupView(AddRemovePersonToGroupMixin):
+    def post(self, request, pk):
+        form = AddPersonToGroupForm(request.POST, person=Person.objects.get(pk=pk))
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            AddRemovePersonToGroupMixin.ADD_TO_GROUP,
+            _("Osoba byla úspěšně přidána do skupiny."),
+            _("Nepodařilo se přidat osobu do skupiny. "),
+        )
+
+
+class RemovePersonFromGroupView(AddRemovePersonToGroupMixin):
+    def post(self, request, pk):
+        form = RemovePersonFromGroupForm(request.POST, person=Person.objects.get(pk=pk))
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            AddRemovePersonToGroupMixin.REMOVE_FROM_GROUP,
+            _("Osoba byla úspěšně odebrána ze skupiny."),
+            _("Nepodařilo se odebrat osobu ze skupiny. "),
         )
 
 

@@ -164,17 +164,32 @@
                 <div class="card-header">
                     <div class="card-title h5">Skupiny</div>
                 </div>
-                <div class="card-body">
-                    TODO: Opravit odkazy
-                    <ul>
-                        {% for group in person.groups.all %}
-                            <li><a href="{% url "persons:groups:detail" group.pk %}">{{ group.name }}</a></li>
-                        {% endfor %}
-                    </ul>
+                <div class="card-body {% if person.groups.count %}p-0{% endif %}">
+                    {% if not person.groups.count %}
+                        <p class="text-center">Osoba není členem žádné skupiny.</p>
+                    {% else %}
+                        <form method="post" action="{% url "persons:remove-from-group" person.pk %}">
+                            {% csrf_token %}
+                            <table class="table table-striped m-0">
+                                <tbody>
+                                    {% for group in person.groups.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url "persons:groups:detail" group.pk %}">{{ group.name }}</a>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="submit" name="group" class="btn btn-danger btn-sm" value="{{ group.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </form>
+                    {% endif %}
                 </div>
                 {% if perms.persons.spravce_skupin %}
                     <div class="card-footer text-center">
-                        <a href="#" class="btn-primary btn">Přidat do skupiny (TODO)</a>
+                        <a href="#" data-toggle="modal" data-target="#add-person-to-group" class="btn-primary btn">Přidat do skupiny</a>
                     </div>
                 {% endif %}
             </div>
@@ -411,14 +426,15 @@
     {% include "modal_include.html" with id="delete-person-modal" template="persons/persons/delete.html" %}
     {% include "modal_include.html" with id="delete-user-modal" template="users/delete.html" %}
     {% include "modal_include.html" with id="remove-features-assignment-modal" %}
+    {% include "modal_include.html" with id="add-person-to-group" template="persons/persons/add_to_group.html" classes="modal-lg" %}
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "persons/add-managed-person.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "datatables.js" %}"></script>
     <script>
         register_modal("remove-features-assignment-modal");
         datatableEnable("add-managed-person-table", [0], [0]);
+        datatableEnable("add-to-group-table", [0], [0]);
     </script>
 {% endblock %}

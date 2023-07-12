@@ -1,7 +1,7 @@
 from django.urls import path, include
 
-from . import views
 from users import views as user_views
+from . import views
 
 app_name = "persons"
 
@@ -86,6 +86,16 @@ urlpatterns = [
         "<int:pk>/odebrat-spravovanou-osobu/",
         views.DeleteManagedPersonView.as_view(),
         name="remove-managed-person",
+    ),
+    path(
+        "<int:pk>/pridat-do-skupiny/",
+        views.AddPersonToGroupView.as_view(),
+        name="add-to-group",
+    ),
+    path(
+        "<int:pk>/odebrat-ze-skupiny/",
+        views.RemovePersonFromGroupView.as_view(),
+        name="remove-from-group",
     ),
     path(
         "<int:person>/kvalifikace/",
