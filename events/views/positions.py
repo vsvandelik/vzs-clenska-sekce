@@ -3,7 +3,7 @@ from ..models import EventPosition
 from django.views import generic
 from django.shortcuts import reverse
 from persons.models import Feature
-from ..forms import AddFeatureRequirementToPositionForm
+from ..forms import AddFeatureRequirementToPositionForm, AgeLimitPositionForm
 from ..mixin_extensions import MessagesMixin
 
 
@@ -72,11 +72,8 @@ class AddRemoveFeatureFromPosition(MessagesMixin, generic.FormView):
         return kwargs
 
     def _process_form(self, form, op):
-        fid = form.cleaned_data["feature_id"]
-        pid = form.cleaned_data["position_id"]
-
-        self.position = EventPosition.objects.get(pk=pid)
-        self.feature = Feature.objects.get(pk=fid)
+        self.position = form.cleaned_data["position"]
+        self.feature = form.cleaned_data["feature"]
         if op == "add":
             self.position.required_features.add(self.feature)
         else:
@@ -100,3 +97,11 @@ class RemoveFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
     def form_valid(self, form):
         self._process_form(form, "remove")
         return super().form_valid(form)
+
+
+class EditAgeLimitView(PositionMixin, generic.UpdateView):
+    template_name = "positions/edit_age_limit.html"
+    form_class = AgeLimitPositionForm
+
+    def get_success_url(self):
+        return reverse("positions:detail", args=[self.object.id])

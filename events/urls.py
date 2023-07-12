@@ -90,4 +90,9 @@ positions_urls = [
         views.RemoveFeatureRequirementToPositionView.as_view(),
         name="remove_feature",
     ),
+    path(
+        "<int:pk>/upravit/vekove-omezeni/",
+        views.EditAgeLimitView.as_view(),
+        name="edit_age_limit",
+    ),
 ]
