@@ -17,6 +17,8 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
                 {% include "delete_button_text.html" with id="delete-person-modal" additional_text="osobu" %}
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
                 {% if perms.persons.spravce_kvalifikaci %}
                     <a href="{% url 'persons:qualifications:add' person.id %}" class="btn btn-info">Přidat kvalifikaci</a>
                 {% endif %}
@@ -108,7 +110,7 @@
                 <div class="card-header">
                     <div class="card-title h5">Uživatelský účet</div>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body {% if person.user %}p-0{% endif %}">
                     {% if not person.user %}
                         <p class="text-center">Účet není zřízen.</p>
                     {% else %}
@@ -147,7 +149,7 @@
                         <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
                     {% else %}
                         {% if not person.user.is_superuser %}
-                            <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-info">Přidat povolení</a>
+                            <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-primary">Přidat povolení</a>
                         {% endif %}
                         <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
                         <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
@@ -172,7 +174,7 @@
                 </div>
                 {% if perms.persons.spravce_skupin %}
                     <div class="card-footer text-center">
-                        <a href="#" class="btn-info btn">Přidat do skupiny (TODO)</a>
+                        <a href="#" class="btn-primary btn">Přidat do skupiny (TODO)</a>
                     </div>
                 {% endif %}
             </div>
@@ -227,7 +229,7 @@
 
                 </div>
                 <div class="card-footer text-center">
-                    <a href="#" class="btn-info btn" data-toggle="modal" data-target="#add-manage-person-modal">Přidat spravovanou osobu</a>
+                    <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#add-manage-person-modal">Přidat spravovanou osobu</a>
                 </div>
             </div>
         </div>
@@ -238,7 +240,7 @@
                 <div class="card-header">
                     <div class="card-title h5">Kvalifikace</div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -275,7 +277,7 @@
                 </div>
                 {% if perms.persons.spravce_kvalifikaci %}
                     <div class="card-footer text-center">
-                        <a href="{% url 'persons:qualifications:add' person.id %}" class="btn-info btn">Přidat kvalifikaci</a>
+                        <a href="{% url 'persons:qualifications:add' person.id %}" class="btn-primary btn">Přidat kvalifikaci</a>
                     </div>
                 {% endif %}
             </div>
@@ -285,7 +287,7 @@
                 <div class="card-header">
                     <div class="card-title h5">Oprávnění</div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -314,7 +316,7 @@
                 </div>
                 {% if perms.persons.spravce_opravneni %}
                     <div class="card-footer text-center">
-                        <a href="{% url 'persons:permissions:add' person.id %}" class="btn-info btn">Přidat oprávnění</a>
+                        <a href="{% url 'persons:permissions:add' person.id %}" class="btn-primary btn">Přidat oprávnění</a>
                     </div>
                 {% endif %}
             </div>
@@ -324,7 +326,7 @@
                 <div class="card-header">
                     <div class="card-title h5">Zapůjčené vybavení</div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -360,7 +362,7 @@
                 </div>
                 {% if perms.persons.spravce_vybaveni %}
                     <div class="card-footer text-center">
-                        <a href="{% url 'persons:equipments:add' person.id %}" class="btn-info btn">Přidat vybavení</a>
+                        <a href="{% url 'persons:equipments:add' person.id %}" class="btn-primary btn">Přidat vybavení</a>
                     </div>
                 {% endif %}
             </div>
