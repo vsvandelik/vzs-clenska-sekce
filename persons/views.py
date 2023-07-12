@@ -146,11 +146,11 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
         super().__init__(**kwargs)
         self.filter_form = None
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["filter_form"] = self.filter_form
-        context["filtered_get"] = self.request.GET.urlencode()
-        return context
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("filter_form", self.filter_form)
+        kwargs.setdefault("filtered_get", self.request.GET.urlencode())
+
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         persons_objects = self._filter_queryset_by_permission(Person.objects.with_age())
@@ -168,32 +168,46 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
     template_name = "persons/persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["qualifications"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.QUALIFICATION.value,
+        kwargs.setdefault(
+            "qualifications",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.QUALIFICATION.value,
+            ),
         )
-        context["permissions"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.PERMISSION.value,
+
+        kwargs.setdefault(
+            "permissions",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.PERMISSION.value,
+            ),
         )
-        context["equipments"] = FeatureAssignment.objects.filter(
-            person=self.kwargs["pk"],
-            feature__feature_type=Feature.Type.EQUIPMENT.value,
+
+        kwargs.setdefault(
+            "equipments",
+            FeatureAssignment.objects.filter(
+                person=self.kwargs["pk"],
+                feature__feature_type=Feature.Type.EQUIPMENT.value,
+            ),
         )
-        context["persons_to_manage"] = (
+
+        kwargs.setdefault(
+            "persons_to_manage",
             self._filter_queryset_by_permission()
             .exclude(managed_by=self.kwargs["pk"])
             .exclude(pk=self.kwargs["pk"])
-            .order_by("last_name", "first_name")
+            .order_by("last_name", "first_name"),
         )
 
         user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
-        context["available_groups"] = StaticGroup.objects.exclude(pk__in=user_groups)
+        kwargs.setdefault(
+            "available_groups", StaticGroup.objects.exclude(pk__in=user_groups)
+        )
 
-        context["features_texts"] = FeatureTypeTexts
+        kwargs.setdefault("features_texts", FeatureTypeTexts)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return self._filter_queryset_by_permission()
@@ -253,7 +267,7 @@ class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
         return self._filter_queryset_by_permission()
 
 
-class FeaturePermissionMixin(PermissionRequiredMixin):
+class FeaturePermissionMixin(PermissionRequiredMixin, generic.TemplateView):
     def __init__(self):
         super().__init__()
         self.feature_type = None
@@ -272,11 +286,10 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
         return user.has_perm(self.feature_type_texts.permission_name)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["texts"] = self.feature_type_texts
-        context["feature_type"] = self.feature_type
+        kwargs.setdefault("texts", self.feature_type_texts)
+        kwargs.setdefault("feature_type", self.feature_type)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_person_with_permission_check(self):
         try:
@@ -302,14 +315,15 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
             return None
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        context["person"] = self.get_person_with_permission_check()
-        context["features"] = Feature.objects.filter(
-            feature_type=self.feature_type_texts.shortcut, assignable=True
+        kwargs.setdefault("person", self.get_person_with_permission_check())
+        kwargs.setdefault(
+            "features",
+            Feature.objects.filter(
+                feature_type=self.feature_type_texts.shortcut, assignable=True
+            ),
         )
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -366,9 +380,9 @@ class FeatureAssignDeleteView(
         return self.feature_type_texts.success_message_assigning_delete
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["person"] = self.get_person_with_permission_check()
-        return context
+        kwargs.setdefault("person", self.get_person_with_permission_check())
+
+        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         if (
@@ -396,9 +410,9 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["assignment_matrix"] = self._get_features_assignment_matrix()
-        return context
+        kwargs.setdefault("assignment_matrix", self._get_features_assignment_matrix())
+
+        return super().get_context_data(**kwargs)
 
     def get_template_names(self):
         return f"persons/features/detail.html"
@@ -510,11 +524,11 @@ class GroupIndexView(GroupPermissionMixin, generic.ListView):
     model = Group
     template_name = "persons/groups/index.html"
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["static_groups"] = StaticGroup.objects.all()
-        context["dynamic_groups"] = StaticGroup.objects.all()
-        return context
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("static_groups", StaticGroup.objects.all())
+        kwargs.setdefault("dynamic_groups", [])
+
+        return super().get_context_data(**kwargs)
 
 
 class GroupDeleteView(
@@ -538,11 +552,14 @@ class StaticGroupDetailView(
     template_name = "persons/groups/detail_static.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["available_persons"] = Person.objects.exclude(
-            Q(groups__isnull=False) & Q(groups__id=self.object.pk)
+        kwargs.setdefault(
+            "available_persons",
+            Person.objects.exclude(
+                Q(groups__isnull=False) & Q(groups__id=self.object.pk)
+            ),
         )
-        return context
+
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:groups:detail", args=(self.object.pk,))
