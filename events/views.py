@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
-from ..models import Event, EventParticipation, Participation, EventPositionAssignment
+from .models import Event, EventParticipation, Participation, EventPositionAssignment
 from django.views import generic
-from ..forms import (
+from .forms import (
     TrainingForm,
     OneTimeEventForm,
     AddDeleteParticipantFromOneTimeEventForm,
@@ -9,7 +9,7 @@ from ..forms import (
 )
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
-from ..mixin_extensions import MessagesMixin, InvariantMixin
+from .mixin_extensions import MessagesMixin, InvariantMixin
 
 
 class EventCreateMixin(MessagesMixin, generic.FormView):

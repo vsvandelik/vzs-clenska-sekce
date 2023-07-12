@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
 from persons.models import Person, Feature
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 
 
 class Event(models.Model):
@@ -28,7 +28,7 @@ class Event(models.Model):
     )
     state = models.CharField(max_length=10, choices=State.choices)
     positions = models.ManyToManyField(
-        "events.EventPosition", through="events.EventPositionAssignment"
+        "positions.EventPosition", through="events.EventPositionAssignment"
     )
     participants = models.ManyToManyField(
         "persons.Person", through="events.EventParticipation"
@@ -109,34 +109,9 @@ class Event(models.Model):
         return self.name
 
 
-class EventPosition(models.Model):
-    name = models.CharField(_("Jméno"), max_length=50)
-    required_features = models.ManyToManyField("persons.Feature")
-    min_age_enabled = models.BooleanField(default=False)
-    max_age_enabled = models.BooleanField(default=False)
-    min_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
-    )
-    max_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
-    )
-
-    def required_qualifications(self):
-        return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
-
-    def required_permissions(self):
-        return self.required_features.filter(feature_type=Feature.Type.PERMISSION)
-
-    def required_equipment(self):
-        return self.required_features.filter(feature_type=Feature.Type.EQUIPMENT)
-
-    def __str__(self):
-        return self.name
-
-
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    position = models.ForeignKey("events.EventPosition", on_delete=models.CASCADE)
+    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField(
         _("Počet"), default=1, validators=[MinValueValidator(1)]
     )

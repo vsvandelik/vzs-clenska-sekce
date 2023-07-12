@@ -24,10 +24,7 @@ urlpatterns = [
     path("osoby/", include("persons.urls")),
     path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),
-    path(
-        "pozice/",
-        include((events_urls.positions_urls, "positions"), namespace="positions"),
-    ),
+    path("pozice/", include("positions.urls")),
     path("uzivatele/", include("users.urls")),
     path(
         "kvalifikace/",
