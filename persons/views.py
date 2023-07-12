@@ -267,7 +267,7 @@ class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
         return self._filter_queryset_by_permission()
 
 
-class FeaturePermissionMixin(PermissionRequiredMixin, generic.TemplateView):
+class FeaturePermissionMixin(PermissionRequiredMixin):
     def __init__(self):
         super().__init__()
         self.feature_type = None
