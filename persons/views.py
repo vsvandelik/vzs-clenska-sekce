@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Exists, OuterRef
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
@@ -25,6 +25,8 @@ from .forms import (
     PersonsFilterForm,
     TransactionCreateForm,
     TransactionEditForm,
+    AddPersonToGroupForm,
+    RemovePersonFromGroupForm,
 )
 from .models import (
     Person,
@@ -185,6 +187,12 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
             .exclude(pk=self.kwargs["pk"])
             .order_by("last_name", "first_name")
         )
+
+        user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
+        context["available_groups"] = StaticGroup.objects.exclude(pk__in=user_groups)
+
+        context["features_texts"] = FeatureTypeTexts
+
         return context
 
     def get_queryset(self):
@@ -381,15 +389,16 @@ class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
-        return (
-            super()
-            .get_queryset()
-            .filter(feature_type=feature_type_params.shortcut, parent=None)
-        )
+        return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
 class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     model = Feature
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["assignment_matrix"] = self._get_features_assignment_matrix()
+        return context
 
     def get_template_names(self):
         return f"persons/features/detail.html"
@@ -397,6 +406,40 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
+
+    def _get_features_assignment_matrix(self):
+        all_features = (
+            self.object.get_descendants(include_self=True)
+            .filter(assignable=True)
+            .prefetch_related("featureassignment_set")
+        )
+
+        all_persons = Person.objects.filter(
+            featureassignment__feature__in=all_features
+        ).distinct()
+
+        features_assignment_matrix = {
+            "columns": all_features,
+            "rows": [],
+        }
+
+        for person in all_persons:
+            features = all_features.annotate(
+                is_assigned=Exists(
+                    FeatureAssignment.objects.filter(
+                        person=person, feature=OuterRef("pk")
+                    )
+                )
+            ).values_list("is_assigned", flat=True)
+
+            features_assignment_matrix["rows"].append(
+                {
+                    "person": person,
+                    "features": list(features),
+                }
+            )
+
+        return features_assignment_matrix
 
 
 class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):
@@ -661,6 +704,60 @@ class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
         )
 
 
+class AddRemovePersonToGroupMixin(PersonPermissionMixin, generic.View):
+    http_method_names = ["post"]
+
+    ADD_TO_GROUP = "add"
+    REMOVE_FROM_GROUP = "remove"
+
+    def process_form(
+        self, request, form, person_pk, op, success_message, error_message
+    ):
+        if form.is_valid():
+            group = form.cleaned_data["group"]
+
+            if op == self.ADD_TO_GROUP:
+                group.members.add(person_pk)
+            else:
+                group.members.remove(person_pk)
+
+            messages.success(request, success_message)
+
+        else:
+            person_error_messages = " ".join(form.errors["group"])
+            messages.error(request, error_message + person_error_messages)
+
+        return redirect(reverse("persons:detail", args=[person_pk]))
+
+
+class AddPersonToGroupView(AddRemovePersonToGroupMixin):
+    def post(self, request, pk):
+        form = AddPersonToGroupForm(request.POST, person=Person.objects.get(pk=pk))
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            AddRemovePersonToGroupMixin.ADD_TO_GROUP,
+            _("Osoba byla úspěšně přidána do skupiny."),
+            _("Nepodařilo se přidat osobu do skupiny. "),
+        )
+
+
+class RemovePersonFromGroupView(AddRemovePersonToGroupMixin):
+    def post(self, request, pk):
+        form = RemovePersonFromGroupForm(request.POST, person=Person.objects.get(pk=pk))
+
+        return self.process_form(
+            request,
+            form,
+            pk,
+            AddRemovePersonToGroupMixin.REMOVE_FROM_GROUP,
+            _("Osoba byla úspěšně odebrána ze skupiny."),
+            _("Nepodařilo se odebrat osobu ze skupiny. "),
+        )
+
+
 class SendEmailToSelectedPersonsView(generic.View):
     http_method_names = ["get"]
 
@@ -784,11 +881,9 @@ class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateV
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.person)
 
-        context.setdefault("person", self.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
@@ -809,8 +904,6 @@ class TransactionListView(generic.detail.DetailView):
         raise ImproperlyConfigured("_get_transactions needs to be overridden.")
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
         person = self.object
         transactions = person.transactions
 
@@ -831,12 +924,12 @@ class TransactionListView(generic.detail.DetailView):
             transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
         )
 
-        context.setdefault("transactions_debt", transactions_debt)
-        context.setdefault("transactions_reward", transactions_reward)
-        context.setdefault("current_debt", current_debt)
-        context.setdefault("due_reward", due_reward)
+        kwargs.setdefault("transactions_debt", transactions_debt)
+        kwargs.setdefault("transactions_reward", transactions_reward)
+        kwargs.setdefault("current_debt", current_debt)
+        kwargs.setdefault("due_reward", due_reward)
 
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         if self.request.user.has_perm("persons.spravce_transakci"):
@@ -849,11 +942,9 @@ class TransactionQRView(generic.detail.DetailView):
     template_name = "persons/transactions/QR.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         queryset = Transaction.objects.filter(
@@ -875,11 +966,9 @@ class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateVie
     template_name = "persons/transactions/edit.html"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
@@ -896,11 +985,9 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        kwargs.setdefault("person", self.object.person)
 
-        context.setdefault("person", self.object.person)
-
-        return context
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})

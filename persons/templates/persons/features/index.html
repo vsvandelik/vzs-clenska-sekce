@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load vzs_filters %}
+{% load mptt_tags %}
 
 {% block title %}Seznam všech {{ texts.name_2_plural }}{% endblock %}
 
@@ -10,8 +12,11 @@
                     <div class="card-title h5">{{ texts.name_1|capfirst }}</div>
                 </div>
                 <div class="card-body">
-                    <ul>
-                        {% include "persons/features/_list_display_recursive.html" with type=feature_type %}
+                    <ul class="list-unstyled">
+                        {% recursetree features %}
+                            <li>{% indentation_by_level node.level %}<a href="{% url feature_type|add:':detail' node.id %}">{{ node.name }}</a></li>
+                            {{ children }}
+                        {% endrecursetree %}
                     </ul>
                 </div>
                 <div class="card-footer text-center">

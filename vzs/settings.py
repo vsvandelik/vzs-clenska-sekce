@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "tinymce",
     "django_select2",
+    "mptt",
     "tempus_dominus",
     # Local apps
     "users.apps.UsersConfig",

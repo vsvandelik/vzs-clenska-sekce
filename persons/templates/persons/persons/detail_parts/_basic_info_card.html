@@ -1,0 +1,65 @@
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Přehled osoby</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="mb-1 table">
+            <tbody>
+                {% if person.email %}
+                    <tr>
+                        <td class="text-nowrap text-bold">E-mailová adresa:</td>
+                        <td class="w-100"><a href="mailto:{{ person.email }}">{{ person.email }}</a></td>
+                    </tr>
+                {% endif %}
+                {% if person.phone %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Telefon:</td>
+                        <td class="w-100">{{ person.phone }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.date_of_birth %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Datum narození:</td>
+                        <td class="w-100">{{ person.date_of_birth }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.sex %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Pohlaví:</td>
+                        <td class="w-100">{{ person.get_sex_display }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.person_type %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Typ člena:</td>
+                        <td class="w-100">{{ person.get_person_type_display }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.birth_number %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Rodné číslo:</td>
+                        <td class="w-100">{{ person.birth_number }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.health_insurance_company %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Pojišťovna:</td>
+                        <td class="w-100">{{ person.get_health_insurance_company_display }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.address %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Adresa:</td>
+                        <td class="w-100">{{ person.address }}</td>
+                    </tr>
+                {% endif %}
+                {% if person.swimming_time %}
+                    <tr>
+                        <td class="text-nowrap text-bold">Čas na 100m:</td>
+                        <td class="w-100">{{ person.swimming_time }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>

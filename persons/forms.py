@@ -130,7 +130,8 @@ class FeatureAssignmentForm(ModelForm):
         for type, fields in non_valid_fields_for_feature_type.items():
             if feature_type == type:
                 for field in fields:
-                    self.fields.pop(field)
+                    if field in self.fields:
+                        self.fields.pop(field)
 
     def _setup_fee_field(self):
         if not self.instance or not hasattr(self.instance, "transaction"):
@@ -312,9 +313,13 @@ class FeatureForm(ModelForm):
         if not feature_type:
             return
 
-        self.fields["parent"].queryset = Feature.objects.filter(
-            feature_type=feature_type
-        )
+        features = Feature.objects.filter(feature_type=feature_type)
+
+        if self.instance is not None:
+            features = features.exclude(pk=self.instance.pk)
+
+        self.fields["parent"].queryset = features
+
         self.feature_type = feature_type
 
         if feature_type == Feature.Type.QUALIFICATION:
@@ -469,6 +474,34 @@ class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
     pass
 
 
+class AddRemovePersonToGroupForm(Form):
+    group = forms.ModelChoiceField(queryset=StaticGroup.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+
+class AddPersonToGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba je již ve skupině."))
+
+        return group
+
+
+class RemovePersonFromGroupForm(AddRemovePersonToGroupForm):
+    def clean_group(self):
+        group = self.cleaned_data["group"]
+
+        if not group.members.contains(self.person):
+            raise forms.ValidationError(_("Daná osoba není ve skupině přiřazena."))
+
+        return group
+
+
 class PersonsFilterForm(forms.Form):
     name = forms.CharField(label=_("Jméno"), required=False)
     email = forms.EmailField(label=_("E-mailová adresa"), required=False)
@@ -578,8 +611,7 @@ class TransactionCreateForm(TransactionCreateEditBaseForm):
 
 class TransactionEditForm(TransactionCreateEditBaseForm):
     def __init__(self, instance, initial, *args, **kwargs):
-        if instance.amount > 0:
-            initial.setdefault("is_reward", True)
-
+        initial["is_reward"] = instance.amount > 0
         instance.amount = abs(instance.amount)
+
         super().__init__(instance=instance, initial=initial, *args, **kwargs)
