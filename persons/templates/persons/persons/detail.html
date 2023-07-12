@@ -255,40 +255,36 @@
                 <div class="card-header">
                     <div class="card-title h5">Kvalifikace</div>
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Název</th>
-                                <th>Platnost od</th>
-                                <th>Platnost do</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for qualification in qualifications %}
-                                <tr {% if qualification.issuer or qualification.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                                    <td>{{ qualification.feature.name }}</td>
-                                    <td>{{ qualification.date_assigned }}</td>
-                                    <td>{% if qualification.date_expire %}{{ qualification.date_expire }}{% endif %}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a class="btn btn-success btn-sm" href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"><i class="fas fa-pen"></i></a>
-                                            <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:qualifications:delete" person.pk qualification.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% if qualification.issuer or qualification.code %}
-                                    <tr class="expandable-body">
-                                        <td colspan="4">
-                                            {% if qualification.issuer %}<p class="m-0 py-0"><strong>Vydavatel:&nbsp;</strong>{{ qualification.issuer }}</p>{% endif %}
-                                            {% if qualification.code %}<p class="m-0 py-0"><strong>Kód osvědčení:&nbsp;</strong>{{ qualification.code }}</p>{% endif %}
+                <div class="card-body {% if qualifications %}p-0{% endif %}">
+                    {% if not qualifications %}
+                        <p class="text-center">Žádná kvalifikace není přiřazena.</p>
+                    {% else %}
+                        <table class="table table-hover">
+                            <tbody>
+                                {% for qualification in qualifications %}
+                                    <tr {% if qualification.date_assigned or qualification.date_expire or qualification.issuer or qualification.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
+                                        <td>{{ qualification.feature.name }}</td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a class="btn btn-success btn-sm" href="{% url 'persons:qualifications:edit' person=person.id pk=qualification.id %}"><i class="fas fa-pen"></i></a>
+                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:qualifications:delete" person.pk qualification.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                            </div>
                                         </td>
                                     </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    {% if qualification.date_assigned or qualification.date_expire or qualification.issuer or qualification.code %}
+                                        <tr class="expandable-body">
+                                            <td colspan="2">
+                                                {% if qualification.date_assigned %}<p class="m-0 py-0"><strong>Platnost od:&nbsp;</strong>{{ qualification.date_assigned }}</p>{% endif %}
+                                                {% if qualification.date_expire %}<p class="m-0 py-0"><strong>Platnost do:&nbsp;</strong>{{ qualification.date_expire }}</p>{% endif %}
+                                                {% if qualification.issuer %}<p class="m-0 py-0"><strong>Vydavatel:&nbsp;</strong>{{ qualification.issuer }}</p>{% endif %}
+                                                {% if qualification.code %}<p class="m-0 py-0"><strong>Kód osvědčení:&nbsp;</strong>{{ qualification.code }}</p>{% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
                 </div>
                 {% if perms.persons.spravce_kvalifikaci %}
                     <div class="card-footer text-center">
@@ -302,32 +298,34 @@
                 <div class="card-header">
                     <div class="card-title h5">Oprávnění</div>
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Název</th>
-                                <th>Platnost od</th>
-                                <th>Platnost do</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for permission in permissions %}
-                                <tr>
-                                    <td>{{ permission.feature.name }}</td>
-                                    <td>{{ permission.date_assigned }}</td>
-                                    <td>{% if permission.date_expire %}{{ permission.date_expire }}{% endif %}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a class="btn btn-success btn-sm" href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"><i class="fas fa-pen"></i></a>
-                                            <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:permissions:delete" person.pk permission.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="card-body {% if permission %}p-0{% endif %}">
+                    {% if not permissions %}
+                        <p class="text-center">Žádné oprávnění není přiřazeno.</p>
+                    {% else %}
+                        <table class="table table-hover">
+                            <tbody>
+                                {% for permission in permissions %}
+                                    <tr{% if permission.date_assigned or permission.date_expire %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
+                                        <td>{{ permission.feature.name }}</td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a class="btn btn-success btn-sm" href="{% url 'persons:permissions:edit' person=person.id pk=permission.id %}"><i class="fas fa-pen"></i></a>
+                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:permissions:delete" person.pk permission.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% if permission.date_assigned or permission.date_expire %}
+                                        <tr class="expandable-body">
+                                            <td colspan="2">
+                                                {% if permission.date_assigned %}<p class="m-0 py-0"><strong>Platnost od:&nbsp;</strong>{{ permission.date_assigned }}</p>{% endif %}
+                                                {% if permission.date_expire %}<p class="m-0 py-0"><strong>Platnost do:&nbsp;</strong>{{ permission.date_expire }}</p>{% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
                 </div>
                 {% if perms.persons.spravce_opravneni %}
                     <div class="card-footer text-center">
@@ -341,39 +339,38 @@
                 <div class="card-header">
                     <div class="card-title h5">Zapůjčené vybavení</div>
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Položka</th>
-                                <th>Zapůjčeno od</th>
-                                <th>Zapůjčeno do</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for equipment in equipments %}
-                                <tr {% if equipment.code %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                                    <td>{{ equipment.feature.name }}</td>
-                                    <td>{{ equipment.date_assigned }}</td>
-                                    <td>{% if equipment.date_expire %}{{ equipment.date_expire }}{% endif %}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a class="btn btn-success btn-sm" href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"><i class="fas fa-pen"></i></a>
-                                            <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:equipments:delete" person.pk equipment.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% if equipment.code %}
-                                    <tr class="expandable-body">
-                                        <td colspan="4">
-                                            <p class="m-0 py-0"><strong>Inventární číslo:&nbsp;</strong>{{ equipment.code }}</p>
+                <div class="card-body {% if equipments %}p-0{% endif %}">
+                    {% if not equipments %}
+                        <p class="text-center">Žádné vybavení není přiřazeno.</p>
+                    {% else %}
+                        <table class="table table-hover">
+                            <tbody>
+                                {% for equipment in equipments %}
+                                    <tr {% if equipment.date_assigned or equipment.date_expire or equipment.code or equipment.transaction %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
+                                        <td>{{ equipment.feature.name }}</td>
+                                        <td>{{ equipment.date_assigned }}</td>
+                                        <td>{% if equipment.date_expire %}{{ equipment.date_expire }}{% endif %}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a class="btn btn-success btn-sm" href="{% url 'persons:equipments:edit' person=person.id pk=equipment.id %}"><i class="fas fa-pen"></i></a>
+                                                <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url "persons:equipments:delete" person.pk equipment.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                            </div>
                                         </td>
                                     </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    {% if equipment.date_assigned or equipment.date_expire or equipment.code or equipment.transaction %}
+                                        <tr class="expandable-body">
+                                            <td colspan="4">
+                                                {% if equipment.date_assigned %}<p class="m-0 py-0"><strong>Zapůjčeno od:&nbsp;</strong>{{ equipment.date_assigned }}</p>{% endif %}
+                                                {% if equipment.date_expire %}<p class="m-0 py-0"><strong>Zapůjčeno do:&nbsp;</strong>{{ equipment.date_expire }}</p>{% endif %}
+                                                {% if equipment.code %}<p class="m-0 py-0"><strong>Inventární číslo:&nbsp;</strong>{{ equipment.code }}</p>{% endif %}
+                                                {% if equipment.transaction %}<p class="m-0 py-0"><strong>Poplatek:&nbsp;</strong>{{ equipment.transaction.amount|negate }} Kč ({% if not equipment.transaction.is_settled %}ne{% endif %}uhrazen)</p>{% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
                 </div>
                 {% if perms.persons.spravce_vybaveni %}
                     <div class="card-footer text-center">

@@ -130,7 +130,8 @@ class FeatureAssignmentForm(ModelForm):
         for type, fields in non_valid_fields_for_feature_type.items():
             if feature_type == type:
                 for field in fields:
-                    self.fields.pop(field)
+                    if field in self.fields:
+                        self.fields.pop(field)
 
     def _setup_fee_field(self):
         if not self.instance or not hasattr(self.instance, "transaction"):
