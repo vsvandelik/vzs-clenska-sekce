@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from google_integration import google_directory
 from vzs import settings
 from vzs.forms import VZSDefaultFormHelper
+from vzs.widgets import DatePickerWithIcon
 from .models import Person, FeatureAssignment, Feature, StaticGroup, Transaction
 
 
@@ -17,11 +18,7 @@ class PersonForm(ModelForm):
     class Meta:
         model = Person
         exclude = ["features", "managed_persons"]
-        widgets = {
-            "date_of_birth": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            )
-        }
+        widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
         self.available_person_types = kwargs.pop("available_person_types", [])
@@ -86,13 +83,8 @@ class FeatureAssignmentForm(ModelForm):
         model = FeatureAssignment
         fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
         widgets = {
-            "date_assigned": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            ),
-            "date_expire": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS,
-                attrs={"type": "date"},
-            ),
+            "date_assigned": DatePickerWithIcon(),
+            "date_expire": DatePickerWithIcon(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -555,9 +547,7 @@ class TransactionCreateEditBaseForm(ModelForm):
         model = Transaction
         fields = ["amount", "reason", "date_due"]
         widgets = {
-            "date_due": widgets.DateInput(
-                format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-            ),
+            "date_due": DatePickerWithIcon(),
         }
 
     amount = forms.IntegerField(
