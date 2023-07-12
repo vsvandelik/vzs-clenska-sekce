@@ -1,23 +1,20 @@
 from django.urls import path, include
 
+from features import views as features_views
 from transactions import views as transactions_views
 from users import views as user_views
 from . import views
 
 app_name = "persons"
 
-feature_urls = [
-    path("", views.FeatureIndexView.as_view(), name="index"),
-    path("pridat/", views.FeatureEditView.as_view(), name="add"),
-    path("<int:pk>/", views.FeatureDetailView.as_view(), name="detail"),
-    path("<int:pk>/upravit/", views.FeatureEditView.as_view(), name="edit"),
-    path("<int:pk>/smazat/", views.FeatureDeleteView.as_view(), name="delete"),
-]
-
 nested_feature_assigning_urls = [
-    path("", views.FeatureAssignEditView.as_view(), name="add"),
-    path("<int:pk>/", views.FeatureAssignEditView.as_view(), name="edit"),
-    path("<int:pk>/smazat/", views.FeatureAssignDeleteView.as_view(), name="delete"),
+    path("", features_views.FeatureAssignEditView.as_view(), name="add"),
+    path("<int:pk>/", features_views.FeatureAssignEditView.as_view(), name="edit"),
+    path(
+        "<int:pk>/smazat/",
+        features_views.FeatureAssignDeleteView.as_view(),
+        name="delete",
+    ),
 ]
 
 groups_urlpatterns = [

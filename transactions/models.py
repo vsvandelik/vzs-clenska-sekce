@@ -19,7 +19,7 @@ class Transaction(models.Model):
     )
     event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
     feature_assigment = models.OneToOneField(
-        "persons.FeatureAssignment", on_delete=models.SET_NULL, null=True
+        "features.FeatureAssignment", on_delete=models.SET_NULL, null=True
     )
     fio_transaction = models.ForeignKey(
         "FioTransaction", on_delete=models.SET_NULL, null=True

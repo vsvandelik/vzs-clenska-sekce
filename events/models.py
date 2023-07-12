@@ -2,7 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
-from persons.models import Person, Feature
+from persons.models import Person
+from features.models import Feature
 from django.core.validators import MinValueValidator
 
 
@@ -34,7 +35,7 @@ class Event(models.Model):
         "persons.Person", through="events.EventParticipation"
     )
     requirements = models.ManyToManyField(
-        "persons.Feature", through="events.EventRequirement"
+        "features.Feature", through="events.EventRequirement"
     )
 
     def _is_top(self):
@@ -156,7 +157,7 @@ class EventOrganization(Participation):
 
 class EventRequirement(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey("features.Feature", on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -165,12 +166,14 @@ class EventRequirement(models.Model):
 
 class PriceList(models.Model):
     salary_base = models.PositiveIntegerField()
-    bonuses = models.ManyToManyField("persons.Feature", through="events.PriceListBonus")
+    bonuses = models.ManyToManyField(
+        "features.Feature", through="events.PriceListBonus"
+    )
 
 
 class PriceListBonus(models.Model):
     price_list = models.ForeignKey("events.PriceList", on_delete=models.CASCADE)
-    feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey("features.Feature", on_delete=models.CASCADE)
     bonus = models.PositiveIntegerField()
 
     class Meta:

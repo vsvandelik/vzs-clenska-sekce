@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "positions.apps.PositionsConfig",
     "pages.apps.PagesConfig",
     "transactions.apps.TransactionsConfig",
+    "features.apps.FeaturesConfig",
     # Template tags
     "vzs",
 ]
