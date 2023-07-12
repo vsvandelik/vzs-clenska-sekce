@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("events", "0009_alter_eventposition_max_age_and_more"),
+        ("events", "0008_eventposition_max_age_eventposition_max_age_enabled_and_more"),
         ("persons", "0024_delete_fiosettings_remove_transaction_event_and_more"),
     ]
 
