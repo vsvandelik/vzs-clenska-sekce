@@ -12,6 +12,8 @@ from datetime import timezone
 from django.utils import timezone
 from persons.models import Person, Feature
 from django_select2.forms import Select2Widget
+from django.forms.widgets import CheckboxInput
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -425,14 +427,18 @@ class AddDeleteParticipantFromOneTimeEventForm(Form):
         self.cleaned_data["event_id"] = self._event_id
         eid = self.cleaned_data["event_id"]
         try:
-            Person.objects.get(pk=pid)
-            event = Event.objects.get(pk=eid)
-            event.set_type()
-            if not event.is_one_time_event:
+            self.cleaned_data["person"] = Person.objects.get(pk=pid)
+            self.cleaned_data["event"] = Event.objects.get(pk=eid)
+            self.cleaned_data["event"].set_type()
+            if not self.cleaned_data["event"].is_one_time_event:
                 self.add_error("event_id", "Událost {event} není jednorázovou událostí")
-            if event.state in [Event.State.APPROVED, Event.State.FINISHED]:
+            if self.cleaned_data["event"].state in [
+                Event.State.APPROVED,
+                Event.State.FINISHED,
+            ]:
                 self.add_error(
-                    "event_id", f"Událost {event} je uzavřena nebo schválena"
+                    "event_id",
+                    f"Událost {self.cleaned_data['event']} je uzavřena nebo schválena",
                 )
         except Person.DoesNotExist:
             self.add_error("person_id", f"Osoba s id {pid} neexistuje")
@@ -453,8 +459,8 @@ class AddFeatureRequirementToPositionForm(Form):
         pid = self.cleaned_data["position_id"]
         fid = self.cleaned_data["feature_id"]
         try:
-            Feature.objects.get(pk=fid)
-            EventPosition.objects.get(pk=pid)
+            self.cleaned_data["feature"] = Feature.objects.get(pk=fid)
+            self.cleaned_data["position"] = EventPosition.objects.get(pk=pid)
         except EventPosition.DoesNotExist:
             self.add_error("position_id", f"Pozice s id {pid} neexistuje")
         except Feature.DoesNotExist:
@@ -502,3 +508,50 @@ class EventPositionAssignmentForm(ModelForm):
         else:
             instance.position = self.position
         instance.save()
+
+
+class AgeLimitPositionForm(ModelForm):
+    class Meta:
+        model = EventPosition
+        fields = ["min_age_enabled", "max_age_enabled", "min_age", "max_age"]
+        labels = {
+            "min_age_enabled": "Aktivní",
+            "max_age_enabled": "Aktivní",
+            "min_age": "Min",
+            "max_age": "Max",
+        }
+        widgets = {
+            "min_age_enabled": CheckboxInput(
+                attrs={"onchange": "minAgeCheckboxClicked(this)"}
+            ),
+            "max_age_enabled": CheckboxInput(
+                attrs={"onchange": "maxAgeCheckboxClicked(this)"}
+            ),
+        }
+
+    def clean(self):
+        super().clean()
+        if not self.cleaned_data["min_age_enabled"]:
+            self.cleaned_data["min_age"] = self.instance.min_age
+        if not self.cleaned_data["max_age_enabled"]:
+            self.cleaned_data["max_age"] = self.instance.max_age
+
+        fields = ["min_age", "max_age"]
+        for f in fields:
+            if self.cleaned_data[f"{f}_enabled"]:
+                if f not in self.cleaned_data or self.cleaned_data[f] is None:
+                    self.add_error(f, "Toto pole je nutné vyplnit")
+
+        if (
+            len(self.cleaned_data) == 4
+            and self.cleaned_data["min_age_enabled"]
+            and self.cleaned_data["max_age_enabled"]
+            and self.cleaned_data["min_age"] is not None
+            and self.cleaned_data["max_age"] is not None
+        ):
+            if self.cleaned_data["min_age"] > self.cleaned_data["max_age"]:
+                self.add_error(
+                    "max_age",
+                    "Hodnota minimální věkové hranice musí být menší nebo rovna hodnotě maximální věkové hranice",
+                )
+        return self.cleaned_data
