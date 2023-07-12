@@ -127,10 +127,6 @@ class UserGenerateNewPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
 
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        # should not happen
-        return super().form_invalid(form)
-
 
 def set_active_person(request, person):
     request.session["_active_person_pk"] = person.pk
