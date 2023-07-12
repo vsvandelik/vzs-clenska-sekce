@@ -61,11 +61,11 @@
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Začíná:</td>
-                                <td class="w-100">{{ event.time_start|date:'j.n.Y G:m' }}</td>
+                                <td class="w-100">{{ event.time_start}}</td>
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Končí:</td>
-                                <td class="w-100">{{ event.time_end|date:'j.n.Y G:m' }}</td>
+                                <td class="w-100">{{ event.time_end }}</td>
                             </tr>
 
                         </tbody>
@@ -100,7 +100,9 @@
                                                 <i class="fas fa-pen"></i>
                                             </a>
                                             <a class="btn btn-danger btn-sm"
-                                               href="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                               data-toggle="modal"
+                                               data-target="#delete-position-assignment-modal"
+                                               data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </div>
@@ -276,9 +278,12 @@
         </div>
     </div>
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
+    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'one_time_event_detail.js' %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("delete-position-assignment-modal")</script>
 {% endblock %}

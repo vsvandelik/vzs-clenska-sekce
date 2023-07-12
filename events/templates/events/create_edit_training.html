@@ -60,7 +60,7 @@
                                                                         {% with dates_weekday=dates|index_safe:weekday %}
                                                                             {% for date,checked in dates_weekday %}
                                                                                 <tr>
-                                                                                    {% with dateFormatted=date|date:'j.n.Y' %}
+                                                                                    {% with dateFormatted=date|date:"DATE_FORMAT" %}
                                                                                         <td class="w-100">
                                                                                             <input id="{{ dateFormatted }}"
                                                                                                    type="checkbox" name="day"
