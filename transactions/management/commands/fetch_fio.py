@@ -1,13 +1,12 @@
-from persons.utils import fetch_fio
-from persons.models import FioSettings
-
-from fiobank import ThrottlingError
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from fiobank import ThrottlingError
 
-from datetime import timedelta
+from transactions.models import FioSettings
+from transactions.utils import fetch_fio
 
 
 class Command(BaseCommand):
