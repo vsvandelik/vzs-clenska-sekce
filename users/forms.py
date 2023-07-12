@@ -58,7 +58,7 @@ class UserChangePasswordOldAndRepeatForm(UserBaseForm):
         label=_("Zopakujte nové heslo"), widget=forms.PasswordInput
     )
 
-    field_order = ["password_old", "", "password"]
+    field_order = ["password_old", "password", "password_repeat"]
 
     def clean_password_old(self):
         password_old = self.cleaned_data["password_old"]
