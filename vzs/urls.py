@@ -22,6 +22,7 @@ from persons import urls as persons_urls
 
 urlpatterns = [
     path("osoby/", include("persons.urls")),
+    path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),
     path(
         "pozice/",
