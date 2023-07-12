@@ -1,30 +1,54 @@
+from . import forms
+from .backends import GoogleBackend
+from .models import User, Permission
+
+from persons.models import Person
+
+from vzs import settings
+
 from django.views import generic
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.auth import views as auth_views
-from django.contrib.auth import models as auth_models
+from django.contrib.auth import (
+    views as auth_views,
+    models as auth_models,
+    authenticate,
+    login as auth_login,
+)
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.utils.functional import SimpleLazyObject
 from django.http import (
     HttpResponseRedirect,
     HttpResponseForbidden,
     HttpResponseBadRequest,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import authenticate, login as auth_login
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
 
 
-from .backends import GoogleBackend
-from persons.models import Person
-from .models import User, Permission
-from . import forms
-from vzs import settings
+class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
+    permission_required = "user_create_delete"
 
 
-class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
+class UserChangePasswordPermissionMixin(PermissionRequiredMixin):
+    permission_required = "user_change_password"
+
+    def has_permission(self):
+        if self.request.user == self.object:
+            return True
+
+        return super().has_permission()
+
+
+class UserManagePermissionPermissionMixin(PermissionRequiredMixin):
+    permission_required = "user_manage_permission"
+
+
+class UserCreateView(
+    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
     queryset = Person.objects.filter(user__isnull=True)
@@ -52,16 +76,13 @@ class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
         return super().get_context_data(**kwargs)
 
 
-class IndexView(generic.list.ListView):
-    model = User
-    template_name = "users/index.html"
-    context_object_name = "users"
-
-
-class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+class UserDeleteView(
+    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+):
     model = User
     context_object_name = "user_object"
     template_name = "users/delete.html"
+    permission_required = "user_create_delete"
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.person.pk})
@@ -77,12 +98,22 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
         return _(f"{self.user_representation} byl úspěšně odstraněn.")
 
 
-class UserChangePasswordView(SuccessMessageMixin, generic.edit.UpdateView):
+class UserChangePasswordView(
+    UserChangePasswordPermissionMixin,
+    SuccessMessageMixin,
+    generic.detail.SingleObjectTemplateResponseMixin,
+    generic.edit.ModelFormMixin,
+    generic.edit.ProcessFormView,
+):
     model = User
     context_object_name = "user_object"
     template_name = "users/change_password.html"
     form_class = forms.UserChangePasswordForm
     success_message = _("Heslo bylo úspěšně změněno.")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
@@ -128,19 +159,24 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
         )
 
 
-class PermissionsView(generic.list.ListView):
+class PermissionsView(UserManagePermissionPermissionMixin, generic.list.ListView):
     model = Permission
     template_name = "users/permissions.html"
     context_object_name = "permissions"
 
 
-class PermissionDetailView(generic.detail.DetailView):
+class PermissionDetailView(
+    UserManagePermissionPermissionMixin, generic.detail.DetailView
+):
     model = Permission
     template_name = "users/permission_detail.html"
 
 
 class UserAssignRemovePermissionView(
-    SuccessMessageMixin, generic.detail.SingleObjectMixin, generic.edit.FormView
+    UserManagePermissionPermissionMixin,
+    SuccessMessageMixin,
+    generic.detail.SingleObjectMixin,
+    generic.edit.FormView,
 ):
     form_class = forms.UserAssignRemovePermissionForm
 
