@@ -112,6 +112,14 @@ class Event(models.Model):
 class EventPosition(models.Model):
     name = models.CharField(_("Jméno"), max_length=50)
     required_features = models.ManyToManyField("persons.Feature")
+    min_age_enabled = models.BooleanField(default=False)
+    max_age_enabled = models.BooleanField(default=False)
+    min_age = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+    )
+    max_age = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+    )
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)

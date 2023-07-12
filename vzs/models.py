@@ -7,8 +7,7 @@ class RenderableModelMixin:
         meta = self._meta
         template_name = f"{meta.app_label}/{meta.model_name}_render_{style}.html"
 
-        if meta.model_name not in kwargs:
-            kwargs[meta.model_name] = self
+        kwargs.setdefault(meta.model_name, self)
 
         return render_to_string(template_name, kwargs)
 

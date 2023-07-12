@@ -313,9 +313,13 @@ class FeatureForm(ModelForm):
         if not feature_type:
             return
 
-        self.fields["parent"].queryset = Feature.objects.filter(
-            feature_type=feature_type
-        )
+        features = Feature.objects.filter(feature_type=feature_type)
+
+        if self.instance is not None:
+            features = features.exclude(pk=self.instance.pk)
+
+        self.fields["parent"].queryset = features
+
         self.feature_type = feature_type
 
         if feature_type == Feature.Type.QUALIFICATION:
@@ -588,39 +592,27 @@ class TransactionCreateEditBaseForm(ModelForm):
 
         return date_due
 
-    def save(self, commit=True):
-        transaction = super().save(False)
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get("amount")
+        is_reward = cleaned_data.get("is_reward")
 
-        if not self.cleaned_data["is_reward"]:
-            transaction.amount *= -1
+        if not is_reward:
+            cleaned_data["amount"] = -amount
 
-        if commit:
-            transaction.save()
-
-        return transaction
+        return cleaned_data
 
 
 class TransactionCreateForm(TransactionCreateEditBaseForm):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.person = person
-
-    def save(self, commit=True):
-        transaction = super().save(False)
-
-        transaction.person = self.person
-
-        if commit:
-            transaction.save()
-
-        return transaction
+        self.instance.person = person
 
 
 class TransactionEditForm(TransactionCreateEditBaseForm):
     def __init__(self, instance, initial, *args, **kwargs):
         if instance.amount > 0:
-            if "is_reward" not in initial:
-                initial["is_reward"] = True
+            initial.setdefault("is_reward", True)
 
         instance.amount = abs(instance.amount)
         super().__init__(instance=instance, initial=initial, *args, **kwargs)

@@ -14,3 +14,4 @@ django-environ
 django-tempus-dominus
 django-tinymce
 python-dateutil
+django-mptt
