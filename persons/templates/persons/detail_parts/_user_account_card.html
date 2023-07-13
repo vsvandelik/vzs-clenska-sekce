@@ -1,11 +1,7 @@
 {% load vzs_filters %}
 
-{% perm_url "persons:user-add" person.pk as perm_add %}
-{% perm_url "persons:user-delete" person.pk as perm_delete %}
-{% perm_url "persons:user-assign-permission" person.pk as perm_assign_permission %}
 {% perm_url "persons:user-remove-permission" person.pk as perm_remove_permission %}
 {% perm_url "persons:user-generate-new-password" person.pk as perm_generate_new_password %}
-{% perm_url "persons:user-change-password-other" person.pk as perm_change_password_other %}
 
 <div class="card">
     <div class="card-header">
@@ -45,29 +41,33 @@
     </div>
     <div class="card-footer text-center">
         {% if not person.user %}
-            {% if perm_add %}
-                <a href="{{ perm_add.url }}" class="btn-primary btn">Založit uživatelský účet</a>
-            {% endif %}
+            {% ifperm "persons:user-add" person.pk %}
+                <a href="{{ perm.url }}" class="btn-primary btn">Založit uživatelský účet</a>
+            {% endifperm %}
         {% else %}
-            <form method="post" action="{{ perm_generate_new_password.url }}" id="generate-new-password-form">
-                {% csrf_token %}
-            </form>
-
-            {% if not person.user.is_superuser and perm_assign_permission %}
-                <a href="{{ perm_assign_permission.url }}" class="btn btn-primary">Přidat povolení</a>
+            {% if perm_generate_new_password %}
+                <form method="post" action="{{ perm_generate_new_password.url }}" id="generate-new-password-form">
+                    {% csrf_token %}
+                </form>
             {% endif %}
 
-            {% if perm_change_password_other %}
-                <a href="{{ perm_change_password_other.url }}" class="btn btn-secondary">Změnit heslo</a>
-            {% endif %}
+            {% ifperm "persons:user-assign-permission" person.pk %}
+                {% if not person.user.is_superuser %}
+                    <a href="{{ perm.url }}" class="btn btn-primary">Přidat povolení</a>
+                {% endif %}
+            {% endifperm %}
+
+            {% ifperm "persons:user-change-password-other" person.pk %}
+                <a href="{{ perm.url }}" class="btn btn-secondary">Změnit heslo</a>
+            {% endifperm %}
 
             {% if perm_generate_new_password %}
                 <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
             {% endif %}
 
-            {% if perm_delete %}
+            {% ifperm "persons:user-delete" person.pk %}
                 <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
-            {% endif %}
+            {% endifperm %}
         {% endif %}
     </div>
 </div>

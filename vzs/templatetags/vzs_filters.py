@@ -2,6 +2,7 @@ from django import template
 from django.utils.safestring import mark_safe
 from django.urls import resolve
 from django.template.defaulttags import url, URLNode
+from django.template.base import Node
 
 from vzs import settings
 
@@ -78,7 +79,7 @@ class _PermURLContextVariable:
         return self.permitted
 
 
-class PermURLNode(URLNode):
+class _PermURLNode(URLNode):
     def __init__(self, url_node):
         super().__init__(
             url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar
@@ -105,4 +106,33 @@ class PermURLNode(URLNode):
 
 @register.tag
 def perm_url(parser, token):
-    return PermURLNode(url(parser, token))
+    return _PermURLNode(url(parser, token))
+
+
+class _IfPermNode(Node):
+    def __init__(self, nodelist, node):
+        self.nodelist = nodelist
+        self.node = node
+
+    def render(self, context):
+        asvar = self.node.asvar or "perm"
+
+        self.node.asvar = "var"
+        var = context.get(self.node.asvar)
+        self.node.render(context)
+        perm = context[self.node.asvar]
+        if var is not None:
+            context[self.node.asvar] = var
+
+        if not perm.permitted:
+            return ""
+
+        with context.push(perm=perm):
+            return self.nodelist.render(context)
+
+
+@register.tag
+def ifperm(parser, token):
+    nodelist = parser.parse(("endifperm",))
+    parser.next_token()
+    return _IfPermNode(nodelist, perm_url(parser, token))
