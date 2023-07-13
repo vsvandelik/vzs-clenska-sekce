@@ -1,0 +1,54 @@
+{% extends "persons/subview.html" %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Přiřazení {{ texts.name_2 }}{% endblock %}
+
+{% block subcontent %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">{% if object %}Úprava přiřazení {{ texts.name_2 }} - {{ object.feature.name }}{% else %}Přidání přiřazení {{ texts.name_2 }}{% endif %}</div>
+                </div>
+                <form method="post" id="assign-form">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        {{ form|crispy }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Uložit" class="btn btn-primary"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block scripts %}
+    {% if not object %}
+        <script>
+            const features = {
+                {% for feature in features %}
+                    {{ feature.pk }}: {
+                        fields_visibility: {
+                            code: {{ feature.collect_codes|bool_js }},
+                            issuer: {{ feature.collect_issuers|bool_js }},
+                            date_expire: {{ feature.never_expires|bool_js:True }},
+                            fee: {{ feature.fee|bool_js }},
+                            due_date: {{ feature.fee|bool_js }},
+                        }
+                        ,
+                        {% if feature.fee %}
+                            fee: {{ feature.fee }},
+                        {% endif %}
+                    },
+                {% endfor %}
+            }
+        </script>
+        <script src="{% static "features/assign-feature.js" %}"></script>
+    {% endif %}
+{% endblock %}

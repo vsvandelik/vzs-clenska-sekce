@@ -2,8 +2,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .utils import weekday_2_day_shortcut
 from django.utils import timezone
-from persons.models import Person, Feature
-from django.core.validators import MaxValueValidator, MinValueValidator
+from persons.models import Person
+from features.models import Feature
+from django.core.validators import MinValueValidator
 
 
 class Event(models.Model):
@@ -28,14 +29,10 @@ class Event(models.Model):
     )
     state = models.CharField(max_length=10, choices=State.choices)
     positions = models.ManyToManyField(
-        "events.EventPosition", through="events.EventPositionAssignment"
+        "positions.EventPosition", through="events.EventPositionAssignment"
     )
-    participants = models.ManyToManyField(
-        "persons.Person", through="events.EventParticipation"
-    )
-    requirements = models.ManyToManyField(
-        "persons.Feature", through="events.EventRequirement"
-    )
+    participants = models.ManyToManyField(Person, through="events.EventParticipation")
+    requirements = models.ManyToManyField(Feature, through="events.EventRequirement")
 
     def _is_top(self):
         return self.parent == None
@@ -109,40 +106,13 @@ class Event(models.Model):
         return self.name
 
 
-class EventPosition(models.Model):
-    name = models.CharField(_("Jméno"), max_length=50)
-    required_features = models.ManyToManyField("persons.Feature")
-    min_age_enabled = models.BooleanField(default=False)
-    max_age_enabled = models.BooleanField(default=False)
-    min_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
-    )
-    max_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
-    )
-
-    def required_qualifications(self):
-        return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
-
-    def required_permissions(self):
-        return self.required_features.filter(feature_type=Feature.Type.PERMISSION)
-
-    def required_equipment(self):
-        return self.required_features.filter(feature_type=Feature.Type.EQUIPMENT)
-
-    def __str__(self):
-        return self.name
-
-
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    position = models.ForeignKey("events.EventPosition", on_delete=models.CASCADE)
+    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField(
         _("Počet"), default=1, validators=[MinValueValidator(1)]
     )
-    organizers = models.ManyToManyField(
-        "persons.Person", through="events.EventOrganization"
-    )
+    organizers = models.ManyToManyField(Person, through="events.EventOrganization")
 
     class Meta:
         unique_together = ["event", "position"]
@@ -162,7 +132,7 @@ class Participation(models.Model):
 
 
 class EventParticipation(Participation):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
 
     class Meta(Participation.Meta):
@@ -170,7 +140,7 @@ class EventParticipation(Participation):
 
 
 class EventOrganization(Participation):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     event_position = models.ForeignKey(
         "events.EventPositionAssignment", on_delete=models.CASCADE
     )
@@ -181,7 +151,7 @@ class EventOrganization(Participation):
 
 class EventRequirement(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -190,12 +160,12 @@ class EventRequirement(models.Model):
 
 class PriceList(models.Model):
     salary_base = models.PositiveIntegerField()
-    bonuses = models.ManyToManyField("persons.Feature", through="events.PriceListBonus")
+    bonuses = models.ManyToManyField(Feature, through="events.PriceListBonus")
 
 
 class PriceListBonus(models.Model):
     price_list = models.ForeignKey("events.PriceList", on_delete=models.CASCADE)
-    feature = models.ForeignKey("persons.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     bonus = models.PositiveIntegerField()
 
     class Meta:
