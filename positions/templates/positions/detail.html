@@ -182,6 +182,41 @@
             </div>
         </div>
 
+        <div class="col-12 col-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Členství ve skupině</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Vyžadováno</td>
+                                <td>
+                                    {% if position.group_membership_required %}
+                                        ✔
+                                    {% else %}
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if position.group_membership_required %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Skupina</td>
+                                    <td>
+                                        <a href="{% url 'groups:detail' position.group.id %}">{{ position.group }}</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'positions:edit_group_membership' position.id %}" class="btn-primary btn">Upravit</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="modal fade" id="add-features" tabindex="-1" role="dialog"

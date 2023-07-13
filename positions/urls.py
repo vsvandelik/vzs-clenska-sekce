@@ -24,4 +24,9 @@ urlpatterns = [
         views.EditAgeLimitView.as_view(),
         name="edit_age_limit",
     ),
+    path(
+        "<int:pk>/upravit/skupinu/",
+        views.EditGroupMembershipView.as_view(),
+        name="edit_group_membership",
+    ),
 ]
