@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import Form, ModelForm
-from persons.models import Feature
+from features.models import Feature
 from positions.models import EventPosition
 from django.forms.widgets import CheckboxInput
 

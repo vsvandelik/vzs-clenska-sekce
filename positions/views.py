@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from .models import EventPosition
 from django.views import generic
 from django.shortcuts import reverse
-from persons.models import Feature
+from features.models import Feature
 from .forms import AddFeatureRequirementToPositionForm, AgeLimitPositionForm
 from events.mixin_extensions import MessagesMixin
 
