@@ -1,0 +1,13 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Potvrzení smazání skupiny
+{% endblock %}
+
+{% block modal_body %}
+    Opravdu chcete smazat skupinu {{ object.name }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "groups:delete" object.pk %}
+{% endblock %}

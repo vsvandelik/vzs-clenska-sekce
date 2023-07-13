@@ -16,40 +16,28 @@ Including another URLconf
 """
 from django.urls import path, include
 
-from events import urls as events_urls
 from pages import views as pages_views
-from persons import urls as persons_urls
 
 urlpatterns = [
     path("osoby/", include("persons.urls")),
+    path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),
-    path(
-        "pozice/",
-        include((events_urls.positions_urls, "positions"), namespace="positions"),
-    ),
+    path("pozice/", include("positions.urls")),
     path("uzivatele/", include("users.urls")),
+    path("skupiny/", include("groups.urls")),
     path(
         "kvalifikace/",
-        include(
-            (persons_urls.feature_urls, "qualifications"),
-            namespace="qualifications",
-        ),
+        include("features.urls", namespace="qualifications"),
         {"feature_type": "qualifications"},
     ),
     path(
         "opravneni/",
-        include(
-            (persons_urls.feature_urls, "permissions"),
-            namespace="permissions",
-        ),
+        include("features.urls", namespace="permissions"),
         {"feature_type": "permissions"},
     ),
     path(
         "vybaveni/",
-        include(
-            (persons_urls.feature_urls, "equipments"),
-            namespace="equipments",
-        ),
+        include("features.urls", namespace="equipments"),
         {"feature_type": "equipments"},
     ),
     path("tinymce/", include("tinymce.urls")),

@@ -1,6 +1,7 @@
 from . import forms
 from .backends import GoogleBackend
 from .models import User, Permission
+from .utils import get_random_password
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
@@ -28,8 +29,15 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseBadRequest,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import (
+    authenticate,
+    login as auth_login,
+    update_session_auth_hash,
+)
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
+from django.core.mail import send_mail
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
@@ -131,18 +139,9 @@ class UserDeleteView(
         return _(f"{self.user_representation} byl úspěšně odstraněn.")
 
 
-class UserChangePasswordView(
-    UserChangePasswordPermissionMixin,
-    SuccessMessageMixin,
-    generic.detail.SingleObjectTemplateResponseMixin,
-    generic.edit.ModelFormMixin,
-    generic.edit.ProcessFormView,
-):
+class UserChangePasswordBaseMixin(generic.edit.UpdateView):
     model = User
     context_object_name = "user_object"
-    template_name = "users/change_password.html"
-    form_class = forms.UserChangePasswordForm
-    success_message = _("Heslo bylo úspěšně změněno.")
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -150,6 +149,67 @@ class UserChangePasswordView(
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
+
+    def get_form_kwargs(self):
+        # a weird trick that ensures that the logged in user instance gets the changes
+        kwargs = super().get_form_kwargs()
+
+        if self.request.user == self.object:
+            kwargs.update({"instance": self.request.user})
+
+        return kwargs
+
+    def form_valid(self, form):
+        self.object = form.save()
+
+        update_session_auth_hash(self.request, self.object)
+
+        return generic.edit.FormMixin.form_valid(self, form)
+
+
+class UserChangePasswordMixin(SuccessMessageMixin, UserChangePasswordBaseMixin):
+    pass
+
+
+class UserChangePasswordBaseMixin(UserChangePasswordMixin):
+    template_name = "users/change_password.html"
+    success_message = _("Heslo bylo úspěšně změněno.")
+
+
+class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
+    form_class = forms.UserChangePasswordOldAndRepeatForm
+
+
+class UserChangePasswordOtherView(UserChangePasswordBaseMixin):
+    form_class = forms.UserChangePasswordRepeatForm
+
+
+class UserGenerateNewPasswordView(UserChangePasswordMixin):
+    http_method_names = ["post"]
+    form_class = forms.UserChangePasswordForm
+    success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        self.password = get_random_password()
+
+        kwargs["data"] = {"password": self.password}
+
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        send_mail(
+            _("Vaše heslo bylo změněno"),
+            _(f"Vaše heslo bylo změněno administrátorem na {self.password}."),
+            None,
+            [self.object.person.email],
+            fail_silently=False,
+        )
+
+        return response
 
 
 def set_active_person(request, person):

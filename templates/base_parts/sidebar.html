@@ -16,8 +16,8 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
-                <li class="nav-item {% active_link "persons:index || persons:add || persons:groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
-                    <a href="#" class="nav-link {% active_link "persons:index || persons:add || persons:groups:index || qualifications:index || permissions:index || equipments:index" %}">
+                <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
+                    <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" %}">
                         <i class="nav-icon fas fa-user"></i>
                         <p>
                             Osoby
@@ -38,7 +38,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url "persons:groups:index" %}" class="nav-link {% active_link "persons:groups:index" %}">
+                            <a href="{% url "groups:index" %}" class="nav-link {% active_link "groups:index" %}">
                                 <i class=" far fa-circle nav-icon"></i>
                                 <p>Skupiny</p>
                             </a>
