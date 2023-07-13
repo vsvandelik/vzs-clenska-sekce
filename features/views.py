@@ -116,6 +116,7 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["feature_type"] = self.feature_type_texts.shortcut
+        kwargs["person"] = self.get_person_with_permission_check()
         return kwargs
 
 

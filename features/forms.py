@@ -74,12 +74,24 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
             return self.instance.feature
         elif self.instance.pk is not None:
             return FeatureAssignment.objects.get(pk=self.instance.pk).feature
-        else:
+        elif "feature" in cleaned_data:
             return cleaned_data["feature"]
+        else:
+            return None
+
+    def clean_feature(self):
+        feature = self.cleaned_data.get("feature")
+        if feature is None:
+            raise ValidationError(_("Položka k přiřazení není správně vyplněna."))
+
+        return feature
 
     def clean_fee(self):
         fee_value = self.cleaned_data.get("fee")
         feature_value = self._get_feature(self.cleaned_data)
+
+        if not feature_value:
+            return fee_value
 
         if not feature_value.fee and fee_value:
             raise ValidationError(
@@ -106,6 +118,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         due_date = self.cleaned_data.get("due_date")
         feature_value = self._get_feature(self.cleaned_data)
 
+        if not feature_value:
+            return due_date
+
         if due_date and feature_value.feature_type != Feature.Type.EQUIPMENT:
             raise ValidationError(
                 _("Poplatek může být vyplněn pouze u vlastnosti typu vybavení.")
@@ -128,6 +143,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         date_expire_value = self.cleaned_data["date_expire"]
         feature_value = self._get_feature(self.cleaned_data)
 
+        if not feature_value:
+            return date_expire_value
+
         if feature_value.never_expires and date_expire_value is not None:
             raise ValidationError(
                 _("Je vyplněné datum expirace u vlastnosti s neomezenou platností.")
@@ -139,6 +157,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         issuer = self.cleaned_data["issuer"]
         feature = self._get_feature(self.cleaned_data)
 
+        if not feature:
+            return issuer
+
         if not feature.collect_issuers and issuer is not None:
             raise ValidationError(
                 _("Je vyplněn vydavatel u vlastnosti u které se vydavatel neeviduje.")
@@ -149,6 +170,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
     def clean_code(self):
         code = self.cleaned_data["code"]
         feature = self._get_feature(self.cleaned_data)
+
+        if not feature:
+            return code
 
         if not feature.collect_codes and code is not None:
             raise ValidationError(
@@ -220,13 +244,12 @@ class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     class Meta(FeatureAssignmentBaseFormMixin.Meta):
         fields = ["feature"] + FeatureAssignmentBaseFormMixin.Meta.fields
 
-    def __init__(self, feature_type=None, *args, **kwargs):
+    def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if feature_type:
-            self.fields["feature"].queryset = Feature.objects.filter(
-                feature_type=feature_type, assignable=True
-            )
+        self.fields["feature"].queryset = Feature.objects.filter(
+            feature_type=feature_type, assignable=True
+        ).exclude(featureassignment__person=person)
 
         if self.instance.pk:
             self._remove_not_collected_field(self.instance.feature)
