@@ -17,6 +17,7 @@ from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     PersonsFilterForm,
+    MyProfileUpdateForm,
 )
 from .models import Person
 from .utils import (
@@ -327,3 +328,20 @@ class MyProfileView(generic.DetailView):
         extend_kwargs_of_assignment_features(self.request.active_person, kwargs)
 
         return super().get_context_data(**kwargs)
+
+
+class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
+    model = Person
+    template_name = "persons/my_profile_edit.html"
+    form_class = MyProfileUpdateForm
+    success_message = _("Váš profil byl úspěšně upraven.")
+    success_url = reverse_lazy("my-profile:index")
+
+    def get_object(self, queryset=None):
+        return self.request.active_person
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
+        )
+        return super().form_invalid(form)

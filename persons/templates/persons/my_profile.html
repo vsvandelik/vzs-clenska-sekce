@@ -9,6 +9,11 @@
 
     <div class="row">
         <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
+                </div>
+            </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'my-profile:edit' %}" class="btn btn-success">Upravit kontaktní údaje</a>
             </div>
@@ -50,7 +55,7 @@
         {% endif %}
         {% if equipments %}
             <div class="col-12 col-md-4">
-                {% include "persons/my_profile_parts/features_assignment_card.html" with title="Zapůjčené vybavení"   texts=features_texts.equipments items=equipments  %}
+                {% include "persons/my_profile_parts/features_assignment_card.html" with title="Zapůjčené vybavení"   texts=features_texts.equipments items=equipments %}
             </div>
         {% endif %}
     </div>

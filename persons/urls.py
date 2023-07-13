@@ -10,7 +10,7 @@ app_name = "persons"
 
 my_profile_urlpatterns = [
     path("", views.MyProfileView.as_view(), name="index"),
-    path("upravit/", views.MyProfileView.as_view(), name="edit"),
+    path("upravit/", views.MyProfileUpdateView.as_view(), name="edit"),
 ]
 
 nested_feature_assigning_urls = [
