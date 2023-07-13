@@ -16,9 +16,14 @@ Including another URLconf
 """
 from django.urls import path, include
 
+import persons.urls
 from pages import views as pages_views
 
 urlpatterns = [
+    path(
+        "muj-profil/",
+        include((persons.urls.my_profile_urlpatterns, "my-profile"), "my-profile"),
+    ),
     path("osoby/", include("persons.urls")),
     path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),

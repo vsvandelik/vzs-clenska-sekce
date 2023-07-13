@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Můj profil{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'my-profile:edit' %}" class="btn btn-success">Upravit kontaktní údaje</a>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'persons:user-change-password' person.pk %}" class="btn btn-info">Změnit heslo</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 ">
+            {% include "persons/detail_parts/_basic_info_card.html" with title="Evidované informace" %}
+        </div>
+    </div>
+    <div class="row">
+        {% if person.groups.count %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/groups_card.html" %}
+            </div>
+        {% endif %}
+        {% if person.managed_persons.count %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/managed_persons_card.html" %}
+            </div>
+        {% endif %}
+        {% if person.managed_by.count %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/managing_me_persons_card.html" %}
+            </div>
+        {% endif %}
+        {% if qualifications %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/features_assignment_card.html" with title="Kvalifikace"  texts=features_texts.qualifications items=qualifications %}
+            </div>
+        {% endif %}
+        {% if permissions %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/features_assignment_card.html" with title="Oprávnění"  texts=features_texts.permissions  items=permissions %}
+            </div>
+        {% endif %}
+        {% if equipments %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/features_assignment_card.html" with title="Zapůjčené vybavení"   texts=features_texts.equipments items=equipments  %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load vzs_filters %}
+
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Osoby, které spravujete <span class="text-muted h6">(přepínat můžete v pravém horním rohu)</span></div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <tbody>
+                {% for managed_person in person.managed_persons.all %}
+                    <tr>
+                        <td class="align-middle">{{ managed_person.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>

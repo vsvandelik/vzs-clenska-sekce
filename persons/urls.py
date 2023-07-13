@@ -8,6 +8,11 @@ from . import views
 
 app_name = "persons"
 
+my_profile_urlpatterns = [
+    path("", views.MyProfileView.as_view(), name="index"),
+    path("upravit/", views.MyProfileView.as_view(), name="edit"),
+]
+
 nested_feature_assigning_urls = [
     path("", features_views.FeatureAssignEditView.as_view(), name="add"),
     path("<int:pk>/", features_views.FeatureAssignEditView.as_view(), name="edit"),
