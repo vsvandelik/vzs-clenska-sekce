@@ -1,5 +1,12 @@
 {% load vzs_filters %}
 
+{% perm_url "persons:user-add" person.pk as perm_add %}
+{% perm_url "persons:user-delete" person.pk as perm_delete %}
+{% perm_url "persons:user-assign-permission" person.pk as perm_assign_permission %}
+{% perm_url "persons:user-remove-permission" person.pk as perm_remove_permission %}
+{% perm_url "persons:user-generate-new-password" person.pk as perm_generate_new_password %}
+{% perm_url "persons:user-change-password-other" person.pk as perm_change_password_other %}
+
 <div class="card">
     <div class="card-header">
         <div class="card-title h5">Uživatelský účet</div>
@@ -8,62 +15,57 @@
         {% if not person.user %}
             <p class="text-center">Účet není zřízen.</p>
         {% else %}
-            {% url "persons:user-remove-permission" person.pk as remove_permission_url %}
-            {% with is_permitted_to_remove_permissions=remove_permission_url|is_permitted:user %}
-                {% if is_permitted_to_remove_permissions %}
-                    <form method="post" action="{{ remove_permission_url }}" id="permission-delete-form">
-                        {% csrf_token %}
-                    </form>
-                {% endif %}
-                <table class="table table-striped">
-                    <tbody>
-                        {% if not person.user.is_superuser %}
-                            {% for permission in person.user.user_permissions.all %}
-                                <tr>
-                                    <td class="align-middle">{{ permission.name }}</td>
-                                    <td class="text-center">
-                                        {% if is_permitted_to_remove_permissions %}
-                                            <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
+            {% if perm_remove_permission %}
+                <form method="post" action="{{ perm_remove_permission.url }}" id="permission-delete-form">
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+            <table class="table table-striped">
+                <tbody>
+                    {% if not person.user.is_superuser %}
+                        {% for permission in person.user.user_permissions.all %}
                             <tr>
-                                <td>Tato osoba má všechna povolení, protože je administrátor.</td>
-                                <td></td>
+                                <td class="align-middle">{{ permission.name }}</td>
+                                <td class="text-center">
+                                    {% if perm_remove_permission %}
+                                        <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                    {% endif %}
+                                </td>
                             </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>Tato osoba má všechna povolení, protože je administrátor.</td>
+                            <td></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         {% endif %}
     </div>
     <div class="card-footer text-center">
         {% if not person.user %}
-            <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
+            {% if perm_add %}
+                <a href="{{ perm_add.url }}" class="btn-primary btn">Založit uživatelský účet</a>
+            {% endif %}
         {% else %}
-            <form method="post" action="{% url "persons:user-generate-new-password" person.pk %}" id="generate-new-password-form">
+            <form method="post" action="{{ perm_generate_new_password.url }}" id="generate-new-password-form">
                 {% csrf_token %}
             </form>
 
-            {% url "persons:user-assign-permission" person.pk as assign_permission_url %}
-            {% if not person.user.is_superuser and assign_permission_url|is_permitted:user %}
-                <a href="{{ assign_permission_url }}" class="btn btn-primary">Přidat povolení</a>
+            {% if not person.user.is_superuser and perm_assign_permission %}
+                <a href="{{ perm_assign_permission.url }}" class="btn btn-primary">Přidat povolení</a>
             {% endif %}
 
-            {% url "persons:user-change-password-other" person.pk as change_password_other_url %}
-            {% if change_password_other_url|is_permitted:user %}
-                <a href="{{ change_password_other_url }}" class="btn btn-secondary">Změnit heslo</a>
+            {% if perm_change_password_other %}
+                <a href="{{ perm_change_password_other.url }}" class="btn btn-secondary">Změnit heslo</a>
             {% endif %}
 
-            {% url "persons:user-generate-new-password" person.pk as generate_new_password_url %}
-            {% if generate_new_password_url|is_permitted:user %}
+            {% if perm_generate_new_password %}
                 <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
             {% endif %}
 
-            {% url "persons:user-delete" person.pk as delete_url %}
-            {% if delete_url|is_permitted:user %}
+            {% if perm_delete %}
                 <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
             {% endif %}
         {% endif %}

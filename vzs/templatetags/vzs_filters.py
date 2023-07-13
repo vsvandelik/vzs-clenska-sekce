@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 from django.urls import resolve
+from django.template.defaulttags import url, URLNode
 
 from vzs import settings
 
@@ -68,11 +69,40 @@ def indentation_by_level(level):
     return "—" * level + " "
 
 
-@register.filter
-def is_permitted(url, user):
-    match = resolve(url)
+class _PermURLContextVariable:
+    def __init__(self, url, permitted):
+        self.url = url
+        self.permitted = permitted
 
-    kwargs = match.kwargs
-    view = match.func.view_class
+    def __bool__(self):
+        return self.permitted
 
-    return view.view_has_permission(user, **kwargs)
+
+class PermURLNode(URLNode):
+    def __init__(self, url_node):
+        super().__init__(
+            url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar
+        )
+
+    def render(self, context):
+        super().render(context)
+
+        if not self.asvar:
+            return ""
+
+        url = context[self.asvar]
+
+        match = resolve(url)
+
+        permitted = match.func.view_class.view_has_permission(
+            context["user"], **match.kwargs
+        )
+
+        context[self.asvar] = _PermURLContextVariable(url, permitted)
+
+        return ""
+
+
+@register.tag
+def perm_url(parser, token):
+    return PermURLNode(url(parser, token))
