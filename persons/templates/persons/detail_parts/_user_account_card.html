@@ -16,12 +16,6 @@
                     </form>
                 {% endif %}
                 <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Povolení</th>
-                            <th></th>
-                        </tr>
-                    </thead>
                     <tbody>
                         {% if not person.user.is_superuser %}
                             {% for permission in person.user.user_permissions.all %}
