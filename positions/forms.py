@@ -13,13 +13,13 @@ class AddFeatureRequirementToPositionForm(Form):
         super().__init__(*args, **kwargs)
 
     def clean(self):
-        super().clean()
-        self.cleaned_data["position_id"] = self._position_id
-        pid = self.cleaned_data["position_id"]
-        fid = self.cleaned_data["feature_id"]
+        cleaned_data = super().clean()
+        cleaned_data["position_id"] = self._position_id
+        pid = cleaned_data["position_id"]
+        fid = cleaned_data["feature_id"]
         try:
-            self.cleaned_data["feature"] = Feature.objects.get(pk=fid)
-            self.cleaned_data["position"] = EventPosition.objects.get(pk=pid)
+            cleaned_data["feature"] = Feature.objects.get(pk=fid)
+            cleaned_data["position"] = EventPosition.objects.get(pk=pid)
         except EventPosition.DoesNotExist:
             self.add_error("position_id", f"Pozice s id {pid} neexistuje")
         except Feature.DoesNotExist:
@@ -27,7 +27,7 @@ class AddFeatureRequirementToPositionForm(Form):
                 "feature_id",
                 f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
             )
-        return self.cleaned_data
+        return cleaned_data
 
 
 class AgeLimitPositionForm(ModelForm):
@@ -50,28 +50,31 @@ class AgeLimitPositionForm(ModelForm):
         }
 
     def clean(self):
-        super().clean()
-        if not self.cleaned_data["min_age_enabled"]:
-            self.cleaned_data["min_age"] = self.instance.min_age
-        if not self.cleaned_data["max_age_enabled"]:
-            self.cleaned_data["max_age"] = self.instance.max_age
+        cleaned_data = super().clean()
+        min_age_enabled = cleaned_data["min_age_enabled"]
+        max_age_enabled = cleaned_data["max_age_enabled"]
+
+        if not min_age_enabled:
+            cleaned_data["min_age"] = self.instance.min_age
+        if not max_age_enabled:
+            cleaned_data["max_age"] = self.instance.max_age
 
         fields = ["min_age", "max_age"]
         for f in fields:
-            if self.cleaned_data[f"{f}_enabled"]:
-                if f not in self.cleaned_data or self.cleaned_data[f] is None:
+            if eval(f"{f}_enabled"):
+                if f not in cleaned_data or cleaned_data[f] is None:
                     self.add_error(f, "Toto pole je nutné vyplnit")
 
         if (
-            len(self.cleaned_data) == 4
-            and self.cleaned_data["min_age_enabled"]
-            and self.cleaned_data["max_age_enabled"]
-            and self.cleaned_data["min_age"] is not None
-            and self.cleaned_data["max_age"] is not None
+            len(cleaned_data) == 4
+            and min_age_enabled
+            and max_age_enabled
+            and cleaned_data["min_age"] is not None
+            and cleaned_data["max_age"] is not None
         ):
-            if self.cleaned_data["min_age"] > self.cleaned_data["max_age"]:
+            if cleaned_data["min_age"] > cleaned_data["max_age"]:
                 self.add_error(
                     "max_age",
                     "Hodnota minimální věkové hranice musí být menší nebo rovna hodnotě maximální věkové hranice",
                 )
-        return self.cleaned_data
+        return cleaned_data
