@@ -52,8 +52,12 @@ class EventDetailViewMixin(InvariantMixin, generic.DetailView):
     invariant_failed_redirect_url = reverse_lazy("events:index")
     context_object_name = "event"
 
-    def event_position_assignments(self):
-        return EventPositionAssignment.objects.filter(event=self.object)
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "event_position_assignments",
+            EventPositionAssignment.objects.filter(event=self.object).all(),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class TrainingDetailView(EventDetailViewMixin):
@@ -70,17 +74,25 @@ class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "events/one_time_event_detail.html"
     invariant = lambda _, e: e.is_one_time_event
 
-    def persons(self):
-        return Person.objects.all()
-
-    def event_participation(self):
-        return EventParticipation.objects.filter(event=self.object)
-
-    def event_participation_approved(self):
-        return self.event_participation().filter(state=Participation.State.APPROVED)
-
-    def event_participation_substitute(self):
-        return self.event_participation().filter(state=Participation.State.SUBSTITUTE)
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("persons", Person.objects.all())
+        kwargs.setdefault(
+            "event_participation",
+            EventParticipation.objects.filter(event=self.object).all(),
+        )
+        kwargs.setdefault(
+            "event_participation_approved",
+            EventParticipation.objects.filter(
+                event=self.object, state=Participation.State.APPROVED
+            ),
+        )
+        kwargs.setdefault(
+            "event_participation_substitute",
+            EventParticipation.objects.filter(
+                event=self.object, state=Participation.State.SUBSTITUTE
+            ),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):

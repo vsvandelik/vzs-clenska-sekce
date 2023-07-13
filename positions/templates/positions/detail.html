@@ -207,15 +207,15 @@
                             </thead>
 
                             <tbody id="qualifications-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=view.qualifications.all features_not_required=view.qualifications_not_required detail_name='qualifications:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=qualifications features_not_required=qualifications_not_required detail_name='qualifications:detail' %}
                             </tbody>
 
                             <tbody id="permissions-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=view.permissions.all features_not_required=view.permissions_not_required detail_name='permissions:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=permissions features_not_required=permissions_not_required detail_name='permissions:detail' %}
                             </tbody>
 
                             <tbody id="equipment-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=view.equipment.all features_not_required=view.equipment_not_required detail_name='equipments:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=equipment features_not_required=equipment_not_required detail_name='equipments:detail' %}
                             </tbody>
                         </table>
                     </form>

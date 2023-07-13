@@ -39,25 +39,25 @@ class PositionDeleteView(PositionMixin, generic.DeleteView):
 class PositionDetailView(PositionMixin, generic.DetailView):
     template_name = "positions/detail.html"
 
-    def qualifications(self):
-        return Feature.qualifications.all()
-
-    def qualifications_not_required(self):
-        return Feature.qualifications.all().difference(
-            self.object.required_features.all()
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("qualifications", Feature.qualifications.all())
+        kwargs.setdefault(
+            "qualifications_not_required",
+            Feature.qualifications.all().difference(
+                self.object.required_features.all()
+            ),
         )
-
-    def permissions(self):
-        return Feature.permissions.all()
-
-    def permissions_not_required(self):
-        return Feature.permissions.all().difference(self.object.required_features.all())
-
-    def equipment(self):
-        return Feature.equipments.all()
-
-    def equipment_not_required(self):
-        return Feature.equipments.all().difference(self.object.required_features.all())
+        kwargs.setdefault("permissions", Feature.permissions.all())
+        kwargs.setdefault(
+            "permissions_not_required",
+            Feature.permissions.all().difference(self.object.required_features.all()),
+        )
+        kwargs.setdefault("equipment", Feature.equipments.all())
+        kwargs.setdefault(
+            "equipment_not_required",
+            Feature.equipments.all().difference(self.object.required_features.all()),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class AddRemoveFeatureFromPosition(MessagesMixin, generic.FormView):
