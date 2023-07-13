@@ -1,5 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.urls import resolve
 
 from vzs import settings
 
@@ -61,8 +62,17 @@ def link_to_admin_email(link_text=None):
 def negate(value):
     return -value
 
-  
+
 @register.simple_tag
 def indentation_by_level(level):
     return "—" * level + " "
 
+
+@register.filter
+def is_permitted(url, user):
+    match = resolve(url)
+
+    kwargs = match.kwargs
+    view = match.func.view_class
+
+    return view.view_has_permission(user, **kwargs)

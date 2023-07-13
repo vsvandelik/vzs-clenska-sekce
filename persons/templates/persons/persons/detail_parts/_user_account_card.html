@@ -1,3 +1,5 @@
+{% load vzs_filters %}
+
 <div class="card">
     <div class="card-header">
         <div class="card-title h5">Uživatelský účet</div>
@@ -6,34 +8,39 @@
         {% if not person.user %}
             <p class="text-center">Účet není zřízen.</p>
         {% else %}
-            <form method="post" action="{% url "persons:user-remove-permission" person.pk %}" id="permission-delete-form">
-                {% csrf_token %}
-            </form>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Povolení</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if not person.user.is_superuser %}
-                        {% for permission in person.user.user_permissions.all %}
-                            <tr>
-                                <td class="align-middle">{{ permission.name }}</td>
-                                <td class="text-center">
-                                    <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+            {% url "persons:user-remove-permission" person.pk as remove_permission_url %}
+            {% with is_permitted_to_remove_permissions=remove_permission_url|is_permitted:user %}
+                <form method="post" action="{{ remove_permission_url }}" id="permission-delete-form">
+                    {% csrf_token %}
+                </form>
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td>Tato osoba má všechna povolení, protože je administrátor.</td>
-                            <td></td>
+                            <th>Povolení</th>
+                            <th></th>
                         </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if not person.user.is_superuser %}
+                            {% for permission in person.user.user_permissions.all %}
+                                <tr>
+                                    <td class="align-middle">{{ permission.name }}</td>
+                                    <td class="text-center">
+                                        {% if is_permitted_to_remove_permissions %}
+                                            <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td>Tato osoba má všechna povolení, protože je administrátor.</td>
+                                <td></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            {% endwith %}
         {% endif %}
     </div>
     <div class="card-footer text-center">
@@ -41,10 +48,21 @@
             <a href="{% url "persons:user-add" person.pk %}" class="btn-primary btn">Založit uživatelský účet</a>
         {% else %}
             {% if not person.user.is_superuser %}
-                <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-primary">Přidat povolení</a>
+                {% url "persons:user-assign-permission" person.pk as url %}
+                {% if url|is_permitted:user %}
+                    <a href="{{ url }}" class="btn btn-primary">Přidat povolení</a>
+                {% endif %}
             {% endif %}
-            <a href="{% url "persons:user-change-password" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
-            <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
+
+            {% url "persons:user-change-password" person.pk as url %}
+            {% if url|is_permitted:user %}
+                <a href="{{ url }}" class="btn btn-secondary">Změnit heslo</a>
+            {% endif %}
+
+            {% url "persons:user-delete" person.pk as url %}
+            {% if url|is_permitted:user %}
+                <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
+            {% endif %}
         {% endif %}
     </div>
 </div>

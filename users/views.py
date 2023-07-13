@@ -3,6 +3,7 @@ from .backends import GoogleBackend
 from .models import User, Permission
 
 from persons.models import Person
+from persons.views import PersonPermissionMixin
 
 from vzs import settings
 
@@ -17,7 +18,10 @@ from django.contrib.auth import (
     authenticate,
     login as auth_login,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
+)
 from django.utils.functional import SimpleLazyObject
 from django.http import (
     HttpResponseRedirect,
@@ -28,22 +32,48 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
 
 
-class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
-    permission_required = "user_create_delete"
+class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
+    permission_required = None
+
+    @classmethod
+    def get_permission_required(cls):
+        # a little hack as we assume we will set permission_required only per class, not per object
+        obj = DjangoPermissionRequiredMixin()
+        obj.permission_required = cls.permission_required
+        return obj.get_permission_required()
+
+    @classmethod
+    def view_has_permission(cls, user, **kwargs):
+        perms = cls.get_permission_required()
+        return user.has_perms(perms)
+
+    def has_permission(self):
+        return self.view_has_permission(self.request.user, **self.kwargs)
+
+
+class UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionMixin):
+    @classmethod
+    def view_has_permission(cls, user, pk):
+        if cls.get_queryset_by_permission(user).filter(pk=pk):
+            return True
+
+        return super().view_has_permission(user)
 
 
 class UserChangePasswordPermissionMixin(PermissionRequiredMixin):
-    permission_required = "user_change_password"
+    permission_required = "superuser"
 
-    def has_permission(self):
-        if self.request.user == self.object:
+    @classmethod
+    def view_has_permission(cls, user, pk):
+        # a user can change their own password
+        if user.pk == pk:
             return True
 
-        return super().has_permission()
+        return super().view_has_permission(user)
 
 
 class UserManagePermissionPermissionMixin(PermissionRequiredMixin):
-    permission_required = "user_manage_permission"
+    permission_required = "users.spravce_povoleni"
 
 
 class UserCreateView(
@@ -82,7 +112,10 @@ class UserDeleteView(
     model = User
     context_object_name = "user_object"
     template_name = "users/delete.html"
-    permission_required = "user_create_delete"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = self.get_object().person
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.person.pk})
