@@ -59,7 +59,7 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
         return self.view_has_permission(self.request.user, **self.kwargs)
 
 
-class UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionMixin):
+class _UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionMixin):
     @classmethod
     def view_has_permission(cls, user, pk):
         if cls.get_queryset_by_permission(user).filter(pk=pk):
@@ -68,9 +68,11 @@ class UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionM
         return super().view_has_permission(user)
 
 
-class UserChangePasswordPermissionMixin(PermissionRequiredMixin):
+class _UserPasswordPermissionMixin(PermissionRequiredMixin):
     permission_required = "superuser"
 
+
+class _UserChangePasswordWithOldPermissionMixin(_UserPasswordPermissionMixin):
     @classmethod
     def view_has_permission(cls, user, pk):
         # a user can change their own password
@@ -80,12 +82,27 @@ class UserChangePasswordPermissionMixin(PermissionRequiredMixin):
         return super().view_has_permission(user)
 
 
-class UserManagePermissionPermissionMixin(PermissionRequiredMixin):
+class _UserGeneratePasswordPermissionMixin(
+    _UserPasswordPermissionMixin, PersonPermissionMixin
+):
+    @classmethod
+    def view_has_permission(cls, user, pk):
+        # a user shouldn't be allowed to regenerate their own password
+        if user.person.pk == pk:
+            return False
+
+        if cls.get_queryset_by_permission(user).filter(pk=pk):
+            return True
+
+        return super().view_has_permission(user)
+
+
+class _UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
     permission_required = "users.spravce_povoleni"
 
 
 class UserCreateView(
-    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
 ):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
@@ -115,7 +132,7 @@ class UserCreateView(
 
 
 class UserDeleteView(
-    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
 ):
     model = User
     context_object_name = "user_object"
@@ -176,15 +193,21 @@ class UserChangePasswordBaseMixin(UserChangePasswordMixin):
     success_message = _("Heslo bylo úspěšně změněno.")
 
 
-class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
+class UserChangePasswordSelfView(
+    _UserChangePasswordWithOldPermissionMixin, UserChangePasswordBaseMixin
+):
     form_class = forms.UserChangePasswordOldAndRepeatForm
 
 
-class UserChangePasswordOtherView(UserChangePasswordBaseMixin):
+class UserChangePasswordOtherView(
+    _UserPasswordPermissionMixin, UserChangePasswordBaseMixin
+):
     form_class = forms.UserChangePasswordRepeatForm
 
 
-class UserGenerateNewPasswordView(UserChangePasswordMixin):
+class UserGenerateNewPasswordView(
+    _UserGeneratePasswordPermissionMixin, UserChangePasswordMixin
+):
     http_method_names = ["post"]
     form_class = forms.UserChangePasswordForm
     success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
@@ -252,21 +275,21 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
         )
 
 
-class PermissionsView(UserManagePermissionPermissionMixin, generic.list.ListView):
+class PermissionsView(_UserManagePermissionsPermissionMixin, generic.list.ListView):
     model = Permission
     template_name = "users/permissions.html"
     context_object_name = "permissions"
 
 
 class PermissionDetailView(
-    UserManagePermissionPermissionMixin, generic.detail.DetailView
+    _UserManagePermissionsPermissionMixin, generic.detail.DetailView
 ):
     model = Permission
     template_name = "users/permission_detail.html"
 
 
 class UserAssignRemovePermissionView(
-    UserManagePermissionPermissionMixin,
+    _UserManagePermissionsPermissionMixin,
     SuccessMessageMixin,
     generic.detail.SingleObjectMixin,
     generic.edit.FormView,
