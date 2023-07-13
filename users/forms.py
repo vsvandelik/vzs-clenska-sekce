@@ -51,15 +51,31 @@ class UserChangePasswordForm(UserBaseForm):
     pass
 
 
-class UserChangePasswordOldAndRepeatForm(UserChangePasswordForm):
+class UserChangePasswordRepeatForm(UserChangePasswordForm):
     class Meta(UserBaseForm.Meta):
         labels = {"password": _("Nové heslo")}
 
-    password_old = forms.CharField(
-        label=_("Vaše staré heslo"), widget=forms.PasswordInput
-    )
     password_repeat = forms.CharField(
         label=_("Zopakujte nové heslo"), widget=forms.PasswordInput
+    )
+
+    field_order = ["password", "password_repeat"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        password = cleaned_data.get("password")
+        password_repeat = cleaned_data.get("password_repeat")
+
+        if password != password_repeat:
+            raise ValidationError(_("Nová hesla se neshodují."))
+
+        return cleaned_data
+
+
+class UserChangePasswordOldAndRepeatForm(UserChangePasswordRepeatForm):
+    password_old = forms.CharField(
+        label=_("Vaše staré heslo"), widget=forms.PasswordInput
     )
 
     field_order = ["password_old", "password", "password_repeat"]
@@ -73,17 +89,6 @@ class UserChangePasswordOldAndRepeatForm(UserChangePasswordForm):
             raise ValidationError(_("Staré heslo se neshoduje."))
 
         return password_old
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        password = cleaned_data.get("password")
-        password_repeat = cleaned_data.get("password_repeat")
-
-        if password != password_repeat:
-            raise ValidationError(_("Nová hesla se neshodují."))
-
-        return cleaned_data
 
 
 class LoginForm(AuthenticationForm):

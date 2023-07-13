@@ -114,10 +114,17 @@ class UserChangePasswordMixin(SuccessMessageMixin, UserChangePasswordBaseMixin):
     pass
 
 
-class UserChangePasswordView(UserChangePasswordMixin):
+class UserChangePasswordBaseMixin(UserChangePasswordMixin):
     template_name = "users/change_password.html"
-    form_class = forms.UserChangePasswordOldAndRepeatForm
     success_message = _("Heslo bylo úspěšně změněno.")
+
+
+class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
+    form_class = forms.UserChangePasswordOldAndRepeatForm
+
+
+class UserChangePasswordOtherView(UserChangePasswordBaseMixin):
+    form_class = forms.UserChangePasswordRepeatForm
 
 
 class UserGenerateNewPasswordView(UserChangePasswordMixin):
