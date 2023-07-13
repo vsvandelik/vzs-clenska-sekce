@@ -4,6 +4,9 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from events.models import Event
+from features.models import FeatureAssignment
+from persons.models import Person
 from vzs import models as vzs_models
 
 
@@ -15,11 +18,11 @@ class Transaction(models.Model):
     reason = models.CharField(_("Popis transakce"), max_length=150)
     date_due = models.DateField(_("Datum splatnosti"))
     person = models.ForeignKey(
-        "persons.Person", on_delete=models.CASCADE, related_name="transactions"
+        Person, on_delete=models.CASCADE, related_name="transactions"
     )
-    event = models.ForeignKey("events.Event", on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True)
     feature_assigment = models.OneToOneField(
-        "features.FeatureAssignment", on_delete=models.SET_NULL, null=True
+        FeatureAssignment, on_delete=models.SET_NULL, null=True
     )
     fio_transaction = models.ForeignKey(
         "FioTransaction", on_delete=models.SET_NULL, null=True

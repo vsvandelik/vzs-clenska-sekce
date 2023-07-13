@@ -31,12 +31,8 @@ class Event(models.Model):
     positions = models.ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
-    participants = models.ManyToManyField(
-        "persons.Person", through="events.EventParticipation"
-    )
-    requirements = models.ManyToManyField(
-        "features.Feature", through="events.EventRequirement"
-    )
+    participants = models.ManyToManyField(Person, through="events.EventParticipation")
+    requirements = models.ManyToManyField(Feature, through="events.EventRequirement")
 
     def _is_top(self):
         return self.parent == None
@@ -116,9 +112,7 @@ class EventPositionAssignment(models.Model):
     count = models.PositiveSmallIntegerField(
         _("Počet"), default=1, validators=[MinValueValidator(1)]
     )
-    organizers = models.ManyToManyField(
-        "persons.Person", through="events.EventOrganization"
-    )
+    organizers = models.ManyToManyField(Person, through="events.EventOrganization")
 
     class Meta:
         unique_together = ["event", "position"]
@@ -138,7 +132,7 @@ class Participation(models.Model):
 
 
 class EventParticipation(Participation):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
 
     class Meta(Participation.Meta):
@@ -146,7 +140,7 @@ class EventParticipation(Participation):
 
 
 class EventOrganization(Participation):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
     event_position = models.ForeignKey(
         "events.EventPositionAssignment", on_delete=models.CASCADE
     )
@@ -157,7 +151,7 @@ class EventOrganization(Participation):
 
 class EventRequirement(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    feature = models.ForeignKey("features.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -166,14 +160,12 @@ class EventRequirement(models.Model):
 
 class PriceList(models.Model):
     salary_base = models.PositiveIntegerField()
-    bonuses = models.ManyToManyField(
-        "features.Feature", through="events.PriceListBonus"
-    )
+    bonuses = models.ManyToManyField(Feature, through="events.PriceListBonus")
 
 
 class PriceListBonus(models.Model):
     price_list = models.ForeignKey("events.PriceList", on_delete=models.CASCADE)
-    feature = models.ForeignKey("features.Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     bonus = models.PositiveIntegerField()
 
     class Meta:

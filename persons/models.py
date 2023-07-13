@@ -7,9 +7,9 @@ from django.db.models import ExpressionWrapper, Case, When, Value, Q
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
+from features.models import Feature, FeatureAssignment
 from vzs import models as vzs_models
 
 
@@ -120,7 +120,7 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
             )
         ],
     )
-    features = models.ManyToManyField("features.Feature", through="FeatureAssignment")
+    features = models.ManyToManyField(Feature, through=FeatureAssignment)
     managed_persons = models.ManyToManyField(
         "self", symmetrical=False, related_name="managed_by"
     )

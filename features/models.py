@@ -163,7 +163,7 @@ FeatureTypeTexts = {
 
 class FeatureAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    feature = models.ForeignKey("Feature", on_delete=models.CASCADE)
+    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     date_assigned = models.DateField()
     date_expire = models.DateField(null=True, blank=True)
     issuer = models.CharField(
