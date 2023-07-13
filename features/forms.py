@@ -5,6 +5,7 @@ from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
+from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs import settings
 from vzs.widgets import DatePickerWithIcon
@@ -243,6 +244,8 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     class Meta(FeatureAssignmentBaseFormMixin.Meta):
         fields = ["feature"] + FeatureAssignmentBaseFormMixin.Meta.fields
+        widgets = FeatureAssignmentBaseFormMixin.Meta.widgets
+        widgets["person"] = PersonSelectWidget()
 
     def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
