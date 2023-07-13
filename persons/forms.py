@@ -27,9 +27,10 @@ class PersonForm(ModelForm):
         self.helper = VZSDefaultFormHelper()
         self.helper.add_input(Submit("submit", "Uložit"))
 
-        self.fields["person_type"].choices = [("", "---------")] + [
-            (pt, pt.label) for pt in self.available_person_types
-        ]
+        if "person_type" in self.fields:
+            self.fields["person_type"].choices = [("", "---------")] + [
+                (pt, pt.label) for pt in self.available_person_types
+            ]
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
@@ -65,6 +66,19 @@ class PersonForm(ModelForm):
             raise ValidationError(_("PSČ nemá platný formát."))
 
         return postcode
+
+
+class MyProfileUpdateForm(PersonForm):
+    class Meta:
+        model = Person
+        fields = [
+            "email",
+            "phone",
+            "health_insurance_company",
+            "street",
+            "city",
+            "postcode",
+        ]
 
 
 class AddDeleteManagedPersonForm(Form):

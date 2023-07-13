@@ -16,9 +16,15 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
+                <li class="nav-item">
+                    <a href="{% url "my-profile:index" %}" class="nav-link {% active_link "my-profile:index" strict=False %}">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>Můj profil</p>
+                    </a>
+                </li>
                 <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" %}">
-                        <i class="nav-icon fas fa-user"></i>
+                        <i class="nav-icon fas fa-users"></i>
                         <p>
                             Osoby
                             <i class="right fas fa-angle-left"></i>

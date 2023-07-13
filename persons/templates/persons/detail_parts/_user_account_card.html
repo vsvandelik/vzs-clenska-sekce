@@ -58,11 +58,6 @@
                 <a href="{{ assign_permission_url }}" class="btn btn-primary">Přidat povolení</a>
             {% endif %}
 
-            {% url "persons:user-change-password-self" person.pk as change_password_self_url %}
-            {% if change_password_self_url|is_permitted:user %}
-                <a href="{{ change_password_self_url }}" class="btn btn-secondary">Změnit heslo</a>
-            {% endif %}
-
             {% url "persons:user-change-password-other" person.pk as change_password_other_url %}
             {% if change_password_other_url|is_permitted:user %}
                 <a href="{{ change_password_other_url }}" class="btn btn-secondary">Změnit heslo</a>

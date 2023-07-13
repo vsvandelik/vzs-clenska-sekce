@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-header border-0">
-        <div class="card-title h5">Přehled osoby</div>
+        <div class="card-title h5">{% if title %}{{ title }}{% else %}Přehled osoby{% endif %}</div>
     </div>
     <div class="card-body p-0">
         <table class="mb-1 table">
@@ -14,7 +14,7 @@
                 {% if person.phone %}
                     <tr>
                         <td class="text-nowrap text-bold">Telefon:</td>
-                        <td class="w-100">{{ person.phone }}</td>
+                        <td class="w-100">{{ person.formatted_phone }}</td>
                     </tr>
                 {% endif %}
                 {% if person.date_of_birth %}

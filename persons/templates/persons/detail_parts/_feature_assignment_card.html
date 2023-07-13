@@ -23,7 +23,7 @@
                         </tr>
                         {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %}
                             <tr class="expandable-body">
-                                <td colspan="4">
+                                <td colspan="2">
                                     {% if item.date_assigned %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_assigned }}:&nbsp;</strong>{{ item.date_assigned }}</p>{% endif %}
                                     {% if item.date_expire %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_expire }}:&nbsp;</strong>{{ item.date_expire }}</p>{% endif %}
                                     {% if item.code %}<p class="m-0 py-0"><strong>{{ texts.form_labels.code }}:&nbsp;</strong>{{ item.code }}</p>{% endif %}

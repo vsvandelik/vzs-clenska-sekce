@@ -8,6 +8,16 @@ from . import views
 
 app_name = "persons"
 
+my_profile_urlpatterns = [
+    path("", views.MyProfileView.as_view(), name="index"),
+    path("upravit/", views.MyProfileUpdateView.as_view(), name="edit"),
+    path(
+        "zmenit-heslo/",
+        user_views.UserChangePasswordSelfView.as_view(),
+        name="change-password",
+    ),
+]
+
 nested_feature_assigning_urls = [
     path("", features_views.FeatureAssignEditView.as_view(), name="add"),
     path("<int:pk>/", features_views.FeatureAssignEditView.as_view(), name="edit"),
@@ -33,11 +43,6 @@ urlpatterns = [
     path("<int:pk>/ucet/pridat/", user_views.UserCreateView.as_view(), name="user-add"),
     path(
         "<int:pk>/ucet/smazat/", user_views.UserDeleteView.as_view(), name="user-delete"
-    ),
-    path(
-        "<int:pk>/ucet/zmenit-heslo-sobe/",
-        user_views.UserChangePasswordSelfView.as_view(),
-        name="user-change-password-self",
     ),
     path(
         "<int:pk>/ucet/zmenit-heslo/",

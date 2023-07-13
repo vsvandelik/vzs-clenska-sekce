@@ -1,0 +1,19 @@
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Skupiny, kterých jste členem</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped m-0">
+            <tbody>
+                {% for group in person.groups.all %}
+                    <tr>
+                        <td>
+                            {{ group.name }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>

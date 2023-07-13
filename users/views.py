@@ -16,28 +16,22 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth import (
     views as auth_views,
     models as auth_models,
-    authenticate,
     login as auth_login,
+    authenticate,
+    update_session_auth_hash,
 )
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     PermissionRequiredMixin as DjangoPermissionRequiredMixin,
 )
-from django.utils.functional import SimpleLazyObject
 from django.http import (
     HttpResponseRedirect,
     HttpResponseForbidden,
     HttpResponseBadRequest,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import (
-    authenticate,
-    login as auth_login,
-    update_session_auth_hash,
-)
-from django.shortcuts import redirect
-from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import send_mail
+from django.shortcuts import redirect
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
@@ -197,6 +191,12 @@ class UserChangePasswordSelfView(
     _UserChangePasswordWithOldPermissionMixin, UserChangePasswordBaseMixin
 ):
     form_class = forms.UserChangePasswordOldAndRepeatForm
+
+    def get_object(self, queryset=None):
+        return self.request.active_person.user
+
+    def get_success_url(self):
+        return reverse("my-profile:index")
 
 
 class UserChangePasswordOtherView(
