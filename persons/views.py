@@ -1,25 +1,31 @@
-import csv
 from functools import reduce
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from features.models import FeatureAssignment, Feature, FeatureTypeTexts
+from features.models import FeatureTypeTexts
 from groups.models import StaticGroup
 from .forms import (
     PersonForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     PersonsFilterForm,
+    MyProfileUpdateForm,
 )
 from .models import Person
+from .utils import (
+    parse_persons_filter_queryset,
+    export_persons_to_csv,
+    send_email_to_selected_persons,
+    extend_kwargs_of_assignment_features,
+)
 
 
 class PersonPermissionMixin(PermissionRequiredMixin):
@@ -150,29 +156,7 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
     template_name = "persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault(
-            "qualifications",
-            FeatureAssignment.objects.filter(
-                person=self.kwargs["pk"],
-                feature__feature_type=Feature.Type.QUALIFICATION.value,
-            ),
-        )
-
-        kwargs.setdefault(
-            "permissions",
-            FeatureAssignment.objects.filter(
-                person=self.kwargs["pk"],
-                feature__feature_type=Feature.Type.PERMISSION.value,
-            ),
-        )
-
-        kwargs.setdefault(
-            "equipments",
-            FeatureAssignment.objects.filter(
-                person=self.kwargs["pk"],
-                feature__feature_type=Feature.Type.EQUIPMENT.value,
-            ),
-        )
+        extend_kwargs_of_assignment_features(self.kwargs["pk"], kwargs)
 
         kwargs.setdefault(
             "persons_to_manage",
@@ -315,13 +299,7 @@ class SendEmailToSelectedPersonsView(generic.View):
             ),
         )
 
-        recipients = [
-            f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons
-        ]
-
-        gmail_link = "https://mail.google.com/mail/?view=cm&to=" + ",".join(recipients)
-
-        return redirect(gmail_link)
+        return send_email_to_selected_persons(selected_persons)
 
 
 class ExportSelectedPersonsView(generic.View):
@@ -335,79 +313,35 @@ class ExportSelectedPersonsView(generic.View):
             ),
         )
 
-        response = HttpResponse(
-            content_type="text/csv",
-            headers={
-                "Content-Disposition": 'attachment; filename="vzs_osoby_export.csv"'
-            },
+        return export_persons_to_csv(selected_persons)
+
+
+class MyProfileView(generic.DetailView):
+    model = Person
+    template_name = "persons/my_profile.html"
+
+    def get_object(self, queryset=None):
+        return self.request.active_person
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("features_texts", FeatureTypeTexts)
+        extend_kwargs_of_assignment_features(self.request.active_person, kwargs)
+
+        return super().get_context_data(**kwargs)
+
+
+class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
+    model = Person
+    template_name = "persons/my_profile_edit.html"
+    form_class = MyProfileUpdateForm
+    success_message = _("Váš profil byl úspěšně upraven.")
+    success_url = reverse_lazy("my-profile:index")
+
+    def get_object(self, queryset=None):
+        return self.request.active_person
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
         )
-        response.write("\ufeff".encode("utf8"))
-
-        writer = csv.writer(response, delimiter=";")
-
-        labels = []
-        keys = []
-
-        for field in Person._meta.get_fields():
-            if field.is_relation:
-                continue
-
-            labels.append(
-                field.verbose_name if hasattr(field, "verbose_name") else field.name
-            )
-            keys.append(field.name)
-
-        writer.writerow(labels)  # header
-
-        for person in selected_persons:
-            writer.writerow([getattr(person, key) for key in keys])
-
-        return response
-
-
-def parse_persons_filter_queryset(params_dict, persons):
-    name = params_dict.get("name")
-    email = params_dict.get("email")
-    qualification = params_dict.get("qualifications")
-    permission = params_dict.get("permissions")
-    equipment = params_dict.get("equipments")
-    person_type = params_dict.get("person_type")
-    age_from = params_dict.get("age_from")
-    age_to = params_dict.get("age_to")
-
-    if name:
-        persons = persons.filter(
-            Q(first_name__icontains=name) | Q(last_name__icontains=name)
-        )
-
-    if email:
-        persons = persons.filter(email__icontains=email)
-
-    if qualification:
-        persons = persons.filter(
-            featureassignment__feature__feature_type=Feature.Type.QUALIFICATION.value,
-            featureassignment__feature__id=qualification,
-        )
-
-    if permission:
-        persons = persons.filter(
-            featureassignment__feature__feature_type=Feature.Type.PERMISSION.value,
-            featureassignment__feature__id=permission,
-        )
-
-    if equipment:
-        persons = persons.filter(
-            featureassignment__feature__feature_type=Feature.Type.EQUIPMENT.value,
-            featureassignment__feature__id=equipment,
-        )
-
-    if person_type:
-        persons = persons.filter(person_type=person_type)
-
-    if age_from:
-        persons = persons.filter(age__gte=age_from)
-
-    if age_to:
-        persons = persons.filter(age__lte=age_to)
-
-    return persons.order_by("last_name")
+        return super().form_invalid(form)

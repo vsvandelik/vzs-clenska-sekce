@@ -132,6 +132,17 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
 
         return f"{self.street}, {self.city}, {self.postcode}"
 
+    @property
+    def formatted_phone(self):
+        if not self.phone:
+            return None
+
+        return " ".join([self.phone[i : i + 3] for i in range(0, len(self.phone), 3)])
+
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
 

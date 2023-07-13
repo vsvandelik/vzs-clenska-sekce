@@ -1,36 +1,29 @@
-from . import forms
-from .backends import GoogleBackend
-from .models import User, Permission
-from .utils import get_random_password
-
-from persons.models import Person
-
-from vzs import settings
-
-from django.views import generic
-from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
-from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.auth import views as auth_views
-from django.contrib.auth import models as auth_models
-from django.utils.functional import SimpleLazyObject
-from django.http import (
-    HttpResponseRedirect,
-    HttpResponseForbidden,
-    HttpResponseBadRequest,
-)
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import (
     authenticate,
     login as auth_login,
     update_session_auth_hash,
 )
-from django.shortcuts import redirect
-from django.core.exceptions import ObjectDoesNotExist, ImproperlyConfigured
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import send_mail
+from django.http import (
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+)
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.views import generic
 
-import string
+from persons.models import Person
+from vzs import settings
+from . import forms
+from .backends import GoogleBackend
+from .models import User, Permission
+from .utils import get_random_password
 
 
 class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
@@ -121,6 +114,12 @@ class UserChangePasswordBaseMixin(UserChangePasswordMixin):
 
 class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
     form_class = forms.UserChangePasswordOldAndRepeatForm
+
+    def get_object(self, queryset=None):
+        return self.request.active_person.user
+
+    def get_success_url(self):
+        return reverse("my-profile:index")
 
 
 class UserChangePasswordOtherView(UserChangePasswordBaseMixin):

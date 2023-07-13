@@ -47,7 +47,6 @@
             {% if not person.user.is_superuser %}
                 <a href="{% url "persons:user-assign-permission" person.pk %}" class="btn btn-primary">Přidat povolení</a>
             {% endif %}
-            <a href="{% url "persons:user-change-password-self" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
             <a href="{% url "persons:user-change-password-other" person.pk %}" class="btn btn-secondary">Změnit heslo</a>
             <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
             <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>

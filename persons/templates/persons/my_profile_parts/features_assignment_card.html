@@ -1,0 +1,25 @@
+{% load vzs_filters %}
+
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">{{ title }}</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover">
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>
+                            <span class="h6">{{ item.feature.name }}</span>
+                            {% if item.date_assigned %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_assigned }}:&nbsp;</strong>{{ item.date_assigned }}</p>{% endif %}
+                            {% if item.date_expire %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_expire }}:&nbsp;</strong>{{ item.date_expire }}</p>{% endif %}
+                            {% if item.code %}<p class="m-0 py-0"><strong>{{ texts.form_labels.code }}:&nbsp;</strong>{{ item.code }}</p>{% endif %}
+                            {% if item.issuer %}<p class="m-0 py-0"><strong>{{ texts.form_labels.issuer }}:&nbsp;</strong>{{ item.issuer }}</p>{% endif %}
+                            {% if item.transaction %}<p class="m-0 py-0"><strong>{{ texts.form_labels.fee }}:&nbsp;</strong>{{ item.transaction.amount|negate }} Kč ({% if not item.transaction.is_settled %}ne{% endif %}uhrazen)</p>{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
