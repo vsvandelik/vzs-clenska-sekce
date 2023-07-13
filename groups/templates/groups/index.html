@@ -12,12 +12,12 @@
                 <div class="card-body">
                     <ul>
                         {% for group in static_groups %}
-                            <li><a href="{% url 'persons:groups:detail' group.id %}">{{ group.name }}</a></li>
+                            <li><a href="{% url 'groups:detail' group.id %}">{{ group.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'persons:groups:add-static' %}" class="btn btn-primary">Přidat statickou skupinu</a>
+                    <a href="{% url 'groups:add-static' %}" class="btn btn-primary">Přidat statickou skupinu</a>
                 </div>
             </div>
         </div>
