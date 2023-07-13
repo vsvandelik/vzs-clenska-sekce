@@ -35,7 +35,7 @@ from django.shortcuts import redirect
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
-    permission_required = None
+    permission_required = "superuser"
 
     @classmethod
     def get_permission_required(cls):
@@ -62,22 +62,8 @@ class _UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermission
         return super().view_has_permission(user)
 
 
-class _UserPasswordPermissionMixin(PermissionRequiredMixin):
-    permission_required = "superuser"
-
-
-class _UserChangePasswordWithOldPermissionMixin(_UserPasswordPermissionMixin):
-    @classmethod
-    def view_has_permission(cls, user, pk):
-        # a user can change their own password
-        if user.pk == pk:
-            return True
-
-        return super().view_has_permission(user)
-
-
 class _UserGeneratePasswordPermissionMixin(
-    _UserPasswordPermissionMixin, PersonPermissionMixin
+    PermissionRequiredMixin, PersonPermissionMixin
 ):
     @classmethod
     def view_has_permission(cls, user, pk):
@@ -187,9 +173,7 @@ class UserChangePasswordBaseMixin(UserChangePasswordMixin):
     success_message = _("Heslo bylo úspěšně změněno.")
 
 
-class UserChangePasswordSelfView(
-    _UserChangePasswordWithOldPermissionMixin, UserChangePasswordBaseMixin
-):
+class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
     form_class = forms.UserChangePasswordOldAndRepeatForm
 
     def get_object(self, queryset=None):
@@ -199,9 +183,7 @@ class UserChangePasswordSelfView(
         return reverse("my-profile:index")
 
 
-class UserChangePasswordOtherView(
-    _UserPasswordPermissionMixin, UserChangePasswordBaseMixin
-):
+class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordBaseMixin):
     form_class = forms.UserChangePasswordRepeatForm
 
 
