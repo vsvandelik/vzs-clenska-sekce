@@ -4,6 +4,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.db.models import Exists, OuterRef
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -11,14 +12,16 @@ from django.views import generic
 from persons.models import Person
 from persons.views import PersonPermissionMixin
 from .forms import (
-    FeatureAssignmentForm,
     FeatureForm,
+    FeatureAssignmentByPersonForm,
+    FeatureAssignmentByFeatureForm,
 )
 from .models import (
     FeatureAssignment,
     Feature,
     FeatureTypeTexts,
 )
+from .utils import extend_form_of_labels
 
 
 class FeaturePermissionMixin(PermissionRequiredMixin):
@@ -56,7 +59,7 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
 
 class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
     model = FeatureAssignment
-    form_class = FeatureAssignmentForm
+    form_class = FeatureAssignmentByPersonForm
     template_name = "features_assignment/edit.html"
 
     def get_success_url(self):
@@ -80,14 +83,9 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
         return super().get_context_data(**kwargs)
 
     def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form_labels = self.feature_type_texts.form_labels
-        if form_labels:
-            for field, label in form_labels.items():
-                if field in form.fields:
-                    form.fields[field].label = label
-
-        return form
+        return extend_form_of_labels(
+            super().get_form(form_class), self.feature_type_texts.form_labels
+        )
 
     def form_valid(self, form):
         form.instance.person = self.get_person_with_permission_check()
@@ -118,6 +116,7 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["feature_type"] = self.feature_type_texts.shortcut
+        kwargs["person"] = self.get_person_with_permission_check()
         return kwargs
 
 
@@ -268,3 +267,41 @@ class FeatureDeleteView(
 
     def get_success_message(self, cleaned_data):
         return self.feature_type_texts.success_message_delete
+
+
+class FeatureAssignToSelectedPersonView(
+    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+):
+    model = FeatureAssignment
+    form_class = FeatureAssignmentByFeatureForm
+    template_name = "features_assignment/assign_to_selected_person.html"
+    success_message = _("Vlastnost byla úspěšně přiřazena.")
+
+    def dispatch(self, request, feature_type, pk, *args, **kwargs):
+        self.feature = get_object_or_404(Feature, pk=pk)
+        return super().dispatch(request, feature_type, pk, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("feature", self.feature)
+
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["feature"] = self.feature
+
+        return kwargs
+
+    def get_form(self, form_class=None):
+        return extend_form_of_labels(
+            super().get_form(form_class), self.feature_type_texts.form_labels
+        )
+
+    def get_success_url(self):
+        return reverse(self.feature_type + ":detail", args=[self.feature.pk])
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        form.add_transaction_if_necessary()
+
+        return response

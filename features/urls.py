@@ -10,4 +10,9 @@ urlpatterns = [
     path("<int:pk>/", views.FeatureDetailView.as_view(), name="detail"),
     path("<int:pk>/upravit/", views.FeatureEditView.as_view(), name="edit"),
     path("<int:pk>/smazat/", views.FeatureDeleteView.as_view(), name="delete"),
+    path(
+        "<int:pk>/pridelit/",
+        views.FeatureAssignToSelectedPersonView.as_view(),
+        name="assign",
+    ),
 ]

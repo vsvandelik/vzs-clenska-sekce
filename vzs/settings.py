@@ -240,3 +240,9 @@ TEMPUS_DOMINUS_TIME_FORMAT = "HH:mm"
 # Transactions settings
 
 VZS_DEFAULT_DUE_DATE = relativedelta(months=1)
+
+# Settings for Select2
+
+SELECT2_CSS = ["/static/select2/dist/css/select2.min.css"]
+SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
+SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"

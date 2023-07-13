@@ -46,6 +46,7 @@ urlpatterns = [
         {"feature_type": "equipments"},
     ),
     path("tinymce/", include("tinymce.urls")),
+    path("select2/", include("django_select2.urls")),
     path("", include("pages.urls")),
 ]
 
