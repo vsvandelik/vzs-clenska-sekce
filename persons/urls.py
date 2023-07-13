@@ -40,9 +40,19 @@ urlpatterns = [
         "<int:pk>/ucet/smazat/", user_views.UserDeleteView.as_view(), name="user-delete"
     ),
     path(
+        "<int:pk>/ucet/zmenit-heslo-sobe/",
+        user_views.UserChangePasswordSelfView.as_view(),
+        name="user-change-password-self",
+    ),
+    path(
         "<int:pk>/ucet/zmenit-heslo/",
-        user_views.UserChangePasswordView.as_view(),
-        name="user-change-password",
+        user_views.UserChangePasswordOtherView.as_view(),
+        name="user-change-password-other",
+    ),
+    path(
+        "<int:pk>/ucet/generovat-nove-heslo/",
+        user_views.UserGenerateNewPasswordView.as_view(),
+        name="user-generate-new-password",
     ),
     path(
         "<int:pk>/ucet/pridat-povoleni/",
