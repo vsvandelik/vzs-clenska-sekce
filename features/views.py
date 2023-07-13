@@ -274,6 +274,7 @@ class FeatureAssignToSelectedPersonView(
     model = FeatureAssignment
     form_class = FeatureAssignmentByFeatureForm
     template_name = "features_assignment/assign_to_selected_person.html"
+    success_message = _("Vlastnost byla úspěšně přiřazena.")
 
     def dispatch(self, request, feature_type, pk, *args, **kwargs):
         self.feature = get_object_or_404(Feature, pk=pk)
@@ -297,3 +298,9 @@ class FeatureAssignToSelectedPersonView(
 
     def get_success_url(self):
         return reverse(self.feature_type + ":detail", args=[self.feature.pk])
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        form.add_transaction_if_necessary()
+
+        return response

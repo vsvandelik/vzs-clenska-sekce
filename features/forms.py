@@ -17,9 +17,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         label=_("Datum splatnosti poplatku"),
         required=False,
         initial=datetime.date.today() + settings.VZS_DEFAULT_DUE_DATE,
-        widget=widgets.DateInput(
-            format=settings.DATE_INPUT_FORMATS, attrs={"type": "date"}
-        ),
+        widget=DatePickerWithIcon(),
     )
 
     class Meta:
@@ -243,15 +241,18 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
     def __init__(self, feature, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["person"].queryset = Person.objects.exclude(
-            featureassignment__feature=feature
-        )
-
         self.instance.feature = feature
 
         self._remove_not_collected_field(self.instance.feature)
         self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
         self._setup_fee_field()
+
+        self.fields["person"].queryset = Person.objects.exclude(
+            featureassignment__feature=feature
+        )
+
+        if "fee" in self.fields:
+            self.fields["fee"].initial = feature.fee
 
 
 class FeatureForm(ModelForm):

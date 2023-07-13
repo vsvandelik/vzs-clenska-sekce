@@ -40,10 +40,10 @@
                                     <td class="w-100">{{ object.never_expires|yesno|capfirst }}</td>
                                 </tr>
                             {% endif %}
-                            {% if object.tier is not None %}
+                            {% if object.fee is not None %}
                                 <tr>
                                     <td class="text-nowrap text-bold">Poplatek:</td>
-                                    <td class="w-100">{{ object.tier }} Kč</td>
+                                    <td class="w-100">{{ object.fee }} Kč</td>
                                 </tr>
                             {% endif %}
                             {% if object.collect_issuers is not None %}
