@@ -1,6 +1,7 @@
 from django.urls import path, include
 
 from features import views as features_views
+from groups import views as groups_views
 from transactions import views as transactions_views
 from users import views as user_views
 from . import views
@@ -14,33 +15,6 @@ nested_feature_assigning_urls = [
         "<int:pk>/smazat/",
         features_views.FeatureAssignDeleteView.as_view(),
         name="delete",
-    ),
-]
-
-groups_urlpatterns = [
-    path("", views.GroupIndexView.as_view(), name="index"),
-    path("<int:pk>/", views.StaticGroupDetailView.as_view(), name="detail"),
-    path("pridat/staticka/", views.StaticGroupEditView.as_view(), name="add-static"),
-    path(
-        "<int:pk>/upravit/staticka/",
-        views.StaticGroupEditView.as_view(),
-        name="edit-static",
-    ),
-    path(
-        "<int:group>/odebrat-clena/<int:person>/",
-        views.StaticGroupRemoveMemberView.as_view(),
-        name="remove-member",
-    ),
-    path("<int:pk>/smazat/", views.GroupDeleteView.as_view(), name="delete"),
-    path(
-        "synchronizovat-s-google/",
-        views.SyncGroupMembersWithGoogleView.as_view(),
-        name="sync-group-members-google",
-    ),
-    path(
-        "<int:group>/synchronizovat-s-google/",
-        views.SyncGroupMembersWithGoogleView.as_view(),
-        name="sync-group-members-google",
     ),
 ]
 
@@ -87,12 +61,12 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/pridat-do-skupiny/",
-        views.AddPersonToGroupView.as_view(),
+        groups_views.AddPersonToGroupView.as_view(),
         name="add-to-group",
     ),
     path(
         "<int:pk>/odebrat-ze-skupiny/",
-        views.RemovePersonFromGroupView.as_view(),
+        groups_views.RemovePersonFromGroupView.as_view(),
         name="remove-from-group",
     ),
     path(
@@ -110,7 +84,6 @@ urlpatterns = [
         include((nested_feature_assigning_urls, "equipments")),
         {"feature_type": "equipments"},
     ),
-    path("skupiny/", include((groups_urlpatterns, "groups"))),
     path(
         "<int:pk>/transakce/",
         transactions_views.TransactionListView.as_view(),

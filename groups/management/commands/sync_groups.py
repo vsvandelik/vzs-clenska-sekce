@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from persons.models import StaticGroup, Person
-from persons.utils import sync_single_group_with_google
+from groups.models import StaticGroup
+from groups.utils import sync_single_group_with_google
 
 
 class Command(BaseCommand):
