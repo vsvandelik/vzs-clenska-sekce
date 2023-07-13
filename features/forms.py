@@ -4,13 +4,14 @@ from django import forms
 from django.forms import ModelForm, widgets, ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from persons.models import Person
 from transactions.models import Transaction
 from vzs import settings
 from vzs.widgets import DatePickerWithIcon
 from .models import FeatureAssignment, Feature
 
 
-class FeatureAssignmentForm(ModelForm):
+class FeatureAssignmentBaseFormMixin(ModelForm):
     fee = forms.IntegerField(label=_("Poplatek"), required=False, min_value=0)
     due_date = forms.DateField(
         label=_("Datum splatnosti poplatku"),
@@ -23,31 +24,15 @@ class FeatureAssignmentForm(ModelForm):
 
     class Meta:
         model = FeatureAssignment
-        fields = ["feature", "date_assigned", "date_expire", "issuer", "code"]
+        fields = ["date_assigned", "date_expire", "issuer", "code"]
         widgets = {
             "date_assigned": DatePickerWithIcon(),
             "date_expire": DatePickerWithIcon(),
         }
 
-    def __init__(self, *args, **kwargs):
-        feature_type = kwargs.pop("feature_type", None)
-        super().__init__(*args, **kwargs)
-        if feature_type:
-            self.fields["feature"].queryset = Feature.objects.filter(
-                feature_type=feature_type, assignable=True
-            )
-
-        self._remove_not_collected_field()
-        self._remove_non_valid_fields_by_type(feature_type)
-        self._setup_fee_field()
-
-    def _remove_not_collected_field(self):
-        if self.instance.pk is None:
-            return
-        else:
-            feature = self.instance.feature
-
-        self.fields.pop("feature")
+    def _remove_not_collected_field(self, feature):
+        if "feature" in self.fields:
+            self.fields.pop("feature")
 
         if feature.never_expires is True:
             self.fields.pop("date_expire")
@@ -87,7 +72,9 @@ class FeatureAssignmentForm(ModelForm):
             self.fields["due_date"].disabled = True
 
     def _get_feature(self, cleaned_data):
-        if self.instance.pk is not None:
+        if hasattr(self.instance, "feature"):
+            return self.instance.feature
+        elif self.instance.pk is not None:
             return FeatureAssignment.objects.get(pk=self.instance.pk).feature
         else:
             return cleaned_data["feature"]
@@ -229,6 +216,42 @@ class FeatureAssignmentForm(ModelForm):
             Transaction.objects.create(**transaction_data)
 
         return True
+
+
+class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
+    class Meta(FeatureAssignmentBaseFormMixin.Meta):
+        fields = ["feature"] + FeatureAssignmentBaseFormMixin.Meta.fields
+
+    def __init__(self, feature_type=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if feature_type:
+            self.fields["feature"].queryset = Feature.objects.filter(
+                feature_type=feature_type, assignable=True
+            )
+
+        if self.instance.pk:
+            self._remove_not_collected_field(self.instance.feature)
+        self._remove_non_valid_fields_by_type(feature_type)
+        self._setup_fee_field()
+
+
+class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
+    class Meta(FeatureAssignmentBaseFormMixin.Meta):
+        fields = ["person"] + FeatureAssignmentBaseFormMixin.Meta.fields
+
+    def __init__(self, feature, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["person"].queryset = Person.objects.exclude(
+            featureassignment__feature=feature
+        )
+
+        self.instance.feature = feature
+
+        self._remove_not_collected_field(self.instance.feature)
+        self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
+        self._setup_fee_field()
 
 
 class FeatureForm(ModelForm):
