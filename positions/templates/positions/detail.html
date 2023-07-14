@@ -47,7 +47,7 @@
                                                 <a href="{% url 'qualifications:detail' q.id %}">{{ q }}</a>
                                             </td>
                                             <td>
-                                                <button type="submit" class="btn btn-danger" name="feature_id"
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
                                                         value="{{ q.id }}">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -90,7 +90,7 @@
                                                 <a href="{% url 'permissions:detail' p.id %}">{{ p }}</a>
                                             </td>
                                             <td>
-                                                <button type="submit" class="btn btn-danger" name="feature_id"
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
                                                         value="{{ p.id }}">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -133,7 +133,7 @@
                                                 <a href="{% url 'permissions:detail' e.id %}">{{ e }}</a>
                                             </td>
                                             <td>
-                                                <button type="submit" class="btn btn-danger" name="feature_id"
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
                                                         value="{{ e.id }}">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -249,7 +249,7 @@
                                                     {{ person_type }}
                                                 </td>
                                                 <td>
-                                                    <button type="submit" class="btn btn-danger"
+                                                    <button type="submit" class="btn btn-danger btn-sm"
                                                             name="person_type"
                                                             value="{{ person_type.person_type }}">
                                                         <i class="fas fa-trash-alt"></i>

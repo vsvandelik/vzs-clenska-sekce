@@ -7,6 +7,7 @@ from .forms import (
     AddDeleteParticipantFromOneTimeEventForm,
     EventPositionAssignmentForm,
 )
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
 from persons.models import Person
 from .mixin_extensions import MessagesMixin, InvariantMixin
@@ -147,57 +148,57 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
         kwargs["event_id"] = self.kwargs["event_id"]
         return kwargs
 
-    def _process_form(self, form, op, state):
-        self.person = Person.objects.get(pk=form.cleaned_data["person_id"])
-        self.event_id = form.cleaned_data["event_id"]
-        event = Event.objects.get(pk=self.event_id)
-        if op == "add":
-            try:
-                ep = EventParticipation.objects.get(person=self.person, event=event)
-                ep.state = state
-            except EventParticipation.DoesNotExist:
-                ep = EventParticipation.objects.create(
-                    person=self.person, event=event, state=state
-                )
-            ep.save()
-        else:
-            event.participants.remove(self.person)
+    def _change_save_db(self, person, event):
+        raise ImproperlyConfigured("This method should never be called")
+
+    def _process_form(self, person, event, state):
+        try:
+            ep = EventParticipation.objects.get(person=person, event=event)
+            ep.state = state
+        except EventParticipation.DoesNotExist:
+            ep = EventParticipation.objects.create(
+                person=person, event=event, state=state
+            )
+        ep.save()
+
+    def form_valid(self, form):
+        person = Person.objects.get(pk=form.cleaned_data["person_id"])
+        event_id = form.cleaned_data["event_id"]
+        event = Event.objects.get(pk=event_id)
+        self._change_save_db(person, event)
+        return super().form_valid(form)
 
 
 class SignUpPersonForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
-        return f"Osoba {self.person} přihlášena na událost"
+        return f"Osoba {cleaned_data['person']} přihlášena na událost"
 
-    def form_valid(self, form):
-        self._process_form(form, "add", Participation.State.APPROVED)
-        return super().form_valid(form)
+    def _change_save_db(self, person, event):
+        self._process_form(person, event, Participation.State.APPROVED)
 
 
 class RemoveParticipantFromOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
-        return f"Osoba {self.person} odhlášena z události"
+        return f"Osoba {cleaned_data['person']} odhlášena z události"
 
-    def form_valid(self, form):
-        self._process_form(form, "remove", Participation.State.APPROVED)
-        return super().form_valid(form)
+    def _change_save_db(self, person, event):
+        event.participants.remove(person)
 
 
 class AddSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
-        return f"Osoba {self.person} přidána mezi náhradníky události"
+        return f"Osoba {cleaned_data['person']} přidána mezi náhradníky události"
 
-    def form_valid(self, form):
-        self._process_form(form, "add", Participation.State.SUBSTITUTE)
-        return super().form_valid(form)
+    def _change_save_db(self, person, event):
+        self._process_form(person, event, Participation.State.SUBSTITUTE)
 
 
 class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
     def get_success_message(self, cleaned_data):
-        return f"Osoba {self.person} smazána ze seznamu náhradníků události"
+        return f"Osoba {cleaned_data['person']} smazána ze seznamu náhradníků události"
 
-    def form_valid(self, form):
-        self._process_form(form, "remove", Participation.State.SUBSTITUTE)
-        return super().form_valid(form)
+    def _change_save_db(self, person, event):
+        event.participants.remove(person)
 
 
 class EventPositionAssignmentMixin(MessagesMixin):
