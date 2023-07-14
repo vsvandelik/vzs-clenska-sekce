@@ -29,4 +29,14 @@ urlpatterns = [
         views.EditGroupMembershipView.as_view(),
         name="edit_group_membership",
     ),
+    path(
+        "<int:position_id>/pridat/typ-clenstvi/",
+        views.AddAllowedPersonTypeToPositionView.as_view(),
+        name="add_person_type",
+    ),
+    path(
+        "<int:position_id>/smazat/typ-clenstvi/",
+        views.RemoveAllowedPersonTypeFromPositionView.as_view(),
+        name="remove_person_type",
+    ),
 ]
