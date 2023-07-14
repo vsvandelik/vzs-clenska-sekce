@@ -3,6 +3,7 @@ from django.forms import Form, ModelForm
 from features.models import Feature
 from positions.models import EventPosition
 from django.forms.widgets import CheckboxInput
+from django_select2.forms import Select2Widget
 
 
 class AddFeatureRequirementToPositionForm(Form):
@@ -77,4 +78,34 @@ class AgeLimitPositionForm(ModelForm):
                     "max_age",
                     "Hodnota minimální věkové hranice musí být menší nebo rovna hodnotě maximální věkové hranice",
                 )
+        return cleaned_data
+
+
+class GroupMembershipPositionForm(ModelForm):
+    class Meta:
+        model = EventPosition
+        fields = ["group_membership_required", "group"]
+        labels = {"group_membership_required": "Vyžadováno", "group": "Skupina"}
+        widgets = {
+            "group_membership_required": CheckboxInput(
+                attrs={"onchange": "groupMembershipRequiredClicked(this)"}
+            ),
+            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["group"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        group_membership_required = cleaned_data["group_membership_required"]
+        if group_membership_required:
+            if "group" not in cleaned_data or cleaned_data["group"] is None:
+                self.add_error("group", "Toto pole je nutné vyplnit")
+        else:
+            if "group" in cleaned_data and cleaned_data["group"] is not None:
+                self.add_error("group", "Toto pole musí být prázdné")
+            else:
+                cleaned_data["group"] = self.instance.group
         return cleaned_data

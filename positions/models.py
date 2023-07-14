@@ -15,6 +15,8 @@ class EventPosition(models.Model):
     max_age = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
     )
+    group_membership_required = models.BooleanField(default=False)
+    group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)

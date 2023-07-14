@@ -3,7 +3,11 @@ from .models import EventPosition
 from django.views import generic
 from django.shortcuts import reverse
 from features.models import Feature
-from .forms import AddFeatureRequirementToPositionForm, AgeLimitPositionForm
+from .forms import (
+    AddFeatureRequirementToPositionForm,
+    AgeLimitPositionForm,
+    GroupMembershipPositionForm,
+)
 from events.mixin_extensions import MessagesMixin
 
 
@@ -102,6 +106,14 @@ class RemoveFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
 class EditAgeLimitView(PositionMixin, generic.UpdateView):
     template_name = "positions/edit_age_limit.html"
     form_class = AgeLimitPositionForm
+
+    def get_success_url(self):
+        return reverse("positions:detail", args=[self.object.id])
+
+
+class EditGroupMembershipView(PositionMixin, generic.UpdateView):
+    template_name = "positions/edit_group_membership.html"
+    form_class = GroupMembershipPositionForm
 
     def get_success_url(self):
         return reverse("positions:detail", args=[self.object.id])

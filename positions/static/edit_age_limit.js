@@ -6,13 +6,13 @@ window.onload = function () {
 function minAgeCheckboxClicked(sender) {
     const minAgeField = getMinAgeField()
     minAgeField.disabled = !sender.checked
-    setRequired(minAgeField, sender.checked)
+    setElementRequired(minAgeField, sender.checked)
 }
 
 function maxAgeCheckboxClicked(sender) {
     const maxAgeField = getMaxAgeField()
     maxAgeField.disabled = !sender.checked
-    setRequired(maxAgeField, sender.checked)
+    setElementRequired(maxAgeField, sender.checked)
 }
 
 function getMinAgeCheckbox() {
@@ -29,17 +29,6 @@ function getMinAgeField() {
 
 function getMaxAgeField() {
     return document.getElementById('id_max_age')
-}
-
-function setRequired(element, state) {
-    element.required = state
-    if (state) {
-        if (element.labels[0].innerText.slice(-1) !== '*')
-            element.labels[0].innerText += '*'
-    } else {
-        while (element.labels[0].innerText.slice(-1) === '*')
-            element.labels[0].innerText = element.labels[0].innerText.slice(0, -1)
-    }
 }
 
 function beforeSubmit() {
