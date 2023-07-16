@@ -7,6 +7,7 @@ function changedAssignableCheckbox() {
 
     if (!checked) {
         formGroups.find("input[type=checkbox]").prop("checked", false);
+        formsGroups.find("input[type=number]").val();
     }
 }
 

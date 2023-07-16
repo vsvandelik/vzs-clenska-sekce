@@ -289,6 +289,7 @@ class FeatureForm(ModelForm):
             "parent",
             "assignable",
             "fee",
+            "tier",
             "never_expires",
             "collect_issuers",
             "collect_codes",
@@ -321,9 +322,11 @@ class FeatureForm(ModelForm):
             self.fields.pop("fee")
             self.fields.pop("collect_issuers")
             self.fields.pop("collect_codes")
+            self.fields.pop("tier")
 
         elif feature_type == Feature.Type.EQUIPMENT:
             self.fields.pop("collect_issuers")
+            self.fields.pop("tier")
 
     def clean_collect_issuers(self):
         collect_issuers = self.cleaned_data["collect_issuers"]
