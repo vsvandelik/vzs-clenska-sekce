@@ -1,5 +1,3 @@
-from random import choices
-
 from django import forms
 from django.forms import Form, ModelForm
 from persons.models import Person

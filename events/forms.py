@@ -59,7 +59,8 @@ class OneTimeEventForm(ModelForm):
         super().save(commit)
         if not edit:
             instance.state = Event.State.FUTURE
-            instance.save()
+            if commit:
+                instance.save()
         return instance
 
 
@@ -451,4 +452,5 @@ class EventPositionAssignmentForm(ModelForm):
             instance.event = self.event
         else:
             instance.position = self.position
-        instance.save()
+        if commit:
+            instance.save()

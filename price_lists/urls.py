@@ -9,4 +9,14 @@ urlpatterns = [
     path("<int:pk>/upravit/", views.PriceListUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat/", views.PriceListDeleteView.as_view(), name="delete"),
     path("<int:pk>/", views.PriceListDetailView.as_view(), name="detail"),
+    path(
+        "<int:price_list_id>/pridat/bonus",
+        views.AddBonusToPriceListView.as_view(),
+        name="add_bonus",
+    ),
+    path(
+        "<int:price_list_id>/upravit/<int:pk>/bonus",
+        views.EditBonusPriceListView.as_view(),
+        name="edit_bonus",
+    ),
 ]
