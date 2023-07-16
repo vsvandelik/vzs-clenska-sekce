@@ -1,0 +1,12 @@
+from django.urls import path
+from . import views
+
+app_name = "price_lists"
+
+urlpatterns = [
+    path("", views.PriceListIndexView.as_view(), name="index"),
+    path("pridat/", views.PriceListCreateView.as_view(), name="add"),
+    path("<int:pk>/upravit/", views.PriceListUpdateView.as_view(), name="edit"),
+    path("<int:pk>/smazat/", views.PriceListDeleteView.as_view(), name="delete"),
+    path("<int:pk>/", views.PriceListDetailView.as_view(), name="detail"),
+]

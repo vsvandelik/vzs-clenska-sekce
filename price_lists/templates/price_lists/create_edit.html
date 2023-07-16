@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+    {% if price_list %}Editace ceníku{% else %}Nový ceník{% endif %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST"
+                      action="{% if price_list %}{% url 'price_lists:edit' price_list.id %}{% else %}{% url 'price_lists:add' %}{% endif %}">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% if price_list %}Úprava {% else %}Přídání {% endif %}</div>
+                    </div>
+                    <div class="card-body">
+                        {{ form.name|as_crispy_field }}
+                        {{ form.salary_base|as_crispy_field }}
+
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% if position %}Uložit{% else %}Vytvořit{% endif %}">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

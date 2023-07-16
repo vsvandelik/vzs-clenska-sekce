@@ -28,6 +28,7 @@ urlpatterns = [
     path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),
     path("pozice/", include("positions.urls")),
+    path("ceniky/", include("price_lists.urls")),
     path("uzivatele/", include("users.urls")),
     path("skupiny/", include("groups.urls")),
     path(
