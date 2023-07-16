@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load tag_extensions %}
 {% block scripts %}
     <script src="{% static 'position_detail.js' %}"></script>
 {% endblock %}
@@ -31,29 +32,31 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="added-qualifications-table" class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Jméno</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for q in position.required_qualifications %}
+                        {% if position.required_qualifications %}
+                            <table id="added-qualifications-table" class="table table-striped">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <a href="{% url 'qualifications:detail' q.id %}">{{ q }}</a>
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn btn-danger" name="feature_id"
-                                                    value="{{ q.id }}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
+                                        <th>Název</th>
+                                        <th></th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for q in position.required_qualifications %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'qualifications:detail' q.id %}">{{ q }}</a>
+                                            </td>
+                                            <td>
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                        value="{{ q.id }}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </form>
                 </div>
                 <div class="card-footer text-center">
@@ -72,29 +75,31 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="added-permissions-table" class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Jméno</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in position.required_permissions %}
+                        {% if position.required_permissions %}
+                            <table id="added-permissions-table" class="table table-striped">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <a href="{% url 'permissions:detail' p.id %}">{{ p }}</a>
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn btn-danger" name="feature_id"
-                                                    value="{{ p.id }}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
+                                        <th>Název</th>
+                                        <th></th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for p in position.required_permissions %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'permissions:detail' p.id %}">{{ p }}</a>
+                                            </td>
+                                            <td>
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                        value="{{ p.id }}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </form>
                 </div>
                 <div class="card-footer text-center">
@@ -113,29 +118,31 @@
                 <div class="card-body p-0">
                     <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
                         {% csrf_token %}
-                        <table id="added-equipments-table" class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Jméno</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for e in position.required_equipment %}
+                        {% if position.required_equipment %}
+                            <table id="added-equipments-table" class="table table-striped">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <a href="{% url 'permissions:detail' e.id %}">{{ e }}</a>
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn btn-danger" name="feature_id"
-                                                    value="{{ e.id }}">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
+                                        <th>Název</th>
+                                        <th></th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for e in position.required_equipment %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'permissions:detail' e.id %}">{{ e }}</a>
+                                            </td>
+                                            <td>
+                                                <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                        value="{{ e.id }}">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
                     </form>
                 </div>
                 <div class="card-footer text-center">
@@ -145,7 +152,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-2">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title h5">Věkové omezení</div>
@@ -182,7 +189,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-2">
+        <div class="col-12 col-md-4">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title h5">Členství ve skupině</div>
@@ -212,11 +219,56 @@
                     </table>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'positions:edit_group_membership' position.id %}" class="btn-primary btn">Upravit</a>
+                    <a href="{% url 'positions:edit_group_membership' position.id %}"
+                       class="btn-primary btn">Upravit</a>
                 </div>
             </div>
         </div>
 
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Omezení pro typ členství</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="{% url 'positions:remove_person_type' position.id %}">
+                        {% csrf_token %}
+                        {% if position.allowed_person_types.all %}
+                            <table id="added-equipments-table" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Jméno</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                {% if position.allowed_person_types %}
+                                    <tbody>
+                                        {% for person_type in position.allowed_person_types.all %}
+                                            <tr>
+                                                <td>
+                                                    {{ person_type }}
+                                                </td>
+                                                <td>
+                                                    <button type="submit" class="btn btn-danger btn-sm"
+                                                            name="person_type"
+                                                            value="{{ person_type.person_type }}">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    </table>
+                                {% endif %}
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn-primary btn" data-toggle="modal"
+                       data-target="#add-person-type">Přidat</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="add-features" tabindex="-1" role="dialog"
@@ -242,15 +294,67 @@
                             </thead>
 
                             <tbody id="qualifications-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=qualifications features_not_required=qualifications_not_required detail_name='qualifications:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=qualifications features_required=qualifications_required detail_name='qualifications:detail' %}
                             </tbody>
 
                             <tbody id="permissions-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=permissions features_not_required=permissions_not_required detail_name='permissions:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=permissions features_required=permissions_required detail_name='permissions:detail' %}
                             </tbody>
 
                             <tbody id="equipment-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=equipment features_not_required=equipment_not_required detail_name='equipments:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=equipment features_required=equipment_required detail_name='equipments:detail' %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="add-person-type" tabindex="-1" role="dialog"
+         aria-labelledby="add-person-type"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="modal-title" class="modal-title">Přidat omezení pro typ členství</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'positions:add_person_type' position.id %}">
+                        {% csrf_token %}
+                        <table class="table table-striped" id="add-feature-table">
+                            <thead>
+                                <tr>
+                                    <th>Název</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for available_person_type in available_person_types %}
+                                    <tr>
+                                        <td>
+                                            {{ available_person_type|index:1 }}
+                                            {% if available_person_type|index:0 in person_types_required %}
+                                                <span class="badge badge-success">přidáno</span>
+                                            {% endif %}
+
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary" type="submit" name="person_type" value="{{ available_person_type|index:0 }}"
+                                                    {% if available_person_type|index:0 in person_types_required %}
+                                                        disabled
+                                                    {% endif %}
+                                            >Přidat</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </form>

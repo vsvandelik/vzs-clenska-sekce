@@ -201,81 +201,82 @@
                         <a href="#" class="btn-primary btn" data-toggle="modal"
                            data-target="#signup-person">Přidat
                             náhradníka</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title h5">Přihlášky ke schválení</div>
-                    </div>
-                    <div class="card-body p-0">
-                        TODO
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
 
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přihlášky ke schválení</div>
+                </div>
+                <div class="card-body p-0">
+                    TODO
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="modal fade" id="signup-person" tabindex="-1" role="dialog"
-             aria-labelledby="signup-person"
-             aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 id="signup-person-title" class="modal-title">Přihlásit osobu</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="signup-person-form" method="POST" action="">
-                            {% csrf_token %}
-                            <table class="table table-striped" id="signup-person-table">
-                                <thead>
+
+    <div class="modal fade" id="signup-person" tabindex="-1" role="dialog"
+         aria-labelledby="signup-person"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="signup-person-title" class="modal-title">Přihlásit osobu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="signup-person-form" method="POST" action="">
+                        {% csrf_token %}
+                        <table class="table table-striped" id="signup-person-table">
+                            <thead>
+                                <tr>
+                                    <th>Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="signup-person-tbody">
+                                {% for person in persons %}
                                     <tr>
-                                        <th>Osoba</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="signup-person-tbody">
-                                    {% for person in persons %}
-                                        <tr>
-                                            <td class="align-middle">
-                                                <a href="{% url 'persons:detail' person.id %}" target="_blank">{{ person }}</a>
-                                                {% with p=person|event_participation:event %}
-                                                    {% if p %}
-                                                        {% if p.state == p.State.SUBSTITUTE %}
-                                                            <span class="badge badge-secondary">náhradník</span>
-                                                        {% endif %}
-                                                        {% if p.state == p.State.APPROVED %}
-                                                            <span class="badge badge-success">přihlášen</span>
-                                                        {% endif %}
-                                                        {% if p.state == p.State.WAITING %}
-                                                            <span class="badge badge-info">čeká na schválení</span>
-                                                        {% endif %}
+                                        <td class="align-middle">
+                                            <a href="{% url 'persons:detail' person.id %}" target="_blank">{{ person }}</a>
+                                            {% with p=person|event_participation:event %}
+                                                {% if p %}
+                                                    {% if p.state == p.State.SUBSTITUTE %}
+                                                        <span class="badge badge-secondary">náhradník</span>
                                                     {% endif %}
-                                                {% endwith %}
+                                                    {% if p.state == p.State.APPROVED %}
+                                                        <span class="badge badge-success">přihlášen</span>
+                                                    {% endif %}
+                                                    {% if p.state == p.State.WAITING %}
+                                                        <span class="badge badge-info">čeká na schválení</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endwith %}
 
-                                            </td>
-                                            <td class="text-center">
-                                                <button class="btn btn-primary" type="submit" name="person_id"
-                                                        value="{{ person.id }}">Přidat
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
-                    </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-primary" type="submit" name="person_id"
+                                                    value="{{ person.id }}">Přidat
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}

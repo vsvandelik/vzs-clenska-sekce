@@ -1,5 +1,8 @@
+from random import choices
+
 from django import forms
 from django.forms import Form, ModelForm
+from persons.models import Person
 from features.models import Feature
 from positions.models import EventPosition
 from django.forms.widgets import CheckboxInput
@@ -31,7 +34,7 @@ class AddFeatureRequirementToPositionForm(Form):
         return cleaned_data
 
 
-class AgeLimitPositionForm(ModelForm):
+class AgeLimitForm(ModelForm):
     class Meta:
         model = EventPosition
         fields = ["min_age_enabled", "max_age_enabled", "min_age", "max_age"]
@@ -81,7 +84,7 @@ class AgeLimitPositionForm(ModelForm):
         return cleaned_data
 
 
-class GroupMembershipPositionForm(ModelForm):
+class GroupMembershipForm(ModelForm):
     class Meta:
         model = EventPosition
         fields = ["group_membership_required", "group"]
@@ -108,4 +111,23 @@ class GroupMembershipPositionForm(ModelForm):
                 self.add_error("group", "Toto pole musí být prázdné")
             else:
                 cleaned_data["group"] = self.instance.group
+        return cleaned_data
+
+
+class PersonTypeForm(Form):
+    person_type = forms.ChoiceField(choices=Person.Type.choices)
+
+    def __init__(self, *args, **kwargs):
+        self._position_id = kwargs.pop("position_id")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data["position_id"] = self._position_id
+        pid = cleaned_data["position_id"]
+        try:
+            cleaned_data["position"] = EventPosition.objects.get(pk=pid)
+        except EventPosition.DoesNotExist:
+            self.add_error("position_id", f"Pozice s id {pid} neexistuje")
+
         return cleaned_data
