@@ -141,11 +141,9 @@ class AddOrRemoveAllowedPersonTypeToPositionView(MessagesMixin, generic.FormView
     def form_valid(self, form):
         position = form.cleaned_data["position"]
         person_type = form.cleaned_data["person_type"]
-        try:
-            self.person_type_obj = PersonType.objects.get(person_type=person_type)
-        except PersonType.DoesNotExist:
-            self.person_type_obj = PersonType(person_type=person_type)
-            self.person_type_obj.save()
+        self.person_type_obj, _ = PersonType.objects.get_or_create(
+            person_type=person_type, defaults={"person_type": person_type}
+        )
         self._change_db(position)
         position.save()
         return super().form_valid(form)
