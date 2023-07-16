@@ -152,14 +152,11 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
         raise ImproperlyConfigured("This method should never be called")
 
     def _process_form(self, person, event, state):
-        try:
-            ep = EventParticipation.objects.get(person=person, event=event)
-            ep.state = state
-        except EventParticipation.DoesNotExist:
-            ep = EventParticipation.objects.create(
-                person=person, event=event, state=state
-            )
-        ep.save()
+        EventParticipation.objects.update_or_create(
+            person=person,
+            event=event,
+            defaults={"person": person, "event": event, "state": state},
+        )
 
     def form_valid(self, form):
         person = Person.objects.get(pk=form.cleaned_data["person_id"])

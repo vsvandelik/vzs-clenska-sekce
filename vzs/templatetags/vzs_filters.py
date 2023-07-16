@@ -1,5 +1,8 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.urls import resolve
+from django.template.defaulttags import url, URLNode
+from django.template.base import Node
 
 from vzs import settings
 
@@ -61,8 +64,75 @@ def link_to_admin_email(link_text=None):
 def negate(value):
     return -value
 
-  
+
 @register.simple_tag
 def indentation_by_level(level):
     return "—" * level + " "
 
+
+class _PermURLContextVariable:
+    def __init__(self, url, permitted):
+        self.url = url
+        self.permitted = permitted
+
+    def __bool__(self):
+        return self.permitted
+
+
+class _PermURLNode(URLNode):
+    def __init__(self, url_node):
+        super().__init__(
+            url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar
+        )
+
+    def render(self, context):
+        super().render(context)
+
+        if not self.asvar:
+            return ""
+
+        url = context[self.asvar]
+
+        match = resolve(url)
+
+        permitted = match.func.view_class.view_has_permission(
+            context["user"], **match.kwargs
+        )
+
+        context[self.asvar] = _PermURLContextVariable(url, permitted)
+
+        return ""
+
+
+@register.tag
+def perm_url(parser, token):
+    return _PermURLNode(url(parser, token))
+
+
+class _IfPermNode(Node):
+    def __init__(self, nodelist, node):
+        self.nodelist = nodelist
+        self.node = node
+
+    def render(self, context):
+        asvar = self.node.asvar or "perm"
+
+        self.node.asvar = "var"
+        var = context.get(self.node.asvar)
+        self.node.render(context)
+        perm = context[self.node.asvar]
+        if var is not None:
+            context[self.node.asvar] = var
+
+        if not perm.permitted:
+            return ""
+
+        with context.push(perm=perm):
+            return self.nodelist.render(context)
+
+
+@register.tag
+def ifperm(parser, token):
+    nodelist = parser.parse(("endifperm",))
+    parser.next_token()
+    return _IfPermNode(nodelist, perm_url(parser, token))

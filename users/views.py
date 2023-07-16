@@ -1,32 +1,89 @@
-from django.contrib import messages
-from django.contrib.auth import (
-    authenticate,
-    login as auth_login,
-    update_session_auth_hash,
-)
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ImproperlyConfigured
-from django.core.mail import send_mail
-from django.http import (
-    HttpResponseRedirect,
-    HttpResponseForbidden,
-)
-from django.shortcuts import redirect
-from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext_lazy as _
-from django.views import generic
-
-from persons.models import Person
-from vzs import settings
 from . import forms
 from .backends import GoogleBackend
 from .models import User, Permission
 from .utils import get_random_password
 
+from persons.models import Person
+from persons.views import PersonPermissionMixin
 
-class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
+from vzs import settings
+
+from django.views import generic
+from django.urls import reverse, reverse_lazy
+from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth import (
+    views as auth_views,
+    models as auth_models,
+    login as auth_login,
+    authenticate,
+    update_session_auth_hash,
+)
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
+)
+from django.http import (
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+    HttpResponseBadRequest,
+)
+from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import send_mail
+from django.shortcuts import redirect
+
+
+class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
+    permission_required = "superuser"
+
+    @classmethod
+    def get_permission_required(cls):
+        # a little hack as we assume we will set permission_required only per class, not per object
+        obj = DjangoPermissionRequiredMixin()
+        obj.permission_required = cls.permission_required
+        return obj.get_permission_required()
+
+    @classmethod
+    def view_has_permission(cls, user, **kwargs):
+        perms = cls.get_permission_required()
+        return user.has_perms(perms)
+
+    def has_permission(self):
+        return self.view_has_permission(self.request.user, **self.kwargs)
+
+
+class _UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionMixin):
+    @classmethod
+    def view_has_permission(cls, user, pk):
+        if cls.get_queryset_by_permission(user).filter(pk=pk):
+            return True
+
+        return super().view_has_permission(user)
+
+
+class _UserGeneratePasswordPermissionMixin(
+    PermissionRequiredMixin, PersonPermissionMixin
+):
+    @classmethod
+    def view_has_permission(cls, user, pk):
+        # a user shouldn't be allowed to regenerate their own password
+        if user.person.pk == pk:
+            return False
+
+        if cls.get_queryset_by_permission(user).filter(pk=pk):
+            return True
+
+        return super().view_has_permission(user)
+
+
+class _UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
+    permission_required = "users.spravce_povoleni"
+
+
+class UserCreateView(
+    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
     queryset = Person.objects.filter(user__isnull=True)
@@ -54,16 +111,16 @@ class UserCreateView(SuccessMessageMixin, generic.edit.CreateView):
         return super().get_context_data(**kwargs)
 
 
-class IndexView(generic.list.ListView):
-    model = User
-    template_name = "users/index.html"
-    context_object_name = "users"
-
-
-class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
+class UserDeleteView(
+    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+):
     model = User
     context_object_name = "user_object"
     template_name = "users/delete.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = self.get_object().person
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.person.pk})
@@ -82,6 +139,10 @@ class UserDeleteView(SuccessMessageMixin, generic.edit.DeleteView):
 class UserChangePasswordBaseMixin(generic.edit.UpdateView):
     model = User
     context_object_name = "user_object"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
@@ -122,11 +183,13 @@ class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
         return reverse("my-profile:index")
 
 
-class UserChangePasswordOtherView(UserChangePasswordBaseMixin):
+class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordBaseMixin):
     form_class = forms.UserChangePasswordRepeatForm
 
 
-class UserGenerateNewPasswordView(UserChangePasswordMixin):
+class UserGenerateNewPasswordView(
+    _UserGeneratePasswordPermissionMixin, UserChangePasswordMixin
+):
     http_method_names = ["post"]
     form_class = forms.UserChangePasswordForm
     success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
@@ -194,19 +257,24 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
         )
 
 
-class PermissionsView(generic.list.ListView):
+class PermissionsView(_UserManagePermissionsPermissionMixin, generic.list.ListView):
     model = Permission
     template_name = "users/permissions.html"
     context_object_name = "permissions"
 
 
-class PermissionDetailView(generic.detail.DetailView):
+class PermissionDetailView(
+    _UserManagePermissionsPermissionMixin, generic.detail.DetailView
+):
     model = Permission
     template_name = "users/permission_detail.html"
 
 
 class UserAssignRemovePermissionView(
-    SuccessMessageMixin, generic.detail.SingleObjectMixin, generic.edit.FormView
+    _UserManagePermissionsPermissionMixin,
+    SuccessMessageMixin,
+    generic.detail.SingleObjectMixin,
+    generic.edit.FormView,
 ):
     form_class = forms.UserAssignRemovePermissionForm
 
