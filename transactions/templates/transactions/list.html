@@ -43,7 +43,7 @@
                                                     <i class="fas fa-qrcode" aria-hidden="true"></i>
                                                 </a>
                                             {% endif %}
-                                            <a href="{% url "transactions:edit" transaction.pk %}" class="btn btn-success btn-sm">
+                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
                                             {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
@@ -81,7 +81,7 @@
                                     <td>{{ transaction.date_due }}</td>
                                     <td>
                                         <div class="btn-group float-right">
-                                            <a href="{% url "transactions:edit" transaction.pk %}" class="btn btn-success btn-sm">
+                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
                                             {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}

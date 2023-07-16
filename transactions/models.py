@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -30,6 +31,12 @@ class Transaction(models.Model):
 
     def is_settled(self):
         return self.fio_transaction is not None
+
+    def is_reward(self):
+        return self.amount > 0
+
+    Q_debt = Q(amount__lt=0)
+    Q_reward = Q(amount__gt=0)
 
 
 class FioTransaction(models.Model):

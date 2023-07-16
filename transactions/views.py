@@ -2,13 +2,19 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-from .forms import TransactionEditForm, TransactionCreateForm
+from .forms import (
+    TransactionEditForm,
+    TransactionCreateForm,
+    TransactionCreateFromPersonForm,
+    TransactionFilterForm,
+)
 from .models import Transaction
+from .utils import parse_transactions_filter_queryset
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -19,6 +25,15 @@ class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateV
     model = Transaction
     form_class = TransactionCreateForm
     template_name = "transactions/create.html"
+    success_url = reverse_lazy("transactions:index")
+
+
+class TransactionCreateFromPersonView(
+    TransactionEditPermissionMixin, generic.edit.CreateView
+):
+    model = Transaction
+    form_class = TransactionCreateFromPersonForm
+    template_name = "transactions/create_from_person.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.person = get_object_or_404(Person, pk=self.kwargs["person"])
@@ -51,15 +66,12 @@ class TransactionListView(generic.detail.DetailView):
         person = self.object
         transactions = person.transactions
 
-        Q_debt = Q(amount__lt=0)
-        Q_award = Q(amount__gt=0)
-
-        transactions_debt = transactions.filter(Q_debt)
-        transactions_reward = transactions.filter(Q_award)
+        transactions_debt = transactions.filter(Transaction.Q_debt)
+        transactions_reward = transactions.filter(Transaction.Q_reward)
 
         transactions_due = transactions.filter(fio_transaction__isnull=True)
-        transactions_current_debt = transactions_due.filter(Q_debt)
-        transactions_due_reward = transactions_due.filter(Q_award)
+        transactions_current_debt = transactions_due.filter(Transaction.Q_debt)
+        transactions_due_reward = transactions_due.filter(Transaction.Q_reward)
 
         current_debt = (
             transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
@@ -104,7 +116,7 @@ class TransactionQRView(generic.detail.DetailView):
         return queryset
 
 
-class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateView):
+class TransactionEditMixin(TransactionEditPermissionMixin, generic.edit.UpdateView):
     model = Transaction
     form_class = TransactionEditForm
     template_name = "transactions/edit.html"
@@ -114,8 +126,20 @@ class TransactionEditView(TransactionEditPermissionMixin, generic.edit.UpdateVie
 
         return super().get_context_data(**kwargs)
 
+    def get_form(self):
+        # get_success_url is run after object update so we need to save the data
+        # we will need later
+        self.old_person = self.object.person
+        return super().get_form()
+
+
+class TransactionEditFromPersonView(TransactionEditMixin):
     def get_success_url(self):
-        return reverse("persons:transaction-list", kwargs={"pk": self.object.person.pk})
+        return reverse("persons:transaction-list", kwargs={"pk": self.old_person.pk})
+
+
+class TransactionEditView(TransactionEditMixin):
+    success_url = reverse_lazy("transactions:index")
 
 
 class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteView):
@@ -135,3 +159,29 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
 
     def get_success_url(self):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
+
+
+class TransactionIndexView(generic.list.ListView):
+    model = Transaction
+    template_name = "transactions/index.html"
+    context_object_name = "transactions"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("filter_form", self.filter_form)
+
+        return super().get_context_data(**kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.filter_form = TransactionFilterForm(self.request.GET)
+
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        transactions = Transaction.objects.all()
+
+        if self.filter_form.is_valid():
+            transactions = parse_transactions_filter_queryset(
+                self.filter_form.cleaned_data, transactions
+            )
+
+        return transactions.order_by("date_due")

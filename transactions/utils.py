@@ -1,12 +1,16 @@
-import zoneinfo
+from .models import Transaction, FioTransaction
+
+from vzs import settings
 
 from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.db.models import Q
+
 from fiobank import FioBank
 
-from vzs import settings
-from .models import Transaction, FioTransaction
+import zoneinfo
+
 
 _fio_client = FioBank(settings.FIO_TOKEN)
 
@@ -60,7 +64,6 @@ def fetch_fio(date_start, date_end):
             continue
 
         if transaction.fio_transaction is not None:
-            print(transaction.pk, transaction.fio_transaction.fio_id, received_id)
             if transaction.fio_transaction.fio_id != received_id:
                 # the account has multiple transactions with the same VS
                 _send_mail_to_accountants(
@@ -90,3 +93,47 @@ def fetch_fio(date_start, date_end):
         )
         transaction.fio_transaction = fio_transaction
         transaction.save()
+
+
+def parse_transactions_filter_queryset(cleaned_data, transactions):
+    person_name = cleaned_data.get("person_name")
+    reason = cleaned_data.get("reason")
+    transaction_type = cleaned_data.get("transaction_type")
+    is_settled = cleaned_data.get("is_settled")
+    amount_from = cleaned_data.get("amount_from")
+    amount_to = cleaned_data.get("amount_to")
+    date_due_from = cleaned_data.get("date_due_from")
+    date_due_to = cleaned_data.get("date_due_to")
+
+    if person_name:
+        transactions = transactions.filter(
+            Q(person__first_name__icontains=person_name)
+            | Q(person__last_name__icontains=person_name)
+        )
+
+    if transaction_type:
+        query_expression = (
+            Transaction.Q_reward if transaction_type == "reward" else Transaction.Q_debt
+        )
+        transactions = transactions.filter(query_expression)
+
+    if is_settled:
+        transactions = transactions.filter(fio_transaction__isnull=not is_settled)
+
+    if amount_from:
+        transactions = transactions.filter(
+            Q(amount__gte=amount_from) | Q(amount__lte=-amount_from)
+        )
+
+    if amount_to:
+        transactions = transactions.filter(
+            Q(amount__lte=amount_to) & Q(amount__gte=-amount_to)
+        )
+
+    if date_due_from:
+        transactions = transactions.filter(date_due__gte=date_due_from)
+
+    if date_due_to:
+        transactions = transactions.filter(date_due__lte=date_due_to)
+
+    return transactions
