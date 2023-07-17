@@ -16,7 +16,12 @@ urlpatterns = [
     ),
     path(
         "<int:price_list_id>/upravit/<int:pk>/bonus",
-        views.EditBonusPriceListView.as_view(),
+        views.EditBonusView.as_view(),
         name="edit_bonus",
+    ),
+    path(
+        "<int:price_list_id>/smazat/<int:pk>/bonus",
+        views.DeleteBonusView.as_view(),
+        name="delete_bonus",
     ),
 ]

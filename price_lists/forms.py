@@ -4,9 +4,9 @@ from features.models import Feature
 from django_select2.forms import Select2Widget
 
 
-class AddBonusForm(ModelForm):
+class AddEditBonusForm(ModelForm):
     class Meta:
-        fields = ["feature", "bonus"]
+        fields = ["feature", "extra_payment"]
         model = PriceListBonus
         labels = {"feature": "Kvalifikace"}
         widgets = {
@@ -16,17 +16,21 @@ class AddBonusForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.price_list = kwargs.pop("price_list")
         super().__init__(*args, **kwargs)
-        self.fields["bonus"].widget.attrs["min"] = 1
+        self.fields["extra_payment"].widget.attrs["min"] = 1
         self.fields["feature"].queryset = Feature.qualifications.exclude(
             pk__in=self.price_list.bonus_features.all()
         )
+        if self.instance.id is not None:
+            self.fields["feature"].queryset = self.fields[
+                "feature"
+            ].queryset | Feature.qualifications.filter(pk=self.instance.feature.pk)
 
     def save(self, commit=True):
         cleaned_data = self.cleaned_data
         instance = self.instance
         instance.price_list = self.price_list
         instance.feature = cleaned_data["feature"]
-        instance.bonus = cleaned_data["bonus"]
+        instance.extra_payment = cleaned_data["extra_payment"]
         if commit:
             instance.save()
         return instance

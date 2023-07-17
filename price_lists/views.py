@@ -1,37 +1,44 @@
 from django.views import generic
-from .models import PriceList
-from django.urls import reverse_lazy
-from .forms import AddBonusForm
+
+from events.mixin_extensions import MessagesMixin
+from .models import PriceList, PriceListBonus
+from django.urls import reverse_lazy, reverse
+from .forms import AddEditBonusForm
 from django.shortcuts import get_object_or_404
 
 
-class PriceListIndexView(generic.ListView):
+class PriceListMixin:
     model = PriceList
+    context_object_name = "price_list"
+
+
+class PriceListCreateUpdateMixin(MessagesMixin, PriceListMixin):
+    template_name = "price_lists/create_edit.html"
+    fields = ["name", "salary_base"]
+
+    def get_success_url(self):
+        return reverse("price_lists:detail", args=[self.object.id])
+
+
+class PriceListIndexView(PriceListMixin, generic.ListView):
     template_name = "price_lists/index.html"
     context_object_name = "price_lists"
 
 
-class PriceListCreateView(generic.CreateView):
-    model = PriceList
-    context_object_name = "price_list"
-    template_name = "price_lists/create_edit.html"
-    fields = ["name", "salary_base"]
-    success_url = reverse_lazy("price_lists:index")
+class PriceListCreateView(PriceListCreateUpdateMixin, generic.CreateView):
+    success_message = "Ceník %(name)s úspěšně přidán"
 
 
-class PriceListUpdateView(generic.UpdateView):
-    model = PriceList
-    context_object_name = "price_list"
-    template_name = "price_lists/create_edit.html"
-    fields = ["name", "salary_base"]
-    success_url = reverse_lazy("price_lists:index")
+class PriceListUpdateView(PriceListCreateUpdateMixin, generic.UpdateView):
+    success_message = "Ceník %(name)s úspěšně upraven"
 
 
-class PriceListDeleteView(generic.DeleteView):
-    context_object_name = "price_list"
-    model = PriceList
+class PriceListDeleteView(MessagesMixin, PriceListMixin, generic.DeleteView):
     template_name = "price_lists/delete.html"
     success_url = reverse_lazy("price_lists:index")
+
+    def get_success_message(self, cleaned_data):
+        return f"Ceník {self.object.name} úspěšně smazán"
 
 
 class PriceListDetailView(generic.DetailView):
@@ -40,24 +47,57 @@ class PriceListDetailView(generic.DetailView):
     template_name = "price_lists/detail.html"
 
 
-class AddBonusToPriceListView(generic.CreateView):
+class BonusMixin(MessagesMixin):
     context_object_name = "bonus"
-    form_class = AddBonusForm
-    template_name = "price_lists/create_edit_bonus.html"
+    model = PriceListBonus
+
+    def get_success_url(self):
+        return reverse("price_lists:detail", args=[self.kwargs["price_list_id"]])
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("price_list", self.price_list)
         return super().get_context_data(**kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["price_list"] = self.price_list
-        return kwargs
 
     def dispatch(self, request, *args, **kwargs):
         self.price_list = get_object_or_404(PriceList, pk=kwargs["price_list_id"])
         return super().dispatch(request, *args, **kwargs)
 
 
-class EditBonusPriceListView(generic.UpdateView):
-    pass
+class BonusCreateUpdateMixin(BonusMixin):
+    form_class = AddEditBonusForm
+    template_name = "price_lists/create_edit_bonus.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["price_list"] = self.price_list
+        return kwargs
+
+
+class AddBonusToPriceListView(BonusCreateUpdateMixin, generic.CreateView):
+    success_message = (
+        "Příplatek %(extra_payment)s Kč za kvalifikaci %(feature)s úspěšně přidán"
+    )
+
+
+class EditBonusView(BonusCreateUpdateMixin, generic.UpdateView):
+    success_message = "Bonus úspěšně upraven"
+
+
+class DeleteBonusView(BonusMixin, generic.DeleteView):
+    template_name = "price_lists/delete_bonus.html"
+    context_object_name = "bonus"
+    model = PriceListBonus
+
+    def get_success_message(self, cleaned_data):
+        return f"Příplatek {self.object.extra_payment} Kč za kvalifikaci {self.object.feature} úspěšně smazán"
+
+    def get_success_url(self):
+        return reverse("price_lists:detail", args=[self.kwargs["price_list_id"]])
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("price_list", self.price_list)
+        return super().get_context_data(**kwargs)
+
+    def dispatch(self, request, *args, **kwargs):
+        self.price_list = get_object_or_404(PriceList, pk=kwargs["price_list_id"])
+        return super().dispatch(request, *args, **kwargs)

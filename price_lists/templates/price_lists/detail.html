@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% load tag_extensions %}
-{% block scripts %}
-    <script src="{% static 'price_list_detail.js' %}"></script>
-{% endblock %}
 {% block title %}
     Detail ceníku
 {% endblock %}
@@ -26,6 +23,27 @@
     <div class="row">
         <div class="col-12 col-md-4">
             <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Přehled</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Název:</td>
+                                <td class="w-100">{{ price_list.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Základní výplata:</td>
+                                <td class="w-100">{{ price_list.salary_base }} Kč</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title h5">Bonusy za kvalifikace</div>
                 </div>
@@ -43,30 +61,29 @@
                                 </thead>
                                 <tbody>
                                     {% for f in price_list.bonus_features.all %}
-                                        <tr>
-                                            <td>
-                                                <a href="{% url 'qualifications:detail' f.id %}">{{ f }}</a>
-                                            </td>
-                                            <td>
-
-                                            </td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a class="btn btn-info btn-sm"
-                                                       href="{% url 'price_lists:edit_bonus' price_list.id f.id %}">
-                                                        <i class="fas fa-info"></i>
-                                                    </a>
-                                                    <a class="btn btn-success btn-sm"
-                                                       href="{% url 'events:edit_one_time_event' f.id %}">
-                                                        <i class="fas fa-pen"></i>
-                                                    </a>
-                                                    <button type="submit" class="btn btn-danger btn-sm" name="bonus_id"
-                                                            value="{{ f.id }}">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        {% with bonus=f.pricelistbonus_set.all|index:0 %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'qualifications:detail' f.id %}">{{ f }}</a>
+                                                </td>
+                                                <td>
+                                                    {{ bonus.extra_payment }} Kč
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a class="btn btn-success btn-sm"
+                                                           href="{% url 'price_lists:edit_bonus' price_list.id bonus.id %}">
+                                                            <i class="fas fa-pen"></i>
+                                                        </a>
+                                                        <a href="#" data-toggle="modal" data-target="#delete-bonus-modal"
+                                                           data-action="{% url 'price_lists:delete_bonus' price_list.id bonus.id %}"
+                                                           class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endwith %}
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -81,4 +98,12 @@
     </div>
 
     {% include "modal_include.html" with id="delete-price-list-modal" template="price_lists/delete.html" %}
+    {% include "modal_include.html" with id="delete-bonus-modal" %}
 {% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'price_list_detail.js' %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("delete-bonus-modal")</script>
+{% endblock %}
+

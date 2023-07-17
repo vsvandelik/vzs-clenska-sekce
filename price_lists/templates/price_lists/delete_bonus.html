@@ -1,0 +1,15 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Potvrzení smazání bonusu
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu smazat příplatek {{ bonus.extra_payment }} Kč za kvalifikaci "{{ bonus.feature }}"?</p>
+    </div>
+{% endblock %}
+
+{% block delete_action %}
+    {% url "price_lists:delete_bonus" price_list.pk bonus.pk %}
+{% endblock %}

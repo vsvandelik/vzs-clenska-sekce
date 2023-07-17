@@ -30,12 +30,12 @@
                     </div>
                     <div class="card-body">
                         {{ form.feature|as_crispy_field }}
-                        {{ form.bonus|as_crispy_field }}
                         <div class="form-group">
                             <a id="detail-link" style="display: none" target="_blank">
                                 Detail vybrané kvalifikace
                             </a>
                         </div>
+                        {{ form.extra_payment|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"

@@ -18,7 +18,7 @@ class PriceList(models.Model):
 class PriceListBonus(models.Model):
     price_list = models.ForeignKey("price_lists.PriceList", on_delete=models.CASCADE)
     feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
-    bonus = models.PositiveIntegerField(
+    extra_payment = models.PositiveIntegerField(
         _("Bonusová částka"), validators=[MinValueValidator(1)]
     )
 
