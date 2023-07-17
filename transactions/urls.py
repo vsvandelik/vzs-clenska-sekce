@@ -18,7 +18,7 @@ urlpatterns = [
     path(
         "pridat/",
         views.TransactionCreateView.as_view(),
-        name="edit",
+        name="add",
     ),
     path(
         "<int:pk>/upravit-z-osoby/",
