@@ -140,7 +140,7 @@ class FeatureAssignDeleteView(
     def form_valid(self, form):
         if (
             hasattr(self.object, "transaction")
-            and not self.object.transaction.is_settled()
+            and not self.object.transaction.is_settled
         ):
             self.object.transaction.delete()
 

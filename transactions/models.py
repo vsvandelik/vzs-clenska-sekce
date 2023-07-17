@@ -29,9 +29,11 @@ class Transaction(models.Model):
         "FioTransaction", on_delete=models.SET_NULL, null=True
     )
 
+    @property
     def is_settled(self):
         return self.fio_transaction is not None
 
+    @property
     def is_reward(self):
         return self.amount > 0
 
