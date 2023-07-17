@@ -106,7 +106,7 @@ urlpatterns = [
     ),
     path(
         "<int:person>/pridat-transakci/",
-        transactions_views.TransactionCreateView.as_view(),
+        transactions_views.TransactionCreateFromPersonView.as_view(),
         name="transaction-add",
     ),
 ]
