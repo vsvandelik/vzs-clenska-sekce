@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("features", "0002_alter_featureassignment_person"),
+        ("features", "0001_initial"),
     ]
 
     operations = [

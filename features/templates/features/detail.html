@@ -46,6 +46,12 @@
                                     <td class="w-100">{{ object.fee }} Kč</td>
                                 </tr>
                             {% endif %}
+                            {% if object.tier is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Úroveň:</td>
+                                    <td class="w-100">{{ object.tier }}</td>
+                                </tr>
+                            {% endif %}
                             {% if object.collect_issuers is not None %}
                                 <tr>
                                     <td class="text-nowrap text-bold">Evidovat vydavatele kvalifikace:</td>

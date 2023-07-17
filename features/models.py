@@ -51,6 +51,7 @@ class Feature(MPTTModel):
     assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
     never_expires = models.BooleanField(blank=True, null=True)
     fee = models.PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
+    tier = models.PositiveSmallIntegerField(_("Úroveň"), blank=True, null=True)
     collect_issuers = models.BooleanField(
         _("Evidovat vydavatele kvalifikace"), blank=True, null=True
     )

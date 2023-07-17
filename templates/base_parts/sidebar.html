@@ -67,6 +67,12 @@
                                 <p>Vybavení</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{% url "transactions:index" %}" class="nav-link {% active_link "transactions:index" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Transakce</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add || price_lists:index || price_lists:add" "menu-open" strict=False %}">

@@ -66,7 +66,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         self.fields["fee"].initial = -self.instance.transaction.amount
         self.fields["due_date"].initial = self.instance.transaction.date_due
 
-        if self.instance.transaction.is_settled():
+        if self.instance.transaction.is_settled:
             self.fields["fee"].disabled = True
             self.fields["due_date"].disabled = True
 
@@ -108,7 +108,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
             fee_value
             and self.instance
             and hasattr(self.instance, "transaction")
-            and self.instance.transaction.is_settled()
+            and self.instance.transaction.is_settled
             and -fee_value != self.instance.transaction.amount
         ):
             raise ValidationError(_("Poplatek nelze změnit, protože je již uhrazen."))
@@ -131,7 +131,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
             due_date
             and self.instance
             and hasattr(self.instance, "transaction")
-            and self.instance.transaction.is_settled()
+            and self.instance.transaction.is_settled
             and due_date != self.instance.transaction.date_due
         ):
             raise ValidationError(
@@ -211,7 +211,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         fee = self.cleaned_data.get("fee")
         if fee is None or (
             hasattr(self.instance, "transaction")
-            and self.instance.transaction.is_settled()
+            and self.instance.transaction.is_settled
         ):
             return False
 
@@ -289,6 +289,7 @@ class FeatureForm(ModelForm):
             "parent",
             "assignable",
             "fee",
+            "tier",
             "never_expires",
             "collect_issuers",
             "collect_codes",
@@ -321,9 +322,11 @@ class FeatureForm(ModelForm):
             self.fields.pop("fee")
             self.fields.pop("collect_issuers")
             self.fields.pop("collect_codes")
+            self.fields.pop("tier")
 
         elif feature_type == Feature.Type.EQUIPMENT:
             self.fields.pop("collect_issuers")
+            self.fields.pop("tier")
 
     def clean_collect_issuers(self):
         collect_issuers = self.cleaned_data["collect_issuers"]
