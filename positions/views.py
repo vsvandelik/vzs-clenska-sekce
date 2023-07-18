@@ -21,7 +21,6 @@ class PositionMixin:
 
 
 class PositionCreateUpdateMixin(PositionMixin):
-    template_name = "positions/create_edit.html"
     fields = ["name"]
 
 
@@ -31,10 +30,13 @@ class PositionIndexView(PositionMixin, generic.ListView):
 
 
 class PositionCreateView(PositionCreateUpdateMixin, generic.CreateView):
+    template_name = "positions/create.html"
     success_url = reverse_lazy("positions:index")
 
 
 class PositionUpdateView(PositionCreateUpdateMixin, generic.UpdateView):
+    template_name = "positions/edit.html"
+
     def get_success_url(self):
         return reverse("positions:detail", args=[self.object.id])
 
