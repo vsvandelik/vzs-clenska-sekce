@@ -6,7 +6,6 @@
     <script src="{% static 'create_edit_bonus.js' %}"></script>
 {% endblock %}
 {% block title %}
-    {% if bonus %}Editace bonusu{% else %}Vytvoření{% endif %} bonusu
 {% endblock %}
 {% block content %}
     <input type="hidden" id="url" data-url="{% url 'qualifications:detail' 1 %}">
@@ -39,7 +38,7 @@
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
-                               value="{% if bonus %}Uložit{% else %}Vytvořit{% endif %}">
+                               value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>
             </div>

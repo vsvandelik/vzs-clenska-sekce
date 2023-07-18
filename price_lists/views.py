@@ -13,7 +13,6 @@ class PriceListMixin:
 
 
 class PriceListCreateUpdateMixin(MessagesMixin, PriceListMixin):
-    template_name = "price_lists/create_edit.html"
     fields = ["name", "salary_base"]
 
     def get_success_url(self):
@@ -26,10 +25,12 @@ class PriceListIndexView(PriceListMixin, generic.ListView):
 
 
 class PriceListCreateView(PriceListCreateUpdateMixin, generic.CreateView):
+    template_name = "price_lists/create.html"
     success_message = "Ceník %(name)s úspěšně přidán"
 
 
 class PriceListUpdateView(PriceListCreateUpdateMixin, generic.UpdateView):
+    template_name = "price_lists/edit.html"
     success_message = "Ceník %(name)s úspěšně upraven"
 
 
@@ -65,7 +66,6 @@ class BonusMixin(MessagesMixin):
 
 class BonusCreateUpdateMixin(BonusMixin):
     form_class = AddEditBonusForm
-    template_name = "price_lists/create_edit_bonus.html"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -74,12 +74,14 @@ class BonusCreateUpdateMixin(BonusMixin):
 
 
 class AddBonusToPriceListView(BonusCreateUpdateMixin, generic.CreateView):
+    template_name = "price_lists/create_bonus.html"
     success_message = (
         "Příplatek %(extra_payment)s Kč za kvalifikaci %(feature)s úspěšně přidán"
     )
 
 
 class EditBonusView(BonusCreateUpdateMixin, generic.UpdateView):
+    template_name = "price_lists/edit_bonus.html"
     success_message = "Bonus úspěšně upraven"
 
 
