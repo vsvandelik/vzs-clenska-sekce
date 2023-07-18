@@ -20,8 +20,12 @@ class PositionMixin:
     context_object_name = "position"
 
 
-class PositionCreateUpdateMixin(PositionMixin):
+class PositionCreateUpdateMixin(MessagesMixin, PositionMixin):
+    template_name = "positions/create_edit.html"
     fields = ["name"]
+
+    def get_success_url(self):
+        return reverse("positions:detail", args=[self.object.id])
 
 
 class PositionIndexView(PositionMixin, generic.ListView):
@@ -31,19 +35,20 @@ class PositionIndexView(PositionMixin, generic.ListView):
 
 class PositionCreateView(PositionCreateUpdateMixin, generic.CreateView):
     template_name = "positions/create.html"
-    success_url = reverse_lazy("positions:index")
+    success_message = "Pozice %(name)s úspěšně přidána"
 
 
 class PositionUpdateView(PositionCreateUpdateMixin, generic.UpdateView):
     template_name = "positions/edit.html"
-
-    def get_success_url(self):
-        return reverse("positions:detail", args=[self.object.id])
+    success_message = "Pozice %(name)s úspěšně upravena"
 
 
-class PositionDeleteView(PositionMixin, generic.DeleteView):
+class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
     template_name = "positions/delete.html"
     success_url = reverse_lazy("positions:index")
+
+    def get_success_message(self, cleaned_data):
+        return f"Pozice {self.object.name} úspěšně smazána"
 
 
 class PositionDetailView(PositionMixin, generic.DetailView):

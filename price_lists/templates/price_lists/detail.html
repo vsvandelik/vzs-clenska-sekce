@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tag_extensions %}
+{% block title %}
+    Detail ceníku
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ price_list.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'price_lists:edit' price_list.id %}"
+                   class="btn btn-success">Upravit</a>
+                {% include "delete_button_text.html" with id="delete-price-list-modal" %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Přehled</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Název:</td>
+                                <td class="w-100">{{ price_list.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Základní výplata:</td>
+                                <td class="w-100">{{ price_list.salary_base }} Kč</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Bonusy za kvalifikace</div>
+                </div>
+                <div class="card-body p-0">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        {% if price_list.bonus_features.all %}
+                            <table id="added-qualifications-table" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Název</th>
+                                        <th>Příplatek</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for f in price_list.bonus_features.all %}
+                                        {% with bonus=f.pricelistbonus_set.all|index:0 %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'qualifications:detail' f.id %}">{{ f }}</a>
+                                                </td>
+                                                <td>
+                                                    {{ bonus.extra_payment }} Kč
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a class="btn btn-success btn-sm"
+                                                           href="{% url 'price_lists:edit_bonus' price_list.id bonus.id %}">
+                                                            <i class="fas fa-pen"></i>
+                                                        </a>
+                                                        <a href="#" data-toggle="modal" data-target="#delete-bonus-modal"
+                                                           data-action="{% url 'price_lists:delete_bonus' price_list.id bonus.id %}"
+                                                           class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endwith %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'price_lists:add_bonus' price_list.id %}" class="btn-primary btn">Přidat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-price-list-modal" template="price_lists/delete.html" %}
+    {% include "modal_include.html" with id="delete-bonus-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'price_list_detail.js' %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>register_modal("delete-bonus-modal")</script>
+{% endblock %}
+

@@ -5,21 +5,16 @@
     <script src="{% static 'set_report_validity.js' %}"></script>
     <script src="{% static 'create_edit_one_time_event.js' %}"></script>
 {% endblock %}
-{% block title %}
-    {% if event %} Editace jednorázové {% else %} Nová jednorázová {% endif %}
-{% endblock %}
 {% block content %}
-
-
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <form method="POST"
-                      action=" {% if event %} {% url 'events:edit_one_time_event' event.id %} {% else %} {% url 'events:add_one_time_event' %} {% endif %}"
+                      action="{% block form_action %}{% endblock %}"
                       onsubmit="return beforeSubmit()">
                     {% csrf_token %}
                     <div class="card-header">
-                        <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
@@ -32,18 +27,10 @@
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
-                               value="{% if event %}Uložit{% else %}Vytvořit{% endif %}">
+                               value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>
             </div>
         </div>
-
-
-
-
-
-
-
-
-
+    </div>
 {% endblock %}

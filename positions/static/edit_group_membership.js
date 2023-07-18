@@ -30,7 +30,7 @@ function getGroupField() {
 }
 
 function getGroupDetailLink() {
-    return document.getElementById('detailLink')
+    return document.getElementById('detail-link')
 }
 
 function setDetailLinkVisibility(state) {

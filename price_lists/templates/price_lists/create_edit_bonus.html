@@ -3,20 +3,22 @@
 {% load static %}
 {% block scripts %}
     <script src="{% static 'get_django_url.js' %}"></script>
-    <script src="{% static 'create_edit_event_position_assignment.js' %}"></script>
+    <script src="{% static 'create_edit_bonus.js' %}"></script>
+{% endblock %}
+{% block title %}
 {% endblock %}
 {% block content %}
+    <input type="hidden" id="url" data-url="{% url 'qualifications:detail' 1 %}">
     <div class="row">
         <div class="col-12">
             <div class="elevation-2 card">
                 <div class="card-header">
-                    <div class="card-title h5"><span
-                        style="line-height: 45px;font-size: 22.5px;">{% block event_title %}{% endblock %}</span></div>
+                    <div class="card-title h5">
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ price_list }}</span></div>
                 </div>
             </div>
         </div>
     </div>
-    <input type="hidden" id="url" data-url="{% url 'positions:detail' 1 %}">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -26,16 +28,16 @@
                         <div class="card-title h5">{% block card_title %}{% endblock %}</div>
                     </div>
                     <div class="card-body">
-                        {{ form.position|as_crispy_field }}
+                        {{ form.feature|as_crispy_field }}
                         <div class="form-group">
                             <a id="detail-link" style="display: none" target="_blank">
-                                Detail vybrané pozice
+                                Detail vybrané kvalifikace
                             </a>
                         </div>
-                        {{ form.count|as_crispy_field }}
+                        {{ form.extra_payment|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">
-                        <input type="submit" class="btn btn-primary" onclick="beforeSubmit()"
+                        <input type="submit" class="btn btn-primary"
                                value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>

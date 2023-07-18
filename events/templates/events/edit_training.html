@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
-
-    </body>
-</html>
+{% extends 'events/create_edit_training.html' %}
+{% block title %}Úprava tréninku{% endblock %}
+{% block form_action %}{% url 'events:edit_training' event.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}

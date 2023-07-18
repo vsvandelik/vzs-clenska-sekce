@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
-
-    </body>
-</html>
+{% extends 'events/create_edit_event_position_assignment.html' %}
+{% block title %}Úprava organizátorské pozice{% endblock %}
+{% block event_title %}{{ position_assignment.event }}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}

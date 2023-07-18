@@ -97,12 +97,12 @@ class OneTimeEventDetailView(EventDetailViewMixin):
 
 
 class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
-    template_name = "events/create_edit_one_time_event.html"
+    template_name = "events/create_one_time_event.html"
     form_class = OneTimeEventForm
 
 
 class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
-    template_name = "events/create_edit_one_time_event.html"
+    template_name = "events/edit_one_time_event.html"
     form_class = OneTimeEventForm
     invariant = lambda _, e: e.is_one_time_event
 
@@ -115,7 +115,7 @@ class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
 
 
 class TrainingCreateView(generic.CreateView, EventCreateMixin):
-    template_name = "events/create_edit_training.html"
+    template_name = "events/create_training.html"
     form_class = TrainingForm
 
     def get_context_data(self, **kwargs):
@@ -125,7 +125,7 @@ class TrainingCreateView(generic.CreateView, EventCreateMixin):
 
 
 class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
-    template_name = "events/create_edit_training.html"
+    template_name = "events/edit_training.html"
     form_class = TrainingForm
     invariant = lambda _, e: e.is_top_training
 
@@ -209,7 +209,7 @@ class EventPositionAssignmentMixin(MessagesMixin):
 class EventPositionAssignmentCreateView(
     EventPositionAssignmentMixin, generic.CreateView
 ):
-    template_name = "events/create_edit_event_position_assignment.html"
+    template_name = "events/create_event_position_assignment.html"
     form_class = EventPositionAssignmentForm
     success_message = "Organizátorská pozice %(position)s přidána"
 
@@ -226,7 +226,7 @@ class EventPositionAssignmentCreateView(
 class EventPositionAssignmentUpdateView(
     EventPositionAssignmentMixin, generic.UpdateView
 ):
-    template_name = "events/create_edit_event_position_assignment.html"
+    template_name = "events/edit_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s upravena"
     form_class = EventPositionAssignmentForm
 

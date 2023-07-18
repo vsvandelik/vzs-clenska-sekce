@@ -7,26 +7,22 @@
     <script src="{% static 'set_report_validity.js' %}"></script>
     <script src="{% static 'create_edit_training.js' %}"></script>
 {% endblock %}
-{% block title %}
-    {% if event %} Editace tréninku {% else %} Nový trénink {% endif %}
-{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <form method="POST"
-                      action=" {% if event %} {% url 'events:edit_training' event.id %} {% else %} {% url 'events:add_training' %} {% endif %}"
+                      action="{% block form_action %}{% endblock %}"
                       onsubmit="return beforeSubmit()">
                     {% csrf_token %}
                     <div class="card-header">
-                        <div class="card-title h5">{% if event %} Úprava {% else %} Přidání {% endif %}</div>
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
                         <fieldset>
                             <legend>Datum</legend>
                             {{ form.starts_date|as_crispy_field }}
-
                             {{ form.ends_date|as_crispy_field }}
                         </fieldset>
                         <div class="col-12">
@@ -90,7 +86,7 @@
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
-                               value="{% if event %} Uložit {% else %} Vytvořit {% endif %}">
+                               value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>
 {% endblock %}

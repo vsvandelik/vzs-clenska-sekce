@@ -25,7 +25,7 @@ class Event(models.Model):
         _("Minimální věk účastníků"), null=True
     )
     price_list = models.ForeignKey(
-        "events.PriceList", on_delete=models.SET_NULL, null=True
+        "price_lists.PriceList", on_delete=models.SET_NULL, null=True
     )
     state = models.CharField(max_length=10, choices=State.choices)
     positions = models.ManyToManyField(
@@ -156,17 +156,3 @@ class EventRequirement(models.Model):
 
     class Meta:
         unique_together = ["event", "feature"]
-
-
-class PriceList(models.Model):
-    salary_base = models.PositiveIntegerField()
-    bonuses = models.ManyToManyField(Feature, through="events.PriceListBonus")
-
-
-class PriceListBonus(models.Model):
-    price_list = models.ForeignKey("events.PriceList", on_delete=models.CASCADE)
-    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
-    bonus = models.PositiveIntegerField()
-
-    class Meta:
-        unique_together = ["price_list", "feature"]
