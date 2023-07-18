@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class EventPosition(models.Model):
-    name = models.CharField(_("Jméno"), max_length=50)
+    name = models.CharField(_("Název"), max_length=50)
     required_features = models.ManyToManyField(Feature)
     min_age_enabled = models.BooleanField(default=False)
     max_age_enabled = models.BooleanField(default=False)

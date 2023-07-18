@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
     "positions.apps.PositionsConfig",
+    "price_lists.apps.PriceListsConfig",
     "pages.apps.PagesConfig",
     "transactions.apps.TransactionsConfig",
     "features.apps.FeaturesConfig",
