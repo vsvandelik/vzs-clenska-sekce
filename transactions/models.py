@@ -11,7 +11,7 @@ from persons.models import Person
 from vzs import models as vzs_models
 
 
-class Transaction(models.Model):
+class Transaction(vzs_models.ExportableCSVMixin, models.Model):
     class Meta:
         permissions = [("spravce_transakci", _("Správce transakcí"))]
 
@@ -19,11 +19,19 @@ class Transaction(models.Model):
     reason = models.CharField(_("Popis transakce"), max_length=150)
     date_due = models.DateField(_("Datum splatnosti"))
     person = models.ForeignKey(
-        Person, on_delete=models.CASCADE, related_name="transactions"
+        Person,
+        on_delete=models.CASCADE,
+        related_name="transactions",
+        verbose_name=_("Osoba"),
     )
-    event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey(
+        Event, on_delete=models.SET_NULL, null=True, verbose_name=_("Událost")
+    )
     feature_assigment = models.OneToOneField(
-        FeatureAssignment, on_delete=models.SET_NULL, null=True
+        FeatureAssignment,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Vybavení"),
     )
     fio_transaction = models.ForeignKey(
         "FioTransaction", on_delete=models.SET_NULL, null=True
@@ -37,8 +45,27 @@ class Transaction(models.Model):
     def is_reward(self):
         return self.amount > 0
 
+    @property
+    def reward_string(self):
+        return "Odměna" if self.is_reward else "Dluh"
+
     Q_debt = Q(amount__lt=0)
     Q_reward = Q(amount__gt=0)
+
+    csv_order = [
+        "person",
+        "event",
+        "feature_assigment",
+        "amount",
+        "type",
+        "reason",
+        "date_due",
+    ]
+    csv_labels = {"type": "Druh transakce"}
+    csv_getters = {
+        "amount": lambda instance: abs(instance.amount),
+        "type": lambda instance: instance.reward_string,
+    }
 
 
 class FioTransaction(models.Model):

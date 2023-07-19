@@ -15,6 +15,7 @@ from .forms import (
 )
 from .models import Transaction
 from .utils import parse_transactions_filter_queryset
+from vzs.utils import export_queryset_csv
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -161,13 +162,14 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
 
-class TransactionIndexView(generic.list.ListView):
+class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView):
     model = Transaction
     template_name = "transactions/index.html"
     context_object_name = "transactions"
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("filter_form", self.filter_form)
+        kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
         return super().get_context_data(**kwargs)
 
@@ -177,11 +179,13 @@ class TransactionIndexView(generic.list.ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        transactions = Transaction.objects.all()
+        return self.filter_form.process_filter().order_by("date_due")
 
-        if self.filter_form.is_valid():
-            transactions = parse_transactions_filter_queryset(
-                self.filter_form.cleaned_data, transactions
-            )
 
-        return transactions.order_by("date_due")
+class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        filter_form = TransactionFilterForm(self.request.GET)
+
+        return export_queryset_csv("vzs_transakce_export", filter_form.process_filter())

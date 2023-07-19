@@ -36,7 +36,9 @@ class PersonsManager(models.Manager):
         )
 
 
-class Person(vzs_models.RenderableModelMixin, models.Model):
+class Person(
+    vzs_models.ExportableCSVMixin, vzs_models.RenderableModelMixin, models.Model
+):
     class Meta:
         permissions = [
             ("clenska_zakladna", _("Správce členské základny")),
@@ -151,3 +153,19 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
+
+    csv_order = [
+        "person_type",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "birth_number",
+        "email",
+        "phone",
+        "city",
+        "postcode",
+        "street",
+        "health_insurance_company",
+        "swimming_time",
+        "sex",
+    ]
