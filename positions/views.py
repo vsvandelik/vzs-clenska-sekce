@@ -34,10 +34,12 @@ class PositionIndexView(PositionMixin, generic.ListView):
 
 
 class PositionCreateView(PositionCreateUpdateMixin, generic.CreateView):
+    template_name = "positions/create.html"
     success_message = "Pozice %(name)s úspěšně přidána"
 
 
 class PositionUpdateView(PositionCreateUpdateMixin, generic.UpdateView):
+    template_name = "positions/edit.html"
     success_message = "Pozice %(name)s úspěšně upravena"
 
 
