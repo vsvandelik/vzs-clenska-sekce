@@ -69,11 +69,11 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "persons/persons-filter.js" %}"></script>
+    <script src="{% static "persons/persons_filter.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "datatables.js" %}"></script>
     <script>
-        register_modal("delete-person-modal");
+        registerModal("delete-person-modal");
         datatableEnable("persons-table", [0, 1], [0, 1]);
     </script>
 {% endblock %}
