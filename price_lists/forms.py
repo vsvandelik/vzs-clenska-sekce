@@ -1,10 +1,24 @@
 from django.forms import ModelForm
-from .models import PriceListBonus
+from .models import PriceListBonus, PriceList
 from features.models import Feature
 from django_select2.forms import Select2Widget
 
 
-class AddEditBonusForm(ModelForm):
+class PriceListForm(ModelForm):
+    class Meta:
+        fields = ["name", "salary_base"]
+        model = PriceList
+
+    def save(self, commit=True):
+        super().save(commit)
+        instance = self.instance
+        instance.is_template = True
+        if commit:
+            instance.save()
+        return instance
+
+
+class BonusForm(ModelForm):
     class Meta:
         fields = ["feature", "extra_payment"]
         model = PriceListBonus

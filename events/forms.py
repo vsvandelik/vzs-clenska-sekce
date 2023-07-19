@@ -9,6 +9,7 @@ from persons.models import Person
 from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
+from price_lists.models import PriceList
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -22,7 +23,14 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
         pass
 
 
-class OneTimeEventForm(ModelForm):
+class EventForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["price_list"].queryset = PriceList.templates.all()
+        self.fields["price_list"].required = False
+
+
+class OneTimeEventForm(EventForm):
     class Meta:
         model = Event
         fields = [
@@ -32,13 +40,16 @@ class OneTimeEventForm(ModelForm):
             "time_end",
             "capacity",
             "age_limit",
+            "price_list",
         ]
         widgets = {
             "time_start": DateTimePickerWithIcon(
                 attrs={"onchange": "dateChanged()"},
             ),
             "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"}),
         }
+        labels = {"price_list": "Ceník"}
 
     def _check_date_constraints(self):
         if self.cleaned_data["time_start"] >= self.cleaned_data["time_end"]:
@@ -67,7 +78,11 @@ class OneTimeEventForm(ModelForm):
 class TrainingForm(OneTimeEventForm):
     class Meta:
         model = Event
-        fields = ["name", "description", "capacity", "age_limit"]
+        fields = ["name", "description", "capacity", "age_limit", "price_list"]
+        widgets = {
+            "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"})
+        }
+        labels = {"price_list": "Ceník"}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
