@@ -105,6 +105,10 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
+    def delete(self, using=None, keep_parents=False):
+        self.price_list.delete()
+        return super().delete(using, keep_parents)
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

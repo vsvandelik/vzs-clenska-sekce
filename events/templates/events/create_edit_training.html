@@ -4,6 +4,8 @@
 {% load static %}
 {% load widget_tweaks %}
 {% block scripts %}
+    <script src="{% static 'get_django_url.js' %}"></script>
+    <script src="{% static 'events_common.js' %}"></script>
     <script src="{% static 'set_report_validity.js' %}"></script>
     <script src="{% static 'create_edit_training.js' %}"></script>
 {% endblock %}
@@ -20,12 +22,16 @@
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
-                        <fieldset>
-                            <legend>Datum</legend>
-                            {{ form.starts_date|as_crispy_field }}
-                            {{ form.ends_date|as_crispy_field }}
-                        </fieldset>
-                        <div class="col-12">
+                        <div class="card">
+                            <div class="card-header border-0">
+                                <div class="card-title h5">Datum</div>
+                            </div>
+                            <div class="card-body">
+                                {{ form.starts_date|as_crispy_field }}
+                                {{ form.ends_date|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-12 p-0">
                             <div class="card">
                                 <div class="card-header border-0">
                                     <div class="card-title h5">Rozpis tréninků</div>
@@ -34,7 +40,7 @@
                                     <div class="row">
                                         {% for i in '0123456'|make_list %}
                                             {% with weekday=i|atoi %}
-                                                {% with day_shortcut=weekday|weekday_2_day_shortcut%}
+                                                {% with day_shortcut=weekday|weekday_2_day_shortcut %}
                                                     <div class="col-sm-5 col-md-4 col-lg-3 col-12">
                                                         <div class="card">
                                                             <div class="card-header border-0">

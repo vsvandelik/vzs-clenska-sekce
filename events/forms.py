@@ -27,6 +27,11 @@ class EventForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["price_list"].queryset = PriceList.templates.all()
+        if self.instance.id is not None and self.instance.price_list is not None:
+            self.fields["price_list"].queryset = PriceList.nontemplates.filter(
+                pk=self.instance.price_list.pk
+            )
+            self.fields["price_list"].widget.attrs["disabled"] = True
         self.fields["price_list"].required = False
 
 
@@ -67,6 +72,13 @@ class OneTimeEventForm(EventForm):
         edit = True
         if self.instance.id is None:
             edit = False
+
+        if instance.price_list is not None and instance.price_list.is_template:
+            price_list = PriceList.templates.get(pk=instance.price_list.pk)
+            price_list.pk = None
+            price_list.is_template = False
+            price_list.save()
+            instance.price_list = price_list
         super().save(commit)
         if not edit:
             instance.state = Event.State.FUTURE
@@ -284,9 +296,7 @@ class TrainingForm(OneTimeEventForm):
         return cleaned_data
 
     def save(self, commit=True):
-        instance = self.instance
-        if self.instance.id is None:
-            instance.state = Event.State.FUTURE
+        instance = super().save(commit)
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
         instance.capacity = self.cleaned_data["capacity"]

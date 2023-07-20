@@ -10,9 +10,10 @@ class PriceListForm(ModelForm):
         model = PriceList
 
     def save(self, commit=True):
-        super().save(commit)
         instance = self.instance
-        instance.is_template = True
+        if instance.id is None:
+            instance.is_template = True
+        super().save(commit)
         if commit:
             instance.save()
         return instance
