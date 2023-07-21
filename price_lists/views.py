@@ -79,7 +79,7 @@ class BonusCreateUpdateMixin(BonusMixin):
 class AddBonusToPriceListView(BonusCreateUpdateMixin, generic.CreateView):
     template_name = "price_lists/create_bonus.html"
     success_message = (
-        "Příplatek %(extra_payment)s Kč za kvalifikaci %(feature)s úspěšně přidán"
+        "Příplatek %(extra_fee)s Kč za kvalifikaci %(feature)s úspěšně přidán"
     )
 
 
@@ -94,7 +94,7 @@ class DeleteBonusView(BonusMixin, generic.DeleteView):
     model = PriceListBonus
 
     def get_success_message(self, cleaned_data):
-        return f"Příplatek {self.object.extra_payment} Kč za kvalifikaci {self.object.feature} úspěšně smazán"
+        return f"Příplatek {self.object.extra_fee} Kč za kvalifikaci {self.object.feature} úspěšně smazán"
 
     def get_success_url(self):
         return reverse("price_lists:detail", args=[self.kwargs["price_list_id"]])

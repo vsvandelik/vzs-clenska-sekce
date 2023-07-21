@@ -6,7 +6,7 @@ from django_select2.forms import Select2Widget
 
 class PriceListForm(ModelForm):
     class Meta:
-        fields = ["name", "salary_base"]
+        fields = ["name", "salary_base", "participant_fee"]
         model = PriceList
 
     def save(self, commit=True):
@@ -21,7 +21,7 @@ class PriceListForm(ModelForm):
 
 class BonusForm(ModelForm):
     class Meta:
-        fields = ["feature", "extra_payment"]
+        fields = ["feature", "extra_fee"]
         model = PriceListBonus
         labels = {"feature": "Kvalifikace"}
         widgets = {
@@ -31,7 +31,7 @@ class BonusForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.price_list = kwargs.pop("price_list")
         super().__init__(*args, **kwargs)
-        self.fields["extra_payment"].widget.attrs["min"] = 1
+        self.fields["extra_fee"].widget.attrs["min"] = 1
         self.fields["feature"].queryset = Feature.qualifications.exclude(
             pk__in=self.price_list.bonus_features.all()
         )
@@ -45,7 +45,7 @@ class BonusForm(ModelForm):
         instance = self.instance
         instance.price_list = self.price_list
         instance.feature = cleaned_data["feature"]
-        instance.extra_payment = cleaned_data["extra_payment"]
+        instance.extra_fee = cleaned_data["extra_fee"]
         if commit:
             instance.save()
         return instance

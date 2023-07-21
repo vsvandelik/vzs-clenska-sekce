@@ -20,7 +20,8 @@ class PriceList(models.Model):
     nontemplates = PriceListNonTemplatesManager()
 
     name = models.CharField(_("Název"), max_length=50)
-    salary_base = models.PositiveIntegerField(_("Základní výplata"))
+    salary_base = models.PositiveIntegerField(_("Základní výplata organizátorů"))
+    participant_fee = models.PositiveIntegerField(_("Poplatek za účast"))
     bonus_features = models.ManyToManyField(
         Feature, through="price_lists.PriceListBonus"
     )
@@ -33,7 +34,7 @@ class PriceList(models.Model):
 class PriceListBonus(models.Model):
     price_list = models.ForeignKey("price_lists.PriceList", on_delete=models.CASCADE)
     feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
-    extra_payment = models.PositiveIntegerField(
+    extra_fee = models.PositiveIntegerField(
         _("Bonusová částka"), validators=[MinValueValidator(1)]
     )
 
