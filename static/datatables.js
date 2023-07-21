@@ -5,7 +5,7 @@ $.extend($.fn.dataTable.defaults, {
 });
 
 function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
-    $(document).ready(function () {
+    $(function () {
         $("#" + id).DataTable({
             "columnDefs": [
                 {"targets": searchableColumns, "searchable": true},
