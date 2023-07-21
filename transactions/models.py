@@ -37,18 +37,6 @@ class Transaction(vzs_models.ExportableCSVMixin, models.Model):
         "FioTransaction", on_delete=models.SET_NULL, null=True
     )
 
-    @property
-    def is_settled(self):
-        return self.fio_transaction is not None
-
-    @property
-    def is_reward(self):
-        return self.amount > 0
-
-    @property
-    def reward_string(self):
-        return "Odměna" if self.is_reward else "Dluh"
-
     Q_debt = Q(amount__lt=0)
     Q_reward = Q(amount__gt=0)
 
@@ -66,6 +54,18 @@ class Transaction(vzs_models.ExportableCSVMixin, models.Model):
         "amount": lambda instance: abs(instance.amount),
         "type": lambda instance: instance.reward_string,
     }
+
+    @property
+    def is_settled(self):
+        return self.fio_transaction is not None
+
+    @property
+    def is_reward(self):
+        return self.amount > 0
+
+    @property
+    def reward_string(self):
+        return "Odměna" if self.is_reward else "Dluh"
 
 
 class FioTransaction(models.Model):
