@@ -23,3 +23,8 @@ function validateDate(report = false) {
         return true
     }
 }
+
+window.onload = function() {
+    window._basePath = getDjangoUrl('url').replace('/1/', '')
+    priceListChanged(getPriceListField())
+}

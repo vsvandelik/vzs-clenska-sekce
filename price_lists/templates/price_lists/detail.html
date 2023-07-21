@@ -1,6 +1,6 @@
 {% extends "base.html" %}
+{% load price_list_tag_extensions %}
 {% load static %}
-{% load tag_extensions %}
 {% block title %}
     Detail ceníku
 {% endblock %}
@@ -65,7 +65,7 @@
                                 </thead>
                                 <tbody>
                                     {% for f in price_list.bonus_features.all %}
-                                        {% with bonus=f.pricelistbonus_set.all|index:0 %}
+                                        {% with bonus=f|get_price_list_bonus:price_list %}
                                             <tr>
                                                 <td>
                                                     <a href="{% url 'qualifications:detail' f.id %}">{{ f }}</a>

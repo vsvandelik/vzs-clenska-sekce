@@ -75,9 +75,22 @@ class OneTimeEventForm(EventForm):
 
         if instance.price_list is not None and instance.price_list.is_template:
             price_list = PriceList.templates.get(pk=instance.price_list.pk)
+
+            price_list_bonuses = []
+            for bonus_feature in price_list.bonus_features.all():
+                price_list_bonuses.append(
+                    bonus_feature.pricelistbonus_set.get(price_list=price_list)
+                )
+
             price_list.pk = None
             price_list.is_template = False
             price_list.save()
+
+            for price_list_bonus in price_list_bonuses:
+                price_list_bonus.pk = None
+                price_list_bonus.price_list = price_list
+                price_list_bonus.save()
+
             instance.price_list = price_list
         super().save(commit)
         if not edit:
