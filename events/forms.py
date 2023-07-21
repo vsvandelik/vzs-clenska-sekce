@@ -68,7 +68,7 @@ class OneTimeEventForm(EventForm):
         return cleaned_data
 
     def save(self, commit=True):
-        instance = self.instance
+        instance = super().save(False)
         edit = True
         if self.instance.id is None:
             edit = False
@@ -92,11 +92,10 @@ class OneTimeEventForm(EventForm):
                 price_list_bonus.save()
 
             instance.price_list = price_list
-        super().save(commit)
         if not edit:
             instance.state = Event.State.FUTURE
-            if commit:
-                instance.save()
+        if commit:
+            instance.save()
         return instance
 
 
@@ -309,7 +308,7 @@ class TrainingForm(OneTimeEventForm):
         return cleaned_data
 
     def save(self, commit=True):
-        instance = super().save(commit)
+        instance = super().save(False)
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
         instance.capacity = self.cleaned_data["capacity"]
@@ -485,7 +484,7 @@ class EventPositionAssignmentForm(ModelForm):
             )
 
     def save(self, commit=True):
-        instance = self.instance
+        instance = super().save(False)
         if self.instance.id is None:
             instance.event = self.event
         else:
