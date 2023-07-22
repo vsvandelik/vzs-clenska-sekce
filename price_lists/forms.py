@@ -20,7 +20,7 @@ class PriceListForm(ModelForm):
 
 class BonusForm(ModelForm):
     class Meta:
-        fields = ["feature", "extra_fee"]
+        fields = ["feature", "extra_salary"]
         model = PriceListBonus
         labels = {"feature": "Kvalifikace"}
         widgets = {
@@ -30,7 +30,7 @@ class BonusForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.price_list = kwargs.pop("price_list")
         super().__init__(*args, **kwargs)
-        self.fields["extra_fee"].widget.attrs["min"] = 1
+        self.fields["extra_salary"].widget.attrs["min"] = 1
         self.fields["feature"].queryset = Feature.qualifications.exclude(
             pk__in=self.price_list.bonus_features.all()
         )
@@ -44,7 +44,7 @@ class BonusForm(ModelForm):
         instance = self.instance
         instance.price_list = self.price_list
         instance.feature = cleaned_data["feature"]
-        instance.extra_fee = cleaned_data["extra_fee"]
+        instance.extra_salary = cleaned_data["extra_salary"]
         if commit:
             instance.save()
         return instance
