@@ -3,3 +3,10 @@
 {{ form.description|as_crispy_field }}
 {{ form.capacity|as_crispy_field }}
 {{ form.age_limit|as_crispy_field }}
+{{ form.price_list|as_crispy_field }}
+<input type="hidden" id="url" data-url="{% url 'price_lists:detail' 1 %}">
+<div class="form-group">
+    <a id="detail-link" style="display: none" target="_blank">
+        Detail vybraného ceníku
+    </a>
+</div>
