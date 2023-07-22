@@ -1,32 +1,50 @@
 import random
 
+from argparse import ArgumentTypeError
 from django.core.management.base import BaseCommand
 
 from price_lists.models import PriceList, PriceListBonus
 from features.models import Feature
 
 
+def lower_bounded_int(value, lower_bound):
+    v = int(value)
+    if v < lower_bound:
+        raise ArgumentTypeError(f"{v} is an invalid value")
+    return v
+
+
+def positive_int(value):
+    return lower_bounded_int(value, 1)
+
+
+def non_negative_int(value):
+    return lower_bounded_int(value, 0)
+
+
 class Command(BaseCommand):
     help = "Creates N new price_lists to test design with."
 
     def add_arguments(self, parser):
-        parser.add_argument("N", type=int, help="the number of price_lists to create")
+        parser.add_argument(
+            "N", type=positive_int, help="the number of price_lists to create"
+        )
         parser.add_argument(
             "-b",
             "--bonus-count",
-            type=int,
+            type=non_negative_int,
             help="the number of bonuses to add to price_list (won't be fulfilled if there is not enough qualifications)",
         )
         parser.add_argument(
             "-s",
             "--salary-base",
-            type=int,
+            type=non_negative_int,
             help="the salary base for organizers for running the event",
         )
         parser.add_argument(
             "-p",
             "--participant-fee",
-            type=int,
+            type=non_negative_int,
             help="the fee payed by participants for attending the event",
         )
 
