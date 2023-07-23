@@ -55,11 +55,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--disable-group-restrictions",
             action="store_true",
-            help="forces the position not to use group membership limitation (overrides --required-group arg)",
+            help="forces the position not to use group membership limitation (overrides --requires-group arg)",
         )
         parser.add_argument(
             "-g",
-            "--required-group",
+            "--requires-group",
             action="store_true",
             help="forces the position to use group membership limitation (won't be fulfilled if there does not exist any group)",
         )
@@ -144,7 +144,7 @@ class Command(BaseCommand):
             required_features = Feature.objects.order_by("?")[:features_to_add]
 
             if not options["disable_group_restrictions"]:
-                if options["required_group"]:
+                if options["requires_group"]:
                     group_membership_required = True
                     group = Group.objects.order_by("?").first()
                 else:
