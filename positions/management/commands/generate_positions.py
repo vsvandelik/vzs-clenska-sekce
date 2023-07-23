@@ -83,52 +83,52 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         idx = EventPosition.objects.all().count() + 1
         features_length = Feature.objects.all().count()
-        min_age = None
-        max_age = None
+        values = {}
         if options["disable_age_restrictions"]:
-            min_age_enabled = False
-            max_age_enabled = False
+            values["min_age_enabled"] = False
+            values["max_age_enabled"] = False
         if options["disable_group_restrictions"]:
             group_membership_required = False
             group = None
         for i in range(options["N"]):
-            name = f"pozice_{idx}"
+            position_name = f"pozice_{idx}"
             if not options["disable_age_restrictions"]:
-                if options["min_age"] is not None:
-                    min_age_enabled = True
-                    min_age = options["min_age"]
-                else:
-                    min_age_enabled = bool(random.randint(0, 1))
-                    if min_age_enabled:
-                        min_age = random.randint(1, 99)
-                        if max_age is not None:
-                            while max_age < min_age:
-                                min_age = random.randint(1, 99)
+                names = ["min_age", "max_age"]
+                for name in names:
+                    if options[name] is not None:
+                        values[f"{name}_enabled"] = True
+                        values[name] = options[f"{name}"]
                     else:
-                        min_age = None
-                if options["max_age"] is not None:
-                    max_age_enabled = True
-                    max_age = options["max_age"]
-                else:
-                    max_age_enabled = bool(random.randint(0, 1))
-                    if max_age_enabled:
-                        max_age = random.randint(1, 99)
-                        if min_age is not None:
-                            while max_age < min_age:
-                                max_age = random.randint(1, 99)
-                    else:
-                        max_age = None
+                        values[name] = None
+
+                if options["min_age"] is None or options["max_age"] is None:
+                    while True:
+                        for name in names:
+                            if options[name] is None:
+                                values[f"{name}_enabled"] = bool(random.randint(0, 1))
+                                if values[f"{name}_enabled"]:
+                                    values[f"{name}"] = random.randint(1, 99)
+                        if (
+                            values["min_age"] is not None
+                            and values["max_age"] is not None
+                        ):
+                            if values["min_age"] <= values["max_age"]:
+                                break
+
                 if (
                     options["min_age"] is not None
                     and options["max_age"] is not None
-                    and min_age > max_age
+                    and values["min_age"] > values["max_age"]
                 ):
                     self.stdout.write(
                         self.style.WARNING(
                             "--min-age is greater than --max-age, swapping the values"
                         )
                     )
-                    min_age, max_age = max_age, min_age
+                    values["min_age"], values["max_age"] = (
+                        values["max_age"],
+                        values["min_age"],
+                    )
 
             if options["features_count"] is not None:
                 features_to_add = min(options["features_count"], features_length)
@@ -164,11 +164,11 @@ class Command(BaseCommand):
             allowed_person_types = map(self.retrieve_person_type, chosen_person_types)
 
             position = EventPosition(
-                name=name,
-                min_age_enabled=min_age_enabled,
-                max_age_enabled=max_age_enabled,
-                min_age=min_age,
-                max_age=max_age,
+                name=position_name,
+                min_age_enabled=values["min_age_enabled"],
+                max_age_enabled=values["max_age_enabled"],
+                min_age=values["min_age"],
+                max_age=values["max_age"],
                 group_membership_required=group_membership_required,
                 group=group,
             )
