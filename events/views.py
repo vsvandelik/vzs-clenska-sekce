@@ -32,7 +32,7 @@ class EventIndexView(generic.ListView):
     context_object_name = "events"
 
     def get_queryset(self):
-        events = Event.objects.filter(parent__isnull=True)
+        events = Event.one_time_events.all() | Event.parent_trainings.all()
         for event in events:
             event.set_type()
         return events

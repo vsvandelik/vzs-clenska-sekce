@@ -5,9 +5,41 @@ from django.utils import timezone
 from persons.models import Person
 from features.models import Feature
 from django.core.validators import MinValueValidator
+from django.db.models import Q
+
+
+class OneTimeEventsManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(parent=None)
+            .exclude(pk__in=Event.objects.all().values_list("parent", flat=True))
+        )
+
+
+class ParentTrainingsManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                parent=None, pk__in=Event.objects.all().values_list("parent", flat=True)
+            )
+        )
+
+
+class ChildTrainingsManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(~Q(parent=None))
 
 
 class Event(models.Model):
+    objects = models.Manager()
+    one_time_events = OneTimeEventsManager()
+    parent_trainings = ParentTrainingsManager()
+    child_trainings = ChildTrainingsManager()
+
     class State(models.TextChoices):
         FUTURE = "neuzavrena", _("neuzavřena")
         FINISHED = "uzavrena", _("uzavřena")
@@ -35,7 +67,7 @@ class Event(models.Model):
     requirements = models.ManyToManyField(Feature, through="events.EventRequirement")
 
     def _is_top(self):
-        return self.parent == None
+        return self.parent is None
 
     def _is_top_training(self):
         children = Event.objects.filter(parent__exact=self)
