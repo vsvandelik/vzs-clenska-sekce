@@ -1,0 +1,13 @@
+{% load vzs_filters %}
+
+<ul>
+    <li>Typ: {{ transaction.reward_string }}</li>
+    <li>Suma: {{ transaction.amount|absolute }}</li>
+    <li>Popis: {{ transaction.reason }}</li>
+    <li>Datum splatnosti: {{ transaction.date_due }}</li>
+    <li>Variabilní symbol: {{ transaction.pk }}</li>
+</ul>
+
+{% if not transaction.is_reward %}
+    <img src="{% qr transaction %}">
+{% endif %}

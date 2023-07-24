@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q, Sum
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
+from django.http import HttpResponseRedirect
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
@@ -14,7 +15,7 @@ from .forms import (
     TransactionFilterForm,
 )
 from .models import Transaction
-from .utils import parse_transactions_filter_queryset
+from .utils import parse_transactions_filter_queryset, send_email_transactions
 from vzs.utils import export_queryset_csv
 
 
@@ -189,3 +190,16 @@ class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
         filter_form = TransactionFilterForm(self.request.GET)
 
         return export_queryset_csv("vzs_transakce_export", filter_form.process_filter())
+
+
+class TransactionSendEmailView(generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        filter_form = TransactionFilterForm(self.request.GET)
+
+        send_email_transactions(filter_form.process_filter())
+
+        return HttpResponseRedirect(
+            reverse("transactions:index") + "?" + self.request.GET.urlencode()
+        )

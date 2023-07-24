@@ -16,6 +16,11 @@ urlpatterns = [
         name="export",
     ),
     path(
+        "poslat-email/",
+        views.TransactionSendEmailView.as_view(),
+        name="send-email",
+    ),
+    path(
         "pridat/",
         views.TransactionCreateView.as_view(),
         name="add",
