@@ -127,6 +127,22 @@ class Person(
         "self", symmetrical=False, related_name="managed_by"
     )
 
+    csv_order = [
+        "person_type",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "birth_number",
+        "email",
+        "phone",
+        "city",
+        "postcode",
+        "street",
+        "health_insurance_company",
+        "swimming_time",
+        "sex",
+    ]
+
     @property
     def address(self):
         if not (self.street and self.city and self.postcode):
@@ -153,19 +169,3 @@ class Person(
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
-
-    csv_order = [
-        "person_type",
-        "first_name",
-        "last_name",
-        "date_of_birth",
-        "birth_number",
-        "email",
-        "phone",
-        "city",
-        "postcode",
-        "street",
-        "health_insurance_company",
-        "swimming_time",
-        "sex",
-    ]

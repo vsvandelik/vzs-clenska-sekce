@@ -9,6 +9,7 @@ from persons.models import Person
 from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
+from price_lists.models import PriceList
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -22,7 +23,19 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
         pass
 
 
-class OneTimeEventForm(ModelForm):
+class EventForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["price_list"].queryset = PriceList.templates.all()
+        if self.instance.id is not None and self.instance.price_list is not None:
+            self.fields["price_list"].queryset = PriceList.nontemplates.filter(
+                pk=self.instance.price_list.pk
+            )
+            self.fields["price_list"].widget.attrs["disabled"] = True
+        self.fields["price_list"].required = False
+
+
+class OneTimeEventForm(EventForm):
     class Meta:
         model = Event
         fields = [
@@ -32,13 +45,16 @@ class OneTimeEventForm(ModelForm):
             "time_end",
             "capacity",
             "age_limit",
+            "price_list",
         ]
         widgets = {
             "time_start": DateTimePickerWithIcon(
                 attrs={"onchange": "dateChanged()"},
             ),
             "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"}),
         }
+        labels = {"price_list": "Ceník"}
 
     def _check_date_constraints(self):
         if self.cleaned_data["time_start"] >= self.cleaned_data["time_end"]:
@@ -52,22 +68,45 @@ class OneTimeEventForm(ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        instance = self.instance
+        instance = super().save(False)
         edit = True
         if self.instance.id is None:
             edit = False
-        super().save(commit)
+
+        if instance.price_list is not None and instance.price_list.is_template:
+            price_list = PriceList.templates.get(pk=instance.price_list.pk)
+
+            price_list_bonuses = []
+            for bonus_feature in price_list.bonus_features.all():
+                price_list_bonuses.append(
+                    bonus_feature.pricelistbonus_set.get(price_list=price_list)
+                )
+
+            price_list.pk = None
+            price_list.is_template = False
+            price_list.save()
+
+            for price_list_bonus in price_list_bonuses:
+                price_list_bonus.pk = None
+                price_list_bonus.price_list = price_list
+                price_list_bonus.save()
+
+            instance.price_list = price_list
         if not edit:
             instance.state = Event.State.FUTURE
-            if commit:
-                instance.save()
+        if commit:
+            instance.save()
         return instance
 
 
 class TrainingForm(OneTimeEventForm):
     class Meta:
         model = Event
-        fields = ["name", "description", "capacity", "age_limit"]
+        fields = ["name", "description", "capacity", "age_limit", "price_list"]
+        widgets = {
+            "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"})
+        }
+        labels = {"price_list": "Ceník"}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -269,9 +308,7 @@ class TrainingForm(OneTimeEventForm):
         return cleaned_data
 
     def save(self, commit=True):
-        instance = self.instance
-        if self.instance.id is None:
-            instance.state = Event.State.FUTURE
+        instance = super().save(False)
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
         instance.capacity = self.cleaned_data["capacity"]
@@ -447,7 +484,7 @@ class EventPositionAssignmentForm(ModelForm):
             )
 
     def save(self, commit=True):
-        instance = self.instance
+        instance = super().save(False)
         if self.instance.id is None:
             instance.event = self.event
         else:

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
+{% load price_list_tag_extensions %}
 {% load static %}
-{% load tag_extensions %}
 {% block title %}
     Detail ceníku
 {% endblock %}
@@ -34,8 +34,12 @@
                                 <td class="w-100">{{ price_list.name }}</td>
                             </tr>
                             <tr>
-                                <td class="text-nowrap text-bold">Základní výplata:</td>
+                                <td class="text-nowrap text-bold">Základní výplata organizátorů:</td>
                                 <td class="w-100">{{ price_list.salary_base }} Kč</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Poplatek za účast:</td>
+                                <td class="w-100">{{ price_list.participant_fee }} Kč</td>
                             </tr>
                         </tbody>
                     </table>
@@ -61,13 +65,13 @@
                                 </thead>
                                 <tbody>
                                     {% for f in price_list.bonus_features.all %}
-                                        {% with bonus=f.pricelistbonus_set.all|index:0 %}
+                                        {% with bonus=f|get_price_list_bonus:price_list %}
                                             <tr>
                                                 <td>
                                                     <a href="{% url 'qualifications:detail' f.id %}">{{ f }}</a>
                                                 </td>
                                                 <td>
-                                                    {{ bonus.extra_payment }} Kč
+                                                    {{ bonus.extra_salary }} Kč
                                                 </td>
                                                 <td>
                                                     <div class="btn-group">

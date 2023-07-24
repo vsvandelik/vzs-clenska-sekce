@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load tag_extensions %}
+{% load events_tag_extensions %}
 {% load static %}
 {% block scripts %}
     <script src="{% static 'training_detail.js' %}"></script>
@@ -34,6 +34,10 @@
                             <tr>
                                 <td class="text-nowrap text-bold">Popis:</td>
                                 <td class="w-100">{{ event.description }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Ceník:</td>
+                                <td class="w-100">{% if event.price_list %}<a href="{% url 'price_lists:detail' event.price_list.id %}">{{ event.price_list }}</a>{% else %}není vybrán{% endif %}</td>
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Opakující se:</td>
