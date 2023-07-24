@@ -60,23 +60,23 @@ class Command(BaseCommand):
                         f"Limiting bonus_count to {bonuses_to_add} due to insufficient number of qualifications"
                     )
                 )
+        price_lists = []
+        bonuses = []
         for i in range(options["N"]):
             if not options["bonus_count"] is not None:
                 bonuses_to_add = random.randint(0, qualifications_length)
-            names = ["salary_base", "participant_fee"]
-            values = []
-            for j in range(0, 2):
-                if options[names[j]]:
-                    values.append(options[names[j]])
-                else:
-                    values.append(random.randint(0, 10000))
+
+            salary_base = options["salary_base"] or random.randint(0, 10000)
+            participant_fee = options["participant_fee"] or random.randint(0, 10000)
+
             price_list = PriceList(
                 name=f"ceník_{idx}",
-                salary_base=values[0],
-                participant_fee=values[1],
+                salary_base=salary_base,
+                participant_fee=participant_fee,
                 is_template=True,
             )
-            price_list.save()
+            price_lists.append(price_list)
+
             bonus_qualifications = random.sample(list(qualifications), k=bonuses_to_add)
             for q in bonus_qualifications:
                 bonus = PriceListBonus(
@@ -84,8 +84,12 @@ class Command(BaseCommand):
                     feature=q,
                     extra_salary=random.randint(0, 1000),
                 )
-                bonus.save()
+                bonuses.append(bonus)
+
             idx += 1
+
+        PriceList.objects.bulk_create(price_lists)
+        PriceListBonus.objects.bulk_create(bonuses)
 
         self.stdout.write(
             self.style.SUCCESS(f'Successfully created {options["N"]} new price_lists.')
