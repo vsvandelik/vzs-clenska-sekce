@@ -1,7 +1,6 @@
 {% extends "persons/subview.html" %}
 
 {% load static %}
-{% load crispy_forms_tags %}
 {% load vzs_filters %}
 
 {% block title %}Transakce{% endblock %}
@@ -12,99 +11,16 @@
             <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
         </div>
     {% endif %}
-    <div class="row">
-        <div class="col-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Dluhy</div>
-                </div>
-                <div class="card-body">
-                    <table class="table" id="transactions-debt-table">
-                        <thead>
-                            <tr>
-                                <th>Zaplaceno</th>
-                                <th>Suma</th>
-                                <th>Popis</th>
-                                <th>Datum splatnosti</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for transaction in transactions_debt %}
-                                <tr>
-                                    <td>{{ transaction.is_settled|yesno }}</td>
-                                    <td>{{ transaction.amount|absolute }}</td>
-                                    <td>{{ transaction.reason }}</td>
-                                    <td>{{ transaction.date_due }}</td>
-                                    <td>
-                                        <div class="btn-group float-right">
-                                            {% if not transaction.is_settled %}
-                                                <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-qrcode" aria-hidden="true"></i>
-                                                </a>
-                                            {% endif %}
-                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-pen" aria-hidden="true"></i>
-                                            </a>
-                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Odměny</div>
-                </div>
-                <div class="card-body">
-                    <table class="table" id="transactions-reward-table">
-                        <thead>
-                            <tr>
-                                <th>Zaplaceno</th>
-                                <th>Suma</th>
-                                <th>Popis</th>
-                                <th>Datum splatnosti</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for transaction in transactions_reward %}
-                                <tr>
-                                    <td>{{ transaction.is_settled|yesno }}</td>
-                                    <td>{{ transaction.amount }}</td>
-                                    <td>{{ transaction.reason }}</td>
-                                    <td>{{ transaction.date_due }}</td>
-                                    <td>
-                                        <div class="btn-group float-right">
-                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-pen" aria-hidden="true"></i>
-                                            </a>
-                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+
+    {% include "transactions/parts/list.html" with edit=True%}
 
     {% include "modal_include.html" with id="delete-transaction-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    <script>
-        datatableEnable("transactions-debt-table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
-        datatableEnable("transactions-reward-table", [1, 2], [1, 2, 3], [[0, "desc"], [3, "asc"]]);
-    </script>
+    {% include "transactions/parts/list_script.html" %}
+
     <script src="{% static "register_modal.js" %}"></script>
     <script>register_modal("delete-transaction-modal")</script>
 {% endblock %}

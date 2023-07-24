@@ -1,29 +1,20 @@
-{% extends 'base.html' %}
+{% extends "persons/subview.html" %}
 
 {% load static %}
 {% load vzs_filters %}
 
 {% block title %}Můj profil{% endblock %}
 
-{% block content %}
+{% block subcontent %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url 'my-profile:edit' %}" class="btn btn-success">Upravit kontaktní údaje</a>
+    </div>
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url 'my-profile:change-password' %}" class="btn btn-info">Změnit heslo</a>
+    </div>
 
     <div class="row">
         <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
-                </div>
-            </div>
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'my-profile:edit' %}" class="btn btn-success">Upravit kontaktní údaje</a>
-            </div>
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'my-profile:change-password' %}" class="btn btn-info">Změnit heslo</a>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12 ">
             {% include "persons/detail_parts/_basic_info_card.html" with title="Evidované informace" %}
         </div>
     </div>

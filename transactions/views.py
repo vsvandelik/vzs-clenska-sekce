@@ -55,12 +55,37 @@ class TransactionCreateFromPersonView(
         return kwargs
 
 
-class TransactionListView(generic.detail.DetailView):
+class TransactionListMixin(generic.detail.DetailView):
     model = Person
-    template_name = "transactions/list.html"
 
-    def _get_transactions(self, person):
-        raise ImproperlyConfigured("_get_transactions needs to be overridden.")
+    def get_context_data(self, **kwargs):
+        person = self.object
+        transactions = person.transactions
+
+        transactions_debt = transactions.filter(Transaction.Q_debt)
+        transactions_reward = transactions.filter(Transaction.Q_reward)
+
+        transactions_due = transactions.filter(fio_transaction__isnull=True)
+        transactions_current_debt = transactions_due.filter(Transaction.Q_debt)
+        transactions_due_reward = transactions_due.filter(Transaction.Q_reward)
+
+        current_debt = (
+            transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
+        )
+        due_reward = (
+            transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
+        )
+
+        kwargs.setdefault("transactions_debt", transactions_debt)
+        kwargs.setdefault("transactions_reward", transactions_reward)
+        kwargs.setdefault("current_debt", current_debt)
+        kwargs.setdefault("due_reward", due_reward)
+
+        return super().get_context_data(**kwargs)
+
+
+class TransactionListView(TransactionListMixin):
+    template_name = "transactions/list.html"
 
     def get_context_data(self, **kwargs):
         person = self.object
@@ -185,3 +210,10 @@ class TransactionIndexView(generic.list.ListView):
             )
 
         return transactions.order_by("date_due")
+
+
+class MyTransactionsView(TransactionListMixin):
+    template_name = "transactions/my_transactions.html"
+
+    def get_object(self, queryset=None):
+        return self.request.active_person

@@ -35,4 +35,9 @@ urlpatterns = [
         views.TransactionDeleteView.as_view(),
         name="delete",
     ),
+    path(
+        "my/",
+        views.MyTransactionsView.as_view(),
+        name="my",
+    ),
 ]
