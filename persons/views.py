@@ -22,10 +22,11 @@ from .forms import (
 from .models import Person
 from .utils import (
     parse_persons_filter_queryset,
-    export_persons_to_csv,
     send_email_to_selected_persons,
     extend_kwargs_of_assignment_features,
 )
+
+from vzs.utils import export_queryset_csv
 
 
 class PersonPermissionMixin(PermissionRequiredMixin):
@@ -313,7 +314,7 @@ class ExportSelectedPersonsView(generic.View):
             ),
         )
 
-        return export_persons_to_csv(selected_persons)
+        return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
 class MyProfileView(generic.DetailView):

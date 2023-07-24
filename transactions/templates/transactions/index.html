@@ -12,6 +12,9 @@
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <div class="card-title h5">Transakce</div>
+                    <div class="card-tools ml-auto">
+                        <a class="btn btn-primary" href="{% url "transactions:export" %}?{{ filtered_get }}">Vyexportovat {{ filtered_get|yesno:"vyfiltrované,všechny" }}</a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -39,7 +42,7 @@
                                         <tr>
                                             <td>{{ transaction.is_settled|yesno }}</td>
                                             <td>{% render transaction.person "inline" %}</td>
-                                            <td>{{ transaction.is_reward|yesno:"Odměna,Dluh" }}</td>
+                                            <td>{{ transaction.reward_string }}</td>
                                             <td>{{ transaction.amount|absolute }}</td>
                                             <td>{{ transaction.reason }}</td>
                                             <td>{{ transaction.date_due }}</td>

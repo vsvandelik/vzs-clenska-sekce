@@ -11,14 +11,19 @@ urlpatterns = [
         name="index",
     ),
     path(
-        "<int:pk>/qr/",
-        views.TransactionQRView.as_view(),
-        name="qr",
+        "exportovat/",
+        views.TransactionExportView.as_view(),
+        name="export",
     ),
     path(
         "pridat/",
         views.TransactionCreateView.as_view(),
         name="add",
+    ),
+    path(
+        "<int:pk>/qr/",
+        views.TransactionQRView.as_view(),
+        name="qr",
     ),
     path(
         "<int:pk>/upravit-z-osoby/",
