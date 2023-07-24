@@ -1,4 +1,4 @@
-function register_modal(id) {
+function registerModal(id) {
     $(`#${id}`).on('show.bs.modal', function (event) {
         var action = $(event.relatedTarget).data('action');
         var modal = $(`#${id}Dialog`);
