@@ -66,8 +66,16 @@ class Command(BaseCommand):
             if not options["bonus_count"] is not None:
                 bonuses_to_add = random.randint(0, qualifications_length)
 
-            salary_base = options["salary_base"] or random.randint(0, 10000)
-            participant_fee = options["participant_fee"] or random.randint(0, 10000)
+            salary_base = (
+                options["salary_base"]
+                if options["salary_base"] is not None
+                else random.randint(0, 10000)
+            )
+            participant_fee = (
+                options["participant_fee"]
+                if options["participant_fee"] is not None
+                else random.randint(0, 10000)
+            )
 
             price_list = PriceList(
                 name=f"ceník_{idx}",
