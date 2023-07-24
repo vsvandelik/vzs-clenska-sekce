@@ -36,7 +36,9 @@ class PersonsManager(models.Manager):
         )
 
 
-class Person(vzs_models.RenderableModelMixin, models.Model):
+class Person(
+    vzs_models.ExportableCSVMixin, vzs_models.RenderableModelMixin, models.Model
+):
     class Meta:
         permissions = [
             ("clenska_zakladna", _("Správce členské základny")),
@@ -124,6 +126,22 @@ class Person(vzs_models.RenderableModelMixin, models.Model):
     managed_persons = models.ManyToManyField(
         "self", symmetrical=False, related_name="managed_by"
     )
+
+    csv_order = [
+        "person_type",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "birth_number",
+        "email",
+        "phone",
+        "city",
+        "postcode",
+        "street",
+        "health_insurance_company",
+        "swimming_time",
+        "sex",
+    ]
 
     @property
     def address(self):
