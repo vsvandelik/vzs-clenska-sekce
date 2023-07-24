@@ -80,88 +80,82 @@ class Command(BaseCommand):
             return person_type
         return queryset[0]
 
+    def generate_age(self, min, max):
+        if random.randint(0, 1):
+            return random.randint(min, max), True
+        return None, False
+
     def handle(self, *args, **options):
         idx = EventPosition.objects.all().count() + 1
-        features_length = Feature.objects.all().count()
+        all_features_count = Feature.objects.all().count()
         values = {}
-        if options["disable_age_restrictions"]:
-            values["min_age_enabled"] = False
-            values["max_age_enabled"] = False
+
         if options["disable_group_restrictions"]:
             group_membership_required = False
             group = None
+
         for i in range(options["N"]):
             position_name = f"pozice_{idx}"
-            if not options["disable_age_restrictions"]:
-                names = ["min_age", "max_age"]
-                for name in names:
-                    if options[name] is not None:
-                        values[f"{name}_enabled"] = True
-                        values[name] = options[f"{name}"]
-                    else:
-                        values[name] = None
 
-                if options["min_age"] is None or options["max_age"] is None:
-                    while True:
-                        for name in names:
-                            if options[name] is None:
-                                values[f"{name}_enabled"] = bool(random.randint(0, 1))
-                                if values[f"{name}_enabled"]:
-                                    values[f"{name}"] = random.randint(1, 99)
-                        if (
-                            values["min_age"] is not None
-                            and values["max_age"] is not None
-                        ):
-                            if values["min_age"] <= values["max_age"]:
-                                break
-
-                if (
-                    options["min_age"] is not None
-                    and options["max_age"] is not None
-                    and values["min_age"] > values["max_age"]
-                ):
-                    self.stdout.write(
-                        self.style.WARNING(
-                            "--min-age is greater than --max-age, swapping the values"
+            if options["disable_age_restrictions"]:
+                values["min_age_enabled"] = False
+                values["max_age_enabled"] = False
+                values["min_age"] = None
+                values["max_age"] = None
+            else:
+                if options["min_age"] is not None:
+                    values["min_age"] = options["min_age"]
+                if options["max_age"] is not None:
+                    values["max_age"] = options["max_age"]
+                if "min_age" not in values and "max_age" in values:
+                    values["min_age"], values["min_age_enabled"] = self.generate_age(
+                        1, values["max_age"]
+                    )
+                    values["max_age_enabled"] = True
+                elif "max_age" not in values and "min_age" in values:
+                    values["max_age"], values["max_age_enabled"] = self.generate_age(
+                        values["min_age"], 99
+                    )
+                    values["min_age_enabled"] = True
+                elif "min_age" not in values and "max_age" not in values:
+                    values["min_age"], values["min_age_enabled"] = self.generate_age(
+                        1, 99
+                    )
+                    values["max_age"], values["max_age_enabled"] = self.generate_age(
+                        1, 99
+                    )
+                    if (
+                        values["min_age_enabled"]
+                        and values["max_age_enabled"]
+                        and values["min_age"] > values["max_age"]
+                    ):
+                        values["min_age"], values["max_age"] = (
+                            values["max_age"],
+                            values["min_age"],
                         )
-                    )
-                    values["min_age"], values["max_age"] = (
-                        values["max_age"],
-                        values["min_age"],
-                    )
 
             if options["features_count"] is not None:
-                features_to_add = min(options["features_count"], features_length)
-                if features_to_add < options["features_count"]:
+                features_to_add_count = min(
+                    options["features_count"], all_features_count
+                )
+                if features_to_add_count < options["features_count"]:
                     self.stdout.write(
                         self.style.WARNING(
-                            f"Limiting required features to {features_to_add} due to insufficient number of features"
+                            f"Limiting required features to {features_to_add_count} due to insufficient number of features"
                         )
                     )
             else:
-                features_to_add = random.randint(0, features_length)
+                features_to_add_count = random.randint(0, all_features_count)
 
-            required_features = Feature.objects.order_by("?")[:features_to_add]
+            required_features = Feature.objects.order_by("?")[:features_to_add_count]
 
             if not options["disable_group_restrictions"]:
-                if options["requires_group"]:
+                if options["requires_group"] or bool(random.randint(0, 1)):
                     group_membership_required = True
                     group = Group.objects.order_by("?").first()
                 else:
-                    group_membership_required = bool(random.randint(0, 1))
-                    if group_membership_required:
-                        group = Group.objects.order_by("?").first()
-                    else:
-                        group = None
-
-            if options["person_type"] is None:
-                person_types = list(Person.Type.values)
-                chosen_person_types = random.sample(
-                    person_types, k=random.randint(0, len(person_types) - 1)
-                )
-            else:
-                chosen_person_types = map(lambda x: x.value, options["person_type"])
-            allowed_person_types = map(self.retrieve_person_type, chosen_person_types)
+                    group_membership_required = False
+                    group = None
 
             position = EventPosition(
                 name=position_name,
@@ -172,8 +166,16 @@ class Command(BaseCommand):
                 group_membership_required=group_membership_required,
                 group=group,
             )
-
             position.save()
+
+            if options["person_type"] is None:
+                person_types = list(Person.Type.values)
+                chosen_person_types = random.sample(
+                    person_types, k=random.randint(0, len(person_types) - 1)
+                )
+            else:
+                chosen_person_types = map(lambda x: x.value, options["person_type"])
+            allowed_person_types = map(self.retrieve_person_type, chosen_person_types)
 
             for feature in required_features:
                 position.required_features.add(feature)
@@ -181,6 +183,7 @@ class Command(BaseCommand):
             for person_type in allowed_person_types:
                 position.allowed_person_types.add(person_type)
 
+            values.clear()
             idx += 1
 
         self.stdout.write(
