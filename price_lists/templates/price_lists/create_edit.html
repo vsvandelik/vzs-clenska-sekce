@@ -13,6 +13,7 @@
                     <div class="card-body">
                         {{ form.name|as_crispy_field }}
                         {{ form.salary_base|as_crispy_field }}
+                        {{ form.participant_fee|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary" value="{% block savebtn_value %}{% endblock %}">

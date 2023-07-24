@@ -1,4 +1,5 @@
 from .models import Transaction
+from .utils import parse_transactions_filter_queryset
 
 from persons.widgets import PersonSelectWidget
 
@@ -140,3 +141,11 @@ class TransactionFilterForm(forms.Form):
             raise ValidationError(
                 _("Datum splatnosti od musí být menší nebo roven datumu splatnosti do.")
             )
+
+    def process_filter(self):
+        transactions = Transaction.objects.all()
+
+        if not self.is_valid():
+            return transactions
+
+        return parse_transactions_filter_queryset(self.cleaned_data, transactions)

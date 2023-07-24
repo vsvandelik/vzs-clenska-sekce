@@ -1,11 +1,10 @@
-import csv
-
-from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import redirect
-
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
+
+from django.db.models import Q
+from django.shortcuts import redirect
+
+import csv
 
 
 def parse_persons_filter_queryset(params_dict, persons):
@@ -54,35 +53,6 @@ def parse_persons_filter_queryset(params_dict, persons):
         persons = persons.filter(age__lte=age_to)
 
     return persons.order_by("last_name")
-
-
-def export_persons_to_csv(selected_persons):
-    response = HttpResponse(
-        content_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="vzs_osoby_export.csv"'},
-    )
-    response.write("\ufeff".encode("utf8"))
-
-    writer = csv.writer(response, delimiter=";")
-
-    labels = []
-    keys = []
-
-    for field in Person._meta.get_fields():
-        if field.is_relation:
-            continue
-
-        labels.append(
-            field.verbose_name if hasattr(field, "verbose_name") else field.name
-        )
-        keys.append(field.name)
-
-    writer.writerow(labels)  # header
-
-    for person in selected_persons:
-        writer.writerow([getattr(person, key) for key in keys])
-
-    return response
 
 
 def send_email_to_selected_persons(selected_persons):

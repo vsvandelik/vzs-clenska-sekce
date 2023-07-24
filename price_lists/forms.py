@@ -1,12 +1,26 @@
 from django.forms import ModelForm
-from .models import PriceListBonus
+from .models import PriceListBonus, PriceList
 from features.models import Feature
 from django_select2.forms import Select2Widget
 
 
-class AddEditBonusForm(ModelForm):
+class PriceListForm(ModelForm):
     class Meta:
-        fields = ["feature", "extra_payment"]
+        fields = ["name", "salary_base", "participant_fee"]
+        model = PriceList
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if instance.id is None:
+            instance.is_template = True
+        if commit:
+            instance.save()
+        return instance
+
+
+class BonusForm(ModelForm):
+    class Meta:
+        fields = ["feature", "extra_salary"]
         model = PriceListBonus
         labels = {"feature": "Kvalifikace"}
         widgets = {
@@ -16,7 +30,7 @@ class AddEditBonusForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.price_list = kwargs.pop("price_list")
         super().__init__(*args, **kwargs)
-        self.fields["extra_payment"].widget.attrs["min"] = 1
+        self.fields["extra_salary"].widget.attrs["min"] = 1
         self.fields["feature"].queryset = Feature.qualifications.exclude(
             pk__in=self.price_list.bonus_features.all()
         )
@@ -30,7 +44,7 @@ class AddEditBonusForm(ModelForm):
         instance = self.instance
         instance.price_list = self.price_list
         instance.feature = cleaned_data["feature"]
-        instance.extra_payment = cleaned_data["extra_payment"]
+        instance.extra_salary = cleaned_data["extra_salary"]
         if commit:
             instance.save()
         return instance

@@ -7,12 +7,12 @@ window.onload = function () {
 function groupMembershipRequiredClicked(sender) {
     const groupField = getGroupField()
     groupField.disabled = !sender.checked
-    setDetailLinkVisibility(sender.checked)
+    groupChanged(groupField)
     setElementRequired(groupField, sender.checked)
 }
 
 function groupChanged(sender) {
-    if(sender.value === undefined || sender.value === '') {
+    if(sender.value === undefined || sender.value === '' || sender.disabled) {
         setDetailLinkVisibility(false)
     }
     else {

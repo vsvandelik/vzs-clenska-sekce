@@ -24,7 +24,7 @@ function getPositionElement() {
 }
 
 function getDetailLinkElement() {
-    return document.getElementById('detailLink')
+    return document.getElementById('detail-link')
 }
 
 function setDetailLinkVisibility(state) {

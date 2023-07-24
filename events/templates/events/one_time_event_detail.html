@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load tag_extensions %}
+{% load events_tag_extensions %}
 {% load static %}
 
 {% block title %}
@@ -38,6 +38,10 @@
                             <tr>
                                 <td class="text-nowrap text-bold">Popis:</td>
                                 <td class="w-100">{{ event.description }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-nowrap text-bold">Ceník:</td>
+                                <td class="w-100">{% if event.price_list %}<a href="{% url 'price_lists:detail' event.price_list.id %}">{{ event.price_list }}</a>{% else %}není vybrán{% endif %}</td>
                             </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Účastníků</td>
@@ -285,5 +289,5 @@
     <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'one_time_event_detail.js' %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
-    <script>register_modal("delete-position-assignment-modal")</script>
+    <script>registerModal("delete-position-assignment-modal")</script>
 {% endblock %}

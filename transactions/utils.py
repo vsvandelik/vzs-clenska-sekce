@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.db.models import Q
+from django.template.loader import render_to_string
 
 from fiobank import FioBank
 
@@ -137,3 +138,18 @@ def parse_transactions_filter_queryset(cleaned_data, transactions):
         transactions = transactions.filter(date_due__lte=date_due_to)
 
     return transactions
+
+
+def send_email_transactions(transactions):
+    for transaction in transactions:
+        html_message = render_to_string(
+            "transactions/email.html", {"transaction": transaction}
+        )
+        send_mail(
+            "Informace o transakci",
+            "",
+            None,
+            [transaction.person.email],
+            fail_silently=False,
+            html_message=html_message,
+        )

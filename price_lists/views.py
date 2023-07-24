@@ -1,9 +1,9 @@
 from django.views import generic
 
 from events.mixin_extensions import MessagesMixin
-from .models import PriceList, PriceListBonus
+from .models import PriceList
 from django.urls import reverse_lazy, reverse
-from .forms import AddEditBonusForm
+from .forms import BonusForm, PriceListBonus, PriceListForm
 from django.shortcuts import get_object_or_404
 
 
@@ -13,7 +13,7 @@ class PriceListMixin:
 
 
 class PriceListCreateUpdateMixin(MessagesMixin, PriceListMixin):
-    fields = ["name", "salary_base"]
+    form_class = PriceListForm
 
     def get_success_url(self):
         return reverse("price_lists:detail", args=[self.object.id])
@@ -22,6 +22,9 @@ class PriceListCreateUpdateMixin(MessagesMixin, PriceListMixin):
 class PriceListIndexView(PriceListMixin, generic.ListView):
     template_name = "price_lists/index.html"
     context_object_name = "price_lists"
+
+    def get_queryset(self):
+        return PriceList.templates.all()
 
 
 class PriceListCreateView(PriceListCreateUpdateMixin, generic.CreateView):
@@ -65,7 +68,7 @@ class BonusMixin(MessagesMixin):
 
 
 class BonusCreateUpdateMixin(BonusMixin):
-    form_class = AddEditBonusForm
+    form_class = BonusForm
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -76,7 +79,7 @@ class BonusCreateUpdateMixin(BonusMixin):
 class AddBonusToPriceListView(BonusCreateUpdateMixin, generic.CreateView):
     template_name = "price_lists/create_bonus.html"
     success_message = (
-        "Příplatek %(extra_payment)s Kč za kvalifikaci %(feature)s úspěšně přidán"
+        "Příplatek %(extra_salary)s Kč za kvalifikaci %(feature)s úspěšně přidán"
     )
 
 
@@ -91,7 +94,7 @@ class DeleteBonusView(BonusMixin, generic.DeleteView):
     model = PriceListBonus
 
     def get_success_message(self, cleaned_data):
-        return f"Příplatek {self.object.extra_payment} Kč za kvalifikaci {self.object.feature} úspěšně smazán"
+        return f"Příplatek {self.object.extra_salary} Kč za kvalifikaci {self.object.feature} úspěšně smazán"
 
     def get_success_url(self):
         return reverse("price_lists:detail", args=[self.kwargs["price_list_id"]])
