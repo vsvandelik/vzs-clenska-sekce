@@ -88,11 +88,19 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         idx = EventPosition.objects.all().count() + 1
         all_features_count = Feature.objects.all().count()
+        groups_count = Group.objects.all().count()
         values = {}
 
         if options["disable_group_restrictions"]:
             group_membership_required = False
             group = None
+
+        if groups_count == 0 and options["requires_group"]:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Ignoring --requires-group flag due to nonexistent group in the system"
+                )
+            )
 
         for i in range(options["N"]):
             position_name = f"pozice_{idx}"
@@ -150,7 +158,9 @@ class Command(BaseCommand):
             required_features = Feature.objects.order_by("?")[:features_to_add_count]
 
             if not options["disable_group_restrictions"]:
-                if options["requires_group"] or bool(random.randint(0, 1)):
+                if groups_count > 0 and (
+                    options["requires_group"] or bool(random.randint(0, 1))
+                ):
                     group_membership_required = True
                     group = Group.objects.order_by("?").first()
                 else:
