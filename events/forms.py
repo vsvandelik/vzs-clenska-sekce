@@ -33,6 +33,7 @@ class EventForm(ModelForm):
             )
             self.fields["price_list"].widget.attrs["disabled"] = True
         self.fields["price_list"].required = False
+        self.fields["age_limit"].required = False
 
 
 class OneTimeEventForm(EventForm):

@@ -14,7 +14,11 @@ class OneTimeEventsManager(models.Manager):
             super()
             .get_queryset()
             .filter(parent=None)
-            .exclude(pk__in=Event.objects.all().values_list("parent", flat=True))
+            .exclude(
+                pk__in=list(
+                    Event.objects.all().values_list("parent", flat=True).distinct()
+                )
+            )
         )
 
 
@@ -24,7 +28,10 @@ class ParentTrainingsManager(models.Manager):
             super()
             .get_queryset()
             .filter(
-                parent=None, pk__in=Event.objects.all().values_list("parent", flat=True)
+                parent=None,
+                pk__in=list(
+                    Event.objects.all().values_list("parent", flat=True).distinct()
+                ),
             )
         )
 
@@ -64,7 +71,6 @@ class Event(models.Model):
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
     participants = models.ManyToManyField(Person, through="events.EventParticipation")
-    requirements = models.ManyToManyField(Feature, through="events.EventRequirement")
 
     def _is_top(self):
         return self.parent is None
