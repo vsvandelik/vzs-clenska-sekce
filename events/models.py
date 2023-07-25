@@ -144,7 +144,8 @@ class Event(models.Model):
         return self.name
 
     def delete(self, using=None, keep_parents=False):
-        self.price_list.delete()
+        if self.price_list is not None:
+            self.price_list.delete()
         return super().delete(using, keep_parents)
 
 
