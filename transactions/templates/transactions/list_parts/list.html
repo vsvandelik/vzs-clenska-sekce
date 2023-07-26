@@ -1,0 +1,90 @@
+{% load vzs_filters %}
+
+<div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title h5">Dluhy</div>
+            </div>
+            <div class="card-body">
+                <table class="table" id="transactions-debt-table">
+                    <thead>
+                        <tr>
+                            <th>Zaplaceno</th>
+                            <th>Suma</th>
+                            <th>Popis</th>
+                            <th>Datum splatnosti</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions_debt %}
+                            <tr>
+                                <td>{{ transaction.is_settled|yesno }}</td>
+                                <td>{{ transaction.amount|absolute }}</td>
+                                <td>{{ transaction.reason }}</td>
+                                <td>{{ transaction.date_due }}</td>
+                                <td>
+                                    <div class="btn-group float-right">
+                                        {% if not transaction.is_settled %}
+                                            <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-qrcode" aria-hidden="true"></i>
+                                            </a>
+                                        {% endif %}
+
+                                        {% if edit %}
+                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title h5">Odměny</div>
+            </div>
+            <div class="card-body">
+                <table class="table" id="transactions-reward-table">
+                    <thead>
+                        <tr>
+                            <th>Zaplaceno</th>
+                            <th>Suma</th>
+                            <th>Popis</th>
+                            <th>Datum splatnosti</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions_reward %}
+                            <tr>
+                                <td>{{ transaction.is_settled|yesno }}</td>
+                                <td>{{ transaction.amount }}</td>
+                                <td>{{ transaction.reason }}</td>
+                                <td>{{ transaction.date_due }}</td>
+                                <td>
+                                    {% if edit %}
+                                        <div class="btn-group float-right">
+                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
