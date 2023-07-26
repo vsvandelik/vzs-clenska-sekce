@@ -6,10 +6,10 @@
 {% block title %}Moje transakce{% endblock %}
 
 {% block subcontent %}
-    {% include "transactions/parts/list.html" %}
+    {% include "transactions/list_parts/list.html" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    {% include "transactions/parts/list_script.html" %}
+    {% include "transactions/list_parts/list_script.html" %}
 {% endblock %}

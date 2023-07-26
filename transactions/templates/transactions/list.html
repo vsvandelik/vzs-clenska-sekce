@@ -12,14 +12,14 @@
         </div>
     {% endif %}
 
-    {% include "transactions/parts/list.html" with edit=True%}
+    {% include "transactions/list_parts/list.html" with edit=True%}
 
     {% include "modal_include.html" with id="delete-transaction-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    {% include "transactions/parts/list_script.html" %}
+    {% include "transactions/list_parts/list_script.html" %}
 
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-transaction-modal")</script>
