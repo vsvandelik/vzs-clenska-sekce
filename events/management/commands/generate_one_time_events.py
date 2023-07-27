@@ -22,7 +22,7 @@ def non_negative_int(value):
     return lower_bounded_int(value, 0)
 
 
-def generate_random_date():
+def generate_random_datetime():
     while True:
         year = random.randint(2020, 2023)
         month = random.randint(1, 12)
@@ -49,7 +49,7 @@ def generate_basic_event(name, min_time_delta_hours, max_time_delta_hours, optio
         time_end = time_start + timedelta(
             hours=random.randint(min_time_delta_hours, max_time_delta_hours)
         )
-    elif options["time_end"] is not None and options["time_start"] is None:
+    elif options["time_start"] is None and options["time_end"] is not None:
         time_end = options["time_end"]
         time_start = time_end - timedelta(
             hours=random.randint(min_time_delta_hours, max_time_delta_hours)
@@ -60,7 +60,7 @@ def generate_basic_event(name, min_time_delta_hours, max_time_delta_hours, optio
         if time_start > time_end:
             time_start, time_end = time_end, time_start
     else:
-        time_start = generate_random_date()
+        time_start = generate_random_datetime()
         time_end = time_start + timedelta(
             hours=random.randint(min_time_delta_hours, max_time_delta_hours)
         )

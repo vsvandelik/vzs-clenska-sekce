@@ -1,25 +1,11 @@
 import random
-
-from argparse import ArgumentTypeError
 from django.core.management.base import BaseCommand
-
 from price_lists.models import PriceList, PriceListBonus
 from features.models import Feature
-
-
-def lower_bounded_int(value, lower_bound):
-    v = int(value)
-    if v < lower_bound:
-        raise ArgumentTypeError(f"{v} is an invalid value")
-    return v
-
-
-def positive_int(value):
-    return lower_bounded_int(value, 1)
-
-
-def non_negative_int(value):
-    return lower_bounded_int(value, 0)
+from events.management.commands.generate_one_time_events import (
+    positive_int,
+    non_negative_int,
+)
 
 
 class Command(BaseCommand):
