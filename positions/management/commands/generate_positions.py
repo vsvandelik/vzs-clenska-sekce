@@ -7,10 +7,7 @@ from positions.models import EventPosition, PersonType
 from persons.models import Person
 from features.models import Feature
 from groups.models import Group
-from events.management.commands.generate_one_time_events import (
-    positive_int,
-    non_negative_int,
-)
+from vzs.commands_utils import positive_int, non_negative_int
 
 
 class Command(BaseCommand):

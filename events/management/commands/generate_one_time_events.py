@@ -1,25 +1,9 @@
 import random
-
-from argparse import ArgumentTypeError
+from vzs.commands_utils import positive_int, non_negative_int
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from events.models import Event
 from datetime import datetime, timedelta
-
-
-def lower_bounded_int(value, lower_bound):
-    v = int(value)
-    if v < lower_bound:
-        raise ArgumentTypeError(f"{v} is an invalid value")
-    return v
-
-
-def positive_int(value):
-    return lower_bounded_int(value, 1)
-
-
-def non_negative_int(value):
-    return lower_bounded_int(value, 0)
 
 
 def generate_random_datetime():
