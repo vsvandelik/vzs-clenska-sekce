@@ -1,3 +1,3 @@
 function convertCzechDate(date) {
-    return moment(date, "DD. MM. YYYY hh:mm").toDate()
+    return moment(date, "D. M. YYYY hh:mm").toDate()
 }

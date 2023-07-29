@@ -14,6 +14,7 @@ from pathlib import Path
 
 import environ
 from dateutil.relativedelta import relativedelta
+from django.conf.locale.cs import formats as cs_formats
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -148,12 +149,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Date and time formats
-
-DATE_INPUT_FORMATS = "%Y-%m-%d"
-
-DATE_FORMAT = "j. n. Y"
-DATETIME_FORMAT = "j. n. Y H:i"
-TIME_FORMAT = "H:i"
+cs_formats.DATE_FORMAT = "j. n. Y"
+cs_formats.DATETIME_FORMAT = "j. n. Y H:i"
+cs_formats.TIME_FORMAT = "H:i"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -234,8 +232,8 @@ FIO_TOKEN = env.str("FIO_TOKEN")
 # Settings for Datepicker Tempus Dominus
 
 TEMPUS_DOMINUS_LOCALIZE = True
-TEMPUS_DOMINUS_DATE_FORMAT = "DD. MM. YYYY"
-TEMPUS_DOMINUS_DATETIME_FORMAT = "DD. MM. YYYY HH:mm"
+TEMPUS_DOMINUS_DATE_FORMAT = "D. M. YYYY"
+TEMPUS_DOMINUS_DATETIME_FORMAT = "D. M. YYYY HH:mm"
 TEMPUS_DOMINUS_TIME_FORMAT = "HH:mm"
 
 # Transactions settings
