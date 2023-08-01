@@ -33,7 +33,6 @@ class EventForm(ModelForm):
             )
             self.fields["price_list"].widget.attrs["disabled"] = True
         self.fields["price_list"].required = False
-        self.fields["age_limit"].required = False
 
 
 class OneTimeEventForm(EventForm):
@@ -45,7 +44,6 @@ class OneTimeEventForm(EventForm):
             "time_start",
             "time_end",
             "capacity",
-            "age_limit",
             "price_list",
         ]
         widgets = {
@@ -103,7 +101,7 @@ class OneTimeEventForm(EventForm):
 class TrainingForm(OneTimeEventForm):
     class Meta:
         model = Event
-        fields = ["name", "description", "capacity", "age_limit", "price_list"]
+        fields = ["name", "description", "capacity", "price_list"]
         widgets = {
             "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"})
         }
@@ -313,7 +311,6 @@ class TrainingForm(OneTimeEventForm):
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
         instance.capacity = self.cleaned_data["capacity"]
-        instance.age_limit = self.cleaned_data["age_limit"]
         instance.time_start = self.cleaned_data["starts_date"]
         instance.time_end = self.cleaned_data["ends_date"]
         if commit:
