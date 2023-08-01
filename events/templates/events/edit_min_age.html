@@ -4,10 +4,10 @@
 {% block scripts %}
     <script src="{% static 'set_report_validity.js' %}"></script>
     <script src="{% static 'set_element_required.js' %}"></script>
-    <script src="{% static 'edit_age_limit.js' %}"></script>
+    <script src="{% static 'edit_min_age.js' %}"></script>
 {% endblock %}
 {% block title %}
-    Úprava věkového omezení
+    Úprava minimální věkové hranice
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -15,7 +15,7 @@
             <div class="elevation-2 card">
                 <div class="card-header">
                     <div class="card-title h5">
-                        <span style="line-height: 45px;font-size: 22.5px;">{{ position }}</span></div>
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ event }}</span></div>
                 </div>
             </div>
         </div>
@@ -39,17 +39,7 @@
                                     {{ form.min_age|as_crispy_field }}
                                 </div>
                             </div>
-                            <div class="card">
-                                <div class="card-header border-0">
-                                    <div class="card-title h5">Maximální věková hranice</div>
-                                </div>
-                                <div class="card-body">
-                                    {{ form.max_age_enabled|as_crispy_field }}
-                                    {{ form.max_age|as_crispy_field }}
-                                </div>
-                            </div>
                         </div>
-
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"

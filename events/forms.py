@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.forms import Form, ModelForm, MultipleChoiceField
+from django.forms.widgets import CheckboxInput
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
@@ -489,3 +490,28 @@ class EventPositionAssignmentForm(ModelForm):
             instance.position = self.position
         if commit:
             instance.save()
+
+
+class MinAgeForm(ModelForm):
+    class Meta:
+        model = Event
+        fields = ["min_age_enabled", "min_age"]
+        labels = {
+            "min_age_enabled": "Aktivní",
+            "min_age": "Min",
+        }
+        widgets = {
+            "min_age_enabled": CheckboxInput(
+                attrs={"onchange": "minAgeCheckboxClicked(this)"}
+            )
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        min_age_enabled = cleaned_data["min_age_enabled"]
+        if not min_age_enabled:
+            cleaned_data["min_age"] = self.instance.min_age
+        if min_age_enabled:
+            if "min_age" not in cleaned_data or cleaned_data["min_age"] is None:
+                self.add_error("min_age", "Toto pole je nutné vyplnit")
+        return cleaned_data

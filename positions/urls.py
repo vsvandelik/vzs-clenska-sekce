@@ -22,7 +22,7 @@ urlpatterns = [
     path(
         "<int:pk>/upravit/vekove-omezeni/",
         views.EditAgeLimitView.as_view(),
-        name="edit_min_age",
+        name="edit_age_limit",
     ),
     path(
         "<int:pk>/upravit/skupinu/",

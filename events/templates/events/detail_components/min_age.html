@@ -20,7 +20,11 @@
             </table>
         </div>
         <div class="card-footer text-center">
-            <a href="{% url 'event:edit_min_age' position.id %}" class="btn-primary btn">Upravit</a>
+            {% if event_type == 'one_time_event' %}
+                <a href="{% url 'events:edit_min_age_one_time_event' event.id %}" class="btn-primary btn">Upravit</a>
+            {% else %}
+                <a href="{% url 'events:edit_min_age_training' event.id %}" class="btn-primary btn">Upravit</a>
+            {% endif %}
         </div>
     </div>
 </div>

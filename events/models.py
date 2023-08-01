@@ -4,7 +4,7 @@ from .utils import weekday_2_day_shortcut
 from django.utils import timezone
 from persons.models import Person
 from features.models import Feature
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q
 
 
@@ -61,7 +61,12 @@ class Event(models.Model):
         _("Maximální počet účastníků"), null=True
     )
     min_age_enabled = models.BooleanField(default=False)
-    min_age = models.PositiveSmallIntegerField(_("Minimální věk účastníků"), null=True)
+    min_age = models.PositiveSmallIntegerField(
+        _("Minimální věk účastníků"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
+    )
     price_list = models.ForeignKey(
         "price_lists.PriceList", on_delete=models.SET_NULL, null=True
     )

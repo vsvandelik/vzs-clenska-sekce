@@ -6,6 +6,7 @@ from .forms import (
     OneTimeEventForm,
     AddDeleteParticipantFromOneTimeEventForm,
     EventPositionAssignmentForm,
+    MinAgeForm,
 )
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
@@ -244,3 +245,16 @@ class EventPositionAssignmentDeleteView(
 
     def get_success_message(self, cleaned_data):
         return f"Organizátorská pozice {self.object.position} smazána"
+
+
+class EditMinAgeView(MessagesMixin, generic.UpdateView):
+    template_name = "events/edit_min_age.html"
+    model = Event
+    form_class = MinAgeForm
+    success_message = "Změna věkového omezení uložena"
+
+    def get_success_url(self):
+        self.object.set_type()
+        if self.object.is_one_time_event:
+            return reverse("events:detail_one_time_event", args=[self.object.id])
+        return reverse("events:detail_training", args=[self.object.id])

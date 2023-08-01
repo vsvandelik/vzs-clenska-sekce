@@ -29,25 +29,20 @@
                         <td class="w-100">TODO</td>
                     </tr>
                     <tr>
-                        <td class="text-nowrap text-bold">Minimální věk účastníků:</td>
-                        <td class="w-100">{{ event.get_min_age_display }}</td>
+                        <td class="text-nowrap text-bold">Stav události:</td>
+                        <td class="w-100">{{ event.get_state_display }}</td>
                     </tr>
-                </tr>
-                <tr>
-                    <td class="text-nowrap text-bold">Stav události:</td>
-                    <td class="w-100">{{ event.get_state_display }}</td>
-                </tr>
-                <tr>
-                    <td class="text-nowrap text-bold">Začíná:</td>
-                    <td class="w-100">{{ event.time_start }}</td>
-                </tr>
-                <tr>
-                    <td class="text-nowrap text-bold">Končí:</td>
-                    <td class="w-100">{{ event.time_end }}</td>
-                </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Začíná:</td>
+                        <td class="w-100">{{ event.time_start }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Končí:</td>
+                        <td class="w-100">{{ event.time_end }}</td>
+                    </tr>
 
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 </div>
