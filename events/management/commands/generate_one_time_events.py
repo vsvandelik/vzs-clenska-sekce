@@ -55,12 +55,12 @@ def generate_basic_event(name, min_time_delta_hours, max_time_delta_hours, optio
         else random.randint(4, 32)
     )
 
-    age_limit = None
-    if not options["disable_age_limit_restrictions"]:
-        if options["age_limit"] is not None:
-            age_limit = options["age_limit"]
+    min_age = None
+    if not options["disable_min_age_restrictions"]:
+        if options["min_age"] is not None:
+            min_age = options["min_age"]
         elif random.randint(0, 1):
-            age_limit = random.randint(8, 40)
+            min_age = random.randint(8, 40)
 
     event = Event(
         name=name,
@@ -68,7 +68,7 @@ def generate_basic_event(name, min_time_delta_hours, max_time_delta_hours, optio
         time_start=time_start,
         time_end=time_end,
         capacity=capacity,
-        age_limit=age_limit,
+        min_age=min_age,
         state=Event.State.FUTURE,
     )
     return event
@@ -102,7 +102,7 @@ def add_common_args(parser):
     )
     parser.add_argument(
         "-a",
-        "--age-limit",
+        "--min-age",
         type=non_negative_int,
         help="the minimum age of participants",
     )

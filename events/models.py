@@ -60,9 +60,8 @@ class Event(models.Model):
     capacity = models.PositiveSmallIntegerField(
         _("Maximální počet účastníků"), null=True
     )
-    age_limit = models.PositiveSmallIntegerField(
-        _("Minimální věk účastníků"), null=True
-    )
+    min_age_enabled = models.BooleanField(default=False)
+    min_age = models.PositiveSmallIntegerField(_("Minimální věk účastníků"), null=True)
     price_list = models.ForeignKey(
         "price_lists.PriceList", on_delete=models.SET_NULL, null=True
     )
@@ -71,6 +70,9 @@ class Event(models.Model):
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
     participants = models.ManyToManyField(Person, through="events.EventParticipation")
+
+    def get_min_age_display(self):
+        return self.min_age if self.min_age_enabled else "Bez omezení"
 
     def _is_top(self):
         return self.parent is None
