@@ -1,0 +1,104 @@
+{% load events_tag_extensions %}
+
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div id="signup-person-modal-title" class="card-title h5">Přihlášení účastníci</div>
+        </div>
+        <div class="card-body p-0">
+            <form method="POST" action="{% url 'events:remove_participant_from_one_time_event' event.id %}">
+                {% csrf_token %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ep in event_participation_approved %}
+                            <tr>
+                                <td class="align-middle">
+                                    <a href="{% url 'persons:detail' ep.person.id %}">{{ ep.person }}</a>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-danger" name="person_id"
+                                            value="{{ ep.person.id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn p-0" onclick="signupPersonClicked()">
+                <a href="#" class="btn-primary btn" data-toggle="modal" data-target="#signup-person">
+                    Přihlásit účastníka
+                </a>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="signup-person" tabindex="-1" role="dialog"
+     aria-labelledby="signup-person"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="signup-person-title" class="modal-title">Přihlásit osobu</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="signup-person-form" method="POST" action="">
+                    {% csrf_token %}
+                    <table class="table table-striped" id="signup-person-table">
+                        <thead>
+                            <tr>
+                                <th>Osoba</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="signup-person-tbody">
+                            {% for person in persons %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <a href="{% url 'persons:detail' person.id %}" target="_blank">{{ person }}</a>
+                                        {% with p=person|event_participation:event %}
+                                            {% if p %}
+                                                {% if p.state == p.State.SUBSTITUTE %}
+                                                    <span class="badge badge-secondary">náhradník</span>
+                                                {% endif %}
+                                                {% if p.state == p.State.APPROVED %}
+                                                    <span class="badge badge-success">přihlášen</span>
+                                                {% endif %}
+                                                {% if p.state == p.State.WAITING %}
+                                                    <span class="badge badge-info">čeká na schválení</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endwith %}
+
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary" type="submit" name="person_id"
+                                                value="{{ person.id }}">Přidat
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+            </div>
+        </div>
+    </div>
+</div>

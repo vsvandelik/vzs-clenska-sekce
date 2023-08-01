@@ -1,0 +1,48 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Přehled</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Popis:</td>
+                        <td class="w-100">{{ event.description }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Ceník:</td>
+                        <td class="w-100">{% if event.price_list %}
+                            <a href="{% url 'price_lists:detail' event.price_list.id %}">{{ event.price_list }}</a>{% else %}
+                            není vybrán{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Opakující se:</td>
+                        <td class="w-100">{{ is_top_training|yesno:"Ano,Ne" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Maximální počet účastníků:</td>
+                        <td class="w-100">{{ event.capacity }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Minimální věk účastníků:</td>
+                        <td class="w-100">{{ event.age_limit }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Stav události:</td>
+                        <td class="w-100">{{ event.state }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Začíná:</td>
+                        <td class="w-100">{{ event.time_start|date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Končí:</td>
+                        <td class="w-100">{{ event.time_end|date }}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
