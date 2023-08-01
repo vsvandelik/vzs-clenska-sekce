@@ -37,8 +37,8 @@ class AgeLimitForm(ModelForm):
         model = EventPosition
         fields = ["min_age_enabled", "max_age_enabled", "min_age", "max_age"]
         labels = {
-            "min_age_enabled": "Aktivní",
-            "max_age_enabled": "Aktivní",
+            "min_age_enabled": "Vyžadována",
+            "max_age_enabled": "Vyžadována",
             "min_age": "Min",
             "max_age": "Max",
         }

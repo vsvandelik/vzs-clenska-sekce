@@ -67,6 +67,8 @@ class Event(models.Model):
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
+    group_membership_required = models.BooleanField(default=False)
+    group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
     price_list = models.ForeignKey(
         "price_lists.PriceList", on_delete=models.SET_NULL, null=True
     )

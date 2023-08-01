@@ -10,6 +10,7 @@ from persons.models import Person
 from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
+from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
 from price_lists.models import PriceList
 from .utils import (
     weekday_2_day_shortcut,
@@ -497,8 +498,8 @@ class MinAgeForm(ModelForm):
         model = Event
         fields = ["min_age_enabled", "min_age"]
         labels = {
-            "min_age_enabled": "Aktivní",
-            "min_age": "Min",
+            "min_age_enabled": "Vyžadována",
+            "min_age": "Minimální věková hranice",
         }
         widgets = {
             "min_age_enabled": CheckboxInput(
@@ -515,3 +516,16 @@ class MinAgeForm(ModelForm):
             if "min_age" not in cleaned_data or cleaned_data["min_age"] is None:
                 self.add_error("min_age", "Toto pole je nutné vyplnit")
         return cleaned_data
+
+
+class GroupMembershipForm(PositionsGroupMembershipForm):
+    class Meta:
+        model = Event
+        fields = ["group_membership_required", "group"]
+        labels = {"group_membership_required": "Vyžadováno", "group": "Skupina"}
+        widgets = {
+            "group_membership_required": CheckboxInput(
+                attrs={"onchange": "groupMembershipRequiredClicked(this)"}
+            ),
+            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
+        }
