@@ -78,9 +78,6 @@ class Event(models.Model):
     )
     participants = models.ManyToManyField(Person, through="events.EventParticipation")
 
-    def get_min_age_display(self):
-        return self.min_age if self.min_age_enabled else "Bez omezení"
-
     def _is_top(self):
         return self.parent is None
 

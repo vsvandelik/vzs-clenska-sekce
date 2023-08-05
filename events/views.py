@@ -253,9 +253,10 @@ class EventRestrictionMixin(MessagesMixin, generic.UpdateView):
 
     def get_success_url(self):
         self.object.set_type()
+        viewname = "events:detail_training"
         if self.object.is_one_time_event:
-            return reverse("events:detail_one_time_event", args=[self.object.id])
-        return reverse("events:detail_training", args=[self.object.id])
+            viewname = "events:detail_one_time_event"
+        return reverse(viewname, args=[self.object.id])
 
 
 class EditMinAgeView(EventRestrictionMixin):
