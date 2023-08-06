@@ -61,11 +61,6 @@ def index_safe(indexable, i):
 
 
 @register.filter
-def field_value(fields, field_name):
-    return fields[field_name].value()
-
-
-@register.filter
 def atoi(value):
     return int(value)
 

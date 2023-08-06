@@ -115,7 +115,7 @@ class RemoveFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
 
 
 class EditAgeLimitView(PositionMixin, MessagesMixin, generic.UpdateView):
-    template_name = "positions/edit_age_limit.html"
+    template_name = "positions/edit_min_age.html"
     form_class = AgeLimitForm
     success_message = "Změna věkového omezení uložena"
 
@@ -124,7 +124,7 @@ class EditAgeLimitView(PositionMixin, MessagesMixin, generic.UpdateView):
 
 
 class EditGroupMembershipView(PositionMixin, MessagesMixin, generic.UpdateView):
-    template_name = "positions/edit_group_membership.html"
+    template_name = "common_components/edit_group_membership.html"
     form_class = GroupMembershipForm
     success_message = "Změna členství ve skupině uložena"
 

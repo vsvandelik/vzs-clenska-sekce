@@ -1,0 +1,44 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Organizátorské pozice</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pozice</th>
+                        <th>Přihlášených / pozic</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pa in event_position_assignments %}
+                        <tr>
+                            <td><a href="{% url 'positions:detail' pa.position.id %}">{{ pa.position }}</a></td>
+                            <td>{{ pa.organizers|length }} / {{ pa.count }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm"
+                                       href="{% url 'events:edit_position_assignment' event.id pa.id %}">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-position-assignment-modal"
+                                       data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat
+                pozici</a>
+        </div>
+    </div>
+</div>

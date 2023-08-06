@@ -1,0 +1,42 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Náhradníci</div>
+        </div>
+        <div class="card-body p-0">
+            <form method="POST" action="{% url 'events:remove_substitute_from_one_time_event' event.id %}">
+                {% csrf_token %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ep in event_participation_substitute %}
+                            <tr>
+                                <td class="align-middle">
+                                    <a href="{% url 'persons:detail' ep.person.id %}">{{ ep.person }}</a>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-danger" name="person_id"
+                                            value="{{ ep.person.id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn p-0" onclick="addSubstituteClicked()">
+                <a href="#" class="btn-primary btn" data-toggle="modal"
+                   data-target="#signup-person">Přidat
+                    náhradníka</a>
+            </button>
+        </div>
+    </div>
+</div>

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.forms import Form, ModelForm, MultipleChoiceField
+from django.forms.widgets import CheckboxInput
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
@@ -9,6 +10,7 @@ from persons.models import Person
 from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
+from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
 from price_lists.models import PriceList
 from .utils import (
     weekday_2_day_shortcut,
@@ -33,7 +35,6 @@ class EventForm(ModelForm):
             )
             self.fields["price_list"].widget.attrs["disabled"] = True
         self.fields["price_list"].required = False
-        self.fields["age_limit"].required = False
 
 
 class OneTimeEventForm(EventForm):
@@ -45,7 +46,6 @@ class OneTimeEventForm(EventForm):
             "time_start",
             "time_end",
             "capacity",
-            "age_limit",
             "price_list",
         ]
         widgets = {
@@ -103,7 +103,7 @@ class OneTimeEventForm(EventForm):
 class TrainingForm(OneTimeEventForm):
     class Meta:
         model = Event
-        fields = ["name", "description", "capacity", "age_limit", "price_list"]
+        fields = ["name", "description", "capacity", "price_list"]
         widgets = {
             "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"})
         }
@@ -313,7 +313,6 @@ class TrainingForm(OneTimeEventForm):
         instance.name = self.cleaned_data["name"]
         instance.description = self.cleaned_data["description"]
         instance.capacity = self.cleaned_data["capacity"]
-        instance.age_limit = self.cleaned_data["age_limit"]
         instance.time_start = self.cleaned_data["starts_date"]
         instance.time_end = self.cleaned_data["ends_date"]
         if commit:
@@ -492,3 +491,41 @@ class EventPositionAssignmentForm(ModelForm):
             instance.position = self.position
         if commit:
             instance.save()
+
+
+class MinAgeForm(ModelForm):
+    class Meta:
+        model = Event
+        fields = ["min_age_enabled", "min_age"]
+        labels = {
+            "min_age_enabled": "Vyžadována",
+            "min_age": "Minimální věková hranice",
+        }
+        widgets = {
+            "min_age_enabled": CheckboxInput(
+                attrs={"onchange": "minAgeCheckboxClicked(this)"}
+            )
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        min_age_enabled = cleaned_data["min_age_enabled"]
+        if not min_age_enabled:
+            cleaned_data["min_age"] = self.instance.min_age
+        if min_age_enabled:
+            if "min_age" not in cleaned_data or cleaned_data["min_age"] is None:
+                self.add_error("min_age", "Toto pole je nutné vyplnit")
+        return cleaned_data
+
+
+class GroupMembershipForm(PositionsGroupMembershipForm):
+    class Meta:
+        model = Event
+        fields = ["group_membership_required", "group"]
+        labels = {"group_membership_required": "Vyžadováno", "group": "Skupina"}
+        widgets = {
+            "group_membership_required": CheckboxInput(
+                attrs={"onchange": "groupMembershipRequiredClicked(this)"}
+            ),
+            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
+        }

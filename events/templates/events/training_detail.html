@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load events_tag_extensions %}
 {% load static %}
 {% block scripts %}
     <script src="{% static 'training_detail.js' %}"></script>
@@ -23,123 +22,11 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-12 col-md-6">
-            <div class="card">
-                <div class="card-header border-0">
-                    <div class="card-title h5">Přehled</div>
-                </div>
-                <div class="card-body p-0">
-                    <table class="mb-1 table">
-                        <tbody>
-                            <tr>
-                                <td class="text-nowrap text-bold">Popis:</td>
-                                <td class="w-100">{{ event.description }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Ceník:</td>
-                                <td class="w-100">{% if event.price_list %}<a href="{% url 'price_lists:detail' event.price_list.id %}">{{ event.price_list }}</a>{% else %}není vybrán{% endif %}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Opakující se:</td>
-                                <td class="w-100">{{ is_top_training|yesno:"Ano,Ne" }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Maximální počet účastníků:</td>
-                                <td class="w-100">{{ event.capacity }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Minimální věk účastníků:</td>
-                                <td class="w-100">{{ event.age_limit }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Stav události:</td>
-                                <td class="w-100">{{ event.state }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Začíná:</td>
-                                <td class="w-100">{{ event.time_start|date }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-nowrap text-bold">Končí:</td>
-                                <td class="w-100">{{ event.time_end|date }}</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="card">
-                <div class="card-header border-0">
-                    <div class="card-title h5">Přehled tréninku</div>
-                </div>
-                <div class="card-body p-0">
-                    <table class="mb-1 table">
-                        <tbody>
-                            <tr>
-                                <td class="text-nowrap text-bold">Koná se týdně:</td>
-                                <td class="w-100">{{ event.weekdays|length }}x v
-                                    {% for weekday in event.weekdays %}
-                                        {{ weekday|weekday_pretty }}{% if not forloop.last %},{% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                            {% for weekday in event.weekdays %}
-                                <tr>
-                                    <td class="text-nowrap text-bold">{{ weekday|weekday_pretty }}:</td>
-                                    {% with day_shortcut=weekday|weekday_2_day_shortcut %}
-                                        {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
-                                            {% with from_time=event|getattribute:from_var_name to_time=event|getattribute:to_var_name %}
-                                                <td class="w-100">{{ from_time|time }}
-                                                    – {{ to_time|time }}</td>
-                                            {% endwith %}
-                                        {% endwith %}
-                                    {% endwith %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header border-0">
-                    <div class="card-title h5">Rozpis tréninků</div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for weekday in event.weekdays %}
-                            <div class="col-md-2 col-12">
-                                <div class="card">
-                                    <div class="card-header border-0">
-                                        {% with day=weekday|weekday_pretty %}
-                                            <div class="card-title h5 text-bold">{{ day }}</div>
-                                        {% endwith %}
-                                    </div>
-                                    <div class="card-body p-0">
-                                        <table class="mb-1 table">
-                                            <tbody>
-                                                {% for child in event.children %}
-                                                    {% if child.time_start.weekday == weekday %}
-                                                        <tr>
-                                                            <td class="w-100">{{ child.time_start|date }}</td>
-                                                        </tr>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'events/detail_components/training_overview.html' %}
+        {% include 'events/detail_components/training_summary.html' %}
+        {% include 'events/detail_components/min_age.html' with event_type='training' %}
+        {% include 'events/detail_components/group_membership.html' with event_type='one_time_event' %}
+        {% include 'events/detail_components/training_schedule.html' %}
     </div>
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
