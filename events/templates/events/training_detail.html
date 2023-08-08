@@ -24,8 +24,9 @@
     <div class="row">
         {% include 'events/detail_components/training_overview.html' %}
         {% include 'events/detail_components/training_summary.html' %}
-        {% include 'events/detail_components/min_age.html' with event_type='training' %}
-        {% include 'events/detail_components/group_membership.html' with event_type='one_time_event' %}
+        {% include 'events/detail_components/min_age.html' %}
+        {% include 'events/detail_components/group_membership.html' %}
+        {% include 'events/detail_components/person_type.html' %}
         {% include 'events/detail_components/training_schedule.html' %}
     </div>
 

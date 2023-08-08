@@ -1,0 +1,41 @@
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Vyžadované vybavení</div>
+        </div>
+        <div class="card-body p-0">
+            <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                {% csrf_token %}
+                {% if position.required_equipment %}
+                    <table id="added-equipments-table" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Název</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in position.required_equipment %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'permissions:detail' e.id %}">{{ e }}</a>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                value="{{ e.id }}">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <a href="#" class="btn-primary btn" onclick="addEquipmentClicked()" data-toggle="modal"
+               data-target="#add-features">Přidat</a>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,11 @@
 from django.urls import reverse_lazy
-from .models import Event, EventParticipation, Participation, EventPositionAssignment
+from .models import (
+    Event,
+    EventParticipation,
+    Participation,
+    EventPositionAssignment,
+    PersonType,
+)
 from django.views import generic
 from .forms import (
     TrainingForm,
@@ -8,6 +14,7 @@ from .forms import (
     EventPositionAssignmentForm,
     MinAgeForm,
     GroupMembershipForm,
+    PersonTypeEventForm,
 )
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
@@ -59,6 +66,11 @@ class EventDetailViewMixin(InvariantMixin, generic.DetailView):
         kwargs.setdefault(
             "event_position_assignments",
             EventPositionAssignment.objects.filter(event=self.object).all(),
+        )
+        kwargs.setdefault("available_person_types", Person.Type.choices)
+        kwargs.setdefault(
+            "person_types_required",
+            self.object.allowed_person_types.values_list("person_type", flat=True),
         )
         return super().get_context_data(**kwargs)
 
@@ -248,10 +260,12 @@ class EventPositionAssignmentDeleteView(
         return f"Organizátorská pozice {self.object.position} smazána"
 
 
-class EventRestrictionMixin(MessagesMixin, generic.UpdateView):
+class EventRestrictionMixin(MessagesMixin):
     model = Event
 
     def get_success_url(self):
+        if "event_id" in self.kwargs:
+            self.object = Event.objects.get(pk=self.kwargs["event_id"])
         self.object.set_type()
         viewname = "events:detail_training"
         if self.object.is_one_time_event:
@@ -259,13 +273,51 @@ class EventRestrictionMixin(MessagesMixin, generic.UpdateView):
         return reverse(viewname, args=[self.object.id])
 
 
-class EditMinAgeView(EventRestrictionMixin):
+class EditMinAgeView(EventRestrictionMixin, generic.UpdateView):
     template_name = "events/edit_min_age.html"
     form_class = MinAgeForm
     success_message = "Změna věkového omezení uložena"
 
 
-class EditGroupMembershipView(EventRestrictionMixin):
+class EditGroupMembershipView(EventRestrictionMixin, generic.UpdateView):
     template_name = "common_components/edit_group_membership.html"
     form_class = GroupMembershipForm
     success_message = "Změna vyžadování skupiny uložena"
+
+
+class AddOrRemoveAllowedPersonTypeToEventView(EventRestrictionMixin, generic.FormView):
+    form_class = PersonTypeEventForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event_id"] = self.kwargs["event_id"]
+        return kwargs
+
+    def _change_db(self, position):
+        raise ImproperlyConfigured("This method should never be called")
+
+    def form_valid(self, form):
+        event = form.cleaned_data["event"]
+        person_type = form.cleaned_data["person_type"]
+        self.person_type_obj, _ = PersonType.objects.get_or_create(
+            person_type=person_type, defaults={"person_type": person_type}
+        )
+        self._change_db(event)
+        event.save()
+        return super().form_valid(form)
+
+
+class AddAllowedPersonTypeToEventView(AddOrRemoveAllowedPersonTypeToEventView):
+    def _change_db(self, event):
+        event.allowed_person_types.add(self.person_type_obj)
+
+    def get_success_message(self, cleaned_data):
+        return f"Omezení pro typ členství {self.person_type_obj.get_person_type_display()} přidáno do události {self.object}"
+
+
+class RemoveAllowedPersonTypeFromEventView(AddOrRemoveAllowedPersonTypeToEventView):
+    def _change_db(self, event):
+        event.allowed_person_types.remove(self.person_type_obj)
+
+    def get_success_message(self, cleaned_data):
+        return f"Omezení pro typ členství {self.person_type_obj.get_person_type_display()} smazáno z události {self.object}"
