@@ -4,8 +4,8 @@ from .models import (
     EventParticipation,
     Participation,
     EventPositionAssignment,
-    PersonType,
 )
+from persons.models import Person, PersonType
 from django.views import generic
 from .forms import (
     TrainingForm,
@@ -18,7 +18,6 @@ from .forms import (
 )
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
-from persons.models import Person
 from .mixin_extensions import MessagesMixin, InvariantMixin
 
 

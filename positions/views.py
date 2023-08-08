@@ -5,8 +5,7 @@ from django.shortcuts import reverse
 from django.core.exceptions import ImproperlyConfigured
 from events.models import EventPositionAssignment
 from features.models import Feature
-from persons.models import Person
-from events.models import PersonType
+from persons.models import Person, PersonType
 from .forms import (
     AddFeatureRequirementToPositionForm,
     AgeLimitForm,
