@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from features.models import FeatureTypeTexts
-from groups.models import StaticGroup
+from groups.models import Group
 from .forms import (
     PersonForm,
     AddManagedPersonForm,
@@ -168,9 +168,7 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
         )
 
         user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
-        kwargs.setdefault(
-            "available_groups", StaticGroup.objects.exclude(pk__in=user_groups)
-        )
+        kwargs.setdefault("available_groups", Group.objects.exclude(pk__in=user_groups))
 
         kwargs.setdefault("features_texts", FeatureTypeTexts)
 

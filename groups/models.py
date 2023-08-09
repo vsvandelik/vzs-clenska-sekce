@@ -19,15 +19,8 @@ class Group(models.Model):
     google_as_members_authority = models.BooleanField(
         _("Je Google autorita seznamu členů?")
     )
+    members = models.ManyToManyField(Person, related_name="groups")
 
     def __str__(self):
         email_out = f" <{self.google_email}>" if self.google_email is not None else ""
         return f"{self.name}{email_out}"
-
-
-class StaticGroup(Group):
-    members = models.ManyToManyField(Person, related_name="groups")
-
-
-class DynamicGroup(Group):
-    pass

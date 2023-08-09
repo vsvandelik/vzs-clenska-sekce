@@ -5,7 +5,7 @@
 {% load static %}
 {% load vzs_filters %}
 
-{% block title %}Detail statické skupiny{% endblock %}
+{% block title %}Detail skupiny{% endblock %}
 
 {% block content %}
 
@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'groups:edit-static' object.pk %}" class="btn btn-success">Upravit skupinu</a>
+                <a href="{% url 'groups:edit' object.pk %}" class="btn btn-success">Upravit skupinu</a>
                 {% include "delete_button_text.html" with id="delete-group-modal" additional_text="skupinu" %}
                 {% if object.google_email %}
                     <a href="{% url 'groups:sync-group-members-google' object.pk %}" class="btn btn-info">Synchronizovat s Google</a>
