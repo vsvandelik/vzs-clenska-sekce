@@ -3,12 +3,12 @@ from django.forms import ModelForm, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
 from google_integration import google_directory
-from groups.models import StaticGroup
+from groups.models import Group
 
 
-class StaticGroupForm(ModelForm):
+class GroupForm(ModelForm):
     class Meta:
-        model = StaticGroup
+        model = Group
         exclude = ["members"]
 
     def clean_google_email(self):
@@ -39,14 +39,14 @@ class StaticGroupForm(ModelForm):
             )
 
 
-class AddMembersStaticGroupForm(ModelForm):
+class AddMembersGroupForm(ModelForm):
     class Meta:
-        model = StaticGroup
+        model = Group
         fields = ["members"]
 
 
 class AddRemovePersonToGroupForm(Form):
-    group = forms.ModelChoiceField(queryset=StaticGroup.objects.all())
+    group = forms.ModelChoiceField(queryset=Group.objects.all())
 
     def __init__(self, *args, **kwargs):
         self.person = kwargs.pop("person", None)

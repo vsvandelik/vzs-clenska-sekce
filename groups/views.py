@@ -11,12 +11,12 @@ from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
 from .forms import (
-    StaticGroupForm,
-    AddMembersStaticGroupForm,
+    GroupForm,
+    AddMembersGroupForm,
     AddPersonToGroupForm,
     RemovePersonFromGroupForm,
 )
-from .models import Person, Group, StaticGroup
+from .models import Person, Group
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
@@ -25,34 +25,29 @@ class GroupPermissionMixin(PermissionRequiredMixin):
 
 class GroupIndexView(GroupPermissionMixin, generic.ListView):
     model = Group
+    context_object_name = "groups"
     template_name = "groups/index.html"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("static_groups", StaticGroup.objects.all())
-        kwargs.setdefault("dynamic_groups", [])
-
-        return super().get_context_data(**kwargs)
 
 
 class GroupDeleteView(
     GroupPermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
 ):
-    model = StaticGroup
+    model = Group
     template_name = "groups/delete.html"
     success_url = reverse_lazy("groups:index")
     success_message = "Skupina byla úspěšně smazána."
 
 
-class StaticGroupDetailView(
+class GroupDetailView(
     GroupPermissionMixin,
     SuccessMessageMixin,
     generic.DetailView,
     generic.edit.UpdateView,
 ):
-    model = StaticGroup
-    form_class = AddMembersStaticGroupForm
+    model = Group
+    form_class = AddMembersGroupForm
     success_message = "Osoby byly úspěšně přidány."
-    template_name = "groups/detail_static.html"
+    template_name = "groups/detail.html"
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault(
@@ -90,13 +85,11 @@ class StaticGroupDetailView(
         return super().form_invalid(form)
 
 
-class StaticGroupEditView(
-    GroupPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
-    model = StaticGroup
-    form_class = StaticGroupForm
-    template_name = "groups/edit_static.html"
-    success_message = "Statická skupina byla úspěšně uložena."
+class GroupEditView(GroupPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "groups/edit.html"
+    success_message = "Skupina byla úspěšně uložena."
 
     def get_object(self, queryset=None):
         try:
@@ -112,7 +105,7 @@ class StaticGroupEditView(
         return super().form_invalid(form)
 
 
-class StaticGroupRemoveMemberView(GroupPermissionMixin, generic.View):
+class GroupRemoveMemberView(GroupPermissionMixin, generic.View):
     success_message = "Osoba byla odebrána."
 
     def get_success_url(self):
@@ -121,12 +114,12 @@ class StaticGroupRemoveMemberView(GroupPermissionMixin, generic.View):
     def get(self, request, *args, **kwargs):
         member_to_remove = self.kwargs["person"]
 
-        static_group = get_object_or_404(StaticGroup, id=self.kwargs["group"])
-        static_group.members.remove(member_to_remove)
+        group = get_object_or_404(Group, id=self.kwargs["group"])
+        group.members.remove(member_to_remove)
 
-        if static_group.google_email:
+        if group.google_email:
             google_directory.remove_member_from_group(
-                Person.objects.get(pk=member_to_remove).email, static_group.google_email
+                Person.objects.get(pk=member_to_remove).email, group.google_email
             )
 
         messages.success(self.request, self.success_message)
@@ -138,7 +131,7 @@ class SyncGroupMembersWithGoogleView(GroupPermissionMixin, generic.View):
 
     def get(self, request, group=None):
         if group:
-            group_instance = get_object_or_404(StaticGroup, pk=group)
+            group_instance = get_object_or_404(Group, pk=group)
             if not group_instance.google_email:
                 messages.error(
                     request,
@@ -157,7 +150,7 @@ class SyncGroupMembersWithGoogleView(GroupPermissionMixin, generic.View):
             return redirect(reverse("groups:detail", args=[group_instance.pk]))
 
         else:
-            for group in StaticGroup.objects.filter(google_email__isnull=False):
+            for group in Group.objects.filter(google_email__isnull=False):
                 sync_single_group_with_google(group)
 
             messages.success(

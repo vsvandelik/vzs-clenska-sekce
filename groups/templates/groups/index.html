@@ -4,33 +4,20 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">Statické skupiny</div>
+                    <div class="card-title h5">Skupiny</div>
                 </div>
                 <div class="card-body">
                     <ul>
-                        {% for group in static_groups %}
+                        {% for group in groups %}
                             <li><a href="{% url 'groups:detail' group.id %}">{{ group.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'groups:add-static' %}" class="btn btn-primary">Přidat statickou skupinu</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Dynamické skupiny</div>
-                </div>
-                <div class="card-body">
-                    TODO
-                </div>
-                <div class="card-footer text-center">
-                    <a href="#" class="btn btn-primary">Přidat dynamickou skupinu (TODO)</a>
+                    <a href="{% url 'groups:add' %}" class="btn btn-primary">Přidat skupinu</a>
                 </div>
             </div>
         </div>

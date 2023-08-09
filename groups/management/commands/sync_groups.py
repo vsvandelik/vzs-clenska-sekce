@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from groups.models import StaticGroup
+from groups.models import Group
 from groups.utils import sync_single_group_with_google
 
 
@@ -13,8 +13,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options["group_id"]:
             try:
-                group_instance = StaticGroup.objects.get(pk=options["group_id"])
-            except StaticGroup.DoesNotExist:
+                group_instance = Group.objects.get(pk=options["group_id"])
+            except Group.DoesNotExist:
                 self.stdout.write(
                     self.style.ERROR("Cannot find a group instance to synchronize")
                 )
@@ -35,7 +35,7 @@ class Command(BaseCommand):
             )
 
         else:
-            for group in StaticGroup.objects.filter(google_email__isnull=False):
+            for group in Group.objects.filter(google_email__isnull=False):
                 sync_single_group_with_google(group)
 
             self.stdout.write(self.style.ERROR("Successfully synchronized all groups"))
