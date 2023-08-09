@@ -56,7 +56,7 @@ def generate_basic_event(name, min_time_delta_hours, max_time_delta_hours, optio
     )
 
     min_age = None
-    if not options["disable_min_age_restrictions"]:
+    if not options["disable_age_limit_restrictions"]:
         if options["min_age"] is not None:
             min_age = options["min_age"]
         elif random.randint(0, 1):
