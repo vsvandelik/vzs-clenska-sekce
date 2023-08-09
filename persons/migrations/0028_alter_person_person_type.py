@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("persons", "0026_remove_staticgroup_group_ptr_and_more"),
+        ("persons", "0027_persontype"),
     ]
 
     operations = [
