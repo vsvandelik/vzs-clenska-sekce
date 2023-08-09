@@ -18,7 +18,7 @@ class EventPosition(models.Model):
     )
     group_membership_required = models.BooleanField(default=False)
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
-    allowed_person_types = models.ManyToManyField("positions.PersonType")
+    allowed_person_types = models.ManyToManyField("persons.PersonType")
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
@@ -31,12 +31,3 @@ class EventPosition(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class PersonType(models.Model):
-    person_type = models.CharField(
-        _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.choices
-    )
-
-    def __str__(self):
-        return self.get_person_type_display()

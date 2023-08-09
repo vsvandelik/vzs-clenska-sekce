@@ -112,7 +112,7 @@ class GroupMembershipForm(ModelForm):
         return cleaned_data
 
 
-class PersonTypeForm(Form):
+class PersonTypePositionForm(Form):
     person_type = forms.ChoiceField(choices=Person.Type.choices)
 
     def __init__(self, *args, **kwargs):

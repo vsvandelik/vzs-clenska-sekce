@@ -1,0 +1,41 @@
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Vyžadované kvalifikace</div>
+        </div>
+        <div class="card-body p-0">
+            <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                {% csrf_token %}
+                {% if position.required_qualifications %}
+                    <table id="added-qualifications-table" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Název</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in position.required_qualifications %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'qualifications:detail' q.id %}">{{ q }}</a>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                value="{{ q.id }}">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <a href="#" class="btn-primary btn" onclick="addQualificationClicked()" data-toggle="modal"
+               data-target="#add-features">Přidat</a>
+        </div>
+    </div>
+</div>

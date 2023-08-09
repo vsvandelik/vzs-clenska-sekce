@@ -6,6 +6,26 @@ app_name = "events"
 event_common_urls = [
     path("", views.EventIndexView.as_view(), name="index"),
     path("<int:pk>/smazat/", views.EventDeleteView.as_view(), name="delete"),
+    path(
+        "<int:pk>/upravit/vekove-omezeni/",
+        views.EditMinAgeView.as_view(),
+        name="edit_min_age",
+    ),
+    path(
+        "<int:pk>/upravit/skupinu/",
+        views.EditGroupMembershipView.as_view(),
+        name="edit_group_membership",
+    ),
+    path(
+        "<int:event_id>/pridat/typ-clenstvi/",
+        views.AddAllowedPersonTypeToEventView.as_view(),
+        name="add_person_type",
+    ),
+    path(
+        "<int:event_id>/smazat/typ-clenstvi/",
+        views.RemoveAllowedPersonTypeFromEventView.as_view(),
+        name="remove_person_type",
+    ),
 ]
 
 training_urls = [
@@ -17,16 +37,6 @@ training_urls = [
         "<int:pk>/upravit/trenink/",
         views.TrainingUpdateView.as_view(),
         name="edit_training",
-    ),
-    path(
-        "<int:pk>/trenink/upravit/vekove-omezeni/",
-        views.EditMinAgeView.as_view(),
-        name="edit_min_age_training",
-    ),
-    path(
-        "<int:pk>/trenink/upravit/skupinu/",
-        views.EditGroupMembershipView.as_view(),
-        name="edit_group_membership_training",
     ),
 ]
 
@@ -80,16 +90,6 @@ one_time_event_urls = [
         "<int:event_id>/smazat/pozice/<int:pk>/",
         views.EventPositionAssignmentDeleteView.as_view(),
         name="delete_position_assignment",
-    ),
-    path(
-        "<int:pk>/jednorazova/upravit/vekove-omezeni/",
-        views.EditMinAgeView.as_view(),
-        name="edit_min_age_one_time_event",
-    ),
-    path(
-        "<int:pk>/jednorazova/upravit/skupinu/",
-        views.EditGroupMembershipView.as_view(),
-        name="edit_group_membership_one_time_event",
     ),
 ]
 

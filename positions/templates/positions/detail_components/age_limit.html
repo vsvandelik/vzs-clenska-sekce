@@ -9,8 +9,18 @@
                     <tr>
                         <td class="text-nowrap text-bold">Min</td>
                         <td>
-                            {% if event.min_age_enabled %}
-                                {{ event.min_age }}
+                            {% if position.min_age_enabled %}
+                                {{ position.min_age }}
+                            {% else %}
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Max</td>
+                        <td>
+                            {% if position.max_age_enabled %}
+                                {{ position.max_age }}
                             {% else %}
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             {% endif %}
@@ -20,7 +30,7 @@
             </table>
         </div>
         <div class="card-footer text-center">
-            <a href="{% url 'events:edit_min_age' event.id %}" class="btn-primary btn">Upravit</a>
+            <a href="{% url 'positions:edit_age_limit' position.id %}" class="btn-primary btn">Upravit</a>
         </div>
     </div>
 </div>

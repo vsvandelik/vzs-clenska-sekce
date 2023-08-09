@@ -5,13 +5,12 @@ from django.shortcuts import reverse
 from django.core.exceptions import ImproperlyConfigured
 from events.models import EventPositionAssignment
 from features.models import Feature
-from persons.models import Person
-from .models import PersonType
+from persons.models import Person, PersonType
 from .forms import (
     AddFeatureRequirementToPositionForm,
     AgeLimitForm,
     GroupMembershipForm,
-    PersonTypeForm,
+    PersonTypePositionForm,
 )
 from events.mixin_extensions import MessagesMixin
 
@@ -133,7 +132,7 @@ class EditGroupMembershipView(PositionMixin, MessagesMixin, generic.UpdateView):
 
 
 class AddOrRemoveAllowedPersonTypeToPositionView(MessagesMixin, generic.FormView):
-    form_class = PersonTypeForm
+    form_class = PersonTypePositionForm
 
     def get_success_url(self):
         return reverse("positions:detail", args=[self.kwargs["position_id"]])

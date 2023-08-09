@@ -529,3 +529,22 @@ class GroupMembershipForm(PositionsGroupMembershipForm):
             ),
             "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
         }
+
+
+class PersonTypeEventForm(Form):
+    person_type = forms.ChoiceField(choices=Person.Type.choices)
+
+    def __init__(self, *args, **kwargs):
+        self._event_id = kwargs.pop("event_id")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data["event_id"] = self._event_id
+        eid = cleaned_data["event_id"]
+        try:
+            cleaned_data["event"] = Event.objects.get(pk=eid)
+        except EventPosition.DoesNotExist:
+            self.add_error("event_id", f"Událost s id {eid} neexistuje")
+
+        return cleaned_data

@@ -9,18 +9,18 @@
                     <tr>
                         <td class="text-nowrap text-bold">Vyžadováno</td>
                         <td>
-                            {% if event.group_membership_required %}
+                            {% if position.group_membership_required %}
                                 ✔
                             {% else %}
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             {% endif %}
                         </td>
                     </tr>
-                    {% if event.group_membership_required %}
+                    {% if position.group_membership_required %}
                         <tr>
                             <td class="text-nowrap text-bold">Skupina</td>
                             <td>
-                                <a href="{% url 'groups:detail' event.group.id %}">{{ event.group }}</a>
+                                <a href="{% url 'groups:detail' position.group.id %}">{{ position.group }}</a>
                             </td>
                         </tr>
                     {% endif %}
@@ -28,7 +28,8 @@
             </table>
         </div>
         <div class="card-footer text-center">
-            <a href="{% url 'events:edit_group_membership' event.id %}" class="btn-primary btn">Upravit</a>
+            <a href="{% url 'positions:edit_group_membership' position.id %}"
+               class="btn-primary btn">Upravit</a>
         </div>
     </div>
 </div>
