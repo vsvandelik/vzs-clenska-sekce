@@ -61,6 +61,7 @@ class Person(
         CHILD = "dite", _("dítě")
         EXTERNAL = "externi", _("externí spolupracovník")
         PARENT = "rodic", _("rodič")
+        FORMER = "byvaly", _("bývalý člen")
 
     class HealthInsuranceCompany(models.TextChoices):
         VZP = 111, "111 - Všeobecná zdravotní pojišťovna České republiky"

@@ -79,6 +79,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
                         Person.Type.EXTERNAL,
                         Person.Type.EXPECTANT,
                         Person.Type.HONORARY,
+                        Person.Type.FORMER,
                     ]
                 )
             )
@@ -103,6 +104,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
                     Person.Type.EXPECTANT,
                     Person.Type.HONORARY,
                     Person.Type.PARENT,
+                    Person.Type.FORMER,
                 ]
             )
 
@@ -120,6 +122,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
                     Person.Type.EXTERNAL,
                     Person.Type.EXPECTANT,
                     Person.Type.HONORARY,
+                    Person.Type.FORMER,
                 ]
             )
 
