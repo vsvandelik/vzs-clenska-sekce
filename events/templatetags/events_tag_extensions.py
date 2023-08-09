@@ -3,7 +3,7 @@ from django import template
 from ..utils import day_shortcut_2_weekday as day_shortcut_2_weekday_impl
 from ..utils import weekday_pretty as weekday_pretty_impl
 from ..utils import weekday_2_day_shortcut as weekday_2_day_shortcut_impl
-from ..models import EventParticipation
+from ..models import EventOccurrenceParticipation
 
 numeric_test = re.compile("^\d+$")
 register = template.Library()
@@ -67,4 +67,8 @@ def atoi(value):
 
 @register.filter
 def event_participation(person, event):
-    return EventParticipation.objects.filter(event=event, person=person).all().first()
+    return (
+        EventOccurrenceParticipation.objects.filter(event=event, person=person)
+        .all()
+        .first()
+    )

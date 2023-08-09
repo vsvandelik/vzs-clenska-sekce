@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from .models import (
     Event,
-    EventParticipation,
+    EventOccurrenceParticipation,
     Participation,
     EventPositionAssignment,
 )
@@ -92,17 +92,17 @@ class OneTimeEventDetailView(EventDetailViewMixin):
         kwargs.setdefault("persons", Person.objects.all())
         kwargs.setdefault(
             "event_participation",
-            EventParticipation.objects.filter(event=self.object).all(),
+            EventOccurrenceParticipation.objects.filter(event=self.object).all(),
         )
         kwargs.setdefault(
             "event_participation_approved",
-            EventParticipation.objects.filter(
+            EventOccurrenceParticipation.objects.filter(
                 event=self.object, state=Participation.State.APPROVED
             ),
         )
         kwargs.setdefault(
             "event_participation_substitute",
-            EventParticipation.objects.filter(
+            EventOccurrenceParticipation.objects.filter(
                 event=self.object, state=Participation.State.SUBSTITUTE
             ),
         )
@@ -165,7 +165,7 @@ class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
         raise ImproperlyConfigured("This method should never be called")
 
     def _process_form(self, person, event, state):
-        EventParticipation.objects.update_or_create(
+        EventOccurrenceParticipation.objects.update_or_create(
             person=person,
             event=event,
             defaults={"person": person, "event": event, "state": state},
