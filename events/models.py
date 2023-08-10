@@ -11,8 +11,13 @@ from django.db.models import Q
 class Event(models.Manager):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"))
+    location = models.CharField(_("Místo konání"), max_length=200)
 
-    # conditions for participants
+    enrolled_participants = models.ManyToManyField(
+        "persons.Person", through="events.ParticipantEnrollment"
+    )
+
+    # requirements for participants
     capacity = models.PositiveSmallIntegerField(
         _("Maximální počet účastníků"), null=True
     )
@@ -25,11 +30,14 @@ class Event(models.Manager):
     )
     group_membership_required = models.BooleanField(default=False)
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
-    allowed_person_types = models.ManyToManyField("persons.PersonType")
-    ##############################
 
-    enrolled_participants = models.ManyToManyField(
-        "persons.Person", through="events.ParticipantEnrollment"
+    # if NULL -> no effect (all person types are allowed)
+    allowed_person_types = models.ManyToManyField("persons.PersonType")
+
+    # if NULL -> no effect
+    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected type
+    participants_of_specific_training_requirement = models.CharField(
+        max_length=10, choices=Training.Category.choices
     )
 
 
@@ -37,6 +45,7 @@ class OneTimeEvent(Event):
     class Category(models.TextChoices):
         COMMERCIAL = "komercni", _("komerční")
         COURSE = "kurz", _("kurz")
+        PRESENTATION = "prezentacni", _("prezentační")
 
     default_participant_fee = models.PositiveIntegerField(_("Poplatek za účast"))
     category = models.CharField(
@@ -46,8 +55,9 @@ class OneTimeEvent(Event):
 
 class Training(Event):
     class Category(models.TextChoices):
-        CLIMBING = "lezecký", _("lezecký")
+        CLIMBING = "lezecky", _("lezecký")
         SWIMMING = "plavecky", _("plavecký")
+        MEDICAL = "zdravoveda", _("zdravověda")
 
     date_start = models.DateField(_("Začíná"), null=True)
     date_end = models.DateField(_("Končí"), null=True)
@@ -57,13 +67,23 @@ class Training(Event):
         _("Druh události"), max_length=10, choices=Category.choices
     )
 
-    po = models.BooleanField()
-    ut = models.BooleanField()
-    st = models.BooleanField()
-    ct = models.BooleanField()
-    pa = models.BooleanField()
-    so = models.BooleanField()
-    ne = models.BooleanField()
+    po_start = models.TimeField()
+    po_end = models.TimeField()
+
+    ut_start = models.TimeField()
+    st_end = models.TimeField()
+
+    ct_start = models.TimeField()
+    ct_end = models.TimeField()
+
+    pa_start = models.TimeField()
+    pa_end = models.TimeField()
+
+    so_start = models.TimeField()
+    so_end = models.TimeField()
+
+    ne_start = models.TimeField()
+    ne_end = models.TimeField()
 
     def can_be_replace_by(self, training):
         pass  # TODO
@@ -95,18 +115,13 @@ class EventOccurrence(models.Manager):
     positions = models.ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
-    attending_organizers = models.ManyToManyField("persons.Person")
+    missing_organizers = models.ManyToManyField("persons.Person")
 
-    attending_participants = models.ManyToManyField(
-        "persons.Person", through="events.EventOccurrenceParticipation"
-    )
+    missing_participants = models.ManyToManyField("persons.Person")
 
     datetime_start = models.DateTimeField(_("Začíná"), null=True)
     datetime_end = models.DateTimeField(_("Končí"), null=True)
     state = models.CharField(max_length=10, choices=State.choices)
-
-    def missing_participants(self):
-        pass  # TODO:
 
     def enrolled_organizers(self):
         pass  # TODO:
@@ -137,6 +152,10 @@ class ParticipantEnrollment(Enrollment):
     state = models.CharField(max_length=10, choices=State.choices)
 
 
+class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
+    agreed_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
+
+
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
@@ -150,36 +169,36 @@ class EventPositionAssignment(models.Model):
         unique_together = ["event", "position"]
 
 
-class Participation(models.Model):
-    class Meta:
-        abstract = True
-
-    class State(models.TextChoices):
-        PRESENT = "pritomen", _("přítomen")
-        MISSING = "nepritomen", _("nepřítomen")
-
-    state = models.CharField(max_length=10, choices=State.choices)
-
-
-class EventOccurrenceParticipation(Participation):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    event_occurrence = models.ForeignKey(
-        "events.EventOccurrence", on_delete=models.CASCADE
-    )
-    actual_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
-
-    class Meta(Participation.Meta):
-        unique_together = ["person", "event"]
-
-
-class EventOrganization(Participation):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    event_position = models.ForeignKey(
-        "events.EventPositionAssignment", on_delete=models.CASCADE
-    )
-
-    class Meta(Participation.Meta):
-        unique_together = ["person", "event_position"]
+# class Participation(models.Model):
+#     class Meta:
+#         abstract = True
+#
+#     class State(models.TextChoices):
+#         PRESENT = "pritomen", _("přítomen")
+#         MISSING = "nepritomen", _("nepřítomen")
+#
+#     state = models.CharField(max_length=10, choices=State.choices)
+#
+#
+# class EventOccurrenceParticipation(Participation):
+#     person = models.ForeignKey(Person, on_delete=models.CASCADE)
+#     event_occurrence = models.ForeignKey(
+#         "events.EventOccurrence", on_delete=models.CASCADE
+#     )
+#     actual_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
+#
+#     class Meta(Participation.Meta):
+#         unique_together = ["person", "event"]
+#
+#
+# class EventOrganization(Participation):
+#     person = models.ForeignKey(Person, on_delete=models.CASCADE)
+#     event_position = models.ForeignKey(
+#         "events.EventPositionAssignment", on_delete=models.CASCADE
+#     )
+#
+#     class Meta(Participation.Meta):
+#         unique_together = ["person", "event_position"]
 
 
 #
