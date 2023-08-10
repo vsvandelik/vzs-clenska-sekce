@@ -13,10 +13,6 @@ class Event(models.Manager):
     description = models.TextField(_("Popis"))
     location = models.CharField(_("Místo konání"), max_length=200)
 
-    enrolled_participants = models.ManyToManyField(
-        "persons.Person", through="events.ParticipantEnrollment"
-    )
-
     # requirements for participants
     capacity = models.PositiveSmallIntegerField(
         _("Maximální počet účastníků"), null=True
@@ -47,6 +43,9 @@ class OneTimeEvent(Event):
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
 
+    enrolled_participants = models.ManyToManyField(
+        "persons.Person", through="events.OneTimeEventParticipantEnrollment"
+    )
     default_participant_fee = models.PositiveIntegerField(_("Poplatek za účast"))
     category = models.CharField(
         _("Druh události"), max_length=10, choices=Category.choices
@@ -61,6 +60,10 @@ class Training(Event):
 
     date_start = models.DateField(_("Začíná"), null=True)
     date_end = models.DateField(_("Končí"), null=True)
+
+    enrolled_participants = models.ManyToManyField(
+        "persons.Person", through="events.ParticipantEnrollment"
+    )
 
     main_coach = models.ForeignKey("persons.Person", on_delete=models.SET_NULL)
     category = models.CharField(
