@@ -41,6 +41,18 @@ class PersonForm(ModelForm):
 
         return date_of_birth
 
+    def clean_birth_number(self):
+        birth_number = self.cleaned_data["birth_number"]
+
+        if birth_number and Person.objects.filter(birth_number=birth_number).count():
+            raise ValidationError(
+                _(
+                    "Rodné číslo je již použito. Zkontrolujte prosím, jestli daná osoba již neexistuje."
+                )
+            )
+
+        return birth_number
+
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
         if not phone:
@@ -67,6 +79,40 @@ class PersonForm(ModelForm):
             raise ValidationError(_("PSČ nemá platný formát."))
 
         return postcode
+
+    def clean(self):
+        cleaned_data = super().clean()
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        phone = cleaned_data.get("phone")
+        date_of_birth = cleaned_data.get("date_of_birth")
+
+        if (
+            first_name
+            and last_name
+            and phone
+            and Person.objects.filter(
+                first_name=first_name, last_name=last_name, phone=phone
+            ).count()
+        ):
+            raise ValidationError(
+                _(
+                    "Osoba s danými údaji již existuje (dle kontroly jména a telefonního čísla)."
+                )
+            )
+        elif (
+            first_name
+            and last_name
+            and date_of_birth
+            and Person.objects.filter(
+                first_name=first_name, last_name=last_name, date_of_birth=date_of_birth
+            ).count()
+        ):
+            raise ValidationError(
+                _(
+                    "Osoba s danými údaji již existuje (dle kontroly jména a data narození)."
+                )
+            )
 
 
 class MyProfileUpdateForm(PersonForm):
