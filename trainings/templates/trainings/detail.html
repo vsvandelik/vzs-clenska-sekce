@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block scripts %}
-    <script src="{% static 'training_detail.js' %}"></script>
+    <script src="{% static '../../static/training_detail.js' %}"></script>
 {% endblock %}
 {% block title %}
     Detail tréninku
@@ -22,12 +22,12 @@
         </div>
     </div>
     <div class="row">
-        {% include 'events/detail_components/training_overview.html' %}
-        {% include 'events/detail_components/training_summary.html' %}
+        {% include 'events/detail_components/detail_components/training_overview.html' %}
+        {% include 'events/detail_components/detail_components/training_summary.html' %}
         {% include 'events/detail_components/min_age.html' %}
         {% include 'events/detail_components/group_membership.html' %}
         {% include 'events/detail_components/person_type.html' %}
-        {% include 'events/detail_components/training_schedule.html' %}
+        {% include 'events/detail_components/detail_components/training_schedule.html' %}
     </div>
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}

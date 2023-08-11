@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from persons.models import Person
 from features.models import Feature
 from django.core.validators import MinValueValidator, MaxValueValidator
+from polymorphic.models import PolymorphicModel
 
 
 class TrainingCategory(models.TextChoices):
@@ -11,10 +12,10 @@ class TrainingCategory(models.TextChoices):
     MEDICAL = "zdravoveda", _("zdravověda")
 
 
-class Event(models.Manager):
+class Event(PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"))
-    location = models.CharField(_("Místo konání"), max_length=200)
+    location = models.CharField(_("Místo konání"), null=True, max_length=200)
 
     positions = models.ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
@@ -46,14 +47,19 @@ class Event(models.Manager):
     # if NULL -> no effect
     # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected type
     participants_of_specific_training_requirement = models.CharField(
-        max_length=10, choices=TrainingCategory.choices
+        null=True, max_length=10, choices=TrainingCategory.choices
     )
 
-    class Meta:
-        abstract = True
+    def is_one_time_event(self):
+        a = 4
+        return True
+
+    def is_training(self):
+        a = 4
+        return True
 
 
-class EventOccurrence(models.Manager):
+class EventOccurrence(PolymorphicModel):
     class State(models.TextChoices):
         FUTURE = "neuzavrena", _("neuzavřena")
         FINISHED = "uzavrena", _("uzavřena")
@@ -61,12 +67,16 @@ class EventOccurrence(models.Manager):
 
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
 
-    missing_organizers = models.ManyToManyField("persons.Person")
+    missing_organizers = models.ManyToManyField(
+        "persons.Person", related_name="missing_organizers_set"
+    )
 
-    missing_participants = models.ManyToManyField("persons.Person")
+    missing_participants = models.ManyToManyField(
+        "persons.Person", related_name="missing_participants_set"
+    )
 
-    organizers = models.ManyToManyField(
-        "persons.Person", through="events.EventOccurrenceOrganizerPositionAssignment"
+    organizers_assignment = models.ManyToManyField(
+        "events.EventOccurrenceOrganizerPositionAssignment"
     )
 
     state = models.CharField(max_length=10, choices=State.choices)
@@ -75,7 +85,7 @@ class EventOccurrence(models.Manager):
         pass  # TODO:
 
 
-class Enrollment(models.Manager):
+class Enrollment(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     datetime = models.DateTimeField()
 

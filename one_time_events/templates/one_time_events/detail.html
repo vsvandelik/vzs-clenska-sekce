@@ -24,10 +24,10 @@
         </div>
     </div>
     <div class="row">
-        {% include 'events/detail_components/one_time_event_overview.html' %}
-        {% include 'events/detail_components/one_time_event_organizers.html' %}
-        {% include 'events/detail_components/one_time_event_signed_participants.html' %}
-        {% include 'events/detail_components/one_time_event_substitutes.html' %}
+        {% include 'events/detail_components/detail_components/one_time_event_overview.html' %}
+        {% include 'events/detail_components/detail_components/one_time_event_organizers.html' %}
+        {% include 'events/detail_components/detail_components/one_time_event_signed_participants.html' %}
+        {% include 'events/detail_components/detail_components/one_time_event_substitutes.html' %}
         {% include 'events/detail_components/min_age.html' %}
         {% include 'events/detail_components/group_membership.html' %}
         {% include 'events/detail_components/person_type.html' %}
@@ -40,7 +40,7 @@
 
 {% block scripts %}
     <script src="{% static 'get_django_url.js' %}"></script>
-    <script src="{% static 'one_time_event_detail.js' %}"></script>
+    <script src="{% static '../../static/one_time_event_detail.js' %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-position-assignment-modal")</script>
 {% endblock %}
