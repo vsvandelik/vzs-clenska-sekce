@@ -56,11 +56,13 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
     "events.apps.EventsConfig",
+    "one_time_events.apps.OneTimeEventsConfig",
+    "trainings.apps.TrainingsConfig",
     "positions.apps.PositionsConfig",
     "pages.apps.PagesConfig",
     "transactions.apps.TransactionsConfig",
     "features.apps.FeaturesConfig",
-    "groups.apps.GroupsConfig"
+    "groups.apps.GroupsConfig",
     # Template tags
     "vzs",
 ]

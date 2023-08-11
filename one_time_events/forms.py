@@ -22,6 +22,7 @@ class OneTimeEventForm(ModelForm):
             "category",
             "default_participation_fee",
         ]
+        widgets = {"category": Select2Widget()}
         # widgets = {
         #     "time_start": DateTimePickerWithIcon(
         #         attrs={"onchange": "dateChanged()"},

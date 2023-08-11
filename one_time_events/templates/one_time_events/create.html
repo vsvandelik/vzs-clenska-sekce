@@ -1,5 +1,5 @@
-{% extends 'one_time_events/create_edit_one_time_event.html' %}
+{% extends 'one_time_events/create_edit.html' %}
 {% block title %}Nová jednorázová{% endblock %}
-{% block form_action %}{% url 'events:add_one_time_event' %}{% endblock %}
+{% block form_action %}{% url 'one_time_events:add' %}{% endblock %}
 {% block card_title %}Přidání{% endblock %}
 {% block savebtn_value %}Vytvořit{% endblock %}

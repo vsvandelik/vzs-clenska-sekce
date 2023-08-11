@@ -17,7 +17,7 @@ from django.views import generic
 # )
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
-from .mixin_extensions import MessagesMixin, InvariantMixin
+from .mixin_extensions import MessagesMixin
 
 
 class EventCreateMixin(MessagesMixin, generic.FormView):
@@ -25,11 +25,10 @@ class EventCreateMixin(MessagesMixin, generic.FormView):
     success_url = reverse_lazy("events:index")
 
 
-class EventUpdateMixin(MessagesMixin, InvariantMixin, generic.FormView):
+class EventUpdateMixin(MessagesMixin, generic.FormView):
     context_object_name = "event"
     model = Event
     success_message = "Událost %(name)s úspěšně upravena."
-    invariant_failed_redirect_url = reverse_lazy("events:index")
     success_url = reverse_lazy("events:index")
 
 
@@ -49,9 +48,8 @@ class EventDeleteView(MessagesMixin, generic.DeleteView):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-class EventDetailViewMixin(InvariantMixin, generic.DetailView):
+class EventDetailViewMixin(generic.DetailView):
     model = Event
-    invariant_failed_redirect_url = reverse_lazy("events:index")
     context_object_name = "event"
 
     def get_context_data(self, **kwargs):

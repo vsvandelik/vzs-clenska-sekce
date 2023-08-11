@@ -22,12 +22,3 @@ class FailureMessageMixin:
 
 class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
     pass
-
-
-class InvariantMixin:
-    def get(self, request, *args, **kwargs):
-        event = get_object_or_404(Event, pk=kwargs["pk"])
-        event.set_type()
-        if not self.invariant(event):
-            return redirect(self.invariant_failed_redirect_url)
-        return super().get(request, *args, **kwargs)

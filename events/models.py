@@ -14,8 +14,10 @@ class TrainingCategory(models.TextChoices):
 
 class Event(PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
-    description = models.TextField(_("Popis"))
-    location = models.CharField(_("Místo konání"), null=True, max_length=200)
+    description = models.TextField(_("Popis"), null=True, blank=True)
+    location = models.CharField(
+        _("Místo konání"), null=True, blank=True, max_length=200
+    )
 
     positions = models.ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
@@ -23,7 +25,7 @@ class Event(PolymorphicModel):
 
     # requirements for participants
     capacity = models.PositiveSmallIntegerField(
-        _("Maximální počet účastníků"), null=True
+        _("Maximální počet účastníků"), null=True, blank=True
     )
     min_age = models.PositiveSmallIntegerField(
         _("Minimální věk účastníků"),
@@ -51,12 +53,14 @@ class Event(PolymorphicModel):
     )
 
     def is_one_time_event(self):
-        a = 4
-        return True
+        from one_time_events.models import OneTimeEvent
+
+        return isinstance(self, OneTimeEvent)
 
     def is_training(self):
-        a = 4
-        return True
+        from trainings.models import Training
+
+        return isinstance(self, Training)
 
 
 class EventOccurrence(PolymorphicModel):
@@ -96,7 +100,7 @@ class ParticipantEnrollment(Enrollment):
         APPROVED = "schvalen", _("schválen")
         SUBSTITUTE = "nahradnik", _("nahradník")
 
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     state = models.CharField(max_length=10, choices=State.choices)
 
 

@@ -1,5 +1,10 @@
 from django.db import models
-from events.models import Event, EventOccurrence, TrainingCategory
+from events.models import (
+    Event,
+    EventOccurrence,
+    TrainingCategory,
+    ParticipantEnrollment,
+)
 from django.utils.translation import gettext_lazy as _
 
 
@@ -8,10 +13,14 @@ class Training(Event):
     date_end = models.DateField(_("Končí"), null=True)
 
     enrolled_participants = models.ManyToManyField(
-        "persons.Person", through="events.ParticipantEnrollment"
+        "persons.Person",
+        through="trainings.TrainingParticipantEnrollment",
+        related_name="enrolled_participants_set",
     )
 
-    main_coach = models.ForeignKey("persons.Person", on_delete=models.SET_NULL)
+    main_coach = models.ForeignKey(
+        "persons.Person", null=True, on_delete=models.SET_NULL
+    )
     category = models.CharField(
         _("Druh události"), max_length=10, choices=TrainingCategory.choices
     )
@@ -56,3 +65,7 @@ class TrainingReplaceability(models.Manager):
 class TrainingOccurrence(EventOccurrence):
     datetime_start = models.DateTimeField(_("Začíná"), null=True)
     datetime_end = models.DateTimeField(_("Končí"), null=True)
+
+
+class TrainingParticipantEnrollment(ParticipantEnrollment):
+    training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)

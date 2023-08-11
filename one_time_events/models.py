@@ -11,11 +11,13 @@ class OneTimeEvent(Event):
         PRESENTATION = "prezentacni", _("prezentační")
 
     enrolled_participants = models.ManyToManyField(
-        "persons.Person", through="events.OneTimeEventParticipantEnrollment"
+        "persons.Person", through="one_time_events.OneTimeEventParticipantEnrollment"
     )
-    default_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
+    default_participation_fee = models.PositiveIntegerField(
+        _("Poplatek za účast"), null=True, blank=True
+    )
     category = models.CharField(
-        _("Druh události"), max_length=10, choices=Category.choices
+        _("Druh události"), max_length=11, choices=Category.choices
     )
 
 
@@ -27,4 +29,7 @@ class OneTimeEventOccurrence(EventOccurrence):
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
+    one_time_event = models.ForeignKey(
+        "one_time_events.OneTimeEvent", on_delete=models.CASCADE
+    )
     agreed_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))

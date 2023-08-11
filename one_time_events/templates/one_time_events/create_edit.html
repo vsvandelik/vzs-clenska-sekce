@@ -5,7 +5,7 @@
     <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'events_common.js' %}"></script>
     <script src="{% static 'set_report_validity.js' %}"></script>
-    <script src="{% static 'create_edit_one_time_event.js' %}"></script>
+    <script src="{% static 'create_edit.js' %}"></script>
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -20,6 +20,7 @@
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
+                        {{ form.default_participation_fee|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
