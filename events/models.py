@@ -19,6 +19,9 @@ class Event(PolymorphicModel):
         _("Místo konání"), null=True, blank=True, max_length=200
     )
 
+    date_start = models.DateField(_("Začíná"))
+    date_end = models.DateField(_("Končí"))
+
     positions = models.ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
@@ -61,6 +64,9 @@ class Event(PolymorphicModel):
         from trainings.models import Training
 
         return isinstance(self, Training)
+
+    def occurrences_list(self):
+        return EventOccurrence.objects.filter(event=self)
 
 
 class EventOccurrence(PolymorphicModel):

@@ -9,9 +9,6 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Training(Event):
-    date_start = models.DateField(_("Začíná"), null=True)
-    date_end = models.DateField(_("Končí"), null=True)
-
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantEnrollment",
@@ -25,25 +22,28 @@ class Training(Event):
         _("Druh události"), max_length=10, choices=TrainingCategory.choices
     )
 
-    po_start = models.TimeField()
-    po_end = models.TimeField()
+    po_from = models.TimeField(_("Od"), null=True, blank=True)
+    po_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    ut_start = models.TimeField()
-    st_end = models.TimeField()
+    ut_from = models.TimeField(_("Od"), null=True, blank=True)
+    ut_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    ct_start = models.TimeField()
-    ct_end = models.TimeField()
+    st_from = models.TimeField(_("Od"), null=True, blank=True)
+    st_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    pa_start = models.TimeField()
-    pa_end = models.TimeField()
+    ct_from = models.TimeField(_("Od"), null=True, blank=True)
+    ct_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    so_start = models.TimeField()
-    so_end = models.TimeField()
+    pa_from = models.TimeField(_("Od"), null=True, blank=True)
+    pa_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    ne_start = models.TimeField()
-    ne_end = models.TimeField()
+    so_from = models.TimeField(_("Od"), null=True, blank=True)
+    so_to = models.TimeField(_("Do"), null=True, blank=True)
 
-    def can_be_replace_by(self, training):
+    ne_from = models.TimeField(_("Od"), null=True, blank=True)
+    ne_to = models.TimeField(_("Do"), null=True, blank=True)
+
+    def can_be_replaced_by(self, training):
         pass  # TODO
 
     def replaces_training_list(self):
@@ -63,8 +63,8 @@ class TrainingReplaceability(models.Manager):
 
 
 class TrainingOccurrence(EventOccurrence):
-    datetime_start = models.DateTimeField(_("Začíná"), null=True)
-    datetime_end = models.DateTimeField(_("Končí"), null=True)
+    datetime_start = models.DateTimeField(_("Začíná"))
+    datetime_end = models.DateTimeField(_("Končí"))
 
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):

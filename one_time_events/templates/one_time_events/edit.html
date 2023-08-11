@@ -1,5 +1,5 @@
-{% extends 'events/create_edit_one_time_event.html' %}
+{% extends 'one_time_events/create_edit.html' %}
 {% block title %}Úprava jednorázové{% endblock %}
-{% block form_action %}{% url 'events:edit_one_time_event' event.id %}{% endblock %}
+{% block form_action %}{% url 'one_time_events:edit' event.id %}{% endblock %}
 {% block card_title %}Úprava{% endblock %}
 {% block savebtn_value %}Uložit{% endblock %}

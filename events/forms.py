@@ -11,13 +11,6 @@ from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWi
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
 from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
-from .utils import (
-    weekday_2_day_shortcut,
-    parse_czech_date,
-    days_shortcut_list,
-    day_shortcut_2_weekday,
-)
-
 
 #
 #

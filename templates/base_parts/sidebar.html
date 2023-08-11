@@ -81,47 +81,47 @@
                         </li>
                     </ul>
                 </li>
-{#                <li class="nav-item {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add" "menu-open" strict=False %}">#}
-{#                    <a href="#" class="nav-link {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add" %}">#}
-{#                        <i class="nav-icon fas fa-calendar"></i>#}
-{#                        <p>#}
-{#                            Události#}
-{#                            <i class="right fas fa-angle-left"></i>#}
-{#                        </p>#}
-{#                    </a>#}
-{#                    <ul class="nav nav-treeview">#}
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url "events:index" %}" class="nav-link {% active_link "events:index" %}">#}
-{#                                <i class="far fa-circle nav-icon"></i>#}
-{#                                <p>Seznam událostí</p>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url "events:add_one_time_event" %}" class="nav-link {% active_link "events:add_one_time_event" %}">#}
-{#                                <i class="far fa-circle nav-icon"></i>#}
-{#                                <p>Přidat jednorázovou</p>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url "events:add_training" %}" class="nav-link {% active_link "events:add_training" %}">#}
-{#                                <i class="far fa-circle nav-icon"></i>#}
-{#                                <p>Přidat trénink</p>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url "positions:index" %}" class="nav-link {% active_link "positions:index" %}">#}
-{#                                <i class="far fa-circle nav-icon"></i>#}
-{#                                <p>Seznam pozic</p>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="nav-item">#}
-{#                            <a href="{% url "positions:add" %}" class="nav-link {% active_link "positions:add" %}">#}
-{#                                <i class="far fa-circle nav-icon"></i>#}
-{#                                <p>Přidat pozici</p>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                    </ul>#}
-{#                </li>#}
+                <li class="nav-item {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" "menu-open" strict=False %}">
+                    <a href="#" class="nav-link {% active_link "events:index || events:add_training || events:add_one_time_event || positions:index || positions:add" %}">
+                        <i class="nav-icon fas fa-calendar"></i>
+                        <p>
+                            Události
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{% url "events:index" %}" class="nav-link {% active_link "events:index" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Seznam událostí</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "one_time_events:add" %}" class="nav-link {% active_link "one_time_events:add" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Přidat jednorázovou</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "trainings:add" %}" class="nav-link {% active_link "trainings:add" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Přidat trénink</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "positions:index" %}" class="nav-link {% active_link "positions:index" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Seznam pozic</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "positions:add" %}" class="nav-link {% active_link "positions:add" %}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Přidat pozici</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

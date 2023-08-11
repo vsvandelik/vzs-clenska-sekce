@@ -29,30 +29,48 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
 class TrainingForm(ModelForm):
     class Meta:
         model = Training
-        fields = ["name", "description", "capacity"]
+        fields = [
+            "name",
+            "description",
+            "location",
+            "capacity",
+            "date_start",
+            "date_end",
+            "category",
+            "po_from",
+            "po_to",
+            "ut_from",
+            "ut_to",
+            "st_from",
+            "st_to",
+            "ct_from",
+            "ct_to",
+            "pa_from",
+            "pa_to",
+            "so_from",
+            "so_to",
+            "ne_from",
+            "ne_to",
+        ]
+        widgets = {
+            "category": Select2Widget(),
+            "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+        }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         event = kwargs["instance"]
         if event is not None:
-            self.initial["starts_date"] = timezone.localtime(event.time_start).date()
-            self.initial["ends_date"] = timezone.localtime(event.time_end).date()
-            event.extend_2_top_training()
+            self.initial["date_start"] = timezone.localtime(event.time_start).date()
+            self.initial["date_end"] = timezone.localtime(event.time_end).date()
             for weekday in event.weekdays:
                 day_shortcut = weekday_2_day_shortcut(weekday)
                 self.initial[day_shortcut] = True
             for attr, value in event.__dict__.items():
-                if attr[:5] == "from_" or attr[:3] == "to_":
+                if attr[3:] == "from" or attr[3:] == "to":
                     self.initial[attr] = value.time()
 
-    starts_date = forms.DateField(
-        label="Začíná",
-        widget=DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-    )
-    ends_date = forms.DateField(
-        label="Končí",
-        widget=DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-    )
     po = forms.BooleanField(
         label="Po",
         required=False,
@@ -89,97 +107,20 @@ class TrainingForm(ModelForm):
         widget=forms.CheckboxInput(attrs={"onchange": "dayToggled(this)"}),
     )
 
-    from_po = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_po = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_ut = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_ut = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_st = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_st = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_ct = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_ct = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_pa = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_pa = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_so = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_so = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
-    from_ne = forms.TimeField(
-        label="Od",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-    to_ne = forms.TimeField(
-        label="Do",
-        required=False,
-        widget=TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-    )
-
     day = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
 
     def _check_date_constraints(self):
         if (
-            self.cleaned_data["starts_date"] + timedelta(days=14)
-            > self.cleaned_data["ends_date"]
+            self.cleaned_data["date_start"] + timedelta(days=14)
+            > self.cleaned_data["date_end"]
         ):
             self.add_error(
-                "ends_date", "Pravidelná událost se musí konat alespoň 2 týdny"
+                "date_end", "Pravidelná událost se musí konat alespoň 2 týdny"
             )
 
     def _check_training_time_of_chosen_day(self, day):
-        from_time_field_name = f"from_{day}"
-        to_time_field_name = f"to_{day}"
+        from_time_field_name = f"{day}_from"
+        to_time_field_name = f"{day}_to"
         from_time = self.cleaned_data[from_time_field_name]
         to_time = self.cleaned_data[to_time_field_name]
         if not (
@@ -191,8 +132,7 @@ class TrainingForm(ModelForm):
             )
 
     def _check_days_chosen_constraints(self):
-        days = ["po", "ut", "st", "ct", "pa", "so", "ne"]
-        days = {d for d in days if self.cleaned_data[d]}
+        days = {d for d in days_shortcut_list() if self.cleaned_data[d]}
         number_of_chosen_days = len(days)
         if number_of_chosen_days in [1, 2, 3]:
             training_dates = [
@@ -231,19 +171,29 @@ class TrainingForm(ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        cleaned_data = self.cleaned_data
         instance = super().save(False)
-        instance.name = self.cleaned_data["name"]
-        instance.description = self.cleaned_data["description"]
-        instance.capacity = self.cleaned_data["capacity"]
-        instance.time_start = self.cleaned_data["starts_date"]
-        instance.time_end = self.cleaned_data["ends_date"]
+
+        attrs_name = [
+            "name",
+            "description",
+            "location",
+            "capacity",
+            "date_start",
+            "date_end",
+            "category",
+        ]
+        for name in attrs_name:
+            setattr(instance, name, cleaned_data[name])
+
         if commit:
             instance.save()
+
         children = instance.get_children_trainings_sorted()
-        new_dates = []
+        new_datetimes = []
         for date_raw in self.cleaned_data["day"]:
-            date_start, date_end = self._create_training_date(date_raw)
-            new_dates.append((date_start, date_end))
+            datetime_start, datetime_end = self._create_training_datetime(date_raw)
+            new_datetimes.append((datetime_start, datetime_end))
 
         for child in children:
             times = (
@@ -269,12 +219,12 @@ class TrainingForm(ModelForm):
             if commit:
                 instance.save()
 
-    def _create_training_date(self, date_raw):
+    def _create_training_datetime(self, date_raw):
         date = parse_czech_date(date_raw)
         day_short = weekday_2_day_shortcut(date.weekday())
-        time_from = self.cleaned_data[f"from_{day_short}"]
-        time_to = self.cleaned_data[f"to_{day_short}"]
-        date_start = datetime(
+        time_from = self.cleaned_data[f"{day_short}_from"]
+        time_to = self.cleaned_data[f"{day_short}_to"]
+        datetime_start = datetime(
             year=date.year,
             month=date.month,
             day=date.day,
@@ -282,7 +232,7 @@ class TrainingForm(ModelForm):
             minute=time_from.minute,
             tzinfo=timezone.get_default_timezone(),
         )
-        date_end = datetime(
+        datetime_end = datetime(
             year=date.year,
             month=date.month,
             day=date.day,
@@ -290,7 +240,7 @@ class TrainingForm(ModelForm):
             minute=time_to.minute,
             tzinfo=timezone.get_default_timezone(),
         )
-        return date_start, date_end
+        return datetime_start, datetime_end
 
     def generate_dates(self):
         dates_all = {}

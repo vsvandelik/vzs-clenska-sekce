@@ -1,6 +1,23 @@
 {% load crispy_forms_tags %}
-{{ form.name|as_crispy_field }}
-{{ form.category|as_crispy_field }}
-{{ form.description|as_crispy_field }}
-{{ form.capacity|as_crispy_field }}
-{{ form.location|as_crispy_field }}
+
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Základní údaje o události</div>
+    </div>
+    <div class="card-body">
+        {{ form.name|as_crispy_field }}
+        {{ form.category|as_crispy_field }}
+        {{ form.description|as_crispy_field }}
+        {{ form.capacity|as_crispy_field }}
+        {{ form.location|as_crispy_field }}
+    </div>
+</div>
+<div class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Trvání události</div>
+    </div>
+    <div class="card-body">
+        {{ form.date_start|as_crispy_field }}
+        {{ form.date_end|as_crispy_field }}
+    </div>
+</div>

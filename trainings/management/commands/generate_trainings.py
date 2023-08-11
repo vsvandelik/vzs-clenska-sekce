@@ -2,7 +2,10 @@ import random
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from .generate_one_time_events import add_common_args, generate_basic_event
+from one_time_events.management.commands.generate_one_time_events import (
+    add_common_args,
+    generate_basic_event,
+)
 from events.models import Event
 from datetime import timedelta, datetime
 

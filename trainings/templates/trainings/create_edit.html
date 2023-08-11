@@ -7,7 +7,7 @@
     <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'events_common.js' %}"></script>
     <script src="{% static 'set_report_validity.js' %}"></script>
-    <script src="{% static 'create_edit_training.js' %}"></script>
+    <script src="{% static 'create_edit.js' %}"></script>
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -22,15 +22,6 @@
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
-                        <div class="card">
-                            <div class="card-header border-0">
-                                <div class="card-title h5">Datum</div>
-                            </div>
-                            <div class="card-body">
-                                {{ form.starts_date|as_crispy_field }}
-                                {{ form.ends_date|as_crispy_field }}
-                            </div>
-                        </div>
                         <div class="col-12 p-0">
                             <div class="card">
                                 <div class="card-header border-0">
@@ -47,7 +38,7 @@
                                                                 <div class="card-title h5 text-bold">{{ form|index:day_shortcut|as_crispy_field }}</div>
                                                             </div>
                                                             <div class="card-body p-0">
-                                                                {% with from_var_name='from_'|addstr:day_shortcut to_var_name='to_'|addstr:day_shortcut %}
+                                                                {% with from_var_name=day_shortcut|addstr:'_from' to_var_name=day_shortcut|addstr:'_to' %}
                                                                     <div class="row">
                                                                         <div class="col-12 px-4">
                                                                             {{ form|index:from_var_name|as_crispy_field }}
