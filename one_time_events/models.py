@@ -13,7 +13,7 @@ class OneTimeEvent(Event):
     enrolled_participants = models.ManyToManyField(
         "persons.Person", through="events.OneTimeEventParticipantEnrollment"
     )
-    default_participant_fee = models.PositiveIntegerField(_("Poplatek za účast"))
+    default_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
     category = models.CharField(
         _("Druh události"), max_length=10, choices=Category.choices
     )

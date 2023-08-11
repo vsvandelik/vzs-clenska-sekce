@@ -5,7 +5,7 @@
     <script src="{% static 'get_django_url.js' %}"></script>
     <script src="{% static 'events_common.js' %}"></script>
     <script src="{% static 'set_report_validity.js' %}"></script>
-    <script src="{% static '../../../one_time_events/static/create_edit_one_time_event.js' %}"></script>
+    <script src="{% static 'create_edit_one_time_event.js' %}"></script>
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -20,16 +20,6 @@
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
-                        <div class="card">
-                            <div class="card-header border-0">
-                                <div class="card-title h5">Datum</div>
-                            </div>
-                            <div class="card-body">
-                                {{ form.time_start|as_crispy_field }}
-                                {{ form.time_end|as_crispy_field }}
-                            </div>
-                        </div>
-
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
