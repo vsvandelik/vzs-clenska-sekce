@@ -39,10 +39,3 @@ class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
 class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
     template_name = "one_time_events/edit.html"
     form_class = OneTimeEventForm
-
-    def get(self, request, *args, **kwargs):
-        event = get_object_or_404(OneTimeEvent, pk=kwargs["pk"])
-        event.set_type()
-        if not event.is_one_time_event:
-            return redirect(self.success_url)
-        return super().get(request, *args, **kwargs)

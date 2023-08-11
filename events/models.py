@@ -6,6 +6,17 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from polymorphic.models import PolymorphicModel
 
 
+class EventOrOccurrenceState(models.TextChoices):
+    # attendance not filled
+    OPEN = "neuzavrena", _("neuzavřena")
+
+    # attendance filled
+    CLOSED = "uzavrena", _("uzavřena")
+
+    # transaction issued
+    COMPLETED = "zpracovana", _("zpracována")
+
+
 class TrainingCategory(models.TextChoices):
     CLIMBING = "lezecky", _("lezecký")
     SWIMMING = "plavecky", _("plavecký")
@@ -65,16 +76,8 @@ class Event(PolymorphicModel):
 
         return isinstance(self, Training)
 
-    def occurrences_list(self):
-        return EventOccurrence.objects.filter(event=self)
-
 
 class EventOccurrence(PolymorphicModel):
-    class State(models.TextChoices):
-        FUTURE = "neuzavrena", _("neuzavřena")
-        FINISHED = "uzavrena", _("uzavřena")
-        APPROVED = "schvalena", _("schválena")
-
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
 
     missing_organizers = models.ManyToManyField(
@@ -88,8 +91,6 @@ class EventOccurrence(PolymorphicModel):
     organizers_assignment = models.ManyToManyField(
         "events.EventOccurrenceOrganizerPositionAssignment"
     )
-
-    state = models.CharField(max_length=10, choices=State.choices)
 
     def enrolled_organizers(self):
         pass  # TODO:

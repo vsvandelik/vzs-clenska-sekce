@@ -1,7 +1,13 @@
 from django.db import models
-from events.models import Event, EventOccurrence, ParticipantEnrollment
+from events.models import (
+    Event,
+    EventOrOccurrenceState,
+    EventOccurrence,
+    ParticipantEnrollment,
+)
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 
 
 class OneTimeEvent(Event):
@@ -19,6 +25,13 @@ class OneTimeEvent(Event):
     category = models.CharField(
         _("Druh události"), max_length=11, choices=Category.choices
     )
+
+    state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
+
+    def sorted_occurrences_list(self):
+        return EventOccurrence.objects.filter(
+            Q(event=self) & Q(instance_of=OneTimeEventOccurrence)
+        )
 
 
 class OneTimeEventOccurrence(EventOccurrence):

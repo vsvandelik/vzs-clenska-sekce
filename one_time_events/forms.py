@@ -1,14 +1,9 @@
-from datetime import datetime, timedelta, timezone
-
-from django import forms
-from django.forms import Form, ModelForm, MultipleChoiceField
-from django.forms.widgets import CheckboxInput
-from django.utils import timezone
+from django.forms import ModelForm
 from django_select2.forms import Select2Widget
 
-from persons.models import Person
-from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
+from vzs.widgets import DatePickerWithIcon
 from .models import OneTimeEvent
+from events.models import EventOrOccurrenceState
 
 
 class OneTimeEventForm(ModelForm):
@@ -29,20 +24,22 @@ class OneTimeEventForm(ModelForm):
             "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
             "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
         }
-        # widgets = {
-        #     "time_start": DateTimePickerWithIcon(
-        #         attrs={"onchange": "dateChanged()"},
-        #     ),
-        #     "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"})
-        # }
 
-    # def _check_date_constraints(self):
-    #     if self.cleaned_data["time_start"] >= self.cleaned_data["time_end"]:
-    #         self.add_error(
-    #             "time_end", "Konec události nesmí být dříve než její začátek"
-    #         )
+    def _check_date_constraints(self):
+        if self.cleaned_data["date_start"] >= self.cleaned_data["date_end"]:
+            self.add_error(
+                "date_end", "Konec události nesmí být dříve než její začátek"
+            )
 
     def clean(self):
         cleaned_data = super().clean()
-        # self._check_date_constraints()
+        self._check_date_constraints()
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if self.instance.id is None:
+            instance.state = EventOrOccurrenceState.OPEN
+        if commit:
+            instance.save()
+        return instance

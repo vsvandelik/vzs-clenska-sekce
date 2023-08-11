@@ -10,7 +10,7 @@ function dateChanged() {
 }
 
 function timeChanged(sender) {
-    validateTime(sender.name.split('_')[1])
+    validateTime(sender.name.split('_')[0])
 }
 
 function dayToggled(sender) {
@@ -51,8 +51,8 @@ window.onbeforeunload = function () {
 
 // Validators
 function validateDate(report = false) {
-    const startsDate = document.getElementById('id_starts_date')
-    const endsDate = document.getElementById('id_ends_date')
+    const startsDate = document.getElementById('id_date_start')
+    const endsDate = document.getElementById('id_date_end')
     const startsDateObj = getDateNulledHours(startsDate)
     const endsDateObj = getDateNulledHours(endsDate)
     const secondsBetween = (endsDateObj.getTime() - startsDateObj.getTime()) / 1000
@@ -89,8 +89,8 @@ function validateDay(report = false, dayElement = getFirstDay(true)) {
 }
 
 function validateTime(day, report = false) {
-    const fromId = `id_from_${day}`
-    const toId = `id_to_${day}`
+    const fromId = `id_${day}_from`
+    const toId = `id_${day}_to`
     const fromElm = document.getElementById(fromId)
     const toElm = document.getElementById(toId)
     const fromVal = fromElm.value
@@ -123,8 +123,8 @@ function validateTrainingDay(day, report = false) {
 }
 
 function validateAllTrainingDaysDates(report = false) {
-    const startsDateObj = getDateNulledHours(document.getElementById('id_starts_date'))
-    const endsDateObj = getDateNulledHours(document.getElementById('id_ends_date'))
+    const startsDateObj = getDateNulledHours(document.getElementById('id_date_start'))
+    const endsDateObj = getDateNulledHours(document.getElementById('id_date_end'))
     for (const day of getSelectedDays()) {
         const weekday = dayShortToWeekday(day)
         const trainingDayElements = getTrainingDayElements(day)
@@ -216,8 +216,8 @@ function trainingDaysUpdate(day) {
 
 
 function addTrainingDaysTo(parent) {
-    const startsDate = getDateNulledHours(document.getElementById('id_starts_date'))
-    const endsDate = getDateNulledHours(document.getElementById('id_ends_date'))
+    const startsDate = getDateNulledHours(document.getElementById('id_date_start'))
+    const endsDate = getDateNulledHours(document.getElementById('id_date_end'))
     const day = parent.id.split('_')[1]
     moveDaysToFirstTraining(startsDate, day)
     while (endsDate.getTime() >= startsDate.getTime()) {
@@ -230,7 +230,7 @@ function addTrainingDaysTo(parent) {
 
 function setTimeFieldsState(day, state) {
     const display = state ? 'block' : 'none'
-    const parent = document.getElementById(`id_from_${day}`).parentElement.parentElement.parentElement.parentElement.parentElement
+    const parent = document.getElementById(`id_${day}_from`).parentElement.parentElement.parentElement.parentElement.parentElement
     parent.style.display = display
     const fields = parent.getElementsByTagName('input')
     fields[0].disabled = !state

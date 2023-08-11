@@ -30,6 +30,5 @@ class TrainingUpdateView(generic.UpdateView, EventUpdateMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = context[self.context_object_name]
-        event.extend_2_top_training()
         context["dates"] = context["form"].generate_dates()
         return context

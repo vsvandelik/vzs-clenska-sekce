@@ -1,24 +1,19 @@
 from datetime import datetime, timedelta, timezone
 
 from django import forms
-from django.forms import Form, ModelForm, MultipleChoiceField
-from django.forms.widgets import CheckboxInput
+from django.forms import ModelForm, MultipleChoiceField
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
-from persons.models import Person
-from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
-from .models import Training
-from positions.models import EventPosition
-from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
+from events.models import EventOrOccurrenceState
 from events.utils import (
     weekday_2_day_shortcut,
-    weekday_pretty,
     days_shortcut_list,
     day_shortcut_2_weekday,
     parse_czech_date,
 )
-from events.models import Event
+from vzs.widgets import DatePickerWithIcon, TimePickerWithIcon
+from .models import Training, TrainingOccurrence
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -56,20 +51,34 @@ class TrainingForm(ModelForm):
             "category": Select2Widget(),
             "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
             "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "po_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "po_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ut_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ut_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "st_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "st_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ct_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ct_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "pa_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "pa_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "so_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "so_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ne_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
+            "ne_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
         }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         event = kwargs["instance"]
         if event is not None:
-            self.initial["date_start"] = timezone.localtime(event.time_start).date()
-            self.initial["date_end"] = timezone.localtime(event.time_end).date()
-            for weekday in event.weekdays:
+            self.initial["date_start"] = event.date_start
+            self.initial["date_end"] = event.date_end
+            for weekday in event.weekdays_occurs_list():
                 day_shortcut = weekday_2_day_shortcut(weekday)
                 self.initial[day_shortcut] = True
             for attr, value in event.__dict__.items():
                 if attr[3:] == "from" or attr[3:] == "to":
-                    self.initial[attr] = value.time()
+                    self.initial[attr] = value
 
     po = forms.BooleanField(
         label="Po",
@@ -147,8 +156,8 @@ class TrainingForm(ModelForm):
                 )
             for d in days:
                 self._check_training_time_of_chosen_day(d)
-            d_start = self.cleaned_data["starts_date"]
-            d_end = self.cleaned_data["ends_date"]
+            d_start = self.cleaned_data["date_start"]
+            d_end = self.cleaned_data["date_end"]
             for td in training_dates:
                 if not d_start <= td <= d_end:
                     self.add_error(
@@ -174,7 +183,7 @@ class TrainingForm(ModelForm):
         cleaned_data = self.cleaned_data
         instance = super().save(False)
 
-        attrs_name = [
+        for name in [
             "name",
             "description",
             "location",
@@ -182,42 +191,41 @@ class TrainingForm(ModelForm):
             "date_start",
             "date_end",
             "category",
-        ]
-        for name in attrs_name:
+        ]:
             setattr(instance, name, cleaned_data[name])
 
         if commit:
             instance.save()
 
-        children = instance.get_children_trainings_sorted()
+        children = instance.sorted_occurrences_list()
         new_datetimes = []
         for date_raw in self.cleaned_data["day"]:
             datetime_start, datetime_end = self._create_training_datetime(date_raw)
             new_datetimes.append((datetime_start, datetime_end))
 
         for child in children:
-            times = (
-                timezone.localtime(child.time_start),
-                timezone.localtime(child.time_end),
+            datetimes = (
+                timezone.localtime(child.datetime_start),
+                timezone.localtime(child.datetime_end),
             )
-            if times in new_dates:
-                new_dates.remove(times)
+            if datetimes in new_datetimes:
+                new_datetimes.remove(datetimes)
             elif commit:
-                Event.objects.filter(id=child.id).delete()
+                TrainingOccurrence.objects.filter(id=child.id).delete()
 
-        parent_id = instance.id
-        instance._state.adding = True
-        self._save_add_trainings(instance, parent_id, new_dates, commit)
+        self._save_add_trainings(instance, new_datetimes, commit)
         return instance
 
-    def _save_add_trainings(self, instance, parent_id, new_dates, commit=True):
-        for date_start, date_end in new_dates:
-            instance.pk = None
-            instance.parent_id = parent_id
-            instance.time_start = date_start
-            instance.time_end = date_end
+    def _save_add_trainings(self, event, new_dates, commit=True):
+        for datetime_start, datetime_end in new_dates:
+            occurrence = TrainingOccurrence(
+                event=event,
+                state=EventOrOccurrenceState.OPEN,
+                datetime_start=datetime_start,
+                datetime_end=datetime_end,
+            )
             if commit:
-                instance.save()
+                occurrence.save()
 
     def _create_training_datetime(self, date_raw):
         date = parse_czech_date(date_raw)
@@ -247,12 +255,12 @@ class TrainingForm(ModelForm):
         if (
             hasattr(self, "cleaned_data")
             and "day" in self.cleaned_data
-            and "starts_date" in self.cleaned_data
-            and "ends_date" in self.cleaned_data
+            and "date_start" in self.cleaned_data
+            and "date_end" in self.cleaned_data
             and (any(day in self.cleaned_data for day in days_shortcut_list()))
         ):
-            start_submitted = self.cleaned_data["starts_date"]
-            end_submitted = self.cleaned_data["ends_date"]
+            start_submitted = self.cleaned_data["date_start"]
+            end_submitted = self.cleaned_data["date_end"]
             dates_submitted = [
                 parse_czech_date(date_raw).date()
                 for date_raw in self.cleaned_data["day"]
@@ -268,9 +276,9 @@ class TrainingForm(ModelForm):
             checked = lambda: start in dates_submitted
         elif self.instance.id:
             event = self.instance
-            start_submitted = event.time_start.date()
-            end_submitted = event.time_end.date()
-            days_list = map(weekday_2_day_shortcut, event.weekdays)
+            start_submitted = event.date_start
+            end_submitted = event.date_end
+            days_list = map(weekday_2_day_shortcut, event.weekdays_occurs_list())
             checked = lambda: event.does_training_take_place_on_date(start)
         else:
             return []

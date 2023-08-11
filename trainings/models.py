@@ -1,11 +1,15 @@
 from django.db import models
 from events.models import (
     Event,
+    EventOrOccurrenceState,
     EventOccurrence,
     TrainingCategory,
     ParticipantEnrollment,
 )
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from django.db.models import Q
+from events.utils import days_shortcut_list
 
 
 class Training(Event):
@@ -49,6 +53,34 @@ class Training(Event):
     def replaces_training_list(self):
         pass  # TODO
 
+    def sorted_occurrences_list(self):
+        occurrences = EventOccurrence.objects.filter(
+            Q(event=self) & Q(instance_of=TrainingOccurrence)
+        )
+        for occurrence in occurrences:
+            occurrence.datetime_start = timezone.localtime(occurrence.datetime_start)
+            occurrence.datetime_end = timezone.localtime(occurrence.datetime_end)
+        return occurrences
+
+    def does_training_take_place_on_date(self, date):
+        for occurrence in self.sorted_occurrences_list():
+            if (
+                timezone.localtime(occurrence.datetime_start).date()
+                <= date
+                <= timezone.localtime(occurrence.datetime_end).date()
+            ):
+                return True
+        return False
+
+    def weekdays_occurs_list(self):
+        weekdays = []
+        i = 0
+        for day in days_shortcut_list():
+            if getattr(self, f"{day}_from") is not None:
+                weekdays.append(i)
+            i += 1
+        return weekdays
+
 
 class TrainingReplaceability(models.Manager):
     training_1 = models.ForeignKey("events.Training", on_delete=models.CASCADE)
@@ -65,6 +97,7 @@ class TrainingReplaceability(models.Manager):
 class TrainingOccurrence(EventOccurrence):
     datetime_start = models.DateTimeField(_("Začíná"))
     datetime_end = models.DateTimeField(_("Končí"))
+    state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):
