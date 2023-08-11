@@ -39,9 +39,6 @@ function beforeSubmit() {
 }
 
 window.onload = function () {
-    window._basePath = getDjangoUrl('url').replace('/1/', '')
-    priceListChanged(getPriceListField())
-
     dateChanged()
     getUnselectedDays().forEach(d => setTimeFieldsState(d, false))
     getSelectedDayElements().forEach(d => dayToggled(d))

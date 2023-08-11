@@ -11,7 +11,6 @@ from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWi
 from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
 from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
-from price_lists.models import PriceList
 from .utils import (
     weekday_2_day_shortcut,
     parse_czech_date,
@@ -26,15 +25,7 @@ from .utils import (
 #
 #
 # class EventForm(ModelForm):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.fields["price_list"].queryset = PriceList.templates.all()
-#         if self.instance.id is not None and self.instance.price_list is not None:
-#             self.fields["price_list"].queryset = PriceList.nontemplates.filter(
-#                 pk=self.instance.price_list.pk
-#             )
-#             self.fields["price_list"].widget.attrs["disabled"] = True
-#         self.fields["price_list"].required = False
+#     pass
 #
 #
 # class OneTimeEventForm(EventForm):
@@ -45,17 +36,14 @@ from .utils import (
 #             "description",
 #             "time_start",
 #             "time_end",
-#             "capacity",
-#             "price_list",
+#             "capacity"
 #         ]
 #         widgets = {
 #             "time_start": DateTimePickerWithIcon(
 #                 attrs={"onchange": "dateChanged()"},
 #             ),
-#             "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-#             "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"}),
+#             "time_end": DateTimePickerWithIcon(attrs={"onchange": "dateChanged()"})
 #         }
-#         labels = {"price_list": "Ceník"}
 #
 #     def _check_date_constraints(self):
 #         if self.cleaned_data["time_start"] >= self.cleaned_data["time_end"]:
@@ -74,25 +62,6 @@ from .utils import (
 #         if self.instance.id is None:
 #             edit = False
 #
-#         if instance.price_list is not None and instance.price_list.is_template:
-#             price_list = PriceList.templates.get(pk=instance.price_list.pk)
-#
-#             price_list_bonuses = []
-#             for bonus_feature in price_list.bonus_features.all():
-#                 price_list_bonuses.append(
-#                     bonus_feature.pricelistbonus_set.get(price_list=price_list)
-#                 )
-#
-#             price_list.pk = None
-#             price_list.is_template = False
-#             price_list.save()
-#
-#             for price_list_bonus in price_list_bonuses:
-#                 price_list_bonus.pk = None
-#                 price_list_bonus.price_list = price_list
-#                 price_list_bonus.save()
-#
-#             instance.price_list = price_list
 #         if not edit:
 #             instance.state = Event.State.FUTURE
 #         if commit:
@@ -103,11 +72,7 @@ from .utils import (
 # class TrainingForm(OneTimeEventForm):
 #     class Meta:
 #         model = Event
-#         fields = ["name", "description", "capacity", "price_list"]
-#         widgets = {
-#             "price_list": Select2Widget(attrs={"onchange": "priceListChanged(this)"})
-#         }
-#         labels = {"price_list": "Ceník"}
+#         fields = ["name", "description", "capacity"]
 #
 #     def __init__(self, **kwargs):
 #         super().__init__(**kwargs)
