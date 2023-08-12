@@ -10,17 +10,11 @@ class EventOrOccurrenceState(models.TextChoices):
     # attendance not filled
     OPEN = "neuzavrena", _("neuzavřena")
 
-    # attendance filled
+    # attendance filled for both organizers and participants
     CLOSED = "uzavrena", _("uzavřena")
 
     # transaction issued
     COMPLETED = "zpracovana", _("zpracována")
-
-
-class TrainingCategory(models.TextChoices):
-    CLIMBING = "lezecky", _("lezecký")
-    SWIMMING = "plavecky", _("plavecký")
-    MEDICAL = "zdravoveda", _("zdravověda")
 
 
 class Event(PolymorphicModel):
@@ -60,12 +54,6 @@ class Event(PolymorphicModel):
     # if NULL -> no effect (all person types are allowed)
     allowed_person_types = models.ManyToManyField("persons.PersonType")
 
-    # if NULL -> no effect
-    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected type
-    participants_of_specific_training_requirement = models.CharField(
-        null=True, max_length=10, choices=TrainingCategory.choices
-    )
-
     def is_one_time_event(self):
         from one_time_events.models import OneTimeEvent
 
@@ -80,17 +68,16 @@ class Event(PolymorphicModel):
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
 
-    missing_organizers = models.ManyToManyField(
+    # These two fields contain person that were missing and their absence was not excused
+    # Persons that were absent and were excused will be removed from participants or organizers
+    missing_organizers_unexcused = models.ManyToManyField(
         "persons.Person", related_name="missing_organizers_set"
     )
 
-    missing_participants = models.ManyToManyField(
+    missing_participants_unexcused = models.ManyToManyField(
         "persons.Person", related_name="missing_participants_set"
     )
-
-    organizers_assignment = models.ManyToManyField(
-        "events.EventOccurrenceOrganizerPositionAssignment"
-    )
+    state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
     def enrolled_organizers(self):
         pass  # TODO:
@@ -122,14 +109,8 @@ class EventPositionAssignment(models.Model):
         unique_together = ["event", "position"]
 
 
-class EventOccurrenceOrganizerPositionAssignment(models.Model):
-    event_occurrence = models.ForeignKey(
-        "events.EventOccurrence", on_delete=models.CASCADE
-    )
+class OrganizerPositionAssignment(PolymorphicModel):
     position_assignment = models.ForeignKey(
-        "positions.EventPosition", on_delete=models.CASCADE
+        "events.EventPositionAssignment", on_delete=models.CASCADE
     )
     organizers = models.ManyToManyField("persons.Person")
-
-    class Meta:
-        unique_together = ["event_occurrence", "position_assignment"]
