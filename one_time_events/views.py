@@ -5,6 +5,7 @@ from .forms import OneTimeEventForm
 from persons.models import Person
 from django.shortcuts import get_object_or_404, redirect
 from .models import OneTimeEvent
+from .mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -31,11 +32,15 @@ class OneTimeEventDetailView(EventDetailViewMixin):
         return super().get_context_data(**kwargs)
 
 
-class OneTimeEventCreateView(generic.CreateView, EventCreateMixin):
+class OneTimeEventCreateView(
+    InsertRequestIntoModelFormKwargsMixin, generic.CreateView, EventCreateMixin
+):
     template_name = "one_time_events/create.html"
     form_class = OneTimeEventForm
 
 
-class OneTimeEventUpdateView(generic.UpdateView, EventUpdateMixin):
+class OneTimeEventUpdateView(
+    InsertRequestIntoModelFormKwargsMixin, generic.UpdateView, EventUpdateMixin
+):
     template_name = "one_time_events/edit.html"
     form_class = OneTimeEventForm

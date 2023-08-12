@@ -3,7 +3,7 @@
 {% load static %}
 {% block scripts %}
     <script src="{% static 'events/get_django_url.js' %}"></script>
-    <script src="{% static 'events/events_common.js' %}"></script>
+    <script src="{% static 'events/date_utils.js' %}"></script>
     <script src="{% static 'events/set_report_validity.js' %}"></script>
     <script src="{% static 'one_time_events/create_edit.js' %}"></script>
 {% endblock %}
@@ -20,6 +20,14 @@
                     </div>
                     <div class="card-body">
                         {% include "events/event_common_fields.html" %}
+                        <div class="card">
+                            <div class="card-header border-0">
+                                <div class="card-title h5">Rozpis konání události</div>
+                            </div>
+                            <div id="event-schedule" class="card-body">
+                                <div id="event-schedule-row" class="row"></div>
+                            </div>
+                        </div>
                         {{ form.default_participation_fee|as_crispy_field }}
                     </div>
                     <div class="card-footer text-center">

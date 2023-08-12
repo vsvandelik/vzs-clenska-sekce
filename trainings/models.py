@@ -40,26 +40,26 @@ class Training(Event):
         _("Druh události"), max_length=10, choices=Category.choices
     )
 
-    po_from = models.TimeField(_("Od"), null=True, blank=True)
-    po_to = models.TimeField(_("Do"), null=True, blank=True)
+    po_from = models.TimeField(_("Od*"), null=True, blank=True)
+    po_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    ut_from = models.TimeField(_("Od"), null=True, blank=True)
-    ut_to = models.TimeField(_("Do"), null=True, blank=True)
+    ut_from = models.TimeField(_("Od*"), null=True, blank=True)
+    ut_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    st_from = models.TimeField(_("Od"), null=True, blank=True)
-    st_to = models.TimeField(_("Do"), null=True, blank=True)
+    st_from = models.TimeField(_("Od*"), null=True, blank=True)
+    st_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    ct_from = models.TimeField(_("Od"), null=True, blank=True)
-    ct_to = models.TimeField(_("Do"), null=True, blank=True)
+    ct_from = models.TimeField(_("Od*"), null=True, blank=True)
+    ct_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    pa_from = models.TimeField(_("Od"), null=True, blank=True)
-    pa_to = models.TimeField(_("Do"), null=True, blank=True)
+    pa_from = models.TimeField(_("Od*"), null=True, blank=True)
+    pa_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    so_from = models.TimeField(_("Od"), null=True, blank=True)
-    so_to = models.TimeField(_("Do"), null=True, blank=True)
+    so_from = models.TimeField(_("Od*"), null=True, blank=True)
+    so_to = models.TimeField(_("Do*"), null=True, blank=True)
 
-    ne_from = models.TimeField(_("Od"), null=True, blank=True)
-    ne_to = models.TimeField(_("Do"), null=True, blank=True)
+    ne_from = models.TimeField(_("Od*"), null=True, blank=True)
+    ne_to = models.TimeField(_("Do*"), null=True, blank=True)
 
     def can_be_replaced_by(self, training):
         pass  # TODO
@@ -125,6 +125,7 @@ class TrainingOccurrence(EventOccurrence):
         "persons.Person",
         through="trainings.TrainingOccurrenceAttendanceCompensationOpportunity",
         through_fields=("training_occurrence_excused", "person"),
+        related_name="missing_participants_excused_set",
     )
 
     missing_coaches_excused = models.ManyToManyField(

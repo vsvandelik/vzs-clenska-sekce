@@ -46,7 +46,7 @@ window.onload = function () {
 
 window.onbeforeunload = function () {
     localStorage.clear()
-};
+}
 
 
 // Validators
@@ -220,7 +220,7 @@ function addTrainingDaysTo(parent) {
     const endsDate = getDateNulledHours(document.getElementById('id_date_end'))
     const day = parent.id.split('_')[1]
     moveDaysToFirstTraining(startsDate, day)
-    while (endsDate.getTime() >= startsDate.getTime()) {
+    while (endsDate >= startsDate) {
         const datePretty = formatCzechDate(startsDate)
         const tr = createCheckboxWithLabel('day', datePretty, datePretty)
         parent.appendChild(tr)
@@ -230,20 +230,15 @@ function addTrainingDaysTo(parent) {
 
 function setTimeFieldsState(day, state) {
     const display = state ? 'block' : 'none'
+    const time_from = document.getElementById(`id_${day}_from`)
+    const time_to = document.getElementById(`id_${day}_to`)
+    time_from.required = state
+    time_to.required = state
     const parent = document.getElementById(`id_${day}_from`).parentElement.parentElement.parentElement.parentElement.parentElement
     parent.style.display = display
     const fields = parent.getElementsByTagName('input')
     fields[0].disabled = !state
     fields[1].disabled = !state
-}
-
-function formatCzechDate(date) {
-    return `${date.getDate()}. ${date.getMonth() + 1}. ${date.getFullYear()}`
-}
-
-function parseCzechDate(dateStr) {
-    const [day, month, year] = dateStr.split('.')
-    return new Date(year, month - 1, day, 0, 0, 0, 0)
 }
 
 function createCheckboxWithLabel(name, value, labelTxt) {

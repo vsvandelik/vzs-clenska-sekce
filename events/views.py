@@ -20,14 +20,18 @@ from django.shortcuts import get_object_or_404, redirect, reverse
 from .mixin_extensions import MessagesMixin
 
 
-class EventCreateMixin(MessagesMixin, generic.FormView):
-    success_message = "Událost %(name)s úspěšně přidána."
-    success_url = reverse_lazy("events:index")
-
-
-class EventUpdateMixin(MessagesMixin, generic.FormView):
+class EventCreateUpdateMixin(MessagesMixin, generic.FormView):
     context_object_name = "event"
+    success_url = reverse_lazy("events:index")
     model = Event
+
+
+class EventCreateMixin(EventCreateUpdateMixin):
+    success_message = "Událost %(name)s úspěšně přidána."
+
+
+class EventUpdateMixin(EventCreateUpdateMixin):
+    context_object_name = "event"
     success_message = "Událost %(name)s úspěšně upravena."
     success_url = reverse_lazy("events:index")
 
