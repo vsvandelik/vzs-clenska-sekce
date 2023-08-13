@@ -7,7 +7,7 @@
         <div class="card-body">
             <div class="row">
                 {% for weekday in event.weekdays_list %}
-                    <div class="col-md-2 col-12">
+                    <div class="col-md-4 col-lg-3 col-12">
                         <div class="card">
                             <div class="card-header border-0">
                                 {% with day=weekday|weekday_pretty %}
@@ -20,7 +20,7 @@
                                         {% for child in event.sorted_occurrences_list %}
                                             {% if child.datetime_start.weekday == weekday %}
                                                 <tr>
-                                                    <td class="w-100">{{ child.datetime_start|date }}</td>
+                                                    <td class="w-100 align-middle">{{ child.datetime_start|date }}</td>
                                                     <td><a class="btn btn-info btn-sm" href="">
                                                         <i class="fas fa-info"></i>
                                                     </a></td>

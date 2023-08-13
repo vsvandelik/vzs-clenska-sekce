@@ -45,7 +45,6 @@ class OneTimeEvent(Event):
 
     def occurrences_list(self):
         occurrences = self._occurrences_list()
-        self._occurrences_conv_localtime(occurrences)
         return occurrences
 
     def sorted_occurrences_list(self):
