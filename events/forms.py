@@ -12,6 +12,12 @@ from .models import Event, EventPositionAssignment
 from positions.models import EventPosition
 from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
 
+
+class MultipleChoiceFieldNoValidation(MultipleChoiceField):
+    def validate(self, value):
+        pass
+
+
 #
 #
 # class AddDeleteParticipantFromOneTimeEventForm(Form):

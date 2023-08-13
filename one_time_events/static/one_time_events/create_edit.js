@@ -11,6 +11,7 @@ function dayCheckboxClicked(checkboxElm) {
     hoursElm.disabled = !checkboxElm.checked
     const containerElm = hoursElm.parentElement.parentElement
     containerElm.style.display = display
+    setReportValidity(getFirstOccurrenceCheckbox(), '', true)
 
 }
 
@@ -23,7 +24,7 @@ function beforeSubmit() {
 }
 
 function validateForm() {
-    return validateDate(true)
+    return validateDate(true) && validateAtLeastOneDayChecked(true)
 }
 
 function validateDate(report = false) {
@@ -40,6 +41,34 @@ function validateDate(report = false) {
         setReportValidity(timeEndEl, '', report)
         return true
     }
+}
+
+function validateAtLeastOneDayChecked(report = false) {
+    const firstCheckbox = getFirstOccurrenceCheckbox()
+    if(countCheckedDays() === 0) {
+        setReportValidity(firstCheckbox, 'Jednorázová událost se musí alespoň jedenkrát konat', report)
+        return false
+    }
+    else {
+        setReportValidity(firstCheckbox, '', report)
+        return true
+    }
+
+}
+
+function countCheckedDays() {
+    let total = 0
+    const inputs = getEventScheduleRowElement().getElementsByTagName('input')
+    for(let i = 0; i < inputs.length; i += 2) {
+        const checkbox = inputs[i]
+        if(checkbox.checked)
+            ++total
+    }
+    return total
+}
+
+function getFirstOccurrenceCheckbox() {
+    return getEventScheduleRowElement().getElementsByTagName('input')[0]
 }
 
 
@@ -105,7 +134,7 @@ function clearOccurrences() {
 }
 
 function dayCard(day, checked='true', hours=undefined) {
-    let str = '<div class="col-sm-5 col-md-3 col-lg-3 col-12"> <div class="card"> <div class="card-header border-0"> <div class="card-title h5 text-bold"> <input id="{0}_checkbox" name="{0}_checkbox" type="checkbox" onclick="dayCheckboxClicked(this)" {1}> <label for="{0}_checkbox">{0}</label> </div></div><div class="card-body p-0"> <div class="row"> <div class="col-12 px-4"> <div class="form-group" {3}> <label for="{0}_hours"> Počet hodin*</label> <div> <input id="{0}_hours" name="{0}_hours" class="form-control" min="1" max="10" type="number" {4} value="{2}"> </div></div></div></div></div></div></div>'
+    let str = '<div class="col-sm-5 col-md-3 col-lg-3 col-12"> <div class="card"> <div class="card-header border-0"> <div class="card-title h5 text-bold"> <input id="{0}_checkbox" name="dates" type="checkbox" value="{0}" onclick="dayCheckboxClicked(this)" {1}> <label for="{0}_checkbox">{0}</label> </div></div><div class="card-body p-0"> <div class="row"> <div class="col-12 px-4"> <div class="form-group" {3}> <label for="{0}_hours"> Počet hodin*</label> <div> <input id="{0}_hours" name="hours" class="form-control" min="1" max="10" type="number" {4} value="{2}"> </div></div></div></div></div></div></div>'
     str = str.replaceAll('{0}', day)
     if(checked === 'true') {
         str = str.replaceAll('{1}', 'checked')

@@ -5,6 +5,7 @@ from django.forms import ModelForm, MultipleChoiceField
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
+from events.forms import MultipleChoiceFieldNoValidation
 from events.models import EventOrOccurrenceState
 from events.utils import (
     weekday_2_day_shortcut,
@@ -14,11 +15,6 @@ from events.utils import (
 )
 from vzs.widgets import DatePickerWithIcon, TimePickerWithIcon
 from .models import Training, TrainingOccurrence
-
-
-class MultipleChoiceFieldNoValidation(MultipleChoiceField):
-    def validate(self, value):
-        pass
 
 
 class TrainingForm(ModelForm):

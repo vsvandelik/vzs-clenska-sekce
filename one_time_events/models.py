@@ -44,7 +44,7 @@ class OneTimeEvent(Event):
 
 
 class OneTimeEventOccurrence(EventOccurrence):
-    date = models.DateTimeField(_("Den konání"))
+    date = models.DateField(_("Den konání"))
     hours = models.PositiveSmallIntegerField(
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
