@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta, timezone
 
 from django import forms
-from django.forms import ModelForm, MultipleChoiceField
+from django.forms import ModelForm
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.models import EventOrOccurrenceState
-from events.utils import (
+from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
     day_shortcut_2_weekday,
-    parse_czech_date,
 )
+from events.utils import parse_czech_date
 from vzs.widgets import DatePickerWithIcon, TimePickerWithIcon
 from .models import Training, TrainingOccurrence
 
@@ -193,7 +193,7 @@ class TrainingForm(ModelForm):
         if commit:
             instance.save()
 
-        children = instance.sorted_occurrences_list()
+        children = instance.occurrences_list()
         new_datetimes = []
         for date_raw in self.cleaned_data["day"]:
             datetime_start, datetime_end = self._create_training_datetime(date_raw)
@@ -270,7 +270,7 @@ class TrainingForm(ModelForm):
                 if d is not None
             ]
             checked = lambda: start in dates_submitted
-        elif self.instance.id:
+        elif self.instance.id is not None:
             event = self.instance
             start_submitted = event.date_start
             end_submitted = event.date_end

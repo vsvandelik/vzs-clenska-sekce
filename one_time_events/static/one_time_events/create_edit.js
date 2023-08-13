@@ -134,7 +134,7 @@ function clearOccurrences() {
 }
 
 function dayCard(day, checked='true', hours=undefined) {
-    let str = '<div class="col-sm-5 col-md-3 col-lg-3 col-12"> <div class="card"> <div class="card-header border-0"> <div class="card-title h5 text-bold"> <input id="{0}_checkbox" name="dates" type="checkbox" value="{0}" onclick="dayCheckboxClicked(this)" {1}> <label for="{0}_checkbox">{0}</label> </div></div><div class="card-body p-0"> <div class="row"> <div class="col-12 px-4"> <div class="form-group" {3}> <label for="{0}_hours"> Počet hodin*</label> <div> <input id="{0}_hours" name="hours" class="form-control" min="1" max="10" type="number" {4} value="{2}"> </div></div></div></div></div></div></div>'
+    let str = '<div class="col-sm-5 col-md-3 col-lg-3 col-12"> <div class="card"> <div class="card-header border-0"> <div class="card-title h5 text-bold"> <input id="{0}_checkbox" name="dates" type="checkbox" value="{0}" onclick="dayCheckboxClicked(this)" {1}> <label for="{0}_checkbox">{0}</label> </div></div><div class="card-body p-0"> <div class="row"> <div class="col-12 px-4"> <div class="form-group" {3}> <label for="{0}_hours">Počet hodin*</label> <div> <input id="{0}_hours" name="hours" class="form-control" min="1" max="10" type="number" {4} value="{2}"> </div></div></div></div></div></div></div>'
     str = str.replaceAll('{0}', day)
     if(checked === 'true') {
         str = str.replaceAll('{1}', 'checked')
@@ -144,7 +144,7 @@ function dayCard(day, checked='true', hours=undefined) {
     else {
         str = str.replaceAll('{1}', '')
         str = str.replaceAll('{3}', 'style="display: none"')
-        str = str.replaceAll('{4}', '')
+        str = str.replaceAll('{4}', 'disabled')
     }
     if(hours !== undefined)
         str = str.replaceAll('{2}', hours)

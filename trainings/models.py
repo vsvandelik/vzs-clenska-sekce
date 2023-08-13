@@ -8,7 +8,8 @@ from events.models import (
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.db.models import Q
-from events.utils import days_shortcut_list
+from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class TrainingAttendance(models.TextChoices):
@@ -26,12 +27,12 @@ class Training(Event):
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantEnrollment",
-        related_name="enrolled_participants_set",
+        related_name="training_participant_enrollment_1_set",
     )
 
     coaches_assignment = models.ManyToManyField(
         "trainings.TrainingCoachPositionAssignment",
-        related_name="coaches_assignment_set",
+        related_name="training_coach_position_assignment_set",
     )
     main_coach = models.ForeignKey(
         "persons.Person", null=True, on_delete=models.SET_NULL
@@ -61,23 +62,53 @@ class Training(Event):
     ne_from = models.TimeField(_("Od*"), null=True, blank=True)
     ne_to = models.TimeField(_("Do*"), null=True, blank=True)
 
+    def weekly_occurs_count(self):
+        count = 0
+        for day in days_shortcut_list():
+            if getattr(self, f"{day}_from") is not None:
+                count += 1
+        return count
+
+    def weekdays_list(self):
+        days = days_shortcut_list()
+        output = []
+        for i in range(0, len(days)):
+            if getattr(self, f"{days[i]}_from") is not None:
+                output.append(i)
+        return output
+
+    def weekdays_shortcut_list(self):
+        return map(weekday_2_day_shortcut, self.weekdays_list())
+
+    def weekdays_pretty_list(self):
+        return map(weekday_pretty, self.weekdays_list())
+
     def can_be_replaced_by(self, training):
         pass  # TODO
 
     def replaces_training_list(self):
         pass  # TODO
 
-    def sorted_occurrences_list(self):
-        occurrences = EventOccurrence.objects.filter(
-            Q(event=self) & Q(instance_of=TrainingOccurrence)
-        )
+    def _occurrences_list(self):
+        return TrainingOccurrence.objects.filter(event=self)
+
+    def _occurrences_conv_localtime(self, occurrences):
         for occurrence in occurrences:
             occurrence.datetime_start = timezone.localtime(occurrence.datetime_start)
             occurrence.datetime_end = timezone.localtime(occurrence.datetime_end)
+
+    def occurrences_list(self):
+        occurrences = self._occurrences_list()
+        self._occurrences_conv_localtime(occurrences)
+        return occurrences
+
+    def sorted_occurrences_list(self):
+        occurrences = self._occurrences_list().order_by("datetime_start")
+        self._occurrences_conv_localtime(occurrences)
         return occurrences
 
     def does_training_take_place_on_date(self, date):
-        for occurrence in self.sorted_occurrences_list():
+        for occurrence in self.occurrences_list():
             if (
                 timezone.localtime(occurrence.datetime_start).date()
                 <= date
@@ -94,6 +125,23 @@ class Training(Event):
                 weekdays.append(i)
             i += 1
         return weekdays
+
+    # def approved_participants(self):
+    #     return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+    #
+    # def waiting_participants(self):
+    #     return self.participants_by_state(ParticipantEnrollment.State.WAITING)
+    #
+    # def substitute_participants(self):
+    #     return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+    #
+    # def participants_by_state(self, state):
+    #     output = []
+    #     for enrolled_participant in self.enrolled_participants.all():
+    #         enrollment = enrolled_participant.training_participant_enrollment_set.get(training=self)
+    #         if enrollment.state == state:
+    #             output.append(enrolled_participant)
+    #     return output
 
 
 class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
@@ -125,14 +173,14 @@ class TrainingOccurrence(EventOccurrence):
         "persons.Person",
         through="trainings.TrainingOccurrenceAttendanceCompensationOpportunity",
         through_fields=("training_occurrence_excused", "person"),
-        related_name="missing_participants_excused_set",
+        related_name="training_occurrence_attendance_compensation_opportunity_set",
     )
 
     missing_coaches_excused = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingOneTimeCoachPosition",
         through_fields=("training_occurrence", "coach_excused"),
-        related_name="missing_coaches_excused_set",
+        related_name="training_one_time_coach_position_set",
     )
 
 
@@ -190,3 +238,10 @@ class TrainingOneTimeCoachPosition(models.Model):
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
+    weekdays = models.ManyToManyField("trainings.TrainingWeekdays")
+
+
+class TrainingWeekdays(models.Model):
+    weekday = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(6)]
+    )

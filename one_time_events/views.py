@@ -1,5 +1,10 @@
 from django.shortcuts import render
-from events.views import EventCreateMixin, EventDetailViewMixin, EventUpdateMixin
+from events.views import (
+    EventCreateMixin,
+    EventDetailViewMixin,
+    EventUpdateMixin,
+    EventGeneratesDatesMixin,
+)
 from django.views import generic
 from .forms import OneTimeEventForm
 from persons.models import Person
@@ -33,14 +38,14 @@ class OneTimeEventDetailView(EventDetailViewMixin):
 
 
 class OneTimeEventCreateView(
-    InsertRequestIntoModelFormKwargsMixin, generic.CreateView, EventCreateMixin
+    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventCreateMixin
 ):
     template_name = "one_time_events/create.html"
     form_class = OneTimeEventForm
 
 
 class OneTimeEventUpdateView(
-    InsertRequestIntoModelFormKwargsMixin, generic.UpdateView, EventUpdateMixin
+    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventUpdateMixin
 ):
     template_name = "one_time_events/edit.html"
     form_class = OneTimeEventForm

@@ -1,5 +1,3 @@
-{% load vzs_filters %}
-{% load trainings_template_tags %}
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header border-0">
@@ -8,6 +6,7 @@
         <div class="card-body p-0">
             <table class="mb-1 table">
                 <tbody>
+
                     <tr>
                         <td class="text-nowrap text-bold">Kategorie:</td>
                         <td class="w-100">{{ event.get_category_display }}</td>
@@ -17,12 +16,12 @@
                         <td class="w-100">{{ event.description }}</td>
                     </tr>
                     <tr>
-                        <td class="text-nowrap text-bold">Garant</td>
-                        <td class="w-100">{{ event.get_main_coach_display }}</td>
-                    </tr>
-                    <tr>
                         <td class="text-nowrap text-bold">Místo konání:</td>
                         <td class="w-100">{{ event.location }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Stav:</td>
+                        <td class="w-100">{{ event.get_state_display }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Začíná:</td>
@@ -33,20 +32,8 @@
                         <td class="w-100">{{ event.date_end }}</td>
                     </tr>
                     <tr>
-                        <td class="text-nowrap text-bold">Koná se týdně:</td>
-                        <td class="w-100">{{ event.weekly_occurs_count }}x</td>
-                    </tr>
-                    <tr>
-                        <td class="text-nowrap text-bold align-middle">Čas konání:</td>
-                        <td class="w-100">
-                            {% for day in event.weekdays_shortcut_list %}
-                                {% with day_pretty=day|day_shortcut_pretty time_from_var_name=day|addstr:'_from' time_to_var_name=day|addstr:'_to' %}
-                                    {% with time_from=event|getattribute:time_from_var_name time_to=event|getattribute:time_to_var_name %}
-                                        {{ day_pretty }}: {{ time_from }} – {{ time_to }} {% if not forloop.last %} <br> {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            {% endfor %}
-                        </td>
+                        <td class="text-nowrap text-bold">Účastníci:</td>
+                        <td class="w-100">{{ event.approved_participants|length }} / {{ event.capacity }}</td>
                     </tr>
                 </tbody>
             </table>

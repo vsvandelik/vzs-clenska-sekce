@@ -7,6 +7,7 @@ from events.models import (
     OrganizerPositionAssignment,
 )
 from trainings.models import Training
+from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -19,7 +20,9 @@ class OneTimeEvent(Event):
         PRESENTATION = "prezentacni", _("prezentační")
 
     enrolled_participants = models.ManyToManyField(
-        "persons.Person", through="one_time_events.OneTimeEventParticipantEnrollment"
+        "persons.Person",
+        through="one_time_events.OneTimeEventParticipantEnrollment",
+        related_name="one_time_event_participant_enrollment_set",
     )
 
     default_participation_fee = models.PositiveIntegerField(
@@ -37,10 +40,36 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    def _occurrences_list(self):
+        return OneTimeEventOccurrence.objects.filter(event=self)
+
+    def occurrences_list(self):
+        occurrences = self._occurrences_list()
+        self._occurrences_conv_localtime(occurrences)
+        return occurrences
+
     def sorted_occurrences_list(self):
-        return EventOccurrence.objects.filter(
-            Q(event=self) & Q(instance_of=OneTimeEventOccurrence)
-        )
+        occurrences = self._occurrences_list().order_by("date")
+        return occurrences
+
+    def approved_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def waiting_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.WAITING)
+
+    def substitute_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def participants_by_state(self, state):
+        output = []
+        for enrolled_participant in self.enrolled_participants.all():
+            enrollment = enrolled_participant.training_participant_enrollment_set.get(
+                one_time_event=self
+            )
+            if enrollment.state == state:
+                output.append(enrolled_participant)
+        return output
 
 
 class OneTimeEventOccurrence(EventOccurrence):

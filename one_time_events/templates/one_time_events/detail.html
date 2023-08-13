@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    <input type="hidden" id="sign-url" data-url="{% url 'events:signup_person_for_one_time_event' event.id %}">
-    <input type="hidden" id="substitute-url" data-url="{% url 'events:add_substitute_for_one_time_event' event.id %}">
+{#    <input type="hidden" id="sign-url" data-url="{% url 'events:signup_person_for_one_time_event' event.id %}">#}
+{#    <input type="hidden" id="substitute-url" data-url="{% url 'events:add_substitute_for_one_time_event' event.id %}">#}
 
     <div class="row">
         <div class="col-12">
@@ -17,30 +17,31 @@
                 </div>
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'events:edit_one_time_event' event.id %}"
+                <a href="{% url 'one_time_events:edit' event.id %}"
                    class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
         </div>
     </div>
     <div class="row">
-        {% include 'events/detail_components/detail_components/one_time_event_overview.html' %}
-        {% include 'events/detail_components/detail_components/one_time_event_organizers.html' %}
-        {% include 'events/detail_components/detail_components/one_time_event_signed_participants.html' %}
-        {% include 'events/detail_components/detail_components/one_time_event_substitutes.html' %}
-        {% include 'events/detail_components/min_age.html' %}
+        {% include 'one_time_events/detail_components/overview.html' %}
+        {% include 'one_time_events/detail_components/organizers.html' %}
+{#        {% include 'one_time_events/detail_components/approved_participants.html' %}#}
+{#        {% include 'one_time_events/detail_components/substitute_participants.html' %}#}
+        {% include 'events/detail_components/age_limit.html' %}
         {% include 'events/detail_components/group_membership.html' %}
         {% include 'events/detail_components/person_type.html' %}
+        {% include 'one_time_events/detail_components/schedule.html' %}
     </div>
 
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
-    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
+{#    {% include "modal_include.html" with id="delete-position-assignment-modal" %}#}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static 'events/get_django_url.js' %}"></script>
-    <script src="{% static '../../static/one_time_event_detail.js' %}"></script>
+    <script src="{% static 'one_time_events/detail.js' %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-position-assignment-modal")</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% load events_tag_extensions %}
+{% load trainings_template_tags %}
 <div class="col-12">
     <div class="card">
         <div class="card-header border-0">
@@ -6,7 +6,7 @@
         </div>
         <div class="card-body">
             <div class="row">
-                {% for weekday in event.weekdays %}
+                {% for weekday in event.weekdays_list %}
                     <div class="col-md-2 col-12">
                         <div class="card">
                             <div class="card-header border-0">
@@ -17,10 +17,13 @@
                             <div class="card-body p-0">
                                 <table class="mb-1 table">
                                     <tbody>
-                                        {% for child in event.children %}
-                                            {% if child.time_start.weekday == weekday %}
+                                        {% for child in event.sorted_occurrences_list %}
+                                            {% if child.datetime_start.weekday == weekday %}
                                                 <tr>
-                                                    <td class="w-100">{{ child.time_start|date }}</td>
+                                                    <td class="w-100">{{ child.datetime_start|date }}</td>
+                                                    <td><a class="btn btn-info btn-sm" href="">
+                                                        <i class="fas fa-info"></i>
+                                                    </a></td>
                                                 </tr>
                                             {% endif %}
                                         {% endfor %}

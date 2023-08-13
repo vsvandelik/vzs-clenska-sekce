@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block scripts %}
-    <script src="{% static '../../static/training_detail.js' %}"></script>
+    <script src="{% static 'trainings/detail.js' %}"></script>
 {% endblock %}
 {% block title %}
     Detail tréninku
@@ -16,18 +16,21 @@
                 </div>
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'events:edit_training' event.id %}" class="btn btn-success">Upravit</a>
+                <a href="{% url 'trainings:edit' event.id %}" class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
         </div>
     </div>
     <div class="row">
-        {% include 'events/detail_components/detail_components/training_overview.html' %}
-        {% include 'events/detail_components/detail_components/training_summary.html' %}
-        {% include 'events/detail_components/min_age.html' %}
+        {% include 'trainings/detail_components/overview.html' %}
+    </div>
+    <div class="row">
+        {% include 'events/detail_components/age_limit.html' %}
         {% include 'events/detail_components/group_membership.html' %}
         {% include 'events/detail_components/person_type.html' %}
-        {% include 'events/detail_components/detail_components/training_schedule.html' %}
+    </div>
+    <div class="row">
+        {% include 'trainings/detail_components/schedule.html' %}
     </div>
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}

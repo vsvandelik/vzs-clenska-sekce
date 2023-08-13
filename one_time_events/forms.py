@@ -1,3 +1,5 @@
+import datetime
+
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
@@ -6,7 +8,6 @@ from .models import OneTimeEvent, OneTimeEventOccurrence
 from events.models import EventOrOccurrenceState
 from events.forms import MultipleChoiceFieldNoValidation
 from events.utils import parse_czech_date
-from .utils import index_no_except
 
 
 class OneTimeEventForm(ModelForm):
@@ -100,19 +101,18 @@ class OneTimeEventForm(ModelForm):
         if commit:
             instance.save()
 
-        children = instance.sorted_occurrences_list()
+        children = instance.occurrences_list()
         occurrences = self.cleaned_data["occurrences"]
         i = 0
-        while i < len(occurrences):
-            date, hours = occurrences[i]
-            child = self._find_child_with_date(children, date)
-            if child is not None:
-                if hours != child.hours:
-                    child.hours = hours
+        for child in children:
+            occurrence = self._find_occurrence_with_date(child.date)
+            if occurrence is not None:
+                if child.hours != occurrence[1]:
+                    child.hours = occurrences[1]
                     child.save()
-                del occurrences[i]
-                i -= 1
-            i += 1
+                self.cleaned_data["occurrences"].remove(occurrence)
+            else:
+                child.delete()
 
         for i in range(len(occurrences)):
             date, hours = occurrences[i]
@@ -126,8 +126,67 @@ class OneTimeEventForm(ModelForm):
 
         return instance
 
-    def _find_child_with_date(self, children, date):
-        for child in children:
-            if child.date == date:
-                return child
+    def generate_dates(self):
+        if (
+            hasattr(self, "cleaned_data")
+            and "occurrences" in self.cleaned_data
+            and "date_start" in self.cleaned_data
+            and "date_end" in self.cleaned_data
+        ):
+            cleaned_data = self.cleaned_data
+            date_start = cleaned_data["date_start"]
+            date_end = cleaned_data["date_end"]
+            is_date_checked = self._is_date_checked_form
+            date_hours = self._date_hours_form
+
+        elif self.instance.id is not None:
+            date_start = self.instance.date_start
+            date_end = self.instance.date_end
+            is_date_checked = self._is_date_checked_instance
+            date_hours = self._date_hours_instance
+        else:
+            return []
+
+        output = []
+        while date_start <= date_end:
+            if is_date_checked(date_start):
+                hours = date_hours(date_start)
+                output.append((True, date_start, hours))
+            else:
+                output.append((False, date_start, None))
+            date_start += datetime.timedelta(days=1)
+        return output
+
+    def _find_date_hours_form(self, d):
+        for date, hours in self.cleaned_data["occurrences"]:
+            if d == date:
+                return True, hours
+        return False, None
+
+    def _is_date_checked_form(self, d):
+        checked, _ = self._find_date_hours_form(d)
+        return checked
+
+    def _date_hours_form(self, d):
+        _, hours = self._find_date_hours_form(d)
+        return hours
+
+    def _find_date_hours_instance(self, d):
+        for occurrence in self.instance.occurrences_list():
+            if d == occurrence.date:
+                return True, occurrence.hours
+        return False, None
+
+    def _is_date_checked_instance(self, d):
+        checked, _ = self._find_date_hours_instance(d)
+        return checked
+
+    def _date_hours_instance(self, d):
+        _, hours = self._find_date_hours_instance(d)
+        return hours
+
+    def _find_occurrence_with_date(self, d):
+        for date, hours in self.cleaned_data["occurrences"]:
+            if d == date:
+                return date, hours
         return None

@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 from django.urls import resolve
 from django.template.defaulttags import url, URLNode
 from django.template.base import Node
+import re
 
 from vzs import settings
 
@@ -68,6 +69,50 @@ def negate(value):
 @register.simple_tag
 def indentation_by_level(level):
     return "—" * level + " "
+
+
+numeric_test = re.compile("^\d+$")
+
+
+@register.filter
+def getattribute(value, arg):
+    if hasattr(value, str(arg)):
+        return getattr(value, arg)
+    elif hasattr(value, "has_key") and value.has_key(arg):
+        return value[arg]
+    elif numeric_test.match(str(arg)) and len(value) > int(arg):
+        return value[int(arg)]
+    else:
+        return None
+
+
+@register.filter
+def addstr(arg1, arg2):
+    return str(arg1) + str(arg2)
+
+
+@register.filter
+def index(indexable, i):
+    return indexable[i]
+
+
+@register.filter
+def index_safe(indexable, i):
+    if indexable in [None, ""]:
+        return iter([])
+    if i in indexable:
+        return indexable[i]
+    return iter([])
+
+
+@register.filter
+def atoi(value):
+    return int(value)
+
+
+@register.filter
+def join(separator, iterable):
+    return separator.join(iterable)
 
 
 class _PermURLContextVariable:

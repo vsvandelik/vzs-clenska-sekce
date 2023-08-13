@@ -28,7 +28,9 @@ class Event(PolymorphicModel):
     date_end = models.DateField(_("Končí"))
 
     positions = models.ManyToManyField(
-        "positions.EventPosition", through="events.EventPositionAssignment"
+        "positions.EventPosition",
+        through="events.EventPositionAssignment",
+        related_name="event_position_assignment_set",
     )
 
     # requirements for participants
