@@ -10,7 +10,7 @@ from .forms import OneTimeEventForm
 from persons.models import Person
 from django.shortcuts import get_object_or_404, redirect
 from .models import OneTimeEvent
-from .mixin_extensions import InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):

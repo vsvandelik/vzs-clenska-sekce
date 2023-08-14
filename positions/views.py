@@ -4,14 +4,15 @@ from django.views import generic
 from django.shortcuts import reverse
 from django.core.exceptions import ImproperlyConfigured
 from features.models import Feature
-from persons.models import Person, PersonType
+from persons.models import PersonType
 from .forms import (
     AddFeatureRequirementToPositionForm,
     PositionAgeLimitForm,
     PositionGroupMembershipForm,
-    PersonTypePositionForm,
+    PositionAllowedPersonTypeForm,
 )
-from events.mixin_extensions import MessagesMixin
+from vzs.mixin_extensions import MessagesMixin
+from events.views import PersonTypeDetailViewMixin
 
 
 class PositionMixin:
@@ -50,7 +51,7 @@ class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
         return f"Pozice {self.object.name} úspěšně smazána"
 
 
-class PositionDetailView(PositionMixin, generic.DetailView):
+class PositionDetailView(PositionMixin, PersonTypeDetailViewMixin, generic.DetailView):
     template_name = "positions/detail.html"
 
     def get_context_data(self, **kwargs):
@@ -62,11 +63,6 @@ class PositionDetailView(PositionMixin, generic.DetailView):
         kwargs.setdefault("permissions_required", self.object.required_features.all())
         kwargs.setdefault("equipment", Feature.equipments.all())
         kwargs.setdefault("equipment_required", self.object.required_features.all())
-        kwargs.setdefault("available_person_types", Person.Type.choices)
-        kwargs.setdefault(
-            "person_types_required",
-            self.object.allowed_person_types.values_list("person_type", flat=True),
-        )
         return super().get_context_data(**kwargs)
 
 
@@ -130,44 +126,14 @@ class EditGroupMembershipView(PositionMixin, MessagesMixin, generic.UpdateView):
         return reverse("positions:detail", args=[self.object.id])
 
 
-class AddOrRemoveAllowedPersonTypeToPositionView(MessagesMixin, generic.FormView):
-    form_class = PersonTypePositionForm
+class AddRemoveAllowedPersonTypeToPositionView(MessagesMixin, generic.UpdateView):
+    form_class = PositionAllowedPersonTypeForm
+    model = EventPosition
 
     def get_success_url(self):
-        return reverse("positions:detail", args=[self.kwargs["position_id"]])
+        return reverse("positions:detail", args=[self.kwargs["pk"]])
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["position_id"] = self.kwargs["position_id"]
+        kwargs["instance"] = EventPosition.objects.get(pk=self.kwargs["pk"])
         return kwargs
-
-    def _change_db(self, position):
-        raise ImproperlyConfigured("This method should never be called")
-
-    def form_valid(self, form):
-        position = form.cleaned_data["position"]
-        person_type = form.cleaned_data["person_type"]
-        self.person_type_obj, _ = PersonType.objects.get_or_create(
-            person_type=person_type, defaults={"person_type": person_type}
-        )
-        self._change_db(position)
-        position.save()
-        return super().form_valid(form)
-
-
-class AddAllowedPersonTypeToPositionView(AddOrRemoveAllowedPersonTypeToPositionView):
-    def _change_db(self, position):
-        position.allowed_person_types.add(self.person_type_obj)
-
-    def get_success_message(self, cleaned_data):
-        return f"Omezení pro typ členství {self.person_type_obj.get_person_type_display()} přidáno do pozice"
-
-
-class RemoveAllowedPersonTypeFromPositionView(
-    AddOrRemoveAllowedPersonTypeToPositionView
-):
-    def _change_db(self, position):
-        position.allowed_person_types.remove(self.person_type_obj)
-
-    def get_success_message(self, cleaned_data):
-        return f"Omezení pro typ členství {self.person_type_obj.get_person_type_display()} smazáno z pozice"

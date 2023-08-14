@@ -1,4 +1,6 @@
 from django.forms import ModelForm
+from django.forms import ChoiceField
+from persons.models import Person, PersonType
 
 
 class AgeLimitForm(ModelForm):
@@ -21,3 +23,25 @@ class GroupMembershipForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["group"].required = False
+
+
+class AllowedPersonTypeForm(ModelForm):
+    person_type = ChoiceField(choices=Person.Type.choices)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if "person_type" not in cleaned_data:
+            self.add_error(None, "Chybí hodnota person_type")
+        return cleaned_data
+
+    def save(self, commit=True):
+        person_type = self.cleaned_data["person_type"]
+        person_type_obj, _ = PersonType.objects.get_or_create(
+            person_type=person_type, defaults={"person_type": person_type}
+        )
+        if self.instance.allowed_person_types.contains(person_type_obj):
+            self.instance.allowed_person_types.remove(person_type_obj)
+        else:
+            self.instance.allowed_person_types.add(person_type_obj)
+        if commit:
+            self.instance.save()

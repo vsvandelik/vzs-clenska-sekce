@@ -20,3 +20,10 @@ class FailureMessageMixin:
 
 class MessagesMixin(SuccessMessageMixin, FailureMessageMixin):
     pass
+
+
+class InsertRequestIntoModelFormKwargsMixin:
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs

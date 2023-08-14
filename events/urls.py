@@ -17,13 +17,13 @@ urlpatterns = [
         name="edit_group_membership",
     ),
     path(
-        "<int:event_id>/pridat/typ-clenstvi/",
-        views.AddAllowedPersonTypeToEventView.as_view(),
+        "<int:pk>/pridat/typ-clenstvi/",
+        views.AddRemoveAllowedPersonTypeView.as_view(),
         name="add_person_type",
     ),
     path(
-        "<int:event_id>/smazat/typ-clenstvi/",
-        views.RemoveAllowedPersonTypeFromEventView.as_view(),
+        "<int:pk>/smazat/typ-clenstvi/",
+        views.AddRemoveAllowedPersonTypeView.as_view(),
         name="remove_person_type",
     ),
     path(
