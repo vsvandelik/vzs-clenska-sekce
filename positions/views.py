@@ -1,18 +1,17 @@
-from django.urls import reverse_lazy
-from .models import EventPosition
-from django.views import generic
 from django.shortcuts import reverse
-from django.core.exceptions import ImproperlyConfigured
+from django.urls import reverse_lazy
+from django.views import generic
+
+from events.views import PersonTypeDetailViewMixin
 from features.models import Feature
-from persons.models import PersonType
+from vzs.mixin_extensions import MessagesMixin
 from .forms import (
-    AddFeatureRequirementToPositionForm,
+    AddRemoveFeatureRequirementPositionForm,
     PositionAgeLimitForm,
     PositionGroupMembershipForm,
     PositionAllowedPersonTypeForm,
 )
-from vzs.mixin_extensions import MessagesMixin
-from events.views import PersonTypeDetailViewMixin
+from .models import EventPosition
 
 
 class PositionMixin:
@@ -26,6 +25,16 @@ class PositionCreateUpdateMixin(MessagesMixin, PositionMixin):
 
     def get_success_url(self):
         return reverse("positions:detail", args=[self.object.id])
+
+
+class PositionModelFormWithoutFormMixin:
+    def get_success_url(self):
+        return reverse("positions:detail", args=[self.kwargs["pk"]])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = EventPosition.objects.get(pk=self.kwargs["pk"])
+        return kwargs
 
 
 class PositionIndexView(PositionMixin, generic.ListView):
@@ -56,56 +65,16 @@ class PositionDetailView(PositionMixin, PersonTypeDetailViewMixin, generic.Detai
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("qualifications", Feature.qualifications.all())
-        kwargs.setdefault(
-            "qualifications_required", self.object.required_features.all()
-        )
         kwargs.setdefault("permissions", Feature.permissions.all())
-        kwargs.setdefault("permissions_required", self.object.required_features.all())
         kwargs.setdefault("equipment", Feature.equipments.all())
-        kwargs.setdefault("equipment_required", self.object.required_features.all())
         return super().get_context_data(**kwargs)
 
 
-class AddRemoveFeatureFromPosition(MessagesMixin, generic.FormView):
-    form_class = AddFeatureRequirementToPositionForm
-
-    def get_success_url(self):
-        return reverse("positions:detail", args=[self.kwargs["position_id"]])
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["position_id"] = self.kwargs["position_id"]
-        return kwargs
-
-    def _change_db(self, position, feature):
-        raise ImproperlyConfigured("This method should never be called")
-
-    def form_valid(self, form):
-        position = form.cleaned_data["position"]
-        feature = form.cleaned_data["feature"]
-        self._change_db(position, feature)
-        position.save()
-        return super().form_valid(form)
-
-
-class AddFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
-    def get_success_message(self, cleaned_data):
-        p = cleaned_data["position"]
-        f = cleaned_data["feature"]
-        return f"{f.get_feature_type_display().capitalize()} {f} přidána do pozice {p}"
-
-    def _change_db(self, position, feature):
-        position.required_features.add(feature)
-
-
-class RemoveFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
-    def get_success_message(self, cleaned_data):
-        p = cleaned_data["position"]
-        f = cleaned_data["feature"]
-        return f"{f.get_feature_type_display().capitalize()} {f} odebrána z pozice {p}"
-
-    def _change_db(self, position, feature):
-        position.required_features.remove(feature)
+class AddRemoveFeatureRequirementPositionView(
+    PositionMixin, PositionModelFormWithoutFormMixin, MessagesMixin, generic.UpdateView
+):
+    form_class = AddRemoveFeatureRequirementPositionForm
+    success_message = "Změna vyžadovaných features uložena"
 
 
 class EditAgeLimitView(PositionMixin, MessagesMixin, generic.UpdateView):
@@ -126,14 +95,8 @@ class EditGroupMembershipView(PositionMixin, MessagesMixin, generic.UpdateView):
         return reverse("positions:detail", args=[self.object.id])
 
 
-class AddRemoveAllowedPersonTypeToPositionView(MessagesMixin, generic.UpdateView):
+class AddRemoveAllowedPersonTypeToPositionView(
+    PositionMixin, PositionModelFormWithoutFormMixin, MessagesMixin, generic.UpdateView
+):
     form_class = PositionAllowedPersonTypeForm
-    model = EventPosition
-
-    def get_success_url(self):
-        return reverse("positions:detail", args=[self.kwargs["pk"]])
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["instance"] = EventPosition.objects.get(pk=self.kwargs["pk"])
-        return kwargs
+    success_message = "Změna omezení pro typ členství uložena"

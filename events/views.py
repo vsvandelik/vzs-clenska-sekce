@@ -19,6 +19,11 @@ from trainings.models import Training
 from one_time_events.models import OneTimeEvent
 
 
+class EventMixin:
+    model = Event
+    context_object_name = "event"
+
+
 class EventRestrictionMixin:
     model = Event
 
@@ -30,10 +35,8 @@ class EventRestrictionMixin:
             return reverse("trainings:detail", args=[id])
 
 
-class EventCreateUpdateMixin(MessagesMixin, generic.FormView):
-    context_object_name = "event"
+class EventCreateUpdateMixin(EventMixin, MessagesMixin, generic.FormView):
     success_url = reverse_lazy("events:index")
-    model = Event
 
 
 class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
@@ -41,9 +44,7 @@ class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
 
 
 class EventUpdateMixin(EventCreateUpdateMixin, generic.UpdateView):
-    context_object_name = "event"
     success_message = "Událost %(name)s úspěšně upravena."
-    success_url = reverse_lazy("events:index")
 
 
 class EventGeneratesDatesMixin:
@@ -63,10 +64,7 @@ class PersonTypeDetailViewMixin:
         return super().get_context_data(**kwargs)
 
 
-class EventDetailViewMixin(PersonTypeDetailViewMixin, generic.DetailView):
-    model = Event
-    context_object_name = "event"
-
+class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         kwargs.setdefault(
             "event_position_assignments",
@@ -75,16 +73,13 @@ class EventDetailViewMixin(PersonTypeDetailViewMixin, generic.DetailView):
         return super().get_context_data(**kwargs)
 
 
-class EventIndexView(generic.ListView):
-    model = Event
+class EventIndexView(EventMixin, generic.ListView):
     template_name = "events/index.html"
     context_object_name = "events"
 
 
-class EventDeleteView(MessagesMixin, generic.DeleteView):
-    model = Event
+class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
     template_name = "events/delete.html"
-    context_object_name = "event"
     success_url = reverse_lazy("events:index")
 
     def get_success_message(self, cleaned_data):
@@ -217,6 +212,7 @@ class EditGroupMembershipView(MessagesMixin, EventRestrictionMixin, generic.Upda
 
 class AddRemoveAllowedPersonTypeView(MessagesMixin, generic.UpdateView):
     form_class = EventAllowedPersonTypeForm
+    success_message = "Změna omezení pro typ členství uložena"
     model = Event
 
     def get_success_url(self):

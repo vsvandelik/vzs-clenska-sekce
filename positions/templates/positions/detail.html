@@ -57,15 +57,15 @@
                             </thead>
 
                             <tbody id="qualifications-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=qualifications features_required=qualifications_required detail_name='qualifications:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=qualifications detail_name='qualifications:detail' %}
                             </tbody>
 
                             <tbody id="permissions-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=permissions features_required=permissions_required detail_name='permissions:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=permissions detail_name='permissions:detail' %}
                             </tbody>
 
                             <tbody id="equipment-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=equipment features_required=equipment_required detail_name='equipments:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=equipment detail_name='equipments:detail' %}
                             </tbody>
                         </table>
                     </form>
