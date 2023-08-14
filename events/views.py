@@ -7,18 +7,29 @@ from persons.models import Person, PersonType
 from django.views import generic
 
 from .forms import (
-    AgeLimitForm,
+    EventAgeLimitForm,
     # TrainingForm,
     # OneTimeEventForm,
     # AddDeleteParticipantFromOneTimeEventForm,
     EventPositionAssignmentForm,
-    # MinAgeForm,
-    GroupMembershipForm,
+    EventGroupMembershipForm,
     PersonTypeEventForm,
 )
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, redirect, reverse
 from .mixin_extensions import MessagesMixin
+from trainings.models import Training
+from one_time_events.models import OneTimeEvent
+
+
+class EventRestrictionMixin:
+    model = Event
+
+    def get_success_url(self):
+        if isinstance(self.object, OneTimeEvent):
+            return reverse("one_time_events:detail", args=[self.object.id])
+        elif isinstance(self.object, Training):
+            return reverse("trainings:detail", args=[self.object.id])
 
 
 class EventCreateUpdateMixin(MessagesMixin, generic.FormView):
@@ -203,17 +214,17 @@ class EventPositionAssignmentDeleteView(
 #         return reverse(viewname, args=[self.object.id])
 
 
-class EditAgeLimitView(generic.UpdateView):
-    template_name = "events/edit_min_age.html"
-    form_class = AgeLimitForm
+class EditAgeLimitView(MessagesMixin, EventRestrictionMixin, generic.UpdateView):
+    template_name = "events/edit_age_limit.html"
+    model = Event
+    form_class = EventAgeLimitForm
     success_message = "Změna věkového omezení uložena"
 
 
-#
-#
-class EditGroupMembershipView(generic.UpdateView):
-    template_name = "common_components/edit_group_membership.html"
-    form_class = GroupMembershipForm
+class EditGroupMembershipView(MessagesMixin, EventRestrictionMixin, generic.UpdateView):
+    template_name = "events/edit_group_membership.html"
+
+    form_class = EventGroupMembershipForm
     success_message = "Změna vyžadování skupiny uložena"
 
 

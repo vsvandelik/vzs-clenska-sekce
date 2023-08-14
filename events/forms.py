@@ -9,23 +9,16 @@ from django_select2.forms import Select2Widget
 from persons.models import Person
 from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
 from .models import Event, EventPositionAssignment
+from .forms_bases import AgeLimitForm, GroupMembershipForm
 from positions.models import EventPosition
-from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
+
+
+# from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
     def validate(self, value):
         pass
-
-
-class AgeLimitForm(ModelForm):
-    class Meta:
-        model = Event
-        fields = ["min_age", "max_age"]
-        labels = {
-            "min_age": "Minimální věková hranice",
-            "max_age": "Maximální věková hranice",
-        }
 
 
 #
@@ -114,9 +107,13 @@ class EventPositionAssignmentForm(ModelForm):
         return cleaned_data
 
 
-#
-#
-class GroupMembershipForm(PositionsGroupMembershipForm):
+class EventAgeLimitForm(AgeLimitForm):
+    class Meta:
+        model = Event
+        fields = ["min_age", "max_age"]
+
+
+class EventGroupMembershipForm(GroupMembershipForm):
     class Meta:
         model = Event
         fields = ["group"]

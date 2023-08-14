@@ -1,0 +1,36 @@
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Věkové omezení</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Min</td>
+                        <td>
+                            {% if object.min_age is not None %}
+                                {{ object.min_age }}
+                            {% else %}
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Max</td>
+                        <td>
+                            {% if object.max_age is not None %}
+                                {{ object.max_age }}
+                            {% else %}
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% block edit_action %}{% endblock %}" class="btn-primary btn">Upravit</a>
+        </div>
+    </div>
+</div>

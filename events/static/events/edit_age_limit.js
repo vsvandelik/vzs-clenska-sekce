@@ -1,28 +1,3 @@
-window.onload = function () {
-    minAgeCheckboxClicked(getMinAgeCheckbox())
-    maxAgeCheckboxClicked(getMaxAgeCheckbox())
-}
-
-function minAgeCheckboxClicked(sender) {
-    const minAgeField = getMinAgeField()
-    minAgeField.disabled = !sender.checked
-    setElementRequired(minAgeField, sender.checked)
-}
-
-function maxAgeCheckboxClicked(sender) {
-    const maxAgeField = getMaxAgeField()
-    maxAgeField.disabled = !sender.checked
-    setElementRequired(maxAgeField, sender.checked)
-}
-
-function getMinAgeCheckbox() {
-    return document.getElementById('id_min_age_enabled')
-}
-
-function getMaxAgeCheckbox() {
-    return document.getElementById('id_max_age_enabled')
-}
-
 function getMinAgeField() {
     return document.getElementById('id_min_age')
 }
@@ -38,11 +13,8 @@ function beforeSubmit() {
 function validateForm() {
     const minAgeField = getMinAgeField()
     const maxAgeField = getMaxAgeField()
-    let minAge, maxAge
-    if (getMinAgeCheckbox().checked)
-        minAge = parseInt(minAgeField.value)
-    if (getMaxAgeCheckbox().checked)
-        maxAge = parseInt(maxAgeField.value)
+    const minAge = parseInt(minAgeField.value)
+    const maxAge = parseInt(maxAgeField.value)
 
     if (minAge !== undefined && maxAge !== undefined) {
         if (minAge > maxAge) {

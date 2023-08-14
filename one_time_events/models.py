@@ -70,6 +70,9 @@ class OneTimeEvent(Event):
                 output.append(enrolled_participant)
         return output
 
+    def __str__(self):
+        return self.name
+
 
 class OneTimeEventOccurrence(EventOccurrence):
     date = models.DateField(_("Den konání"))

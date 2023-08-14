@@ -2,6 +2,8 @@
 {% load static %}
 {% load events_tag_extensions %}
 {% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("add-feature-table",[0],[0])</script>
     <script src="{% static 'positions/detail.js' %}"></script>
 {% endblock %}
 {% block title %}

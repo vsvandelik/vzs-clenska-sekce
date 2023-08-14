@@ -1,14 +1,6 @@
 window.onload = function () {
     window._basePath = getDjangoUrl('url').replace('/1/', '')
-    groupMembershipRequiredClicked(getMembershipRequiredField())
     groupChanged(getGroupField())
-}
-
-function groupMembershipRequiredClicked(sender) {
-    const groupField = getGroupField()
-    groupField.disabled = !sender.checked
-    groupChanged(groupField)
-    setElementRequired(groupField, sender.checked)
 }
 
 function groupChanged(sender) {
@@ -19,10 +11,6 @@ function groupChanged(sender) {
         setDetailLinkVisibility(true)
         getGroupDetailLink().href = `${window._basePath}/${sender.value}/`
     }
-}
-
-function getMembershipRequiredField() {
-    return document.getElementById('id_group_membership_required')
 }
 
 function getGroupField() {

@@ -3,13 +3,12 @@ from .models import EventPosition
 from django.views import generic
 from django.shortcuts import reverse
 from django.core.exceptions import ImproperlyConfigured
-from events.models import EventPositionAssignment
 from features.models import Feature
 from persons.models import Person, PersonType
 from .forms import (
     AddFeatureRequirementToPositionForm,
-    AgeLimitForm,
-    GroupMembershipForm,
+    PositionAgeLimitForm,
+    PositionGroupMembershipForm,
     PersonTypePositionForm,
 )
 from events.mixin_extensions import MessagesMixin
@@ -114,8 +113,8 @@ class RemoveFeatureRequirementToPositionView(AddRemoveFeatureFromPosition):
 
 
 class EditAgeLimitView(PositionMixin, MessagesMixin, generic.UpdateView):
-    template_name = "positions/edit_min_age.html"
-    form_class = AgeLimitForm
+    template_name = "events/edit_age_limit.html"
+    form_class = PositionAgeLimitForm
     success_message = "Změna věkového omezení uložena"
 
     def get_success_url(self):
@@ -123,8 +122,8 @@ class EditAgeLimitView(PositionMixin, MessagesMixin, generic.UpdateView):
 
 
 class EditGroupMembershipView(PositionMixin, MessagesMixin, generic.UpdateView):
-    template_name = "common_components/edit_group_membership.html"
-    form_class = GroupMembershipForm
+    template_name = "events/edit_group_membership.html"
+    form_class = PositionGroupMembershipForm
     success_message = "Změna členství ve skupině uložena"
 
     def get_success_url(self):

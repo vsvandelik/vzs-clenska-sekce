@@ -102,7 +102,11 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'events/index.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("one-time-events-table",[0],[0]);
+        datatableEnable("trainings-table",[0],[0]);
+    </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-event-modal")</script>
 {% endblock %}

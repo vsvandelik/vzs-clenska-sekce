@@ -11,15 +11,18 @@ class EventPosition(models.Model):
         _("Bonusová částka"), null=True, validators=[MinValueValidator(1)]
     )
     required_features = models.ManyToManyField(Feature)
-    min_age_enabled = models.BooleanField(default=False)
-    max_age_enabled = models.BooleanField(default=False)
     min_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+        _("Minimální věk"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
     max_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+        _("Maximální věk"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    group_membership_required = models.BooleanField(default=False)
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
     allowed_person_types = models.ManyToManyField("persons.PersonType")
 

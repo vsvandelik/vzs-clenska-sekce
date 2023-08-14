@@ -1,8 +1,3 @@
-const addFeatureTable = new DataTable('#add-feature-table', {
-    responsive: true,
-    searching: true
-})
-
 function addQualificationClicked() {
     const modalElement = getModalTitleElement()
     modalElement.innerText = 'Přidat kvalifikaci'
