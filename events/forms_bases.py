@@ -30,9 +30,7 @@ class AllowedPersonTypeForm(ModelForm):
 
     def save(self, commit=True):
         person_type = self.cleaned_data["person_type"]
-        person_type_obj, _ = PersonType.objects.get_or_create(
-            person_type=person_type, defaults={"person_type": person_type}
-        )
+        person_type_obj = PersonType.get_or_create_person_type(person_type)
         if self.instance.allowed_person_types.contains(person_type_obj):
             self.instance.allowed_person_types.remove(person_type_obj)
         else:

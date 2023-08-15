@@ -177,5 +177,11 @@ class PersonType(models.Model):
         _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.choices
     )
 
+    @staticmethod
+    def get_or_create_person_type(person_type):
+        return PersonType.objects.get_or_create(
+            person_type=person_type, defaults={"person_type": person_type}
+        )[0]
+
     def __str__(self):
         return self.get_person_type_display()
