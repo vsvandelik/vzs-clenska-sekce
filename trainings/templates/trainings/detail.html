@@ -20,6 +20,7 @@
     </div>
     <div class="row">
         {% include 'trainings/detail_components/overview.html' %}
+        {% include 'events/detail_components/positions.html' %}
     </div>
     <div class="row">
         <div class="col-12">
@@ -45,4 +46,5 @@
     </div>
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
+    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
 {% endblock %}

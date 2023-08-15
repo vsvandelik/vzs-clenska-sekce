@@ -7,7 +7,6 @@ from events.models import (
 )
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from django.db.models import Q
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -126,22 +125,8 @@ class Training(Event):
             i += 1
         return weekdays
 
-    # def approved_participants(self):
-    #     return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
-    #
-    # def waiting_participants(self):
-    #     return self.participants_by_state(ParticipantEnrollment.State.WAITING)
-    #
-    # def substitute_participants(self):
-    #     return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
-    #
-    # def participants_by_state(self, state):
-    #     output = []
-    #     for enrolled_participant in self.enrolled_participants.all():
-    #         enrollment = enrolled_participant.training_participant_enrollment_set.get(training=self)
-    #         if enrollment.state == state:
-    #             output.append(enrolled_participant)
-    #     return output
+    def __str__(self):
+        return self.name
 
 
 class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
