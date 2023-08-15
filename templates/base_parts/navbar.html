@@ -20,6 +20,10 @@
                         <a class="nav-link" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
                             <i class="far fa-user"></i>
                             {{ active_person.first_name }} {{ active_person.last_name }}
+
+                            {% if do_render_dropdown %}
+                                <i class="fas fa-angle-down" data-status="closed"></i>
+                            {% endif %}
                         </a>
                         {% if do_render_dropdown %}
                             <div class="dropdown-menu">
