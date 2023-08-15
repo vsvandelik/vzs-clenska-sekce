@@ -26,13 +26,7 @@ class GroupMembershipForm(ModelForm):
 
 
 class AllowedPersonTypeForm(ModelForm):
-    person_type = ChoiceField(choices=Person.Type.choices)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if "person_type" not in cleaned_data:
-            self.add_error(None, "Chybí hodnota person_type")
-        return cleaned_data
+    person_type = ChoiceField(required=True, choices=Person.Type.choices)
 
     def save(self, commit=True):
         person_type = self.cleaned_data["person_type"]

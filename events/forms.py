@@ -1,19 +1,9 @@
-from datetime import datetime, timedelta, timezone
-
-from django import forms
-from django.forms import Form, ModelForm, MultipleChoiceField
-from django.forms.widgets import CheckboxInput
-from django.utils import timezone
+from django.forms import ModelForm, MultipleChoiceField
 from django_select2.forms import Select2Widget
 
-from persons.models import Person
-from vzs.widgets import DateTimePickerWithIcon, DatePickerWithIcon, TimePickerWithIcon
-from .models import Event, EventPositionAssignment
-from .forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
 from positions.models import EventPosition
-
-
-# from positions.forms import GroupMembershipForm as PositionsGroupMembershipForm
+from .forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
+from .models import Event, EventPositionAssignment
 
 
 class MultipleChoiceFieldNoValidation(MultipleChoiceField):
@@ -21,42 +11,6 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
         pass
 
 
-#
-#
-# class AddDeleteParticipantFromOneTimeEventForm(Form):
-#     person_id = forms.IntegerField()
-#
-#     def __init__(self, *args, **kwargs):
-#         self._event_id = kwargs.pop("event_id")
-#         super().__init__(*args, **kwargs)
-#
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         pid = cleaned_data["person_id"]
-#         cleaned_data["event_id"] = self._event_id
-#         eid = cleaned_data["event_id"]
-#         try:
-#             cleaned_data["person"] = Person.objects.get(pk=pid)
-#             cleaned_data["event"] = Event.objects.get(pk=eid)
-#             event = cleaned_data["event"]
-#             event.set_type()
-#             if not event.is_one_time_event:
-#                 self.add_error("event_id", "Událost {event} není jednorázovou událostí")
-#             if event.state in [
-#                 Event.State.APPROVED,
-#                 Event.State.FINISHED,
-#             ]:
-#                 self.add_error(
-#                     "event_id",
-#                     f"Událost {event} je uzavřena nebo schválena",
-#                 )
-#         except Person.DoesNotExist:
-#             self.add_error("person_id", f"Osoba s id {pid} neexistuje")
-#         except Event.DoesNotExist:
-#             self.add_error("event_id", f"Událost s id {eid} neexistuje")
-#         return cleaned_data
-#
-#
 class EventPositionAssignmentForm(ModelForm):
     class Meta:
         model = EventPositionAssignment
