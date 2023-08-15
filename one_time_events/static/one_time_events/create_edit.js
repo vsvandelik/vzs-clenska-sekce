@@ -32,7 +32,7 @@ function validateDate(report = false) {
     const timeEndEl = document.getElementById('id_date_end')
     const timeEndDate = convertCzechDate(timeEndEl.value)
     const span = timeEndDate.getTime() - timeStartDate.getTime()
-    if (span <= 0 || isNaN(span)) {
+    if (span < 0 || isNaN(span)) {
         window._datesValid = false
         setReportValidity(timeEndEl, 'Konec události nesmí být dříve než její začátek', report)
         return false

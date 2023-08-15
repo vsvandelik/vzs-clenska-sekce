@@ -26,7 +26,7 @@ class OneTimeEvent(Event):
     )
 
     default_participation_fee = models.PositiveIntegerField(
-        _("Poplatek za účast"), null=True, blank=True
+        _("Standardní výše poplatku pro účastníky"), null=True, blank=True
     )
     category = models.CharField(
         _("Druh události"), max_length=11, choices=Category.choices

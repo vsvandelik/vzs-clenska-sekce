@@ -35,6 +35,10 @@
                         <td class="text-nowrap text-bold">Účastníci:</td>
                         <td class="w-100">{{ event.approved_participants|length }} / {{ event.capacity }}</td>
                     </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
+                        <td class="w-100">{{ event.default_participation_fee }} Kč</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
