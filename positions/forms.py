@@ -1,11 +1,10 @@
 from django import forms
-from django.forms import Form, ModelForm
-from persons.models import Person
-from features.models import Feature
-from persons.models import PersonType
-from positions.models import EventPosition
+from django.forms import ModelForm
 from django_select2.forms import Select2Widget
+
 from events.forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
+from features.models import Feature
+from positions.models import EventPosition
 
 
 class PositionForm(ModelForm):
@@ -38,13 +37,15 @@ class AddRemoveFeatureRequirementPositionForm(ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        instance = super().save(False)
         feature = self.cleaned_data["feature"]
-        if self.instance.required_features.contains(feature):
-            self.instance.required_features.remove(feature)
+        if instance.required_features.contains(feature):
+            instance.required_features.remove(feature)
         else:
-            self.instance.required_features.add(feature)
+            instance.required_features.add(feature)
         if commit:
-            self.instance.save()
+            instance.save()
+        return instance
 
 
 class PositionAgeLimitForm(AgeLimitForm):

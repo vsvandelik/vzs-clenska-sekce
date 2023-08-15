@@ -49,6 +49,7 @@ class EventPositionAssignmentForm(ModelForm):
             instance.position = self.position
         if commit:
             instance.save()
+        return instance
 
 
 class EventAgeLimitForm(AgeLimitForm):
