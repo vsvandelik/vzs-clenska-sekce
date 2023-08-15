@@ -96,9 +96,11 @@ def generate_allowed_person_types_requirement(options):
                 person_types, k=random.randint(0, len(person_types) - 1)
             )
     else:
-        chosen_person_types = map(lambda x: x.value, options["person_type"])
+        chosen_person_types = [
+            person_type.value for person_type in options["person_type"]
+        ]
 
-    return map(_retrieve_person_type, chosen_person_types)
+    return [_retrieve_person_type(person_type) for person_type in chosen_person_types]
 
 
 def _generate_start_end_dates(cmd_obj, min_days_delta, max_days_delta, options):
