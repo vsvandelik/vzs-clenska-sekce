@@ -28,36 +28,35 @@ def _generate_random_date():
 def generate_min_max_age(cmd_obj, options):
     values = {}
     if options["disable_age_restrictions"]:
-        values["min_age"] = None
-        values["max_age"] = None
-    else:
-        if options["min_age"] is not None:
-            values["min_age"] = options["min_age"]
+        return None, None
 
-        if options["max_age"] is not None:
-            values["max_age"] = options["max_age"]
+    if options["min_age"] is not None:
+        values["min_age"] = options["min_age"]
 
-        if "min_age" not in values and "max_age" in values:
-            values["min_age"] = _generate_age(1, values["max_age"])
+    if options["max_age"] is not None:
+        values["max_age"] = options["max_age"]
 
-        elif "max_age" not in values and "min_age" in values:
-            values["max_age"] = _generate_age(values["min_age"], 99)
+    if "min_age" not in values and "max_age" in values:
+        values["min_age"] = _generate_age(1, values["max_age"])
 
-        elif (
-            options["min_age"] is not None
-            and options["max_age"] is not None
-            and options["min_age"] > options["max_age"]
-        ):
-            cmd_obj.stdout.write(
-                cmd_obj.style.WARNING(
-                    f"Supplied --min-age has greater value than --max-age, switching the values"
-                )
+    elif "max_age" not in values and "min_age" in values:
+        values["max_age"] = _generate_age(values["min_age"], 99)
+
+    elif (
+        options["min_age"] is not None
+        and options["max_age"] is not None
+        and options["min_age"] > options["max_age"]
+    ):
+        cmd_obj.stdout.write(
+            cmd_obj.style.WARNING(
+                f"Supplied --min-age has greater value than --max-age, switching the values"
             )
-            values["min_age"], values["max_age"] = values["max_age"], values["min_age"]
+        )
+        values["min_age"], values["max_age"] = values["max_age"], values["min_age"]
 
-        elif "min_age" not in values and "max_age" not in values:
-            values["min_age"] = _generate_age(1, 99)
-            values["max_age"] = _generate_age(values["min_age"], 99)
+    elif "min_age" not in values and "max_age" not in values:
+        values["min_age"] = _generate_age(1, 99)
+        values["max_age"] = _generate_age(values["min_age"], 99)
 
     return values["min_age"], values["max_age"]
 
