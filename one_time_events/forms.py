@@ -32,7 +32,7 @@ class OneTimeEventForm(ModelForm):
     dates = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
     def __init__(self, *args, **kwargs):
-        self.POST = kwargs.pop("request").POST
+        self.hours = kwargs.pop("request").POST.getlist("hours")
         super().__init__(*args, **kwargs)
 
     def _check_date_constraints(self):
@@ -44,7 +44,7 @@ class OneTimeEventForm(ModelForm):
     def _add_validate_occurrences(self):
         occurrences = []
         dates = self.cleaned_data.pop("dates")
-        hours = self.POST.getlist("hours")
+        hours = self.hours
         if len(dates) < len(hours):
             self.add_error(
                 None, "Počet počtů hodin je větší počet dní, kdy se akce koná"
