@@ -25,7 +25,16 @@ class EventMixin:
 
 class RedirectToEventDetailOnSuccessMixin:
     def get_success_url(self):
-        event = Event.objects.get(pk=eval(self.redirect_event_id_var_name))
+        if hasattr(self, "object"):
+            t = type(self.object)
+            if t is OneTimeEvent or t is Training:
+                id = self.object.id
+            elif "event_id" in self.kwargs:
+                id = self.kwargs["event_id"]
+            else:
+                raise NotImplementedError
+
+        event = Event.objects.get(pk=id)
         if isinstance(event, OneTimeEvent):
             viewname = "one_time_events:detail"
         elif isinstance(event, Training):
@@ -33,12 +42,11 @@ class RedirectToEventDetailOnSuccessMixin:
         else:
             raise NotImplementedError
 
-        return reverse(viewname, args=[event.id])
+        return reverse(viewname, args=[id])
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
-    redirect_event_id_var_name = "self.object.id"
 
 
 class EventCreateUpdateMixin(EventMixin, MessagesMixin, generic.FormView):
@@ -94,7 +102,6 @@ class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
 class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccessMixin):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
-    redirect_event_id_var_name = 'self.kwargs["event_id"]'
 
 
 class EventPositionAssignmentCreateView(
@@ -155,7 +162,6 @@ class AddRemoveAllowedPersonTypeView(
     form_class = EventAllowedPersonTypeForm
     success_message = "Změna omezení pro typ členství uložena"
     model = Event
-    redirect_event_id_var_name = 'self.kwargs["pk"]'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
