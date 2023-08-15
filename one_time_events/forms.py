@@ -103,12 +103,11 @@ class OneTimeEventForm(ModelForm):
 
         children = instance.occurrences_list()
         occurrences = self.cleaned_data["occurrences"]
-        i = 0
         for child in children:
             occurrence = self._find_occurrence_with_date(child.date)
             if occurrence is not None:
                 if child.hours != occurrence[1]:
-                    child.hours = occurrences[1]
+                    child.hours = occurrence[1]
                     child.save()
                 self.cleaned_data["occurrences"].remove(occurrence)
             else:
