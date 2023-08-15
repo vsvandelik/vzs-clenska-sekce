@@ -33,12 +33,16 @@ def generate_min_max_age(cmd_obj, options):
     else:
         if options["min_age"] is not None:
             values["min_age"] = options["min_age"]
+
         if options["max_age"] is not None:
             values["max_age"] = options["max_age"]
+
         if "min_age" not in values and "max_age" in values:
             values["min_age"] = _generate_age(1, values["max_age"])
+
         elif "max_age" not in values and "min_age" in values:
             values["max_age"] = _generate_age(values["min_age"], 99)
+
         elif (
             options["min_age"] is not None
             and options["max_age"] is not None
@@ -50,9 +54,11 @@ def generate_min_max_age(cmd_obj, options):
                 )
             )
             values["min_age"], values["max_age"] = values["max_age"], values["min_age"]
+
         elif "min_age" not in values and "max_age" not in values:
             values["min_age"] = _generate_age(1, 40)
             values["max_age"] = _generate_age(1, 99)
+
     return values["min_age"], values["max_age"]
 
 
