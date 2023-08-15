@@ -51,9 +51,8 @@ class EventUpdateMixin(EventCreateUpdateMixin, generic.UpdateView):
 
 class EventGeneratesDatesMixin:
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["dates"] = context["form"].generate_dates()
-        return context
+        kwargs.setdefault("dates", self.get_form().generate_dates())
+        return super().get_context_data(**kwargs)
 
 
 class PersonTypeDetailViewMixin:
