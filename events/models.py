@@ -104,7 +104,7 @@ class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
     count = models.PositiveSmallIntegerField(
-        _("Počet"), default=1, validators=[MinValueValidator(1)]
+        _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )
 
     class Meta:

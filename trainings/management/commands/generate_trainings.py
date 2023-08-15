@@ -1,15 +1,16 @@
 import random
+from datetime import timedelta, datetime, time
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from events.models import EventOrOccurrenceState
 from one_time_events.management.commands.generate_one_time_events import (
     add_common_args,
     generate_basic_event,
 )
-from events.models import Event, EventOrOccurrenceState
-from trainings.utils import weekday_2_day_shortcut
 from trainings.models import Training, TrainingOccurrence
-from datetime import timedelta, datetime, time
+from trainings.utils import weekday_2_day_shortcut
 
 
 class Command(BaseCommand):

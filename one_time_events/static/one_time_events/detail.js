@@ -1,8 +1,3 @@
-const addingPersonsTable = new DataTable('#signup-person-for-one-time-event-table', {
-    responsive: true,
-    searching: true
-})
-
 function signupPersonClicked() {
     getSignupPersonModalTitle().innerText = 'Přihlásit osobu'
     getSignupPersonForm().action = window._signPersonUrl

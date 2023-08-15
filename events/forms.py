@@ -96,16 +96,6 @@ class EventPositionAssignmentForm(ModelForm):
         if commit:
             instance.save()
 
-    def clean(self):
-        cleaned_data = super().clean()
-        min_age_enabled = cleaned_data["min_age_enabled"]
-        if not min_age_enabled:
-            cleaned_data["min_age"] = self.instance.min_age
-        if min_age_enabled:
-            if "min_age" not in cleaned_data or cleaned_data["min_age"] is None:
-                self.add_error("min_age", "Toto pole je nutné vyplnit")
-        return cleaned_data
-
 
 class EventAgeLimitForm(AgeLimitForm):
     class Meta:

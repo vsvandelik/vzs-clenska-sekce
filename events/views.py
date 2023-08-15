@@ -3,12 +3,11 @@ from .models import (
     Event,
     EventPositionAssignment,
 )
-from persons.models import Person, PersonType
+from persons.models import Person
 from django.views import generic
 
 from .forms import (
     EventAgeLimitForm,
-    # AddDeleteParticipantFromOneTimeEventForm,
     EventPositionAssignmentForm,
     EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
@@ -24,15 +23,18 @@ class EventMixin:
     context_object_name = "event"
 
 
-class EventRestrictionMixin:
-    model = Event
-
+class RedirectToEventDetailOnSuccessMixin:
     def get_success_url(self):
-        id = self.object.id
-        if isinstance(self.object, OneTimeEvent):
-            return reverse("one_time_events:detail", args=[id])
-        elif isinstance(self.object, Training):
-            return reverse("trainings:detail", args=[id])
+        event = Event.objects.get(pk=eval(self.redirect_event_id_var_name))
+        if isinstance(event, OneTimeEvent):
+            return reverse("one_time_events:detail", args=[event.id])
+        elif isinstance(event, Training):
+            return reverse("trainings:detail", args=[event.id])
+
+
+class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
+    model = Event
+    redirect_event_id_var_name = "self.object.id"
 
 
 class EventCreateUpdateMixin(EventMixin, MessagesMixin, generic.FormView):
@@ -86,76 +88,10 @@ class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-#
-#
-#
-# class SignUpOrRemovePersonFromOneTimeEventView(MessagesMixin, generic.FormView):
-#     form_class = AddDeleteParticipantFromOneTimeEventForm
-#
-#     def get_success_url(self):
-#         return reverse("events:detail_one_time_event", args=[self.kwargs["event_id"]])
-#
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         kwargs["event_id"] = self.kwargs["event_id"]
-#         return kwargs
-#
-#     def _change_save_db(self, person, event):
-#         raise ImproperlyConfigured("This method should never be called")
-#
-#     def _process_form(self, person, event, state):
-#         EventOccurrenceParticipation.objects.update_or_create(
-#             person=person,
-#             event=event,
-#             defaults={"person": person, "event": event, "state": state},
-#         )
-#
-#     def form_valid(self, form):
-#         person = Person.objects.get(pk=form.cleaned_data["person_id"])
-#         event_id = form.cleaned_data["event_id"]
-#         event = Event.objects.get(pk=event_id)
-#         self._change_save_db(person, event)
-#         return super().form_valid(form)
-#
-#
-# class SignUpPersonForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
-#     def get_success_message(self, cleaned_data):
-#         return f"Osoba {cleaned_data['person']} přihlášena na událost"
-#
-#     def _change_save_db(self, person, event):
-#         self._process_form(person, event, Participation.State.APPROVED)
-#
-#
-# class RemoveParticipantFromOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
-#     def get_success_message(self, cleaned_data):
-#         return f"Osoba {cleaned_data['person']} odhlášena z události"
-#
-#     def _change_save_db(self, person, event):
-#         event.participants.remove(person)
-#
-#
-# class AddSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
-#     def get_success_message(self, cleaned_data):
-#         return f"Osoba {cleaned_data['person']} přidána mezi náhradníky události"
-#
-#     def _change_save_db(self, person, event):
-#         self._process_form(person, event, Participation.State.SUBSTITUTE)
-#
-#
-# class RemoveSubtituteForOneTimeEventView(SignUpOrRemovePersonFromOneTimeEventView):
-#     def get_success_message(self, cleaned_data):
-#         return f"Osoba {cleaned_data['person']} smazána ze seznamu náhradníků události"
-#
-#     def _change_save_db(self, person, event):
-#         event.participants.remove(person)
-#
-#
-class EventPositionAssignmentMixin(MessagesMixin):
+class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccessMixin):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
-
-    def get_success_url(self):
-        return reverse("events:detail_one_time_event", args=[self.kwargs["event_id"]])
+    redirect_event_id_var_name = 'self.kwargs["event_id"]'
 
 
 class EventPositionAssignmentCreateView(
@@ -210,19 +146,15 @@ class EditGroupMembershipView(MessagesMixin, EventRestrictionMixin, generic.Upda
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class AddRemoveAllowedPersonTypeView(MessagesMixin, generic.UpdateView):
+class AddRemoveAllowedPersonTypeView(
+    MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.UpdateView
+):
     form_class = EventAllowedPersonTypeForm
     success_message = "Změna omezení pro typ členství uložena"
     model = Event
-
-    def get_success_url(self):
-        return reverse(self.detail, args=[self.kwargs["pk"]])
+    redirect_event_id_var_name = 'self.kwargs["pk"]'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        instance = Event.objects.get(pk=self.kwargs["pk"])
-        self.detail = "trainings:detail"
-        if isinstance(instance, OneTimeEvent):
-            self.detail = "one_time_events:detail"
-        kwargs["instance"] = Event.objects.get(pk=self.kwargs["pk"])
+        kwargs["instance"] = get_object_or_404(Event, pk=self.kwargs["pk"])
         return kwargs

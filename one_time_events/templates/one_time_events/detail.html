@@ -5,9 +5,6 @@
 {% endblock %}
 
 {% block content %}
-    {#    <input type="hidden" id="sign-url" data-url="{% url 'events:signup_person_for_one_time_event' event.id %}">#}
-    {#    <input type="hidden" id="substitute-url" data-url="{% url 'events:add_substitute_for_one_time_event' event.id %}">#}
-
     <div class="row">
         <div class="col-12">
             <div class="elevation-2 card">
@@ -25,9 +22,7 @@
     </div>
     <div class="row">
         {% include 'one_time_events/detail_components/overview.html' %}
-        {% include 'one_time_events/detail_components/organizers.html' %}
-        {#        {% include 'one_time_events/detail_components/approved_participants.html' %}#}
-        {#        {% include 'one_time_events/detail_components/substitute_participants.html' %}#}
+        {% include 'events/detail_components/positions.html' %}
         <div class="col-12">
             <div class="card">
                 <div class="card-header border-0">
@@ -50,7 +45,7 @@
 
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
-    {#    {% include "modal_include.html" with id="delete-position-assignment-modal" %}#}
+    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
 {% endblock %}
 
 {% block scripts %}

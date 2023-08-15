@@ -246,25 +246,3 @@ def add_common_args(parser):
         choices=list(Person.Type),
         help="forces the event to allow only a specific person types for participants",
     )
-
-
-# class Command(BaseCommand):
-#     help = "Creates N new one time events to test design with."
-#
-#     def add_arguments(self, parser):
-#         add_common_args(parser)
-#
-#     def handle(self, *args, **options):
-#         idx = Event.one_time_events.all().count() + 1
-#         events = []
-#         for i in range(options["N"]):
-#             events.append(generate_basic_event(f"událost_{idx}", 2, 168, options))
-#             idx += 1
-#
-#         Event.objects.bulk_create(events)
-#
-#         self.stdout.write(
-#             self.style.SUCCESS(
-#                 f'Successfully created {options["N"]} new one time events.'
-#             )
-#         )

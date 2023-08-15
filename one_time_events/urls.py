@@ -15,24 +15,4 @@ urlpatterns = [
         views.OneTimeEventUpdateView.as_view(),
         name="edit",
     ),
-    # path(
-    #     "<int:event_id>/jednorazova/pridat/osoba/",
-    #     views.EnrollParticipantForOneTimeEventView.as_view(),
-    #     name="signup_person_for_one_time_event",
-    # ),
-    # path(
-    #     "<int:event_id>/jednorazova/odebrat/osoba/",
-    #     views.RemoveParticipantFromOneTimeEventView.as_view(),
-    #     name="remove_participant_from_one_time_event",
-    # ),
-    # path(
-    #     "<int:event_id>/jednorazova/pridat/nahradnik/",
-    #     views.AddSubtituteForOneTimeEventView.as_view(),
-    #     name="add_substitute_for_one_time_event",
-    # ),
-    # path(
-    #     "<int:event_id>/jednorazova/odebrat/nahradnik/",
-    #     views.RemoveSubtituteForOneTimeEventView.as_view(),
-    #     name="remove_substitute_from_one_time_event",
-    # ),
 ]
