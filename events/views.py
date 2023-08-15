@@ -27,9 +27,13 @@ class RedirectToEventDetailOnSuccessMixin:
     def get_success_url(self):
         event = Event.objects.get(pk=eval(self.redirect_event_id_var_name))
         if isinstance(event, OneTimeEvent):
-            return reverse("one_time_events:detail", args=[event.id])
+            viewname = "one_time_events:detail"
         elif isinstance(event, Training):
-            return reverse("trainings:detail", args=[event.id])
+            viewname = "trainings:detail"
+        else:
+            raise NotImplementedError
+
+        return reverse(viewname, args=[event.id])
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
