@@ -6,6 +6,7 @@ from events.views import PersonTypeDetailViewMixin
 from features.models import Feature
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
+    PositionForm,
     AddRemoveFeatureRequirementPositionForm,
     PositionAgeLimitForm,
     PositionGroupMembershipForm,
@@ -21,7 +22,7 @@ class PositionMixin:
 
 class PositionCreateUpdateMixin(MessagesMixin, PositionMixin):
     template_name = "positions/create_edit.html"
-    fields = ["name"]
+    form_class = PositionForm
 
     def get_success_url(self):
         return reverse("positions:detail", args=[self.object.id])

@@ -7,6 +7,9 @@ from django.utils.translation import gettext_lazy as _
 
 class EventPosition(models.Model):
     name = models.CharField(_("Název"), max_length=50)
+    wage_hour = models.PositiveIntegerField(
+        _("Hodinová sazba"), null=True, validators=[MinValueValidator(1)]
+    )
     required_features = models.ManyToManyField(Feature)
     min_age = models.PositiveSmallIntegerField(
         _("Minimální věk"),

@@ -19,10 +19,13 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'positions:edit' position.id %}"
-                   class="btn btn-success">Změna jména</a>
+                   class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-position-modal" %}
             </div>
         </div>
+    </div>
+    <div class="row">
+        {% include 'positions/detail_components/overview.html' %}
     </div>
     <div class="row">
         {% include 'positions/detail_components/qualifications_required.html' %}
