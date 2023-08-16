@@ -25,14 +25,14 @@ class EventMixin:
 
 class RedirectToEventDetailOnSuccessMixin:
     def get_success_url(self):
-        if hasattr(self, "object"):
-            t = type(self.object)
-            if t is OneTimeEvent or t is Training:
-                id = self.object.id
-            elif "event_id" in self.kwargs:
-                id = self.kwargs["event_id"]
-            else:
-                raise NotImplementedError
+        if hasattr(self, "object") and (
+            type(self.object) is OneTimeEvent or type(self.object) is Training
+        ):
+            id = self.object.id
+        elif "event_id" in self.kwargs:
+            id = self.kwargs["event_id"]
+        else:
+            raise NotImplementedError
 
         event = Event.objects.get(pk=id)
         if isinstance(event, OneTimeEvent):
