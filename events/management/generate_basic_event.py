@@ -70,15 +70,6 @@ def generate_group_requirement(options):
     return group
 
 
-def _retrieve_person_type(person_type):
-    queryset = PersonType.objects.filter(person_type=person_type)
-    if queryset.count() == 0:
-        person_type = PersonType(person_type=person_type)
-        person_type.save()
-        return person_type
-    return queryset[0]
-
-
 def generate_allowed_person_types_requirement(options):
     chosen_person_types = []
     if options["person_type"] is None:
@@ -92,7 +83,10 @@ def generate_allowed_person_types_requirement(options):
             person_type.value for person_type in options["person_type"]
         ]
 
-    return [_retrieve_person_type(person_type) for person_type in chosen_person_types]
+    return [
+        PersonType.get_or_create_person_type(person_type)
+        for person_type in chosen_person_types
+    ]
 
 
 def _generate_start_end_dates(min_days_delta, max_days_delta, options):
