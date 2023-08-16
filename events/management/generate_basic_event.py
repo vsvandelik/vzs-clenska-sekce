@@ -1,6 +1,7 @@
 import random
 from vzs.commands_utils import positive_int, non_negative_int
 from django.utils import timezone
+from django.core.management.base import CommandError
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from persons.models import Person, PersonType
@@ -25,7 +26,7 @@ def _generate_random_date():
             pass
 
 
-def generate_min_max_age(cmd_obj, options):
+def generate_min_max_age(options):
     values = {}
     if options["disable_age_restrictions"]:
         return None, None
@@ -47,12 +48,7 @@ def generate_min_max_age(cmd_obj, options):
         and options["max_age"] is not None
         and options["min_age"] > options["max_age"]
     ):
-        cmd_obj.stdout.write(
-            cmd_obj.style.WARNING(
-                f"Supplied --min-age has greater value than --max-age, switching the values"
-            )
-        )
-        values["min_age"], values["max_age"] = values["max_age"], values["min_age"]
+        raise CommandError("Supplied --min-age has greater value than --max-age")
 
     elif "min_age" not in values and "max_age" not in values:
         values["min_age"] = _generate_age(1, 99)
@@ -61,16 +57,12 @@ def generate_min_max_age(cmd_obj, options):
     return values["min_age"], values["max_age"]
 
 
-def generate_group_requirement(cmd_obj, options):
+def generate_group_requirement(options):
     groups_count = Group.objects.all().count()
     group = None
     if not options["disable_group_restrictions"]:
         if groups_count == 0 and options["requires_group"]:
-            cmd_obj.stdout.write(
-                cmd_obj.style.WARNING(
-                    f"Ignoring --requires-group flag due to nonexistent group in the system"
-                )
-            )
+            raise CommandError("--requires-group requires an existing group in the DB")
         elif groups_count > 0 and (
             options["requires_group"] or bool(random.randint(0, 1))
         ):
@@ -103,7 +95,7 @@ def generate_allowed_person_types_requirement(options):
     return [_retrieve_person_type(person_type) for person_type in chosen_person_types]
 
 
-def _generate_start_end_dates(cmd_obj, min_days_delta, max_days_delta, options):
+def _generate_start_end_dates(min_days_delta, max_days_delta, options):
     if options["date_start"] is not None and options["date_end"] is None:
         date_start = options["date_start"]
         date_end = date_start + timedelta(
@@ -118,12 +110,7 @@ def _generate_start_end_dates(cmd_obj, min_days_delta, max_days_delta, options):
         date_start = options["date_start"]
         date_end = options["date_end"]
         if date_start > date_end:
-            cmd_obj.stdout.write(
-                cmd_obj.style.WARNING(
-                    f"Supplied --date-start has greater value than --date-end, switching the values"
-                )
-            )
-            date_start, date_end = date_end, date_start
+            raise CommandError("--date-start has greater value than --date-end")
     else:
         date_start = _generate_random_date()
         date_end = date_start + timedelta(
@@ -132,9 +119,9 @@ def _generate_start_end_dates(cmd_obj, min_days_delta, max_days_delta, options):
     return date_start, date_end
 
 
-def generate_basic_event(cmd_obj, type, name, min_days_delta, max_days_delta, options):
+def generate_basic_event(t, name, min_days_delta, max_days_delta, options):
     date_start, date_end = _generate_start_end_dates(
-        cmd_obj, min_days_delta, max_days_delta, options
+        min_days_delta, max_days_delta, options
     )
 
     capacity = (
@@ -155,11 +142,11 @@ def generate_basic_event(cmd_obj, type, name, min_days_delta, max_days_delta, op
         ]
     )
 
-    min_age, max_age = generate_min_max_age(cmd_obj, options)
-    group = generate_group_requirement(cmd_obj, options)
+    min_age, max_age = generate_min_max_age(options)
+    group = generate_group_requirement(options)
     allowed_person_types = generate_allowed_person_types_requirement(options)
 
-    if type == OneTimeEvent.__name__:
+    if t == OneTimeEvent.__name__:
         event = OneTimeEvent(
             name=name,
             description=f"Tohle je popisek k události {name}",
@@ -171,7 +158,7 @@ def generate_basic_event(cmd_obj, type, name, min_days_delta, max_days_delta, op
             max_age=max_age,
             group=group,
         )
-    elif type == Training.__name__:
+    elif t == Training.__name__:
         event = Training(
             name=name,
             description=f"Tohle je popisek k události {name}",

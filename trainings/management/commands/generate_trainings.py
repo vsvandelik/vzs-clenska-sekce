@@ -104,7 +104,7 @@ class Command(BaseCommand):
             )
 
             event = generate_basic_event(
-                self, Training.__name__, name, 14, months_six, options
+                Training.__name__, name, 14, months_six, options
             )
             event.category = category
             event.save()

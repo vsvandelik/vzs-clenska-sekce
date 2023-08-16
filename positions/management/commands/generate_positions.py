@@ -1,6 +1,6 @@
 import random
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from events.management.generate_basic_event import (
     generate_min_max_age,
@@ -21,10 +21,8 @@ class Command(BaseCommand):
         if options["features_count"] is not None:
             features_to_add_count = min(options["features_count"], all_features_count)
             if features_to_add_count < options["features_count"]:
-                self.stdout.write(
-                    self.style.WARNING(
-                        f"Limiting required features to {features_to_add_count} due to insufficient number of features"
-                    )
+                raise CommandError(
+                    f"The DB does not contain {features_to_add_count} features"
                 )
         else:
             features_to_add_count = random.randint(0, all_features_count)
@@ -81,8 +79,8 @@ class Command(BaseCommand):
         for i in range(options["N"]):
             position_name = f"pozice_{idx}"
             required_features = self._generate_required_features(options)
-            min_age, max_age = generate_min_max_age(self, options)
-            group = generate_group_requirement(self, options)
+            min_age, max_age = generate_min_max_age(options)
+            group = generate_group_requirement(options)
             allowed_person_types = generate_allowed_person_types_requirement(options)
 
             position = EventPosition(

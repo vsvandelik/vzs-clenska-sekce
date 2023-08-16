@@ -61,9 +61,7 @@ class Command(BaseCommand):
                 else random.choice(OneTimeEvent.Category.choices)[0]
             )
 
-            event = generate_basic_event(
-                self, OneTimeEvent.__name__, name, 0, 7, options
-            )
+            event = generate_basic_event(OneTimeEvent.__name__, name, 0, 7, options)
             event.default_participation_fee = default_participation_fee
             event.state = EventOrOccurrenceState.OPEN
             event.category = category
