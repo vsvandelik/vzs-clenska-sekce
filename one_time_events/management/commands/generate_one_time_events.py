@@ -1,6 +1,9 @@
 import random
 from django.core.management.base import BaseCommand
-from events.management.generate_basic_event import generate_basic_event, add_common_args
+from events.management.commands.generate_basic_event import (
+    generate_basic_event,
+    add_common_args,
+)
 from events.models import EventOrOccurrenceState
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from vzs.commands_utils import non_negative_int

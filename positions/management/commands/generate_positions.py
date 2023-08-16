@@ -2,7 +2,7 @@ import random
 
 from django.core.management.base import BaseCommand, CommandError
 
-from events.management.generate_basic_event import (
+from events.management.commands.generate_basic_event import (
     generate_min_max_age,
     generate_group_requirement,
     generate_allowed_person_types_requirement,
