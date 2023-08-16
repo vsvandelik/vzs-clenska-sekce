@@ -27,8 +27,9 @@ urlpatterns = [
     path("osoby/", include("persons.urls")),
     path("transakce/", include("transactions.urls")),
     path("udalosti/", include("events.urls")),
+    path("udalosti/jednorazove/", include("one_time_events.urls")),
+    path("udalosti/treninky/", include("trainings.urls")),
     path("pozice/", include("positions.urls")),
-    path("ceniky/", include("price_lists.urls")),
     path("uzivatele/", include("users.urls")),
     path("skupiny/", include("groups.urls")),
     path(

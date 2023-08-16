@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
-{% load events_tag_extensions %}
 {% block scripts %}
-    <script src="{% static 'position_detail.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("add-feature-table",[0],[0])</script>
+    <script src="{% static 'positions/detail.js' %}"></script>
 {% endblock %}
 {% block title %}
     Detail pozice
@@ -18,10 +19,13 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'positions:edit' position.id %}"
-                   class="btn btn-success">Změna jména</a>
+                   class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-position-modal" %}
             </div>
         </div>
+    </div>
+    <div class="row">
+        {% include 'positions/detail_components/overview.html' %}
     </div>
     <div class="row">
         {% include 'positions/detail_components/qualifications_required.html' %}
@@ -55,15 +59,15 @@
                             </thead>
 
                             <tbody id="qualifications-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=qualifications features_required=qualifications_required detail_name='qualifications:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=qualifications detail_name='qualifications:detail' %}
                             </tbody>
 
                             <tbody id="permissions-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=permissions features_required=permissions_required detail_name='permissions:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=permissions detail_name='permissions:detail' %}
                             </tbody>
 
                             <tbody id="equipment-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=equipment features_required=equipment_required detail_name='equipments:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=equipment detail_name='equipments:detail' %}
                             </tbody>
                         </table>
                     </form>

@@ -1,0 +1,46 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Přehled</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+
+                    <tr>
+                        <td class="text-nowrap text-bold">Kategorie:</td>
+                        <td class="w-100">{{ event.get_category_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Popis:</td>
+                        <td class="w-100">{{ event.description }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Místo konání:</td>
+                        <td class="w-100">{{ event.location }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Stav:</td>
+                        <td class="w-100">{{ event.get_state_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Začíná:</td>
+                        <td class="w-100">{{ event.date_start }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Končí:</td>
+                        <td class="w-100">{{ event.date_end }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Účastníci:</td>
+                        <td class="w-100">{{ event.approved_participants|length }} / {{ event.capacity }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
+                        <td class="w-100">{{ event.get_default_participation_fee_display }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

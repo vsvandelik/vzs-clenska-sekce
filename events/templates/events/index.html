@@ -10,7 +10,7 @@
         <div class="card-header d-flex align-items-center">
             <div class="card-title h5">Jednorázové události</div>
             <div class="card-tools ml-2">
-                <a href="{% url 'events:add_one_time_event' %}"><button class="btn btn-info">+</button></a>
+                <a href="{% url 'one_time_events:add' %}"><button class="btn btn-info">+</button></a>
             </div>
         </div>
         <div class="card-body">
@@ -28,14 +28,14 @@
                             {% for event in events %}
                                 {% if event.is_one_time_event %}
                                     <tr>
-                                        <td><a href="{% url 'events:detail_one_time_event' event.id %}">{{ event.name }}</a></td>
+                                        <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
                                         <td>{{ event.description }}</td>
                                         <td>
                                             <div class="btn-group">
-                                                <a class="btn btn-info btn-sm" href="{% url 'events:detail_one_time_event' event.id %}">
+                                                <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">
                                                     <i class="fas fa-info"></i>
                                                 </a>
-                                                <a class="btn btn-success btn-sm" href="{% url 'events:edit_one_time_event' event.id %}">
+                                                <a class="btn btn-success btn-sm" href="{% url 'one_time_events:edit' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
                                                 {% include "delete_button_icon.html" with id="delete-event-modal" pattern="events:delete" object=event %}
@@ -55,7 +55,7 @@
         <div class="card-header d-flex align-items-center">
             <div class="card-title h5">Tréninky</div>
             <div class="card-tools ml-2">
-                <a href="{% url 'events:add_training' %}"><button class="btn btn-info">+</button></a>
+                <a href="{% url 'trainings:add' %}"><button class="btn btn-info">+</button></a>
             </div>
         </div>
         <div class="card-body">
@@ -71,16 +71,16 @@
                         </thead>
                         <tbody>
                             {% for event in events %}
-                                {% if event.is_top_training %}
+                                {% if event.is_training %}
                                     <tr>
-                                        <td><a href="{% url 'events:detail_training' event.id %}">{{ event.name }}</a></td>
+                                        <td><a href="{% url 'trainings:detail' event.id %}">{{ event.name }}</a></td>
                                         <td>{{ event.description }}</td>
                                         <td>
                                             <div class="btn-group">
-                                                <a class="btn btn-info btn-sm" href="{% url 'events:detail_training' event.id %}">
+                                                <a class="btn btn-info btn-sm" href="{% url 'trainings:detail' event.id %}">
                                                     <i class="fas fa-info"></i>
                                                 </a>
-                                                <a class="btn btn-success btn-sm" href="{% url 'events:edit_training' event.id %}">
+                                                <a class="btn btn-success btn-sm" href="{% url 'trainings:edit' event.id %}">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
                                                 <a href="#" data-toggle="modal" data-target="#delete-event-modal" data-action="{% url 'events:delete' event.id %}" class="btn btn-danger btn-sm">
@@ -102,7 +102,11 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'events_index.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("one-time-events-table",[0],[0]);
+        datatableEnable("trainings-table",[0],[0]);
+    </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-event-modal")</script>
 {% endblock %}

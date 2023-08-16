@@ -7,18 +7,24 @@ from django.utils.translation import gettext_lazy as _
 
 class EventPosition(models.Model):
     name = models.CharField(_("Název"), max_length=50)
+    wage_hour = models.PositiveIntegerField(
+        _("Hodinová sazba"), validators=[MinValueValidator(1)]
+    )
     required_features = models.ManyToManyField(Feature)
-    min_age_enabled = models.BooleanField(default=False)
-    max_age_enabled = models.BooleanField(default=False)
     min_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+        _("Minimální věk"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
     max_age = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)]
+        _("Maximální věk"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    group_membership_required = models.BooleanField(default=False)
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
-    allowed_person_types = models.ManyToManyField("persons.PersonType")
+    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
@@ -31,3 +37,6 @@ class EventPosition(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_wage_hour_display(self):
+        return f"{self.wage_hour} Kč"

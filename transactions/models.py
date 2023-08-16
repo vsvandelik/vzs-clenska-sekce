@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from events.models import Event
 from features.models import FeatureAssignment
 from persons.models import Person
 from vzs import models as vzs_models
@@ -25,7 +24,7 @@ class Transaction(vzs_models.ExportableCSVMixin, models.Model):
         verbose_name=_("Osoba"),
     )
     event = models.ForeignKey(
-        Event, on_delete=models.SET_NULL, null=True, verbose_name=_("Událost")
+        "events.Event", on_delete=models.SET_NULL, null=True, verbose_name=_("Událost")
     )
     feature_assigment = models.OneToOneField(
         FeatureAssignment,

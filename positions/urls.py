@@ -10,13 +10,13 @@ urlpatterns = [
     path("<int:pk>/smazat/", views.PositionDeleteView.as_view(), name="delete"),
     path("<int:pk>/", views.PositionDetailView.as_view(), name="detail"),
     path(
-        "<int:position_id>/pridat/feature/",
-        views.AddFeatureRequirementToPositionView.as_view(),
+        "<int:pk>/pridat/feature/",
+        views.AddRemoveFeatureRequirementPositionView.as_view(),
         name="add_feature",
     ),
     path(
-        "<int:position_id>/smazat/feature/",
-        views.RemoveFeatureRequirementToPositionView.as_view(),
+        "<int:pk>/smazat/feature/",
+        views.AddRemoveFeatureRequirementPositionView.as_view(),
         name="remove_feature",
     ),
     path(
@@ -30,13 +30,13 @@ urlpatterns = [
         name="edit_group_membership",
     ),
     path(
-        "<int:position_id>/pridat/typ-clenstvi/",
-        views.AddAllowedPersonTypeToPositionView.as_view(),
+        "<int:pk>/pridat/typ-clenstvi/",
+        views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
         name="add_person_type",
     ),
     path(
-        "<int:position_id>/smazat/typ-clenstvi/",
-        views.RemoveAllowedPersonTypeFromPositionView.as_view(),
+        "<int:pk>/smazat/typ-clenstvi/",
+        views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
         name="remove_person_type",
     ),
 ]

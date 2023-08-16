@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events/get_django_url.js' %}"></script>
+    <script src="{% static 'events/date_utils.js' %}"></script>
+    <script src="{% static 'events/set_report_validity.js' %}"></script>
+    <script src="{% static 'one_time_events/create_edit.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST"
+                      action="{% block form_action %}{% endblock %}"
+                      onsubmit="return beforeSubmit()">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
+                    </div>
+                    <div class="card-body">
+                        {% include "events/common_fields.html" %}
+                        <div class="card">
+                            <div class="card-header border-0">
+                                <div class="card-title h5">Rozpis konání události</div>
+                            </div>
+                            <div id="event-schedule" class="card-body">
+                                <div id="event-schedule-row" class="row">
+                                    {% for checked, date, hours in dates %}
+                                        <div class="col-sm-5 col-md-3 col-lg-3 col-12">
+                                            <div class="card">
+                                                <div class="card-header border-0">
+                                                    <div class="card-title h5 text-bold">
+                                                        <input id="{{ date }}_checkbox"
+                                                               name="dates"
+                                                               type="checkbox"
+                                                               value="{{ date }}"
+                                                               onclick="dayCheckboxClicked(this)"
+                                                               {% if checked %}checked{% endif %}>
+                                                        <label for="{{ date }}_checkbox">{{ date }}</label>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="row">
+                                                        <div class="col-12 px-4">
+                                                            <div class="form-group">
+                                                                <label for="{{ date }}_hours">Počet hodin*</label>
+                                                                <div>
+                                                                    <input id="{{ date }}_hours" name="hours"
+                                                                           class="form-control" min="1" max="10"
+                                                                           type="number" value="{{ hours }}"
+                                                                           {% if checked %}required{% else %}disabled
+                                                                               style="display: none" {% endif %}>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {{ form.default_participation_fee|as_crispy_field }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% block savebtn_value %}{% endblock %}">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

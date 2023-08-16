@@ -170,12 +170,3 @@ class Person(
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
-
-
-class PersonType(models.Model):
-    person_type = models.CharField(
-        _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.choices
-    )
-
-    def __str__(self):
-        return self.get_person_type_display()

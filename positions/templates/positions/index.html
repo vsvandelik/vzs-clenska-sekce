@@ -50,7 +50,8 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'positions_index.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("positions-table",[0],[0])</script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-position-modal")</script>
 {% endblock %}
