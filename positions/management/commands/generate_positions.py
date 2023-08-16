@@ -10,7 +10,7 @@ from events.management.generate_basic_event import (
 from features.models import Feature
 from persons.models import Person
 from positions.models import EventPosition
-from vzs.commands_utils import positive_int, non_negative_int
+from vzs.commands_utils import positive_int, non_negative_int, age_int
 
 
 class Command(BaseCommand):
@@ -41,12 +41,12 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--min-age",
-            type=positive_int,
+            type=age_int,
             help="the minimal allowed age for the position",
         )
         parser.add_argument(
             "--max-age",
-            type=positive_int,
+            type=age_int,
             help="the maximal allowed age for the position",
         )
         parser.add_argument(

@@ -1,5 +1,5 @@
 import random
-from vzs.commands_utils import positive_int, non_negative_int
+from vzs.commands_utils import positive_int, non_negative_int, age_int
 from django.utils import timezone
 from django.core.management.base import CommandError
 from one_time_events.models import OneTimeEvent
@@ -27,34 +27,27 @@ def _generate_random_date():
 
 
 def generate_min_max_age(options):
-    values = {}
-    if options["disable_age_restrictions"]:
-        return None, None
+    in_age_min = options["min_age"]
+    in_age_max = options["max_age"]
+    disable_age_restrictions = options["disable_age_restrictions"]
 
-    if options["min_age"] is not None:
-        values["min_age"] = options["min_age"]
-
-    if options["max_age"] is not None:
-        values["max_age"] = options["max_age"]
-
-    if "min_age" not in values and "max_age" in values:
-        values["min_age"] = _generate_age(1, values["max_age"])
-
-    elif "max_age" not in values and "min_age" in values:
-        values["max_age"] = _generate_age(values["min_age"], 99)
-
-    elif (
-        options["min_age"] is not None
-        and options["max_age"] is not None
-        and options["min_age"] > options["max_age"]
-    ):
+    if in_age_min is not None and in_age_max is not None and in_age_min > in_age_max:
         raise CommandError("Supplied --min-age has greater value than --max-age")
 
-    elif "min_age" not in values and "max_age" not in values:
-        values["min_age"] = _generate_age(1, 99)
-        values["max_age"] = _generate_age(values["min_age"], 99)
+    if disable_age_restrictions:
+        return None, None
 
-    return values["min_age"], values["max_age"]
+    valid_range_min = 1
+    valid_range_max = 99
+
+    out_age_min = in_age_min or _generate_age(
+        valid_range_min, in_age_max or valid_range_max
+    )
+    out_age_max = in_age_max or _generate_age(
+        in_age_min or valid_range_min, valid_range_max
+    )
+
+    return out_age_min, out_age_max
 
 
 def generate_group_requirement(options):
@@ -202,12 +195,12 @@ def add_common_args(parser):
     )
     parser.add_argument(
         "--min-age",
-        type=non_negative_int,
+        type=age_int,
         help="the minimum age of participants",
     )
     parser.add_argument(
         "--max-age",
-        type=non_negative_int,
+        type=age_int,
         help="the maximum age of participants",
     )
     parser.add_argument(
