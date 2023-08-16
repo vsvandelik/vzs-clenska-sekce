@@ -174,18 +174,18 @@ def add_common_args(parser):
     parser.add_argument(
         "-s",
         "--date-start",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d %H:%M")
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d")
         .replace(tzinfo=timezone.get_default_timezone())
         .date(),
-        help="the time when the events start in 'Y-m-d H:M' format",
+        help="the date when the events start in 'Y-m-d' format",
     )
     parser.add_argument(
         "-e",
         "--date-end",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d %H:%M")
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d")
         .replace(tzinfo=timezone.get_default_timezone())
         .date(),
-        help="the time when the events end in 'Y-m-d H:M' format",
+        help="the date when the events end in 'Y-m-d' format",
     )
     parser.add_argument(
         "-c",
