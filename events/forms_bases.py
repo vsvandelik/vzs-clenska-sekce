@@ -38,5 +38,5 @@ class AllowedPersonTypeForm(ModelForm):
         else:
             instance.allowed_person_types.add(person_type_obj)
         if commit:
-            self.instance.save()
+            instance.save()
         return instance
