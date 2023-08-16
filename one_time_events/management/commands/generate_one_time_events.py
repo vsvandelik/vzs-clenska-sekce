@@ -53,6 +53,8 @@ class Command(BaseCommand):
                 options["default_participation_fee"]
                 if options["default_participation_fee"] is not None
                 else random.randint(0, 5000)
+                if random.randint(0, 1)
+                else None
             )
 
             category = (
