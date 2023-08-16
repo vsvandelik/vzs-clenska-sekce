@@ -36,7 +36,7 @@ class OneTimeEventForm(ModelForm):
         super().__init__(*args, **kwargs)
 
     def _check_date_constraints(self):
-        if self.cleaned_data["date_start"] >= self.cleaned_data["date_end"]:
+        if self.cleaned_data["date_start"] > self.cleaned_data["date_end"]:
             self.add_error(
                 "date_end", "Konec události nesmí být dříve než její začátek"
             )
