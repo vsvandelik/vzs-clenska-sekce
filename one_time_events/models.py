@@ -73,6 +73,11 @@ class OneTimeEvent(Event):
     def __str__(self):
         return self.name
 
+    def get_default_participation_fee_display(self):
+        if self.default_participation_fee is not None:
+            return f"{self.default_participation_fee} Kč"
+        return ""
+
 
 class OneTimeEventOccurrence(EventOccurrence):
     date = models.DateField(_("Den konání"))
