@@ -6,12 +6,10 @@ from persons.models import Person, PersonType
 class AgeLimitForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
+        min_age = cleaned_data.get("min_age")
+        max_age = cleaned_data.get("max_age")
 
-        if (
-            cleaned_data["min_age"] is not None
-            and cleaned_data["max_age"] is not None
-            and cleaned_data["min_age"] > cleaned_data["max_age"]
-        ):
+        if min_age is not None and max_age is not None and min_age > max_age:
             self.add_error(
                 "max_age",
                 "Hodnota minimálního věku musí být menší nebo rovna hodnotě maximálního věku",
