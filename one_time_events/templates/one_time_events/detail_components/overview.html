@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header border-0">
@@ -13,11 +14,11 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Popis:</td>
-                        <td class="w-100">{{ event.description }}</td>
+                        <td class="w-100">{{ event.description|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Místo konání:</td>
-                        <td class="w-100">{{ event.location }}</td>
+                        <td class="w-100">{{ event.location|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Stav:</td>
@@ -33,11 +34,11 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Účastníci:</td>
-                        <td class="w-100">{{ event.approved_participants|length }} / {{ event.capacity }}</td>
+                        <td class="w-100">{{ event.approved_participants|length }} / {{ event.get_capacity_display }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
-                        <td class="w-100">{{ event.get_default_participation_fee_display }}</td>
+                        <td class="w-100">{{ event.get_default_participation_fee_display|handle_missing }}</td>
                     </tr>
                 </tbody>
             </table>

@@ -14,15 +14,15 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Popis:</td>
-                        <td class="w-100">{{ event.description }}</td>
+                        <td class="w-100">{{ event.description|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Garant</td>
-                        <td class="w-100">{{ event.get_main_coach_display }}</td>
+                        <td class="w-100">{{ event.main_coach|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Místo konání:</td>
-                        <td class="w-100">{{ event.location }}</td>
+                        <td class="w-100">{{ event.location|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Začíná:</td>

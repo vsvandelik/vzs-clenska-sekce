@@ -66,6 +66,11 @@ class Event(PolymorphicModel):
 
         return isinstance(self, Training)
 
+    def get_capacity_display(self):
+        if self.capacity is None:
+            return "∞"
+        return self.capacity
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

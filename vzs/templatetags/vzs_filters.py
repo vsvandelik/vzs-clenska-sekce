@@ -115,6 +115,13 @@ def join(separator, iterable):
     return separator.join(iterable)
 
 
+@register.filter
+def handle_missing(value):
+    if value in [None, ""]:
+        return settings.VALUE_MISSING_SYMBOL
+    return value
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url

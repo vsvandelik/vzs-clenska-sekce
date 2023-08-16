@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12 col-md-4">
     <div class="card">
         <div class="card-header">
@@ -9,21 +10,13 @@
                     <tr>
                         <td class="text-nowrap text-bold">Min</td>
                         <td>
-                            {% if object.min_age is not None %}
-                                {{ object.min_age }}
-                            {% else %}
-                                <i class="fa fa-times" aria-hidden="true"></i>
-                            {% endif %}
+                            {{ object.min_age|handle_missing }}
                         </td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Max</td>
                         <td>
-                            {% if object.max_age is not None %}
-                                {{ object.max_age }}
-                            {% else %}
-                                <i class="fa fa-times" aria-hidden="true"></i>
-                            {% endif %}
+                            {{ object.max_age|handle_missing }}
                         </td>
                     </tr>
                 </tbody>

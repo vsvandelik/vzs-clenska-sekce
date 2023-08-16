@@ -1,4 +1,6 @@
 from django.db import models
+
+from vzs import settings
 from events.models import (
     Event,
     EventOrOccurrenceState,
@@ -76,7 +78,7 @@ class OneTimeEvent(Event):
     def get_default_participation_fee_display(self):
         if self.default_participation_fee is not None:
             return f"{self.default_participation_fee} Kč"
-        return ""
+        return settings.VALUE_MISSING_SYMBOL
 
 
 class OneTimeEventOccurrence(EventOccurrence):
