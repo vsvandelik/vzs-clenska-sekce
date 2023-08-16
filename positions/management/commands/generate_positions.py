@@ -73,6 +73,12 @@ class Command(BaseCommand):
             choices=list(Person.Type),
             help="forces the positions to allow only a specific person types",
         )
+        parser.add_argument(
+            "-w",
+            "--wage",
+            type=positive_int,
+            help="the hourly wage for organizers",
+        )
 
     def handle(self, *args, **options):
         idx = EventPosition.objects.all().count() + 1
@@ -83,11 +89,18 @@ class Command(BaseCommand):
             group = generate_group_requirement(options)
             allowed_person_types = generate_allowed_person_types_requirement(options)
 
+            wage_hour = (
+                options["wage"]
+                if options["wage"] is not None
+                else random.randint(1, 1000)
+            )
+
             position = EventPosition(
                 name=position_name,
                 min_age=min_age,
                 max_age=max_age,
                 group=group,
+                wage_hour=wage_hour,
             )
             position.save()
 
