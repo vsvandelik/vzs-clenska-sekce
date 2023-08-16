@@ -54,7 +54,7 @@ class Event(PolymorphicModel):
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
 
     # if NULL -> no effect (all person types are allowed)
-    allowed_person_types = models.ManyToManyField("persons.PersonType")
+    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
 
     def is_one_time_event(self):
         from one_time_events.models import OneTimeEvent
@@ -116,3 +116,18 @@ class OrganizerPositionAssignment(PolymorphicModel):
         "events.EventPositionAssignment", on_delete=models.CASCADE
     )
     organizers = models.ManyToManyField("persons.Person")
+
+
+class EventPersonTypeConstraint(models.Model):
+    person_type = models.CharField(
+        _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.choices
+    )
+
+    @staticmethod
+    def get_or_create_person_type(person_type):
+        return EventPersonTypeConstraint.objects.get_or_create(
+            person_type=person_type, defaults={"person_type": person_type}
+        )[0]
+
+    def __str__(self):
+        return self.get_person_type_display()

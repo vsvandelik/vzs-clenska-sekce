@@ -4,7 +4,8 @@ from django.utils import timezone
 from django.core.management.base import CommandError
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
-from persons.models import Person, PersonType
+from persons.models import Person
+from events.models import EventPersonTypeConstraint
 from datetime import datetime, timedelta, date
 from groups.models import Group
 
@@ -77,7 +78,7 @@ def generate_allowed_person_types_requirement(options):
         ]
 
     return [
-        PersonType.get_or_create_person_type(person_type)
+        EventPersonTypeConstraint.get_or_create_person_type(person_type)
         for person_type in chosen_person_types
     ]
 

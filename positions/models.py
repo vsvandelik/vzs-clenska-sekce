@@ -24,7 +24,7 @@ class EventPosition(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
-    allowed_person_types = models.ManyToManyField("persons.PersonType")
+    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)

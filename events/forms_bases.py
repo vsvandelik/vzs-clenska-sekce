@@ -1,6 +1,7 @@
 from django.forms import ModelForm
 from django.forms import ChoiceField
-from persons.models import Person, PersonType
+from persons.models import Person
+from events.models import EventPersonTypeConstraint
 
 
 class AgeLimitForm(ModelForm):
@@ -29,7 +30,9 @@ class AllowedPersonTypeForm(ModelForm):
     def save(self, commit=True):
         instance = super().save(False)
         person_type = self.cleaned_data["person_type"]
-        person_type_obj = PersonType.get_or_create_person_type(person_type)
+        person_type_obj = EventPersonTypeConstraint.get_or_create_person_type(
+            person_type
+        )
         if instance.allowed_person_types.contains(person_type_obj):
             instance.allowed_person_types.remove(person_type_obj)
         else:
