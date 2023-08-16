@@ -89,10 +89,10 @@ class OneTimeEventForm(ModelForm):
         return True, date
 
     def clean(self):
-        cleaned_data = super().clean()
+        self.cleaned_data = super().clean()
         self._check_date_constraints()
         self._add_validate_occurrences()
-        return cleaned_data
+        return self.cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)

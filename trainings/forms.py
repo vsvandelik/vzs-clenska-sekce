@@ -171,9 +171,9 @@ class TrainingForm(ModelForm):
         self._check_days_chosen_constraints()
 
     def clean(self):
-        cleaned_data = super().clean()
+        self.cleaned_data = super().clean()
         self._check_constraints()
-        return cleaned_data
+        return self.cleaned_data
 
     def save(self, commit=True):
         cleaned_data = self.cleaned_data
