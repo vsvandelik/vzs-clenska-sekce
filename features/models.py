@@ -177,6 +177,3 @@ class FeatureAssignment(models.Model):
     code = models.CharField(
         max_length=255, blank=True, null=True
     )  # Only for qualification + equipments
-
-    class Meta:
-        unique_together = ["person", "feature"]

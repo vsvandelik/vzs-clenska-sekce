@@ -271,9 +271,14 @@ class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["feature"].queryset = Feature.objects.filter(
-            feature_type=feature_type, assignable=True
-        ).exclude(featureassignment__person=person)
+        if feature_type == Feature.Type.PERMISSION:
+            self.fields["feature"].queryset = Feature.objects.filter(
+                feature_type=feature_type, assignable=True
+            ).exclude(featureassignment__person=person)
+        else:
+            self.fields["feature"].queryset = Feature.objects.filter(
+                feature_type=feature_type, assignable=True
+            )
 
         if self.instance.pk:
             self._remove_not_collected_field(self.instance.feature)
@@ -294,9 +299,10 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
         self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
         self._setup_fee_field()
 
-        self.fields["person"].queryset = Person.objects.exclude(
-            featureassignment__feature=feature
-        )
+        if feature.feature_type == Feature.Type.PERMISSION:
+            self.fields["person"].queryset = Person.objects.exclude(
+                featureassignment__feature=feature
+            )
 
         if "fee" in self.fields:
             self.fields["fee"].initial = feature.fee
