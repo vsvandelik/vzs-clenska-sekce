@@ -248,5 +248,5 @@ SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
 SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
 # Constants
-VALUE_MISSING_SYMBOL = "🞭"
-VALUE_PRESENT_SYMBOL = "✔"
+VALUE_MISSING_HTML = '<i class="fas fa-times"></i>'
+VALUE_PRESENT_HTML = '<i class="fas fa-check"></i>'
