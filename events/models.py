@@ -1,9 +1,11 @@
+import polymorphic.models
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from persons.models import Person
 from features.models import Feature
 from django.core.validators import MinValueValidator, MaxValueValidator
-from polymorphic.models import PolymorphicModel
+from polymorphic.models import PolymorphicModel, PolymorphicManager
+from polymorphic.managers import PolymorphicManager
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -95,24 +97,24 @@ class Enrollment(PolymorphicModel):
     datetime = models.DateTimeField()
 
 
-class ParticipantEnrollmentWaitingManager(models.Manager):
+class ParticipantEnrollmentWaitingManager(PolymorphicManager):
     def get_queryset(self):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
 
 
-class ParticipantEnrollmentApprovedManager(models.Manager):
+class ParticipantEnrollmentApprovedManager(PolymorphicManager):
     def get_queryset(self):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
 
 
-class ParticipantEnrollmentSubstituteManager(models.Manager):
+class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
     def get_queryset(self):
         return (
             super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
         )
 
 
-class ParticipantEnrollmentRejectedManager(models.Manager):
+class ParticipantEnrollmentRejectedManager(PolymorphicManager):
     def get_queryset(self):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
 
@@ -124,14 +126,14 @@ class ParticipantEnrollment(Enrollment):
         SUBSTITUTE = "nahradnik", _("nahradník")
         REJECTED = "odminut", _("odmítnut")
 
-    objects = models.Manager()
+    objects = PolymorphicManager()
     enrollments_waiting = ParticipantEnrollmentWaitingManager()
     enrollments_approved = ParticipantEnrollmentApprovedManager()
     enrollments_substitute = ParticipantEnrollmentSubstituteManager()
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    state = models.CharField(max_length=10, choices=State.choices)
+    state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
 class EventPositionAssignment(models.Model):

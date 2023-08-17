@@ -6,21 +6,19 @@ from events.views import (
     EventRestrictionMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
-from .forms import OneTimeEventForm, TrainingCategoryForm
+from .forms import (
+    OneTimeEventForm,
+    TrainingCategoryForm,
+    OneTimeEventParticipantEnrollmentForm,
+)
+from .models import OneTimeEventParticipantEnrollment, OneTimeEvent
 from django.views import generic
+from django.shortcuts import get_object_or_404
 from vzs.mixin_extensions import MessagesMixin
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "one_time_events/detail.html"
-
-    # def get_context_data(self, **kwargs):
-    #     participants = OneTimeEventParticipantEnrollment
-    #     kwargs.setdefault(
-    #         "participants_approved",
-    #         self.object.allowed_person_types.values_list("person_type", flat=True),
-    #     )
-    #     return super().get_context_data(**kwargs)
 
 
 class OneTimeEventCreateView(
@@ -43,3 +41,23 @@ class EditTrainingCategoryView(
     template_name = "one_time_events/edit_training_category.html"
     form_class = TrainingCategoryForm
     success_message = "Změna vyžadování skupiny uložena"
+
+
+class ParticipantEnrollmentCreateView(generic.CreateView):
+    model = OneTimeEventParticipantEnrollment
+    context_object_name = "enrollment"
+    form_class = OneTimeEventParticipantEnrollmentForm
+    template_name = "one_time_events/create_participation_enrollment.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(OneTimeEvent, pk=kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs

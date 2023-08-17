@@ -20,4 +20,9 @@ urlpatterns = [
         views.EditTrainingCategoryView.as_view(),
         name="edit_training_category",
     ),
+    path(
+        "<int:event_id>/pridat/prihlasku/",
+        views.ParticipantEnrollmentCreateView.as_view(),
+        name="create_participant_enrollment",
+    ),
 ]

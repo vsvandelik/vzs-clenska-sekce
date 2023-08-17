@@ -3,8 +3,13 @@ import datetime
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
+from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
-from .models import OneTimeEvent, OneTimeEventOccurrence
+from .models import (
+    OneTimeEvent,
+    OneTimeEventOccurrence,
+    OneTimeEventParticipantEnrollment,
+)
 from events.models import EventOrOccurrenceState
 from events.forms import MultipleChoiceFieldNoValidation
 from events.utils import parse_czech_date
@@ -196,10 +201,23 @@ class TrainingCategoryForm(ModelForm):
         model = OneTimeEvent
         fields = ["training_category"]
         labels = {"training_category": "Kategorie tréninku"}
-        widgets = {
-            "training_category": Select2Widget(),
-        }
+        widgets = {"training_category": Select2Widget()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["training_category"].required = False
+
+
+class OneTimeEventParticipantEnrollmentForm(ModelForm):
+    class Meta:
+        model = OneTimeEventParticipantEnrollment
+        fields = ["agreed_participation_fee", "person", "state"]
+        labels = {"agreed_participation_fee": "Poplatek za účast", "person": "Osoba"}
+        widgets = {
+            "person": PersonSelectWidget(),
+            "state": Select2Widget(attrs={"onchange": "stateChanged()"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("event")
+        super().__init__(*args, **kwargs)

@@ -1,13 +1,14 @@
-{# title, id, enrollments #}
+{# blocks title, id, edit_enrollment_url #}
+{# vars enrollments #}
 
 
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header">
-            <div class="card-title h5">{{ title }}</div>
+            <div class="card-title h5">{% block title %}{% endblock %}</div>
         </div>
         <div class="card-body">
-            <table id="{{ id }}" class="table table-striped">
+            <table id="{% block id %}{% endblock %}" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Osoba</th>
@@ -23,14 +24,14 @@
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-success btn-sm"
-{#                                       href="{% url 'events:edit_participant_enrollment' event.id enrollment.id %}"#}
+                                       href="{% block edit_enrollment_url %}{% endblock %}"
                                     >
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
-                                       data-target="#delete-position-assignment-modal"
-                                       data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                       data-target="#delete-participant-enrollment-modal"
+                                       data-action="{% url 'events:delete_participant_enrollment' event.id enrollment.id %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
@@ -39,10 +40,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat
-                pozici</a>
         </div>
     </div>
 </div>

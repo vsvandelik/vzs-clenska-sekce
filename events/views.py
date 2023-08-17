@@ -180,3 +180,7 @@ class AddRemoveAllowedPersonTypeView(
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = get_object_or_404(Event, pk=self.kwargs["pk"])
         return kwargs
+
+
+class ParticipantEnrollmentDeleteView(generic.DeleteView):
+    pass

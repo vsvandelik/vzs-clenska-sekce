@@ -27,7 +27,7 @@
             <div class="card">
                 <div class="card-header border-0">
                     <div class="card-title h5">
-                        Další omezení pro účastníky
+                        Další omezení kladené na účastníky
                     </div>
                 </div>
 
@@ -41,6 +41,30 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Účastníci
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'one_time_events/detail_parts/participants.html' with base_template='events/detail_bases/participants_approved.html' %}
+                        {% include 'one_time_events/detail_parts/participants.html' with base_template='events/detail_bases/participants_waiting.html' %}
+                        {% include 'one_time_events/detail_parts/participants.html' with base_template='events/detail_bases/participants_substitute.html' %}
+                        {% include 'one_time_events/detail_parts/participants.html' with base_template='events/detail_bases/participants_rejected.html' %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'one_time_events:create_participant_enrollment' event.id %}" class="btn-primary btn">Přidat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         {% include 'one_time_events/detail_parts/schedule.html' %}
     </div>
 
@@ -53,7 +77,14 @@
     <script src="{% static "datatables.js" %}"></script>
     <script>
         simpleOrderableTableEnable("positions-table", [0, 1])
+        simpleOrderableTableEnable('participants-substitute-table', [0, 1])
+        simpleOrderableTableEnable('participants-waiting-table', [0, 1])
+        simpleOrderableTableEnable('participants-rejected-table', [0, 1])
+        simpleOrderableTableEnable('participants-approved-table', [0, 1])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
-    <script>registerModal("delete-position-assignment-modal")</script>
+    <script>
+        registerModal("delete-position-assignment-modal")
+        registerModal('delete-participant-enrollment-modal')
+    </script>
 {% endblock %}
