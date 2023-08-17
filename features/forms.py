@@ -170,6 +170,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
                 _("Datum vrácení může být vyplněno pouze u vlastnosti typu vybavení.")
             )
 
+        if date_returned and date_returned > datetime.date.today():
+            raise ValidationError(_("Datum vrácení nemůže být v budoucnosti."))
+
         return date_returned
 
     def clean_issuer(self):
