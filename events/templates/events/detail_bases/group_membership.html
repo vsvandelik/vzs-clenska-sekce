@@ -10,12 +10,7 @@
                     <tr>
                         <td class="text-nowrap text-bold">Vyžadováno</td>
                         <td>
-                            {% if object.group is not None %}
-                                ✔
-                            {% else %}
-                                {% value_missing_symbol %}
-                            {% endif %}
-
+                            {{ object.group|display_presence }}
                         </td>
                     </tr>
                     {% if object.group is not None %}

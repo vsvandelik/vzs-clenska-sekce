@@ -10,11 +10,7 @@
                     <tr>
                         <td class="text-nowrap text-bold">Vyžadována</td>
                         <td>
-                            {% if event.training_category is not None %}
-                                ✔
-                            {% else %}
-                                {% value_missing_symbol %}
-                            {% endif %}
+                            {{ event.training_category|display_presence }}
                         </td>
                     </tr>
                     {% if event.training_category is not None %}

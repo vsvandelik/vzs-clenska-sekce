@@ -122,9 +122,11 @@ def handle_missing(value):
     return value
 
 
-@register.simple_tag
-def value_missing_symbol():
-    return settings.VALUE_MISSING_SYMBOL
+@register.filter
+def display_presence(value):
+    if value in [None, ""]:
+        return settings.VALUE_MISSING_SYMBOL
+    return settings.VALUE_PRESENT_SYMBOL
 
 
 class _PermURLContextVariable:

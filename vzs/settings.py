@@ -249,3 +249,4 @@ SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
 # Constants
 VALUE_MISSING_SYMBOL = "🞭"
+VALUE_PRESENT_SYMBOL = "✔"
