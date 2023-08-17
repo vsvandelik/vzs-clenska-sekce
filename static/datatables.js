@@ -17,7 +17,7 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
     });
 }
 
-function orderableTableEnable(id, orderableColumns, order = []) {
+function simpleOrderableTableEnable(id, orderableColumns, order = []) {
     $(function () {
         $("#" + id).DataTable({
             "columnDefs": [
