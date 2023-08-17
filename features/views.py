@@ -218,17 +218,22 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
             features = all_features.annotate(
                 is_assigned=Exists(
                     FeatureAssignment.objects.filter(
-                        person=person, feature=OuterRef("pk")
+                        person=person,
+                        feature=OuterRef("pk"),
+                        date_returned__isnull=True,
                     )
                 )
             ).values_list("is_assigned", flat=True)
 
-            features_assignment_matrix["rows"].append(
-                {
-                    "person": person,
-                    "features": list(features),
-                }
-            )
+            assigned_features = list(features)
+
+            if any(assigned_features):
+                features_assignment_matrix["rows"].append(
+                    {
+                        "person": person,
+                        "features": assigned_features,
+                    }
+                )
 
         return features_assignment_matrix
 
