@@ -19,8 +19,8 @@
         </div>
     </div>
     <div class="row">
-        {% include 'trainings/detail_components/overview.html' %}
-        {% include 'events/detail_components/positions.html' %}
+        {% include 'trainings/detail_parts/overview.html' %}
+        {% include 'events/detail_parts/positions.html' %}
     </div>
     <div class="row">
         <div class="col-12">
@@ -33,16 +33,16 @@
 
                 <div class="card-body">
                     <div class="row">
-                        {% include 'events/detail_components/age_limit.html' %}
-                        {% include 'events/detail_components/group_membership.html' %}
-                        {% include 'events/detail_components/person_type.html' %}
+                        {% include 'events/detail_parts/age_limit.html' %}
+                        {% include 'events/detail_parts/group_membership.html' %}
+                        {% include 'events/detail_parts/person_type.html' %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        {% include 'trainings/detail_components/schedule.html' %}
+        {% include 'trainings/detail_parts/schedule.html' %}
     </div>
 
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}

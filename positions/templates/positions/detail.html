@@ -25,15 +25,15 @@
         </div>
     </div>
     <div class="row">
-        {% include 'positions/detail_components/overview.html' %}
+        {% include 'positions/detail_parts/overview.html' %}
     </div>
     <div class="row">
-        {% include 'positions/detail_components/qualifications.html' with already_required_features=position.required_qualifications %}
-        {% include 'positions/detail_components/permissions.html' with already_required_features=position.required_permissions %}
-        {% include 'positions/detail_components/equipment.html' with already_required_features=position.required_equipment %}
-        {% include 'positions/detail_components/age_limit.html' %}
-        {% include 'positions/detail_components/group_membership.html' %}
-        {% include 'positions/detail_components/person_type.html' %}
+        {% include 'positions/detail_parts/qualifications.html' with already_required_features=position.required_qualifications %}
+        {% include 'positions/detail_parts/permissions.html' with already_required_features=position.required_permissions %}
+        {% include 'positions/detail_parts/equipment.html' with already_required_features=position.required_equipment %}
+        {% include 'positions/detail_parts/age_limit.html' %}
+        {% include 'positions/detail_parts/group_membership.html' %}
+        {% include 'positions/detail_parts/person_type.html' %}
     </div>
 
     <div class="modal fade" id="add-features" tabindex="-1" role="dialog"
