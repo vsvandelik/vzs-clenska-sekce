@@ -221,7 +221,7 @@ def add_common_args(parser):
         help="forces the event to use group membership limitation for participants (won't be fulfilled if there does not exist any group)",
     )
     parser.add_argument(
-        "-t",
+        "-p",
         "--person-type",
         type=Person.Type,
         nargs="*",

@@ -6,6 +6,7 @@ from events.management.commands.generate_basic_event import (
 )
 from events.models import EventOrOccurrenceState
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
+from trainings.models import Training
 from vzs.commands_utils import non_negative_int
 from datetime import timedelta
 
@@ -28,6 +29,13 @@ class Command(BaseCommand):
             type=OneTimeEvent.Category,
             choices=list(OneTimeEvent.Category),
             help="the category of one time event",
+        )
+        parser.add_argument(
+            "-t",
+            "--training-category",
+            type=Training.Category,
+            choices=list(Training.Category),
+            help="the category of training that participants must attend to be allowed to enroll",
         )
 
     def _generate_occurrences(self, event):
@@ -66,10 +74,19 @@ class Command(BaseCommand):
                 else random.choice(OneTimeEvent.Category.choices)[0]
             )
 
+            training_category = (
+                options["training_category"]
+                if options["training_category"] is not None
+                else random.choice(Training.Category.choices)[0]
+                if random.randint(0, 1)
+                else None
+            )
+
             event = generate_basic_event(OneTimeEvent.__name__, name, 0, 7, options)
             event.default_participation_fee = default_participation_fee
             event.state = EventOrOccurrenceState.OPEN
             event.category = category
+            event.training_category = training_category
             event.save()
 
             self._generate_occurrences(event)
