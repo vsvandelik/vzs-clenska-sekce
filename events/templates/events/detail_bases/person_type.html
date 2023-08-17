@@ -5,7 +5,7 @@
         <div class="card-header">
             <div class="card-title h5">Omezení pro typ členství</div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body {% if object.allowed_person_types.all %}p-0{% endif %}">
             <form method="POST" action="{% block form_action_remove %}{% endblock %}">
                 {% csrf_token %}
                 {% if object.allowed_person_types.all %}
@@ -35,6 +35,8 @@
                             </tbody>
                             </table>
                         {% endif %}
+                {% else %}
+                    <p class="text-center">Omezení na typ členství není aktivní.</p>
                 {% endif %}
             </form>
         </div>

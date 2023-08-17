@@ -48,3 +48,9 @@
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
 {% endblock %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        orderableTableEnable("positions-table", [0, 1])
+    </script>
+{% endblock %}

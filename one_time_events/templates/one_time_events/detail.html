@@ -50,6 +50,10 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        orderableTableEnable("positions-table", [0, 1])
+    </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-position-assignment-modal")</script>
 {% endblock %}
