@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12 col-md-4">
     <div class="card">
         <div class="card-header">
@@ -9,11 +10,7 @@
                     <tr>
                         <td class="text-nowrap text-bold">Vyžadováno</td>
                         <td>
-                            {% if object.group is not None %}
-                                ✔
-                            {% else %}
-                                <i class="fa fa-times" aria-hidden="true"></i>
-                            {% endif %}
+                            {{ object.group|handle_missing }}
                         </td>
                     </tr>
                     {% if object.group is not None %}
