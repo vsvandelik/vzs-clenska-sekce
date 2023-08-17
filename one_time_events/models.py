@@ -35,8 +35,8 @@ class OneTimeEvent(Event):
     )
 
     # if NULL -> no effect
-    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected type
-    participants_of_specific_training_requirement = models.CharField(
+    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected category
+    training_category = models.CharField(
         null=True, max_length=10, choices=Training.Category.choices
     )
 

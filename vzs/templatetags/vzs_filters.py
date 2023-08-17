@@ -122,6 +122,11 @@ def handle_missing(value):
     return value
 
 
+@register.simple_tag
+def value_missing_symbol():
+    return settings.VALUE_MISSING_SYMBOL
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url
