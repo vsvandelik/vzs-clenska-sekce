@@ -15,4 +15,9 @@ urlpatterns = [
         views.OneTimeEventUpdateView.as_view(),
         name="edit",
     ),
+    path(
+        "<int:pk>/upravit/dochazka-trenink",
+        views.EditTrainingCategoryView.as_view(),
+        name="edit_training_category",
+    ),
 ]

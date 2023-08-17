@@ -1,6 +1,8 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
-from vzs import settings
 from events.models import (
     Event,
     EventOrOccurrenceState,
@@ -9,10 +11,7 @@ from events.models import (
     OrganizerPositionAssignment,
 )
 from trainings.models import Training
-from django.utils import timezone
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Q
+from vzs import settings
 
 
 class OneTimeEvent(Event):
@@ -35,8 +34,8 @@ class OneTimeEvent(Event):
     )
 
     # if NULL -> no effect
-    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected type
-    participants_of_specific_training_requirement = models.CharField(
+    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected category
+    training_category = models.CharField(
         null=True, max_length=10, choices=Training.Category.choices
     )
 
@@ -78,7 +77,7 @@ class OneTimeEvent(Event):
     def get_default_participation_fee_display(self):
         if self.default_participation_fee is not None:
             return f"{self.default_participation_fee} Kč"
-        return settings.VALUE_MISSING_SYMBOL
+        return mark_safe(settings.VALUE_MISSING_HTML)
 
 
 class OneTimeEventOccurrence(EventOccurrence):

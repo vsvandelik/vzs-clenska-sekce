@@ -118,8 +118,15 @@ def join(separator, iterable):
 @register.filter
 def handle_missing(value):
     if value in [None, ""]:
-        return settings.VALUE_MISSING_SYMBOL
+        return mark_safe(settings.VALUE_MISSING_HTML)
     return value
+
+
+@register.filter
+def display_presence(value):
+    if value in [None, ""]:
+        return mark_safe(settings.VALUE_MISSING_HTML)
+    return mark_safe(settings.VALUE_PRESENT_HTML)
 
 
 class _PermURLContextVariable:

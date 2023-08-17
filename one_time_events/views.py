@@ -3,9 +3,12 @@ from events.views import (
     EventDetailViewMixin,
     EventUpdateMixin,
     EventGeneratesDatesMixin,
+    EventRestrictionMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
-from .forms import OneTimeEventForm
+from .forms import OneTimeEventForm, TrainingCategoryForm
+from django.views import generic
+from vzs.mixin_extensions import MessagesMixin
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -24,3 +27,11 @@ class OneTimeEventUpdateView(
 ):
     template_name = "one_time_events/edit.html"
     form_class = OneTimeEventForm
+
+
+class EditTrainingCategoryView(
+    MessagesMixin, EventRestrictionMixin, generic.UpdateView
+):
+    template_name = "one_time_events/edit_training_category.html"
+    form_class = TrainingCategoryForm
+    success_message = "Změna vyžadování skupiny uložena"
