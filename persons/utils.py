@@ -1,10 +1,7 @@
-from features.models import Feature, FeatureAssignment
-from persons.models import Person
-
 from django.db.models import Q
 from django.shortcuts import redirect
 
-import csv
+from features.models import Feature, FeatureAssignment
 
 
 def parse_persons_filter_queryset(params_dict, persons):
@@ -85,5 +82,6 @@ def extend_kwargs_of_assignment_features(person_id, kwargs):
         FeatureAssignment.objects.filter(
             person=person_id,
             feature__feature_type=Feature.Type.EQUIPMENT.value,
+            date_returned__isnull=True,
         ),
     )

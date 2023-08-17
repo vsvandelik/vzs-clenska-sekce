@@ -144,7 +144,8 @@ FeatureTypeTexts = {
         {
             "feature": _("Název vybavení"),
             "date_assigned": _("Datum zapůjčení"),
-            "date_expire": _("Datum vrácení"),
+            "date_expire": _("Datum konce výpůjčky"),
+            "date_returned": _("Datum reálného vrácení"),
             "name": _("Název vybavení"),
             "never_expires": _("Časově neomezená zápůjčka"),
             "collect_codes": _("Evidovat inventární číslo"),
@@ -169,12 +170,10 @@ class FeatureAssignment(models.Model):
     feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
     date_assigned = models.DateField()
     date_expire = models.DateField(null=True, blank=True)
+    date_returned = models.DateField(null=True, blank=True)  # Only for equipments
     issuer = models.CharField(
         max_length=255, blank=True, null=True
     )  # Only for qualifications
     code = models.CharField(
         max_length=255, blank=True, null=True
     )  # Only for qualification + equipments
-
-    class Meta:
-        unique_together = ["person", "feature"]
