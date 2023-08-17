@@ -1,10 +1,13 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import BadRequest
 from django.db import IntegrityError
 from django.db.models import Exists, OuterRef
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -55,6 +58,27 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
             ).get(id=self.person)
         except Person.DoesNotExist:
             raise Http404()
+
+
+class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, generic.View):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        equipment_pk = kwargs["pk"]
+
+        assigned_equipment = get_object_or_404(
+            FeatureAssignment,
+            pk=equipment_pk,
+            feature__feature_type=Feature.Type.EQUIPMENT,
+            person=self.person,
+        )
+        if assigned_equipment.date_returned:
+            raise BadRequest("Vybavení již bylo vráceno.")
+
+        assigned_equipment.date_returned = datetime.today()
+        assigned_equipment.save()
+
+        return redirect(reverse("persons:detail", args=[self.person]))
 
 
 class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):

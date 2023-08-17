@@ -36,7 +36,7 @@
             {% include "persons/detail_parts/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
         </div>
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' %}
+            {% include "persons/detail_parts/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' return_url='persons:equipments-return' %}
         </div>
     </div>
 

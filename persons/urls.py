@@ -95,6 +95,12 @@ urlpatterns = [
         {"feature_type": "permissions"},
     ),
     path(
+        "<int:person>/vybaveni/<int:pk>/vratit/",
+        features_views.FeatureAssignReturnEquipmentView.as_view(),
+        {"feature_type": "equipments"},
+        name="equipments-return",
+    ),
+    path(
         "<int:person>/vybaveni/",
         include((nested_feature_assigning_urls, "equipments")),
         {"feature_type": "equipments"},
