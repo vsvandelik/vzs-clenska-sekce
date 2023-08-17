@@ -28,9 +28,9 @@
         {% include 'positions/detail_components/overview.html' %}
     </div>
     <div class="row">
-        {% include 'positions/detail_components/qualifications_required.html' %}
-        {% include 'positions/detail_components/permissions_required.html' %}
-        {% include 'positions/detail_components/equipment_required.html' %}
+        {% include 'positions/detail_components/qualifications_required.html' with already_required_features=position.required_qualifications %}
+        {% include 'positions/detail_components/permissions_required.html' with already_required_features=position.required_permissions %}
+        {% include 'positions/detail_components/equipment_required.html' with already_required_features=position.required_equipment %}
         {% include 'positions/detail_components/age_limit.html' %}
         {% include 'positions/detail_components/group_membership.html' %}
         {% include 'positions/detail_components/person_type.html' %}

@@ -1,0 +1,48 @@
+{# title, id, enrollments #}
+
+
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">{{ title }}</div>
+        </div>
+        <div class="card-body">
+            <table id="{{ id }}" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Datum</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        <tr>
+                            <td><a href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></td>
+                            <td>{{ enrollment.datetime|date }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm"
+{#                                       href="{% url 'events:edit_participant_enrollment' event.id enrollment.id %}"#}
+                                    >
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-position-assignment-modal"
+                                       data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat
+                pozici</a>
+        </div>
+    </div>
+</div>

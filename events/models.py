@@ -95,11 +95,40 @@ class Enrollment(PolymorphicModel):
     datetime = models.DateTimeField()
 
 
+class ParticipantEnrollmentWaitingManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
+
+
+class ParticipantEnrollmentApprovedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
+
+
+class ParticipantEnrollmentSubstituteManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
+        )
+
+
+class ParticipantEnrollmentRejectedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
+
+
 class ParticipantEnrollment(Enrollment):
     class State(models.TextChoices):
         WAITING = "ceka", _("čeká")
         APPROVED = "schvalen", _("schválen")
         SUBSTITUTE = "nahradnik", _("nahradník")
+        REJECTED = "odminut", _("odmítnut")
+
+    objects = models.Manager()
+    enrollments_waiting = ParticipantEnrollmentWaitingManager()
+    enrollments_approved = ParticipantEnrollmentApprovedManager()
+    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
+    enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     state = models.CharField(max_length=10, choices=State.choices)

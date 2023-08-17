@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, reverse
 from vzs.mixin_extensions import MessagesMixin
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
+from events.models import ParticipantEnrollment
 
 
 class EventMixin:
@@ -79,6 +80,18 @@ class PersonTypeDetailViewMixin:
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "enrollments_approved", ParticipantEnrollment.enrollments_approved.all()
+        )
+        kwargs.setdefault(
+            "enrollments_waiting", ParticipantEnrollment.enrollments_waiting.all()
+        )
+        kwargs.setdefault(
+            "enrollments_substitute", ParticipantEnrollment.enrollments_substitute.all()
+        )
+        kwargs.setdefault(
+            "enrollments_rejected", ParticipantEnrollment.enrollments_rejected.all()
+        )
         kwargs.setdefault(
             "event_position_assignments",
             EventPositionAssignment.objects.filter(event=self.object).all(),

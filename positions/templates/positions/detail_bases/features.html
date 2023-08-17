@@ -1,0 +1,41 @@
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">{% block title %}{% endblock %}</div>
+        </div>
+        <div class="card-body p-0">
+            <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+                {% csrf_token %}
+                {% if already_required_features %}
+                    <table id="{% block id %}{% endblock %}" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Název</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feature in already_required_features %}
+                                <tr>
+                                    <td>
+                                        <a href="{% block feature_detail_action %}{% endblock %}">{{ feature }}</a>
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-danger btn-sm" name="feature_id"
+                                                value="{{ feature.id }}">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <a href="#" class="btn-primary btn" onclick="{% block onclick_event_func_name %}{% endblock %}()" data-toggle="modal"
+               data-target="#add-features">Přidat</a>
+        </div>
+    </div>
+</div>
