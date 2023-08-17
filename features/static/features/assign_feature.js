@@ -7,14 +7,14 @@ function changedSelectBox() {
 
     if (isNaN(selectedFeature)) {
         $("input", assignForm).each(function () {
-            $(this).parent().parent().show();
+            $(this).closest(".form-group").show();
         });
         feeField.val("");
         return;
     }
 
     Object.entries(features[selectedFeature].fields_visibility).forEach(([key, value]) => {
-        const inputDivFormGroup = $(`input[name=${key}]`, assignForm).parent().parent();
+        const inputDivFormGroup = $(`input[name=${key}]`, assignForm).closest(".form-group");
         value ? inputDivFormGroup.show() : inputDivFormGroup.hide();
     });
 

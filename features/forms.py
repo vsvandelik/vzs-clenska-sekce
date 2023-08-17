@@ -23,10 +23,11 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 
     class Meta:
         model = FeatureAssignment
-        fields = ["date_assigned", "date_expire", "issuer", "code"]
+        fields = ["date_assigned", "date_expire", "date_returned", "issuer", "code"]
         widgets = {
             "date_assigned": DatePickerWithIcon(),
             "date_expire": DatePickerWithIcon(),
+            "date_returned": DatePickerWithIcon(),
         }
 
     def _remove_not_collected_field(self, feature):
@@ -48,8 +49,14 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 
     def _remove_non_valid_fields_by_type(self, feature_type):
         non_valid_fields_for_feature_type = {
-            Feature.Type.QUALIFICATION: ["fee", "due_date"],
-            Feature.Type.PERMISSION: ["issuer", "code", "fee", "due_date"],
+            Feature.Type.QUALIFICATION: ["fee", "due_date", "date_returned"],
+            Feature.Type.PERMISSION: [
+                "issuer",
+                "code",
+                "fee",
+                "due_date",
+                "date_returned",
+            ],
             Feature.Type.EQUIPMENT: ["issuer"],
         }
 
@@ -154,6 +161,20 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 
         return date_expire_value
 
+    def clean_date_returned(self):
+        date_returned = self.cleaned_data.get("date_returned")
+        feature_value = self._get_feature(self.cleaned_data)
+
+        if date_returned and feature_value.feature_type != Feature.Type.EQUIPMENT:
+            raise ValidationError(
+                _("Datum vrácení může být vyplněno pouze u vlastnosti typu vybavení.")
+            )
+
+        if date_returned and date_returned > datetime.date.today():
+            raise ValidationError(_("Datum vrácení nemůže být v budoucnosti."))
+
+        return date_returned
+
     def clean_issuer(self):
         issuer = self.cleaned_data["issuer"]
         feature = self._get_feature(self.cleaned_data)
@@ -186,16 +207,13 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        date_expire_value = cleaned_data.get("date_expire")
-        date_assigned_value = cleaned_data.get("date_assigned")
+        date_expire = cleaned_data.get("date_expire")
+        date_assigned = cleaned_data.get("date_assigned")
+        date_returned = cleaned_data.get("date_returned")
         fee = cleaned_data.get("fee")
         due_date = cleaned_data.get("due_date")
 
-        if (
-            date_expire_value
-            and date_assigned_value
-            and date_assigned_value > date_expire_value
-        ):
+        if date_expire and date_assigned and date_assigned > date_expire:
             self.add_error(
                 "date_expire", _("Datum expirace je nižší než datum přiřazení.")
             )
@@ -206,6 +224,12 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
             )
         elif not fee and due_date:
             self.cleaned_data["due_date"] = None
+
+        if date_assigned and date_returned and date_returned < date_assigned:
+            self.add_error(
+                "date_returned",
+                _("Datum vrácení nemůže být nižší než datum zapůjčení."),
+            )
 
     def add_transaction_if_necessary(self):
         fee = self.cleaned_data.get("fee")
@@ -250,9 +274,14 @@ class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["feature"].queryset = Feature.objects.filter(
-            feature_type=feature_type, assignable=True
-        ).exclude(featureassignment__person=person)
+        if feature_type == Feature.Type.PERMISSION:
+            self.fields["feature"].queryset = Feature.objects.filter(
+                feature_type=feature_type, assignable=True
+            ).exclude(featureassignment__person=person)
+        else:
+            self.fields["feature"].queryset = Feature.objects.filter(
+                feature_type=feature_type, assignable=True
+            )
 
         if self.instance.pk:
             self._remove_not_collected_field(self.instance.feature)
@@ -273,9 +302,10 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
         self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
         self._setup_fee_field()
 
-        self.fields["person"].queryset = Person.objects.exclude(
-            featureassignment__feature=feature
-        )
+        if feature.feature_type == Feature.Type.PERMISSION:
+            self.fields["person"].queryset = Person.objects.exclude(
+                featureassignment__feature=feature
+            )
 
         if "fee" in self.fields:
             self.fields["fee"].initial = feature.fee
