@@ -1,26 +1,12 @@
 window.onload = function () {
-    window._basePath = getDjangoUrl('url').replace('/1/', '')
-    groupChanged(getGroupField())
+    window._showHideDetailLinkCallback = getCallbackShowHideDetailLink('url')
+    window._showHideDetailLinkCallback(getGroupField())
 }
 
 function groupChanged(sender) {
-    if(sender.value === undefined || sender.value === '' || sender.disabled) {
-        setDetailLinkVisibility(false)
-    }
-    else {
-        setDetailLinkVisibility(true)
-        getGroupDetailLink().href = `${window._basePath}/${sender.value}/`
-    }
+    window._showHideDetailLinkCallback(sender)
 }
 
 function getGroupField() {
     return document.getElementById('id_group')
-}
-
-function getGroupDetailLink() {
-    return document.getElementById('detail-link')
-}
-
-function setDetailLinkVisibility(state) {
-    getGroupDetailLink().style.display = state ? '' : 'none'
 }

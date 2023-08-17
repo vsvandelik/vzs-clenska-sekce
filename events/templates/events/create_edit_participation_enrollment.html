@@ -3,42 +3,42 @@
 {% load static %}
 {% block scripts %}
     <script src="{% static 'events/show_hide_detail_link.js' %}"></script>
-    <script src="{% static 'events/edit_group_membership.js' %}"></script>
-{% endblock %}
-{% block title %}
-    Úprava vyžadování členství ve skupině
+    <script src="{% static 'events/create_edit_participation_enrollment.js' %}"></script>
 {% endblock %}
 {% block content %}
-    <input type="hidden" id="url" data-url="{% url 'groups:detail' 1 %}">
     <div class="row">
         <div class="col-12">
             <div class="elevation-2 card">
                 <div class="card-header">
                     <div class="card-title h5">
-                        <span style="line-height: 45px;font-size: 22.5px;">{{ object }}</span></div>
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ event }}</span></div>
                 </div>
             </div>
         </div>
     </div>
+    <input type="hidden" id="url" data-url="{% url 'persons:detail' 1 %}">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <form method="POST">
+                <form method="POST"
+                      action="{% block form_action %}{% endblock %}">
                     {% csrf_token %}
                     <div class="card-header">
-                        <div class="card-title h5">Úprava</div>
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
                     </div>
                     <div class="card-body">
-                        {{ form.group|as_crispy_field }}
+                        {{ form.person|as_crispy_field }}
                         <div class="form-group">
                             <a id="detail-link" style="display: none" target="_blank">
-                                Detail vybrané skupiny
+                                Detail vybrané osoby
                             </a>
                         </div>
+                        {{ form.state|as_crispy_field }}
+                        {% block body %}{% endblock %}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
-                               value="Uložit">
+                               value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>
             </div>

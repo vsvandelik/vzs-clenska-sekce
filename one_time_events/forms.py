@@ -214,7 +214,7 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
         fields = ["agreed_participation_fee", "person", "state"]
         labels = {"agreed_participation_fee": "Poplatek za účast", "person": "Osoba"}
         widgets = {
-            "person": PersonSelectWidget(),
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "state": Select2Widget(attrs={"onchange": "stateChanged()"}),
         }
 
