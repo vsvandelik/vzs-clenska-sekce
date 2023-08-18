@@ -64,6 +64,10 @@ class TrainingAddReplaceableTrainingView(
         kwargs["training_1"] = get_object_or_404(Training, pk=self.kwargs["event_id"])
         return kwargs
 
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        return redirect(reverse("trainings:detail", args=[self.kwargs["event_id"]]))
+
 
 class TrainingRemoveReplaceableTrainingView(generic.View):
     http_method_names = ["post"]

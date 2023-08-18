@@ -305,10 +305,22 @@ class TrainingReplaceableForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.training_1 = training_1
 
+    def clean_training_2(self):
+        training_2 = self.cleaned_data.get("training_2")
+
+        if (
+            self.training_1
+            and training_2
+            and self.training_1.category != training_2.category
+        ):
+            raise forms.ValidationError("Tréninky musí být stejné kategorie")
+
+        return training_2
+
     def clean(self):
         cleaned_data = super().clean()
         training_1 = self.training_1
-        training_2 = cleaned_data["training_2"]
+        training_2 = cleaned_data.get("training_2")
 
         if TrainingReplaceabilityForParticipants.objects.filter(
             Q(training_1=training_1, training_2=training_2)
