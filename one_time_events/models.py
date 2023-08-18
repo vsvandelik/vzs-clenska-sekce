@@ -102,7 +102,7 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     )
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     agreed_participation_fee = models.PositiveIntegerField(
-        _("Poplatek za účast"), null=True, blank=True
+        _("Poplatek za účast*"), null=True, blank=True
     )
 
     @property
