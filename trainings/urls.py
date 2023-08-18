@@ -15,6 +15,11 @@ urlpatterns = [
     path(
         "<int:pk>/pridat-nahradu/",
         views.TrainingAddReplaceableTrainingView.as_view(),
-        name="add-replacement-training",
+        name="add-replaceable-training",
+    ),
+    path(
+        "<int:pk>/odebrat-nahradu/",
+        views.TrainingRemoveReplaceableTrainingView.as_view(),
+        name="remove-replaceable-training",
     ),
 ]

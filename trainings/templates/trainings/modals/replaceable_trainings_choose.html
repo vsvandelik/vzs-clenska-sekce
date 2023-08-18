@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block modal_body %}
-    <form method="post" action="{% url "trainings:add-replacement-training" object.pk %}" id="add-replaceable-training">
+    <form method="post" action="{% url "trainings:add-replaceable-training" object.pk %}" id="add-replaceable-training">
         {% csrf_token %}
     </form>
     <table class="table table-striped" id="add-managed-person-table">
