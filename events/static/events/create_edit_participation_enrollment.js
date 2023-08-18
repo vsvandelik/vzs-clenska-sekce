@@ -9,3 +9,7 @@ function personChanged(sender) {
 function getPersonElement() {
     return document.getElementById('id_person')
 }
+
+function beforeSubmit() {
+    getPersonElement().disabled = false
+}

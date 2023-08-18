@@ -53,22 +53,15 @@ class EventPositionAssignmentForm(ModelForm):
 
 
 class EventAgeLimitForm(AgeLimitForm):
-    class Meta:
+    class Meta(AgeLimitForm.Meta):
         model = Event
-        fields = ["min_age", "max_age"]
 
 
 class EventGroupMembershipForm(GroupMembershipForm):
-    class Meta:
+    class Meta(GroupMembershipForm.Meta):
         model = Event
-        fields = ["group"]
-        labels = {"group": "Skupina"}
-        widgets = {
-            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
-        }
 
 
 class EventAllowedPersonTypeForm(AllowedPersonTypeForm):
-    class Meta:
+    class Meta(AllowedPersonTypeForm.Meta):
         model = EventPosition
-        fields = []

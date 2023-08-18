@@ -186,10 +186,6 @@ class ParticipantEnrollmentCreateUpdateMixin(
 ):
     context_object_name = "enrollment"
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
-
 
 class ParticipantEnrollmentCreateMixin(
     ParticipantEnrollmentCreateUpdateMixin, generic.CreateView
@@ -197,13 +193,17 @@ class ParticipantEnrollmentCreateMixin(
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
     def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(OneTimeEvent, pk=kwargs["event_id"])
+        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.event
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
 
 
 class ParticipantEnrollmentUpdateMixin(
@@ -213,9 +213,13 @@ class ParticipantEnrollmentUpdateMixin(
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.object.event
+        kwargs["event"] = self.object.event()
         kwargs["person"] = self.object.person
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.object.event())
+        return super().get_context_data(**kwargs)
 
 
 class ParticipantEnrollmentDeleteView(generic.DeleteView):

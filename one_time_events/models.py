@@ -104,3 +104,11 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     agreed_participation_fee = models.PositiveIntegerField(
         _("Poplatek za účast"), null=True, blank=True
     )
+
+    @property
+    def event(self):
+        return self.one_time_event
+
+    @event.setter
+    def event(self, value):
+        self.one_time_event = value

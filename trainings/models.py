@@ -228,6 +228,14 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
         "trainings.TrainingWeekdays", related_name="training_weekdays_set"
     )
 
+    @property
+    def event(self):
+        return self.training
+
+    @event.setter
+    def event(self, value):
+        self.training = value
+
 
 class TrainingWeekdays(models.Model):
     weekday = models.PositiveSmallIntegerField(

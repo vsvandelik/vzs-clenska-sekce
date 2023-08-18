@@ -13,6 +13,7 @@ from .models import (
 )
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.forms import MultipleChoiceFieldNoValidation
+from events.forms_bases import EventParticipantEnrollmentForm
 from events.utils import parse_czech_date
 
 
@@ -209,29 +210,23 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentForm(ModelForm):
-    class Meta:
+class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
+    class Meta(EventParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
-        fields = ["agreed_participation_fee", "person", "state"]
-        labels = {"agreed_participation_fee": "Poplatek za účast*", "person": "Osoba"}
+        fields = [
+            "agreed_participation_fee"
+        ] + EventParticipantEnrollmentForm.Meta.fields
+        labels = {"person": "Osoba"} | EventParticipantEnrollmentForm.Meta.labels
         widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-            "state": Select2Widget(attrs={"onchange": "stateChanged()"}),
-        }
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"})
+        } | EventParticipantEnrollmentForm.Meta.widgets
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
-        a = 4
-        if self.instance.id is None:
-            self.fields["person"].queryset = Person.objects.exclude(
-                pk__in=self.event.enrolled_participants.all().values_list(
-                    "pk", flat=True
-                )
-            )
-        else:
-            self.fields["person"].widget.attrs["disabled"] = True
+        if self.event.default_participation_fee is not None:
+            self.fields["agreed_participation_fee"].widget.attrs[
+                "value"
+            ] = self.event.default_participation_fee
 
     def clean(self):
         cleaned_data = super().clean()
@@ -244,15 +239,11 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.datetime = datetime.now()
-        instance.one_time_event = self.event
-
-        if instance.id is not None:
-            instance.person = self.person
 
         if instance.state != ParticipantEnrollment.State.APPROVED:
             instance.agreed_participation_fee = None
 
         if commit:
             instance.save()
+
         return instance

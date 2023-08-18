@@ -49,22 +49,15 @@ class AddRemoveFeatureRequirementPositionForm(ModelForm):
 
 
 class PositionAgeLimitForm(AgeLimitForm):
-    class Meta:
+    class Meta(AgeLimitForm.Meta):
         model = EventPosition
-        fields = ["min_age", "max_age"]
 
 
 class PositionGroupMembershipForm(GroupMembershipForm):
-    class Meta:
+    class Meta(GroupMembershipForm.Meta):
         model = EventPosition
-        fields = ["group"]
-        labels = {"group": "Skupina"}
-        widgets = {
-            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
-        }
 
 
 class PositionAllowedPersonTypeForm(AllowedPersonTypeForm):
-    class Meta:
+    class Meta(AllowedPersonTypeForm.Meta):
         model = EventPosition
-        fields = []
