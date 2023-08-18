@@ -64,8 +64,10 @@ class OneTimeEvent(Event):
     def participants_by_state(self, state):
         output = []
         for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.training_participant_enrollment_set.get(
-                one_time_event=self
+            enrollment = (
+                enrolled_participant.one_time_event_participant_enrollment_set.get(
+                    one_time_event=self
+                )
             )
             if enrollment.state == state:
                 output.append(enrolled_participant)

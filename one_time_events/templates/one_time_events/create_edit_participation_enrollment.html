@@ -1,5 +1,9 @@
 {% extends 'events/create_edit_participation_enrollment.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
+{% block child_scripts %}
+    <script src="{% static 'one_time_events/create_edit_participation_enrollment.js' %}"></script>
+{% endblock %}
 {% block body %}
     {{ form.agreed_participation_fee|as_crispy_field }}
 {% endblock %}

@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta, datetime
 
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
@@ -158,7 +158,7 @@ class OneTimeEventForm(ModelForm):
                 output.append((True, date_start, hours))
             else:
                 output.append((False, date_start, None))
-            date_start += datetime.timedelta(days=1)
+            date_start += timedelta(days=1)
         return output
 
     def _find_date_hours_form(self, d):
@@ -219,5 +219,18 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        kwargs.pop("event")
+        self.event = kwargs.pop("event")
         super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # cleaned_data['datetime'] = datetime.now()
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.datetime = datetime.now()
+        # instance.event_id = self.event.event_ptr_id
+        instance.one_time_event = self.event
+        instance.event = self.event
+        return instance
