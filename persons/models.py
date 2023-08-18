@@ -170,3 +170,25 @@ class Person(
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
+
+
+class PersonHourlyRate(models.Model):
+    person = models.ForeignKey(
+        Person, on_delete=models.CASCADE, related_name="hourly_rates"
+    )
+    event_type = models.CharField(_("Kategorie akcí"), max_length=20)
+    hourly_rate = models.DecimalField(
+        _("Hodinová sazba"), decimal_places=2, max_digits=7
+    )
+
+    class Meta:
+        unique_together = ["person", "event_type"]
+
+    def __str__(self):
+        return f"{self.person} - {self.event_type} - {self.hourly_rate} Kč / hod"
+
+    @staticmethod
+    def get_person_hourly_rates(person):
+        items = PersonHourlyRate.objects.filter(person=person)
+
+        return {entry.event_type: entry.hourly_rate for entry in items}

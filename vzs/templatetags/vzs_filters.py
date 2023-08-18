@@ -1,11 +1,15 @@
-from django import template
-from django.utils import formats
-from django.utils.safestring import mark_safe
-from django.urls import resolve
-from django.template.defaulttags import url, URLNode
-from django.template.base import Node
 import re
 
+from django import template
+from django.template.base import Node
+from django.template.defaulttags import url
+from django.template.defaulttags import url, URLNode
+from django.urls import resolve
+from django.utils import formats
+from django.utils.safestring import mark_safe
+
+from one_time_events.models import OneTimeEvent
+from trainings.models import Training
 from vzs import settings
 
 register = template.Library()
@@ -54,6 +58,16 @@ def qr(transaction):
     )
 
 
+@register.filter
+def event_type_display_value(value):
+    if value in Training.Category.values:
+        return "trénink - " + Training.Category(value).label
+    elif value in OneTimeEvent.Category.values:
+        return "jednorázová akce - " + OneTimeEvent.Category(value).label
+
+    return value
+
+
 @register.simple_tag
 def link_to_admin_email(link_text=None):
     if not link_text:
@@ -99,7 +113,7 @@ def index(indexable, i):
 
 @register.filter
 def index_safe(indexable, i):
-    if indexable in (None, ""):
+    if indexable in [None, ""]:
         return iter([])
     if i in indexable:
         return indexable[i]
@@ -118,28 +132,28 @@ def join(separator, iterable):
 
 @register.filter
 def handle_missing(value):
-    if value in (None, ""):
+    if value in [None, ""]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return value
 
 
 @register.filter
 def display_presence(value):
-    if value in (None, ""):
+    if value in [None, "", False]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return mark_safe(settings.VALUE_PRESENT_HTML)
 
 
 @register.filter(expects_localtime=True)
 def datetime(value):
-    if value in (None, ""):
+    if value in [None, ""]:
         return ""
     return formats.date_format(value, settings.cs_formats.DATETIME_FORMAT)
 
 
 @register.filter(expects_localtime=True)
 def datetime_precise(value):
-    if value in (None, ""):
+    if value in [None, ""]:
         return ""
     return formats.date_format(value, settings.DATETIME_PRECISE_FORMAT)
 
