@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = "trainings"
@@ -10,5 +11,10 @@ urlpatterns = [
         "<int:pk>/upravit/",
         views.TrainingUpdateView.as_view(),
         name="edit",
+    ),
+    path(
+        "<int:pk>/pridat-nahradu/",
+        views.TrainingAddReplaceableTrainingView.as_view(),
+        name="add-replacement-training",
     ),
 ]

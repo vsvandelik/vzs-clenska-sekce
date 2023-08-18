@@ -1,14 +1,15 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
 from events.models import (
     Event,
     EventOccurrence,
     ParticipantEnrollment,
     OrganizerPositionAssignment,
 )
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class TrainingAttendance(models.TextChoices):
@@ -135,16 +136,15 @@ class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
 
 class TrainingReplaceabilityForParticipants(models.Model):
     training_1 = models.ForeignKey(
-        "trainings.Training", on_delete=models.CASCADE, related_name="training_1"
+        "trainings.Training",
+        on_delete=models.CASCADE,
+        related_name="replaceable_training_1",
     )
     training_2 = models.ForeignKey(
-        "trainings.Training", on_delete=models.CASCADE, related_name="training_2"
+        "trainings.Training",
+        on_delete=models.CASCADE,
+        related_name="replaceable_training_2",
     )
-
-    symmetric = models.BooleanField(default=True)
-
-    # if false -> training_1 can replace training_2 but not vice-versa
-    # if true -> training_1 can replace training_2 and vice-versa
 
     class Meta:
         unique_together = ["training_1", "training_2"]
