@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import generic
@@ -49,7 +49,7 @@ class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
     form_class = TrainingForm
 
 
-class TrainingAddReplaceableTrainingView(SuccessMessageMixin, generic.View):
+class TrainingAddReplaceableTrainingView(generic.View):
     http_method_names = ["post"]
 
     def post(self, request, pk, *args, **kwargs):
@@ -65,5 +65,25 @@ class TrainingAddReplaceableTrainingView(SuccessMessageMixin, generic.View):
             messages.error(
                 request, "Tréninky pro náhrady se nepodařilo přidat. " + errors
             )
+
+        return redirect(reverse("trainings:detail", args=[pk]))
+
+
+class TrainingRemoveReplaceableTrainingView(generic.View):
+    http_method_names = ["post"]
+
+    def post(self, request, pk, *args, **kwargs):
+        training_1 = pk
+        training_2 = request.POST.get("training_2")
+
+        removed_items_count, _ = TrainingReplaceabilityForParticipants.objects.filter(
+            Q(training_1=training_1, training_2=training_2)
+            | Q(training_2=training_1, training_1=training_2)
+        ).delete()
+
+        if 1 <= removed_items_count <= 2:
+            messages.success(request, "Tréninky pro náhrady byly odebrány.")
+        else:
+            messages.error(request, "Nebyly nalezeny tréninky k odebrání.")
 
         return redirect(reverse("trainings:detail", args=[pk]))
