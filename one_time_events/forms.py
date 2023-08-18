@@ -216,10 +216,8 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
         fields = [
             "agreed_participation_fee"
         ] + EventParticipantEnrollmentForm.Meta.fields
-        labels = {"person": "Osoba"} | EventParticipantEnrollmentForm.Meta.labels
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"})
-        } | EventParticipantEnrollmentForm.Meta.widgets
+        labels = EventParticipantEnrollmentForm.Meta.labels
+        widgets = EventParticipantEnrollmentForm.Meta.widgets
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -245,5 +243,4 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
 
         if commit:
             instance.save()
-
         return instance

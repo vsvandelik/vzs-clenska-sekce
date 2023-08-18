@@ -3,7 +3,7 @@
 <div class="col-12 col-md-4">
     <div class="card">
         <div class="card-header">
-            <div class="card-title h5">Omezení pro typ členství</div>
+            <div class="card-title h5">Omezení na typ členství</div>
         </div>
         <div class="card-body {% if object.allowed_person_types.all %}p-0{% endif %}">
             <form method="POST" action="{% block form_action_remove %}{% endblock %}">
@@ -53,7 +53,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="modal-title" class="modal-title">Přidat omezení pro typ členství</h5>
+                <h5 id="modal-title" class="modal-title">Přidat omezení na typ členství</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

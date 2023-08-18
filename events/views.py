@@ -115,11 +115,14 @@ class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
 class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccessMixin):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
+
+
+class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
     form_class = EventPositionAssignmentForm
 
 
 class EventPositionAssignmentCreateView(
-    EventPositionAssignmentMixin, generic.CreateView
+    EventPositionAssignmentCreateUpdateMixin, generic.CreateView
 ):
     template_name = "events/create_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s přidána"
@@ -135,7 +138,7 @@ class EventPositionAssignmentCreateView(
 
 
 class EventPositionAssignmentUpdateView(
-    EventPositionAssignmentMixin, generic.UpdateView
+    EventPositionAssignmentCreateUpdateMixin, generic.UpdateView
 ):
     template_name = "events/edit_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s upravena"
@@ -172,7 +175,7 @@ class AddRemoveAllowedPersonTypeView(
     MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.UpdateView
 ):
     form_class = EventAllowedPersonTypeForm
-    success_message = "Změna omezení pro typ členství uložena"
+    success_message = "Změna omezení na typ členství uložena"
     model = Event
 
     def get_form_kwargs(self):
@@ -181,15 +184,11 @@ class AddRemoveAllowedPersonTypeView(
         return kwargs
 
 
-class ParticipantEnrollmentCreateUpdateMixin(
-    RedirectToEventDetailOnSuccessMixin, MessagesMixin
-):
+class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
     context_object_name = "enrollment"
 
 
-class ParticipantEnrollmentCreateMixin(
-    ParticipantEnrollmentCreateUpdateMixin, generic.CreateView
-):
+class ParticipantEnrollmentCreateMixin(ParticipantEnrollmentMixin, generic.CreateView):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
     def dispatch(self, request, *args, **kwargs):
@@ -206,9 +205,7 @@ class ParticipantEnrollmentCreateMixin(
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentUpdateMixin(
-    ParticipantEnrollmentCreateUpdateMixin, generic.UpdateView
-):
+class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
     success_message = "Změna přihlášky proběhla úspěšně"
 
     def get_form_kwargs(self):
@@ -222,5 +219,9 @@ class ParticipantEnrollmentUpdateMixin(
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentDeleteView(generic.DeleteView):
-    pass
+class ParticipantEnrollmentDeleteView(ParticipantEnrollmentMixin, generic.DeleteView):
+    model = ParticipantEnrollment
+    template_name = "events/delete_participant_enrollment.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Přihláška osoby {self.object.person} smazána"

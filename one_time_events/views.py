@@ -53,10 +53,10 @@ class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
 class OneTimeEventParticipantEnrollmentCreateView(
     OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentCreateMixin
 ):
-    template_name = "one_time_events/create_participation_enrollment.html"
+    template_name = "one_time_events/create_participant_enrollment.html"
 
 
 class OneTimeEventParticipantEnrollmentUpdateView(
     OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
 ):
-    template_name = "one_time_events/edit_participation_enrollment.html"
+    template_name = "one_time_events/edit_participant_enrollment.html"

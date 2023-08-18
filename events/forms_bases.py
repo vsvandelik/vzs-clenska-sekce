@@ -1,11 +1,12 @@
-from django.forms import ModelForm
+from datetime import datetime
+
 from django.forms import ChoiceField
+from django.forms import ModelForm
+from django_select2.forms import Select2Widget
+
+from events.models import EventPersonTypeConstraint
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
-from events.models import EventPersonTypeConstraint
-from django_select2.forms import Select2Widget
-from datetime import datetime
-from events.models import ParticipantEnrollment
 
 
 class AgeLimitForm(ModelForm):
@@ -89,9 +90,6 @@ class EventParticipantEnrollmentForm(ModelForm):
             instance.person = self.person
         else:
             instance.datetime = datetime.now()
-
-        if instance.state != ParticipantEnrollment.State.APPROVED:
-            instance.agreed_participation_fee = None
 
         if commit:
             instance.save()
