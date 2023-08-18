@@ -1,0 +1,35 @@
+{% extends "modal.html" %}
+{% load vzs_filters %}
+{% load static %}
+
+{% block modal_title %}
+    Vybrat tréninky pro náhrady
+{% endblock %}
+
+{% block modal_body %}
+    <form method="post" action="{% url "trainings:add-replaceable-training" object.pk %}" id="add-replaceable-training">
+        {% csrf_token %}
+    </form>
+    <table class="table table-striped" id="add-managed-person-table">
+        <thead>
+            <tr>
+                <th>Trénink</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for training in trainings_for_replacement %}
+                <tr>
+                    <td class="align-middle">{{ training }}</td>
+                    <td class="text-center">
+                        <button type="submit" name="training_2" value="{{ training.pk }}" form="add-replaceable-training" class="btn btn-primary btn-sm">Přidat oboustranně</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block modal_footer %}
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+{% endblock %}

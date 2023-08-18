@@ -1,20 +1,21 @@
 from datetime import datetime, timedelta, timezone
 
 from django import forms
+from django.db.models import Q
 from django.forms import ModelForm
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.models import EventOrOccurrenceState
+from events.utils import parse_czech_date
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
-from events.utils import parse_czech_date
 from vzs.widgets import DatePickerWithIcon, TimePickerWithIcon
-from .models import Training, TrainingOccurrence
+from .models import Training, TrainingOccurrence, TrainingReplaceabilityForParticipants
 
 
 class TrainingForm(ModelForm):
@@ -293,3 +294,60 @@ class TrainingForm(ModelForm):
 
             dates_all[weekday] = dates
         return dates_all
+
+
+class TrainingReplaceableForm(forms.ModelForm):
+    class Meta:
+        model = TrainingReplaceabilityForParticipants
+        fields = ["training_2"]
+
+    def __init__(self, *args, training_1, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.training_1 = training_1
+
+    def clean_training_2(self):
+        training_2 = self.cleaned_data.get("training_2")
+
+        if (
+            self.training_1
+            and training_2
+            and self.training_1.category != training_2.category
+        ):
+            raise forms.ValidationError("Tréninky musí být stejné kategorie")
+
+        return training_2
+
+    def clean(self):
+        cleaned_data = super().clean()
+        training_1 = self.training_1
+        training_2 = cleaned_data.get("training_2")
+
+        if TrainingReplaceabilityForParticipants.objects.filter(
+            Q(training_1=training_1, training_2=training_2)
+        ).exists():
+            self.add_error(
+                None,
+                "Tato kombinace tréninků již existuje",
+            )
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+
+        training_1 = self.training_1
+        training_2 = self.cleaned_data.get("training_2")
+
+        if commit:
+            instance.training_1 = training_1
+            instance.save()
+
+        if not TrainingReplaceabilityForParticipants.objects.filter(
+            Q(training_2=training_1, training_1=training_2)
+        ).exists():
+            TrainingReplaceabilityForParticipants.objects.create(
+                training_1=training_2,
+                training_2=training_1,
+            )
+
+        return instance
