@@ -12,12 +12,14 @@ from django.views import generic
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
+from vzs.utils import export_queryset_csv
 from .forms import (
     PersonForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
     PersonsFilterForm,
     MyProfileUpdateForm,
+    PersonHourlyRateForm,
 )
 from .models import Person
 from .utils import (
@@ -25,8 +27,6 @@ from .utils import (
     send_email_to_selected_persons,
     extend_kwargs_of_assignment_features,
 )
-
-from vzs.utils import export_queryset_csv
 
 
 class PersonPermissionMixin(PermissionRequiredMixin):
@@ -288,6 +288,18 @@ class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
             _("Odebrání spravované osoby bylo úspěšné."),
             _("Nepodařilo se odebrat spravovanou osobu. "),
         )
+
+
+class EditHourlyRateView(
+    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
+):
+    model = Person
+    form_class = PersonHourlyRateForm
+    template_name = "persons/edit_hourly_rate.html"
+    success_message = _("Hodinové sazby byly úspěšně upraveny.")
+
+    def get_success_url(self):
+        return reverse("persons:detail", args=[self.kwargs["pk"]])
 
 
 class SendEmailToSelectedPersonsView(generic.View):
