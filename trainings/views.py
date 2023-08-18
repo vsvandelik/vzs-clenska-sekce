@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.db.models import Q
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.views import (
@@ -9,7 +10,9 @@ from events.views import (
     EventUpdateMixin,
     EventDetailViewMixin,
     EventGeneratesDatesMixin,
+    RedirectToEventDetailOnSuccessMixin,
 )
+from vzs.mixin_extensions import MessagesMixin
 from .forms import TrainingForm, TrainingReplaceableForm
 from .models import Training, TrainingReplaceabilityForParticipants
 
@@ -49,31 +52,24 @@ class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
     form_class = TrainingForm
 
 
-class TrainingAddReplaceableTrainingView(generic.View):
-    http_method_names = ["post"]
+class TrainingAddReplaceableTrainingView(
+    MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.CreateView
+):
+    form_class = TrainingReplaceableForm
+    success_message = _("Tréninky pro náhrady byl přidán.")
+    model = TrainingReplaceabilityForParticipants
 
-    def post(self, request, pk, *args, **kwargs):
-        form = TrainingReplaceableForm(
-            request.POST, training_1=Training.objects.get(pk=pk)
-        )
-
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Tréninky pro náhrady byl přidán.")
-        else:
-            errors = "".join([" ".join(e) for e in form.errors.values()])
-            messages.error(
-                request, "Tréninky pro náhrady se nepodařilo přidat. " + errors
-            )
-
-        return redirect(reverse("trainings:detail", args=[pk]))
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["training_1"] = get_object_or_404(Training, pk=self.kwargs["event_id"])
+        return kwargs
 
 
 class TrainingRemoveReplaceableTrainingView(generic.View):
     http_method_names = ["post"]
 
-    def post(self, request, pk, *args, **kwargs):
-        training_1 = pk
+    def post(self, request, event_id, *args, **kwargs):
+        training_1 = event_id
         training_2 = request.POST.get("training_2")
 
         removed_items_count, _ = TrainingReplaceabilityForParticipants.objects.filter(
@@ -86,4 +82,4 @@ class TrainingRemoveReplaceableTrainingView(generic.View):
         else:
             messages.error(request, "Nebyly nalezeny tréninky k odebrání.")
 
-        return redirect(reverse("trainings:detail", args=[pk]))
+        return redirect(reverse("trainings:detail", args=[event_id]))
