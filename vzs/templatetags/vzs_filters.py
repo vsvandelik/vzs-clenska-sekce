@@ -1,10 +1,13 @@
-from django import template
-from django.utils.safestring import mark_safe
-from django.urls import resolve
-from django.template.defaulttags import url, URLNode
-from django.template.base import Node
 import re
 
+from django import template
+from django.template.base import Node
+from django.template.defaulttags import url, URLNode
+from django.urls import resolve
+from django.utils.safestring import mark_safe
+
+from one_time_events.models import OneTimeEvent
+from trainings.models import Training
 from vzs import settings
 
 register = template.Library()
@@ -51,6 +54,16 @@ def qr(transaction):
         f"&amount={abs(transaction.amount)}"
         f"&vs={transaction.pk}"
     )
+
+
+@register.filter
+def event_type_display_value(value):
+    if value in Training.Category.values:
+        return "trénink - " + Training.Category(value).label
+    elif value in OneTimeEvent.Category.values:
+        return "jednorázová akce - " + OneTimeEvent.Category(value).label
+
+    return value
 
 
 @register.simple_tag

@@ -75,6 +75,11 @@ urlpatterns = [
         name="remove-managed-person",
     ),
     path(
+        "<int:pk>/hodinove-sazby/",
+        views.EditHourlyRateView.as_view(),
+        name="edit-hourly-rates",
+    ),
+    path(
         "<int:pk>/pridat-do-skupiny/",
         groups_views.AddPersonToGroupView.as_view(),
         name="add-to-group",

@@ -2,15 +2,17 @@ import datetime
 import re
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div
+from crispy_forms.layout import Submit, Layout, Div, Fieldset
 from django import forms
 from django.forms import ModelForm, ValidationError, Form
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
+from one_time_events.models import OneTimeEvent
+from trainings.models import Training
 from vzs.forms import VZSDefaultFormHelper
 from vzs.widgets import DatePickerWithIcon
-from .models import Person
+from .models import Person, PersonHourlyRate
 
 
 class PersonForm(ModelForm):
@@ -196,3 +198,68 @@ class PersonsFilterForm(forms.Form):
 
         if age_from and age_to and age_from > age_to:
             raise ValidationError(_("Věk od musí být menší nebo roven věku do."))
+
+
+class PersonHourlyRateForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.person_instance = kwargs.pop("instance", None)
+        super().__init__(*args, **kwargs)
+
+        for key, label in OneTimeEvent.Category.choices:
+            self.fields[key] = forms.IntegerField(
+                label=label,
+                required=False,
+                min_value=0,
+            )
+
+        for key, label in Training.Category.choices:
+            self.fields[key] = forms.IntegerField(
+                label=label,
+                required=False,
+                min_value=0,
+            )
+
+        self.initial = PersonHourlyRate.get_person_hourly_rates(self.person_instance)
+
+        self.helper = VZSDefaultFormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+        self.helper.layout = Layout(
+            Fieldset(
+                "Jednorázové akce", *[key for key, _ in OneTimeEvent.Category.choices]
+            ),
+            Fieldset("Tréninky", *[key for key, _ in Training.Category.choices]),
+        )
+
+    def save(self):
+        cleaned_data = self.cleaned_data
+
+        stored_hourly_rates = PersonHourlyRate.get_person_hourly_rates(
+            self.person_instance
+        )
+
+        for event_type, hourly_rate in cleaned_data.items():
+            stored_rate = stored_hourly_rates.get(event_type)
+
+            if hourly_rate:
+                if stored_rate is None:
+                    PersonHourlyRate.objects.create(
+                        person=self.person_instance,
+                        event_type=event_type,
+                        hourly_rate=hourly_rate,
+                    )
+                elif stored_rate != hourly_rate:
+                    PersonHourlyRate.objects.filter(
+                        person=self.person_instance, event_type=event_type
+                    ).update(hourly_rate=hourly_rate)
+            elif stored_rate is not None:
+                PersonHourlyRate.objects.filter(
+                    person=self.person_instance, event_type=event_type
+                ).delete()
+
+        types_to_remove = set(stored_hourly_rates.keys()) - set(cleaned_data.keys())
+        PersonHourlyRate.objects.filter(
+            person=self.person_instance, event_type__in=types_to_remove
+        ).delete()
+
+        return self.person_instance.hourly_rates
