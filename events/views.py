@@ -210,12 +210,12 @@ class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.Updat
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.object.event()
+        kwargs["event"] = self.object.event
         kwargs["person"] = self.object.person
         return kwargs
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.object.event())
+        kwargs.setdefault("event", self.object.event)
         return super().get_context_data(**kwargs)
 
 

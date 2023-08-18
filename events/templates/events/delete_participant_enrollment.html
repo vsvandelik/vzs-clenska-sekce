@@ -5,8 +5,11 @@
 {% block modal_body %}
     <div class="row">
         <p class="px-4">Chcete opravdu smazat přihlášku?</p>
+    </div>
+    <div class="row">
         <ul>
-            <li><b>Osoba:</b> <a target="_blank" href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></li>
+            <li><b>Osoba:</b> <a target="_blank"
+                                 href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></li>
             <li><b>Stav:</b> {{ enrollment.get_state_display }}</li>
         </ul>
     </div>
