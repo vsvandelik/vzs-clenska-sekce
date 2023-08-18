@@ -7,7 +7,10 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         ("persons", "0001_initial"),
-        ("trainings", "0001_initial"),
+        (
+            "trainings",
+            "0002_remove_trainingreplaceabilityforparticipants_symmetric_and_more",
+        ),
     ]
 
     operations = [
