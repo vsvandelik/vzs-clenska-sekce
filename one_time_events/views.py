@@ -4,6 +4,7 @@ from events.views import (
     EventUpdateMixin,
     EventGeneratesDatesMixin,
     EventRestrictionMixin,
+    RedirectToEventDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from .forms import (
@@ -43,7 +44,9 @@ class EditTrainingCategoryView(
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class ParticipantEnrollmentCreateView(generic.CreateView):
+class ParticipantEnrollmentCreateView(
+    RedirectToEventDetailOnSuccessMixin, generic.CreateView
+):
     model = OneTimeEventParticipantEnrollment
     context_object_name = "enrollment"
     form_class = OneTimeEventParticipantEnrollmentForm

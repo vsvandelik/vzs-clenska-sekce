@@ -231,4 +231,6 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
         instance = super().save(False)
         instance.datetime = datetime.now()
         instance.one_time_event = self.event
+        if commit:
+            instance.save()
         return instance

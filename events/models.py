@@ -95,10 +95,6 @@ class EventOccurrence(PolymorphicModel):
         pass  # TODO:
 
 
-class Enrollment(PolymorphicModel):
-    datetime = models.DateTimeField()
-
-
 class ParticipantEnrollmentWaitingManager(PolymorphicManager):
     def get_queryset(self):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
@@ -121,7 +117,7 @@ class ParticipantEnrollmentRejectedManager(PolymorphicManager):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
 
 
-class ParticipantEnrollment(Enrollment):
+class ParticipantEnrollment(PolymorphicModel):
     class State(models.TextChoices):
         WAITING = "ceka", _("čeká")
         APPROVED = "schvalen", _("schválen")
@@ -134,6 +130,8 @@ class ParticipantEnrollment(Enrollment):
     enrollments_substitute = ParticipantEnrollmentSubstituteManager()
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
+    datetime = models.DateTimeField()
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 

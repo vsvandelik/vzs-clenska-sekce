@@ -223,7 +223,6 @@ class TrainingOneTimeCoachPosition(models.Model):
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     weekdays = models.ManyToManyField(
         "trainings.TrainingWeekdays", related_name="training_weekdays_set"
     )

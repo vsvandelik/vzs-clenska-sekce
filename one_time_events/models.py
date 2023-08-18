@@ -64,7 +64,7 @@ class OneTimeEvent(Event):
     def participants_by_state(self, state):
         output = []
         for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.onetimeeventparticipantenrollment_set.get(
+            enrollment = enrolled_participant.participantenrollment_set.get(
                 one_time_event=self
             )
             if enrollment.state == state:
@@ -98,7 +98,6 @@ class OneTimeEventOccurrenceOrganizerPositionAssignment(OrganizerPositionAssignm
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     one_time_event = models.ForeignKey(
         "one_time_events.OneTimeEvent", on_delete=models.CASCADE
     )
