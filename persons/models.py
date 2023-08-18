@@ -177,8 +177,8 @@ class PersonHourlyRate(models.Model):
         Person, on_delete=models.CASCADE, related_name="hourly_rates"
     )
     event_type = models.CharField(_("Kategorie akcí"), max_length=20)
-    hourly_rate = models.DecimalField(
-        _("Hodinová sazba"), decimal_places=2, max_digits=7
+    hourly_rate = models.PositiveIntegerField(
+        _("Hodinová sazba"),
     )
 
     class Meta:

@@ -59,9 +59,9 @@ def qr(transaction):
 @register.filter
 def event_type_display_value(value):
     if value in Training.Category.values:
-        return "tréninky: " + Training.Category(value).label
+        return "trénink - " + Training.Category(value).label
     elif value in OneTimeEvent.Category.values:
-        return "jednorázové: " + OneTimeEvent.Category(value).label
+        return "jednorázová akce - " + OneTimeEvent.Category(value).label
 
     return value
 

@@ -206,21 +206,17 @@ class PersonHourlyRateForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         for key, label in OneTimeEvent.Category.choices:
-            self.fields[key] = forms.DecimalField(
+            self.fields[key] = forms.IntegerField(
                 label=label,
                 required=False,
                 min_value=0,
-                decimal_places=2,
-                localize=True,
             )
 
         for key, label in Training.Category.choices:
-            self.fields[key] = forms.DecimalField(
+            self.fields[key] = forms.IntegerField(
                 label=label,
                 required=False,
                 min_value=0,
-                decimal_places=2,
-                localize=True,
             )
 
         self.initial = PersonHourlyRate.get_person_hourly_rates(self.person_instance)
