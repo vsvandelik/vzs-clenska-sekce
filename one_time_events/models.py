@@ -64,10 +64,8 @@ class OneTimeEvent(Event):
     def participants_by_state(self, state):
         output = []
         for enrolled_participant in self.enrolled_participants.all():
-            enrollment = (
-                enrolled_participant.one_time_event_participant_enrollment_set.get(
-                    one_time_event=self
-                )
+            enrollment = enrolled_participant.onetimeeventparticipantenrollment_set.get(
+                one_time_event=self
             )
             if enrollment.state == state:
                 output.append(enrolled_participant)
@@ -88,7 +86,8 @@ class OneTimeEventOccurrence(EventOccurrence):
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     organizers_assignment = models.ManyToManyField(
-        "one_time_events.OneTimeEventOccurrenceOrganizerPositionAssignment"
+        "one_time_events.OneTimeEventOccurrenceOrganizerPositionAssignment",
+        related_name="one_time_event_occurrence_organizer_position_assignment_set",
     )
 
 
@@ -99,6 +98,7 @@ class OneTimeEventOccurrenceOrganizerPositionAssignment(OrganizerPositionAssignm
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     one_time_event = models.ForeignKey(
         "one_time_events.OneTimeEvent", on_delete=models.CASCADE
     )

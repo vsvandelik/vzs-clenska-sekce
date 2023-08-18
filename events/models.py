@@ -56,7 +56,10 @@ class Event(PolymorphicModel):
     group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
 
     # if NULL -> no effect (all person types are allowed)
-    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
+    allowed_person_types = models.ManyToManyField(
+        "events.EventPersonTypeConstraint",
+        related_name="event_person_type_constraint_set",
+    )
 
     def is_one_time_event(self):
         from one_time_events.models import OneTimeEvent
@@ -93,7 +96,6 @@ class EventOccurrence(PolymorphicModel):
 
 
 class Enrollment(PolymorphicModel):
-    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     datetime = models.DateTimeField()
 
 
@@ -132,7 +134,6 @@ class ParticipantEnrollment(Enrollment):
     enrollments_substitute = ParticipantEnrollmentSubstituteManager()
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
