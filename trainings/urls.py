@@ -13,12 +13,12 @@ urlpatterns = [
         name="edit",
     ),
     path(
-        "<int:pk>/pridat-nahradu/",
+        "<int:event_id>/pridat-nahradu/",
         views.TrainingAddReplaceableTrainingView.as_view(),
         name="add-replaceable-training",
     ),
     path(
-        "<int:pk>/odebrat-nahradu/",
+        "<int:event_id>/odebrat-nahradu/",
         views.TrainingRemoveReplaceableTrainingView.as_view(),
         name="remove-replaceable-training",
     ),
