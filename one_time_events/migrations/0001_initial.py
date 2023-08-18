@@ -182,7 +182,6 @@ class Migration(migrations.Migration):
             model_name="onetimeevent",
             name="enrolled_participants",
             field=models.ManyToManyField(
-                related_name="one_time_event_participant_enrollment_set",
                 through="one_time_events.OneTimeEventParticipantEnrollment",
                 to="persons.person",
             ),

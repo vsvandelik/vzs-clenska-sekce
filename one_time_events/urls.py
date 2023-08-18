@@ -22,7 +22,12 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/pridat/prihlasku/",
-        views.ParticipantEnrollmentCreateView.as_view(),
+        views.OneTimeEventParticipantEnrollmentCreateView.as_view(),
         name="create_participant_enrollment",
+    ),
+    path(
+        "<int:event_id>/upravit/prihlasku/<int:pk>",
+        views.OneTimeEventParticipantEnrollmentUpdateView.as_view(),
+        name="edit_participant_enrollment",
     ),
 ]

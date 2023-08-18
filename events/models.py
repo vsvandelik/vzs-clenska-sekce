@@ -131,7 +131,6 @@ class ParticipantEnrollment(PolymorphicModel):
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
     datetime = models.DateTimeField()
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 

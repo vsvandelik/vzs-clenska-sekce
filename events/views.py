@@ -115,13 +115,13 @@ class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
 class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccessMixin):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
+    form_class = EventPositionAssignmentForm
 
 
 class EventPositionAssignmentCreateView(
     EventPositionAssignmentMixin, generic.CreateView
 ):
     template_name = "events/create_event_position_assignment.html"
-    form_class = EventPositionAssignmentForm
     success_message = "Organizátorská pozice %(position)s přidána"
 
     def dispatch(self, request, *args, **kwargs):
@@ -139,12 +139,11 @@ class EventPositionAssignmentUpdateView(
 ):
     template_name = "events/edit_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s upravena"
-    form_class = EventPositionAssignmentForm
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["position"] = self.object.position
         kwargs["event"] = self.object.event
+        kwargs["position"] = self.object.position
         return kwargs
 
 
@@ -179,6 +178,43 @@ class AddRemoveAllowedPersonTypeView(
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = get_object_or_404(Event, pk=self.kwargs["pk"])
+        return kwargs
+
+
+class ParticipantEnrollmentCreateUpdateMixin(
+    RedirectToEventDetailOnSuccessMixin, MessagesMixin
+):
+    context_object_name = "enrollment"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class ParticipantEnrollmentCreateMixin(
+    ParticipantEnrollmentCreateUpdateMixin, generic.CreateView
+):
+    success_message = "Přihlášení nového účastníka proběhlo úspěšně"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(OneTimeEvent, pk=kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
+
+
+class ParticipantEnrollmentUpdateMixin(
+    ParticipantEnrollmentCreateUpdateMixin, generic.UpdateView
+):
+    success_message = "Změna přihlášky proběhla úspěšně"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.object.event
+        kwargs["person"] = self.object.person
         return kwargs
 
 

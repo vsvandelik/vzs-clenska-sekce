@@ -154,7 +154,7 @@ cs_formats.DATE_FORMAT = "j. n. Y"
 cs_formats.DATETIME_FORMAT = "j. n. Y H:i"
 cs_formats.TIME_FORMAT = "H:i"
 
-DATETIME_PRECISE_FORMAT = ""
+DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

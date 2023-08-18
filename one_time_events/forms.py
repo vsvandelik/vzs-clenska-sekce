@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
+from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
 from .models import (
@@ -10,7 +11,7 @@ from .models import (
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
 )
-from events.models import EventOrOccurrenceState
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.forms import MultipleChoiceFieldNoValidation
 from events.utils import parse_czech_date
 
@@ -212,7 +213,7 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
     class Meta:
         model = OneTimeEventParticipantEnrollment
         fields = ["agreed_participation_fee", "person", "state"]
-        labels = {"agreed_participation_fee": "Poplatek za účast", "person": "Osoba"}
+        labels = {"agreed_participation_fee": "Poplatek za účast*", "person": "Osoba"}
         widgets = {
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "state": Select2Widget(attrs={"onchange": "stateChanged()"}),
@@ -220,17 +221,38 @@ class OneTimeEventParticipantEnrollmentForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event")
+        self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
+        a = 4
+        if self.instance.id is None:
+            self.fields["person"].queryset = Person.objects.exclude(
+                pk__in=self.event.enrolled_participants.all().values_list(
+                    "pk", flat=True
+                )
+            )
+        else:
+            self.fields["person"].widget.attrs["disabled"] = True
 
     def clean(self):
         cleaned_data = super().clean()
-        # cleaned_data['datetime'] = datetime.now()
+        if (
+            cleaned_data["state"] == "schvalena"
+            and "agreed_participation_fee" not in cleaned_data
+        ):
+            self.add_error("agreed_participation_fee", "Toto pole musí být vyplněno")
         return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
         instance.datetime = datetime.now()
         instance.one_time_event = self.event
+
+        if instance.id is not None:
+            instance.person = self.person
+
+        if instance.state != ParticipantEnrollment.State.APPROVED:
+            instance.agreed_participation_fee = None
+
         if commit:
             instance.save()
         return instance

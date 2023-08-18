@@ -141,7 +141,7 @@ def datetime(value):
 def datetime_precise(value):
     if value in (None, ""):
         return ""
-    return formats.date_format(value, settings.cs_formats.DATETIME_FORMAT)
+    return formats.date_format(value, settings.DATETIME_PRECISE_FORMAT)
 
 
 class _PermURLContextVariable:

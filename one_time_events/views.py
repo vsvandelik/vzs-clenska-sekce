@@ -1,21 +1,22 @@
+from django.views import generic
+
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
     EventUpdateMixin,
     EventGeneratesDatesMixin,
     EventRestrictionMixin,
-    RedirectToEventDetailOnSuccessMixin,
+    ParticipantEnrollmentCreateMixin,
+    ParticipantEnrollmentUpdateMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     OneTimeEventForm,
     TrainingCategoryForm,
     OneTimeEventParticipantEnrollmentForm,
 )
-from .models import OneTimeEventParticipantEnrollment, OneTimeEvent
-from django.views import generic
-from django.shortcuts import get_object_or_404
-from vzs.mixin_extensions import MessagesMixin
+from .models import OneTimeEventParticipantEnrollment
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -44,23 +45,18 @@ class EditTrainingCategoryView(
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class ParticipantEnrollmentCreateView(
-    RedirectToEventDetailOnSuccessMixin, generic.CreateView
-):
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
     model = OneTimeEventParticipantEnrollment
-    context_object_name = "enrollment"
     form_class = OneTimeEventParticipantEnrollmentForm
+
+
+class OneTimeEventParticipantEnrollmentCreateView(
+    OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentCreateMixin
+):
     template_name = "one_time_events/create_participation_enrollment.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(OneTimeEvent, pk=kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
+class OneTimeEventParticipantEnrollmentUpdateView(
+    OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
+):
+    template_name = "one_time_events/edit_participation_enrollment.html"

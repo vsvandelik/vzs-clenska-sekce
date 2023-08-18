@@ -23,7 +23,6 @@ class OneTimeEvent(Event):
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="one_time_events.OneTimeEventParticipantEnrollment",
-        related_name="one_time_event_participant_enrollment_set",
     )
 
     default_participation_fee = models.PositiveIntegerField(
@@ -64,7 +63,7 @@ class OneTimeEvent(Event):
     def participants_by_state(self, state):
         output = []
         for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.participantenrollment_set.get(
+            enrollment = enrolled_participant.onetimeeventparticipantenrollment_set.get(
                 one_time_event=self
             )
             if enrollment.state == state:
@@ -101,4 +100,7 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(
         "one_time_events.OneTimeEvent", on_delete=models.CASCADE
     )
-    agreed_participation_fee = models.PositiveIntegerField(_("Poplatek za účast"))
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    agreed_participation_fee = models.PositiveIntegerField(
+        _("Poplatek za účast"), null=True, blank=True
+    )
