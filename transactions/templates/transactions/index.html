@@ -29,7 +29,7 @@
                             <table class="table table-hover table-striped" id="transactions-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Zaplaceno</th>
+                                        <th scope="col" class="text-center">Zaplaceno</th>
                                         <th scope="col">Osoba</th>
                                         <th scope="col">Typ</th>
                                         <th scope="col">Suma</th>
@@ -41,7 +41,7 @@
                                 <tbody>
                                     {% for transaction in transactions %}
                                         <tr>
-                                            <td>{{ transaction.is_settled|yesno }}</td>
+                                            <td class="text-center">{{ transaction.is_settled|display_presence }}</td>
                                             <td>{% render transaction.person "inline" %}</td>
                                             <td>{{ transaction.reward_string }}</td>
                                             <td>{{ transaction.amount|absolute }}</td>

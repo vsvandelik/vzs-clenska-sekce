@@ -47,7 +47,7 @@
                             {% if object.google_email %}
                                 <tr>
                                     <td class="text-nowrap text-bold">Je Google autorita seznamu členů?</td>
-                                    <td class="w-100">{{ object.google_as_members_authority|yesno|capfirst }}</td>
+                                    <td class="w-100">{{ object.google_as_members_authority|display_presence }}</td>
                                 </tr>
                             {% endif %}
                         </tbody>

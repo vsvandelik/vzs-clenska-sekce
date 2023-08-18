@@ -137,7 +137,7 @@ def handle_missing(value):
 
 @register.filter
 def display_presence(value):
-    if value in [None, ""]:
+    if value in [None, "", False]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return mark_safe(settings.VALUE_PRESENT_HTML)
 
