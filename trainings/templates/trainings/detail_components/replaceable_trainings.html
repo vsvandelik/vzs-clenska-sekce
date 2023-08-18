@@ -1,0 +1,21 @@
+<div class="card">
+    <div class="card-header border-bottom-0">
+        <div class="card-title h5">
+            Tréninky, kterými může být nahrazeno
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <table class="table table-stripped">
+            {% for replaceable_training in selected_replaceable_trainings %}
+                <tr>
+                    <td>{{ replaceable_training.training_2 }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card-footer text-center">
+        <a href="#" data-toggle="modal" data-target="#choose-replaceable-training-modal" class="btn btn-primary">Přidat trénink</a>
+    </div>
+</div>
