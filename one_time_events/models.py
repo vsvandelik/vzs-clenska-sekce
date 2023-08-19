@@ -54,27 +54,6 @@ class OneTimeEvent(Event):
         occurrences = self._occurrences_list().order_by("date")
         return occurrences
 
-    def approved_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
-
-    def waiting_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.WAITING)
-
-    def substitute_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
-
-    def participants_by_state(self, state):
-        return [enrollment.person for enrollment in self.enrollments_by_state(state)]
-
-    def approved_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
-
-    def waiting_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.WAITING)
-
-    def substitute_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
-
     def enrollments_by_state(self, state):
         output = []
         for enrolled_participant in self.enrolled_participants.all():

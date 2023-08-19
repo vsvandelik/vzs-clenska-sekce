@@ -78,6 +78,36 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
+    def occurrences_list(self):
+        raise NotImplementedError
+
+    def sorted_occurrences_list(self):
+        raise NotImplementedError
+
+    def enrollments_by_state(self, state):
+        raise NotImplementedError
+
+    def participants_by_state(self, state):
+        return [enrollment.person for enrollment in self.enrollments_by_state(state)]
+
+    def approved_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def waiting_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.WAITING)
+
+    def substitute_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def approved_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def waiting_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.WAITING)
+
+    def substitute_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
