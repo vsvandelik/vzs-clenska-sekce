@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Q
 from django.forms import ChoiceField
 from django.forms import ModelForm
 from django_select2.forms import Select2Widget
@@ -72,10 +73,19 @@ class EventParticipantEnrollmentForm(ModelForm):
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
         if self.instance.id is None:
-            self.fields["person"].queryset = Person.objects.exclude(
-                pk__in=self.event.enrolled_participants.all().values_list(
-                    "pk", flat=True
+            if self.event.is_one_time_event():
+                persons_not_attending_query = ~Q(
+                    onetimeeventparticipantenrollment__one_time_event=self.event
                 )
+            elif self.event.is_training():
+                persons_not_attending_query = ~Q(
+                    trainingparticipantenrollment__training=self.event
+                )
+            else:
+                raise NotImplementedError
+
+            self.fields["person"].queryset = Person.objects.filter(
+                persons_not_attending_query
             )
         else:
             self.fields["person"].widget.attrs["disabled"] = True

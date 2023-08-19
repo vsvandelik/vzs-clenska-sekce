@@ -30,6 +30,7 @@ class EventPositionAssignmentForm(ModelForm):
         if self.position is not None:
             self.fields["position"].widget.attrs["disabled"] = True
         else:
+            a = 1
             self.fields["position"].queryset = EventPosition.objects.filter(
                 pk__in=EventPosition.objects.all()
                 .values_list("pk", flat=True)
