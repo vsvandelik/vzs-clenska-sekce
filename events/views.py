@@ -79,24 +79,7 @@ class PersonTypeDetailViewMixin:
 
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault(
-            "enrollments_approved", ParticipantEnrollment.enrollments_approved.all()
-        )
-        kwargs.setdefault(
-            "enrollments_waiting", ParticipantEnrollment.enrollments_waiting.all()
-        )
-        kwargs.setdefault(
-            "enrollments_substitute", ParticipantEnrollment.enrollments_substitute.all()
-        )
-        kwargs.setdefault(
-            "enrollments_rejected", ParticipantEnrollment.enrollments_rejected.all()
-        )
-        kwargs.setdefault(
-            "event_position_assignments",
-            EventPositionAssignment.objects.filter(event=self.object).all(),
-        )
-        return super().get_context_data(**kwargs)
+    pass
 
 
 class EventIndexView(EventMixin, generic.ListView):

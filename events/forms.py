@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.forms import ModelForm, MultipleChoiceField
 from django_select2.forms import Select2Widget
 
@@ -30,15 +31,9 @@ class EventPositionAssignmentForm(ModelForm):
         if self.position is not None:
             self.fields["position"].widget.attrs["disabled"] = True
         else:
-            a = 1
+            not_assigned_query = ~Q(eventpositionassignment__event=self.event)
             self.fields["position"].queryset = EventPosition.objects.filter(
-                pk__in=EventPosition.objects.all()
-                .values_list("pk", flat=True)
-                .difference(
-                    EventPositionAssignment.objects.filter(
-                        event=self.event
-                    ).values_list("position_id", flat=True)
-                )
+                not_assigned_query
             )
 
     def save(self, commit=True):

@@ -27,7 +27,7 @@ class Training(Event):
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantEnrollment",
-        related_name="training_participant_enrollment_1_set",
+        related_name="training_participant_enrollment_set",
     )
 
     coaches_assignment = models.ManyToManyField(
@@ -125,6 +125,37 @@ class Training(Event):
                 weekdays.append(i)
             i += 1
         return weekdays
+
+    def approved_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def waiting_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.WAITING)
+
+    def substitute_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def participants_by_state(self, state):
+        return [enrollment.person for enrollment in self.enrollments_by_state(state)]
+
+    def approved_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def waiting_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.WAITING)
+
+    def substitute_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def enrollments_by_state(self, state):
+        output = []
+        for enrolled_participant in self.enrolled_participants.all():
+            enrollment = enrolled_participant.trainingparticipantenrollment_set.get(
+                training=self
+            )
+            if enrollment.state == state:
+                output.append(enrollment)
+        return output
 
     def __str__(self):
         return self.name

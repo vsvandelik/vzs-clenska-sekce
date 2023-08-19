@@ -13,7 +13,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for pa in event_position_assignments %}
+                    {% for pa in event.eventpositionassignment_set.all %}
                         <tr>
                             <td><a href="{% url 'positions:detail' pa.position.id %}">{{ pa.position }}</a></td>
                             <td>{{ pa.count }}</td>

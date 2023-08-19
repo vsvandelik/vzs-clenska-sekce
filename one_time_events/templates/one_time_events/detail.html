@@ -52,10 +52,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_approved.html' enrollments=enrollments_approved %}
-                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_waiting.html' enrollments=enrollments_waiting %}
-                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_substitute.html' enrollments=enrollments_substitute %}
-                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=enrollments_rejected %}
+                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_approved.html' enrollments=event.approved_enrollments %}
+                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_waiting.html' enrollments=event.waiting_enrollments %}
+                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_substitute.html' enrollments=event.substitute_enrollments %}
+                        {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=event.rejected_enrollments %}
                     </div>
                 </div>
                 <div class="card-footer text-center">
