@@ -29,7 +29,6 @@ class AgeLimitForm(ModelForm):
 class GroupMembershipForm(ModelForm):
     class Meta:
         fields = ["group"]
-        labels = {"group": "Skupina"}
         widgets = {
             "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
         }
@@ -63,7 +62,6 @@ class AllowedPersonTypeForm(ModelForm):
 class EventParticipantEnrollmentForm(ModelForm):
     class Meta:
         fields = ["person", "state"]
-        labels = {"person": "Osoba"}
         widgets = {
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "state": Select2Widget(attrs={"onchange": "stateChanged()"}),

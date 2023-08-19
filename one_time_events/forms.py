@@ -202,7 +202,6 @@ class TrainingCategoryForm(ModelForm):
     class Meta:
         model = OneTimeEvent
         fields = ["training_category"]
-        labels = {"training_category": "Kategorie tréninku"}
         widgets = {"training_category": Select2Widget()}
 
     def __init__(self, *args, **kwargs):
@@ -216,7 +215,6 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
         fields = [
             "agreed_participation_fee"
         ] + EventParticipantEnrollmentForm.Meta.fields
-        labels = EventParticipantEnrollmentForm.Meta.labels
         widgets = EventParticipantEnrollmentForm.Meta.widgets
 
     def __init__(self, *args, **kwargs):

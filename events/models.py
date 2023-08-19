@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from persons.models import Person
 from features.models import Feature
 from django.core.validators import MinValueValidator, MaxValueValidator
-from polymorphic.models import PolymorphicModel, PolymorphicManager
+from polymorphic.models import PolymorphicModel
 from polymorphic.managers import PolymorphicManager
 
 
@@ -53,7 +53,9 @@ class Event(PolymorphicModel):
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
 
-    group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
+    group = models.ForeignKey(
+        "groups.Group", null=True, verbose_name="Skupina", on_delete=models.SET_NULL
+    )
 
     # if NULL -> no effect (all person types are allowed)
     allowed_person_types = models.ManyToManyField(
@@ -136,7 +138,9 @@ class ParticipantEnrollment(PolymorphicModel):
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
+    position = models.ForeignKey(
+        "positions.EventPosition", verbose_name="Pozice", on_delete=models.CASCADE
+    )
     count = models.PositiveSmallIntegerField(
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )

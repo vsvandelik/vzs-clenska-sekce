@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import ModelForm
-from django_select2.forms import Select2Widget
 
 from events.forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
 from features.models import Feature

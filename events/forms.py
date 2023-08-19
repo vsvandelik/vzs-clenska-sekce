@@ -18,7 +18,6 @@ class EventPositionAssignmentForm(ModelForm):
             "position",
             "count",
         ]
-        labels = {"position": "Pozice"}
         widgets = {
             "position": Select2Widget(attrs={"onchange": "positionChanged(this)"})
         }

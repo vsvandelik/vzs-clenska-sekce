@@ -35,7 +35,10 @@ class OneTimeEvent(Event):
     # if NULL -> no effect
     # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected category
     training_category = models.CharField(
-        null=True, max_length=10, choices=Training.Category.choices
+        "Kategorie tréninku",
+        null=True,
+        max_length=10,
+        choices=Training.Category.choices,
     )
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
@@ -100,7 +103,9 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(
         "one_time_events.OneTimeEvent", on_delete=models.CASCADE
     )
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
     agreed_participation_fee = models.PositiveIntegerField(
         _("Poplatek za účast*"), null=True, blank=True
     )
