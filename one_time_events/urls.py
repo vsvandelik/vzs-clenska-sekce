@@ -16,17 +16,17 @@ urlpatterns = [
         name="edit",
     ),
     path(
-        "<int:pk>/upravit/dochazka-trenink",
+        "<int:pk>/upravit-dochazku-treninku",
         views.EditTrainingCategoryView.as_view(),
         name="edit_training_category",
     ),
     path(
-        "<int:event_id>/pridat/prihlasku/",
+        "<int:event_id>/pridat-prihlasku/",
         views.OneTimeEventParticipantEnrollmentCreateView.as_view(),
         name="create_participant_enrollment",
     ),
     path(
-        "<int:event_id>/upravit/prihlasku/<int:pk>",
+        "<int:event_id>/upravit-prihlasku/<int:pk>",
         views.OneTimeEventParticipantEnrollmentUpdateView.as_view(),
         name="edit_participant_enrollment",
     ),
