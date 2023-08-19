@@ -162,7 +162,7 @@ class ParticipantEnrollment(PolymorphicModel):
     enrollments_substitute = ParticipantEnrollmentSubstituteManager()
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
-    datetime = models.DateTimeField()
+    created_datetime = models.DateTimeField()
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 

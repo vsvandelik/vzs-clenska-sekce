@@ -20,7 +20,7 @@
                     {% for enrollment in enrollments %}
                         <tr>
                             <td><a href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></td>
-                            <td>{{ enrollment.datetime|datetime_precise }}</td>
+                            <td>{{ enrollment.created_datetime|datetime_precise }}</td>
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-success btn-sm"

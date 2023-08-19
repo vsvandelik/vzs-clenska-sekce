@@ -97,7 +97,7 @@ class EventParticipantEnrollmentForm(ModelForm):
         if instance.id is not None:
             instance.person = self.person
         else:
-            instance.datetime = datetime.now()
+            instance.created_datetime = datetime.now()
 
         if commit:
             instance.save()
