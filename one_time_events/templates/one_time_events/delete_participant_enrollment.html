@@ -8,7 +8,7 @@
 {% endblock %}
 {% block child_notifications %}
     {% if enrollment.transaction is not None %}
-        {% include 'one_time_events/components/enrollment_paid_alert.html' %}
+        {% include 'one_time_events/components/participant_enrollment_paid_alert.html' %}
     {% endif %}
 {% endblock %}
 {% block delete_action %}{% url 'one_time_events:delete_participant_enrollment' enrollment.event.id enrollment.id %}{% endblock %}
