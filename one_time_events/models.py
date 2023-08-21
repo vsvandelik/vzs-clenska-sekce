@@ -101,6 +101,14 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
         _("Poplatek za účast*"), null=True, blank=True
     )
 
+    def delete(self):
+        transaction = OneTimeEventParticipantEnrollment.objects.get(
+            pk=self.pk
+        ).transaction
+        super().delete()
+        if not transaction.is_settled:
+            transaction.delete()
+
     @property
     def event(self):
         return self.one_time_event
