@@ -1,3 +1,3 @@
 {% extends base_template %}
-{% block edit_enrollment_url %}{% url 'one_time_events:edit_participant_enrollment' event.id enrollment.id %}{% endblock %}
-{% block delete_enrollment_url %}{% url 'one_time_events:delete_participant_enrollment' event.id enrollment.id %}{% endblock %}
+{% block edit_enrollment_action %}{% url 'one_time_events:edit_participant_enrollment' event.id enrollment.id %}{% endblock %}
+{% block delete_enrollment_action %}{% url 'one_time_events:delete_participant_enrollment' event.id enrollment.id %}{% endblock %}
