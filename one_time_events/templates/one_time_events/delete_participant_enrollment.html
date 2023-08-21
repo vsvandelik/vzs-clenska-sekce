@@ -1,10 +1,9 @@
 {% extends 'events/detail_bases/delete_participant_enrollment.html' %}
 {% load vzs_filters %}
 {% block child_items %}
-    <li><b>Poplatek za účast:</b> {{ enrollment.agreed_participation_fee|money }}</li>
     {% if enrollment.transaction is not None %}
-        <li><b>Stav transakce:</b> {% if enrollment.transaction.is_settled %}zaplacena{% else %}nezaplacena{% endif %}
-        </li>
+        <li><b>Poplatek za účast: </b> {{ enrollment.agreed_participation_fee|money }}</li>
+        <li><b>Stav transakce:</b> {% if enrollment.transaction.is_settled %}zaplacena{% else %}nezaplacena{% endif %}</li>
     {% endif %}
 {% endblock %}
 {% block child_notifications %}
