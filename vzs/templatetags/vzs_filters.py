@@ -158,6 +158,16 @@ def datetime_precise(value):
     return formats.date_format(value, settings.DATETIME_PRECISE_FORMAT)
 
 
+@register.filter
+def subtract(a, b):
+    return a - b
+
+
+@register.filter
+def math_max(a, b):
+    return max(a, b)
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url

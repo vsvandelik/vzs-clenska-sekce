@@ -19,6 +19,48 @@ class EventOrOccurrenceState(models.TextChoices):
     COMPLETED = "zpracovana", _("zpracována")
 
 
+class ParticipantEnrollmentWaitingManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
+
+
+class ParticipantEnrollmentApprovedManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
+
+
+class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
+        )
+
+
+class ParticipantEnrollmentRejectedManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
+
+
+class ParticipantEnrollment(PolymorphicModel):
+    class State(models.TextChoices):
+        WAITING = "ceka", _("čeká")
+        APPROVED = "schvalen", _("schválen")
+        SUBSTITUTE = "nahradnik", _("nahradník")
+        REJECTED = "odminut", _("odmítnut")
+
+    objects = PolymorphicManager()
+    enrollments_waiting = ParticipantEnrollmentWaitingManager()
+    enrollments_approved = ParticipantEnrollmentApprovedManager()
+    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
+    enrollments_rejected = ParticipantEnrollmentRejectedManager()
+
+    created_datetime = models.DateTimeField()
+    state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
+    transaction = models.ForeignKey(
+        "transactions.Transaction", null=True, on_delete=models.SET_NULL
+    )
+
+
 class Event(PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"), null=True, blank=True)
@@ -33,6 +75,22 @@ class Event(PolymorphicModel):
         "positions.EventPosition",
         through="events.EventPositionAssignment",
         related_name="event_position_assignment_set",
+    )
+
+    participants_enroll_list = models.CharField(
+        "Přidat nové účastníky jako",
+        max_length=10,
+        default=ParticipantEnrollment.State.SUBSTITUTE.value,
+        choices=[
+            (
+                ParticipantEnrollment.State.SUBSTITUTE.value,
+                ParticipantEnrollment.State.SUBSTITUTE.label,
+            ),
+            (
+                ParticipantEnrollment.State.APPROVED.value,
+                ParticipantEnrollment.State.APPROVED.label,
+            ),
+        ],
     )
 
     # requirements for participants
@@ -99,6 +157,9 @@ class Event(PolymorphicModel):
     def substitute_enrollments(self):
         return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
 
+    def rejected_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.REJECTED)
+
     def approved_participants(self):
         return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
 
@@ -107,6 +168,9 @@ class Event(PolymorphicModel):
 
     def substitute_participants(self):
         return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def rejected_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.REJECTED)
 
 
 class EventOccurrence(PolymorphicModel):
@@ -125,45 +189,6 @@ class EventOccurrence(PolymorphicModel):
 
     def enrolled_organizers(self):
         pass  # TODO:
-
-
-class ParticipantEnrollmentWaitingManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
-
-
-class ParticipantEnrollmentApprovedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
-
-
-class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
-    def get_queryset(self):
-        return (
-            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
-        )
-
-
-class ParticipantEnrollmentRejectedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
-
-
-class ParticipantEnrollment(PolymorphicModel):
-    class State(models.TextChoices):
-        WAITING = "ceka", _("čeká")
-        APPROVED = "schvalen", _("schválen")
-        SUBSTITUTE = "nahradnik", _("nahradník")
-        REJECTED = "odminut", _("odmítnut")
-
-    objects = PolymorphicManager()
-    enrollments_waiting = ParticipantEnrollmentWaitingManager()
-    enrollments_approved = ParticipantEnrollmentApprovedManager()
-    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
-    enrollments_rejected = ParticipantEnrollmentRejectedManager()
-
-    created_datetime = models.DateTimeField()
-    state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
 class EventPositionAssignment(models.Model):

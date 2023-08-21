@@ -1,40 +1,25 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
-from persons.models import Person
-from persons.widgets import PersonSelectWidget
-from vzs.widgets import DatePickerWithIcon
+from events.forms import MultipleChoiceFieldNoValidation
+from events.forms_bases import EventForm
+from events.forms_bases import EventParticipantEnrollmentForm
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
+from events.utils import parse_czech_date
+from transactions.models import Transaction
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
 )
-from events.models import EventOrOccurrenceState, ParticipantEnrollment
-from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventParticipantEnrollmentForm
-from events.utils import parse_czech_date
 
 
-class OneTimeEventForm(ModelForm):
-    class Meta:
+class OneTimeEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = OneTimeEvent
-        fields = [
-            "name",
-            "description",
-            "location",
-            "capacity",
-            "category",
-            "date_start",
-            "date_end",
-            "default_participation_fee",
-        ]
-        widgets = {
-            "category": Select2Widget(),
-            "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-            "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-        }
+        fields = ["default_participation_fee"] + EventForm.Meta.fields
 
     dates = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
@@ -227,8 +212,8 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
     def clean(self):
         cleaned_data = super().clean()
         if (
-            cleaned_data["state"] == "schvalena"
-            and "agreed_participation_fee" not in cleaned_data
+            cleaned_data["state"] == ParticipantEnrollment.State.APPROVED.value
+            and cleaned_data["agreed_participation_fee"] is None
         ):
             self.add_error("agreed_participation_fee", "Toto pole musí být vyplněno")
         return cleaned_data
@@ -238,6 +223,19 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
 
         if instance.state != ParticipantEnrollment.State.APPROVED:
             instance.agreed_participation_fee = None
+            if instance.transaction is not None and not instance.transaction.is_settled:
+                instance.transaction.delete()
+                instance.transaction = None
+
+        elif instance.transaction is None:
+            instance.transaction = Transaction(
+                amount=instance.agreed_participation_fee,
+                reason=f"Schválená přihláška na jednorázovou událost {self.event}",
+                date_due=self.event.date_start,
+                person=instance.person,
+                event=self.event,
+            )
+            instance.transaction.save()
 
         if commit:
             instance.save()

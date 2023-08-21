@@ -6,8 +6,28 @@ from django.forms import ModelForm
 from django_select2.forms import Select2Widget
 
 from events.models import EventPersonTypeConstraint
+from vzs.widgets import DatePickerWithIcon
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+
+
+class EventForm(ModelForm):
+    class Meta:
+        fields = [
+            "name",
+            "category",
+            "description",
+            "capacity",
+            "location",
+            "date_start",
+            "date_end",
+            "participants_enroll_list",
+        ]
+        widgets = {
+            "category": Select2Widget(),
+            "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+        }
 
 
 class AgeLimitForm(ModelForm):

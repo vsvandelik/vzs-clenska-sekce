@@ -50,8 +50,10 @@ class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
 
 
-class EventCreateUpdateMixin(EventMixin, MessagesMixin, generic.FormView):
-    success_url = reverse_lazy("events:index")
+class EventCreateUpdateMixin(
+    EventMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin, generic.FormView
+):
+    pass
 
 
 class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
