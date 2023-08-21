@@ -27,6 +27,7 @@ class EventForm(ModelForm):
             "category": Select2Widget(),
             "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
             "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
+            "participants_enroll_list": Select2Widget(),
         }
 
 
