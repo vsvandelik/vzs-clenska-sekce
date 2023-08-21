@@ -19,11 +19,6 @@ class EventOrOccurrenceState(models.TextChoices):
     COMPLETED = "zpracovana", _("zpracována")
 
 
-class ParticipantEnrollmentWaitingManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.WAITING)
-
-
 class ParticipantEnrollmentApprovedManager(PolymorphicManager):
     def get_queryset(self):
         return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
@@ -43,13 +38,11 @@ class ParticipantEnrollmentRejectedManager(PolymorphicManager):
 
 class ParticipantEnrollment(PolymorphicModel):
     class State(models.TextChoices):
-        WAITING = "ceka", _("čeká")
         APPROVED = "schvalen", _("schválen")
         SUBSTITUTE = "nahradnik", _("nahradník")
         REJECTED = "odminut", _("odmítnut")
 
     objects = PolymorphicManager()
-    enrollments_waiting = ParticipantEnrollmentWaitingManager()
     enrollments_approved = ParticipantEnrollmentApprovedManager()
     enrollments_substitute = ParticipantEnrollmentSubstituteManager()
     enrollments_rejected = ParticipantEnrollmentRejectedManager()
@@ -151,9 +144,6 @@ class Event(PolymorphicModel):
     def approved_enrollments(self):
         return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
 
-    def waiting_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.WAITING)
-
     def substitute_enrollments(self):
         return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
 
@@ -162,9 +152,6 @@ class Event(PolymorphicModel):
 
     def approved_participants(self):
         return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
-
-    def waiting_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.WAITING)
 
     def substitute_participants(self):
         return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
