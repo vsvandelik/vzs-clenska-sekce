@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12 col-md-4">
     <div class="card">
         <div class="card-header border-0">
@@ -9,7 +10,7 @@
 
                     <tr>
                         <td class="text-nowrap text-bold">Hodinová sazba:</td>
-                        <td class="w-100">{{ position.get_wage_hour_display }}</td>
+                        <td class="w-100">{{ position.wage_hour|money }}</td>
                     </tr>
                 </tbody>
             </table>

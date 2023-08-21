@@ -1,0 +1,15 @@
+{% extends 'events/detail_bases/delete_participant_enrollment.html' %}
+{% load vzs_filters %}
+{% block child_items %}
+    <li><b>Poplatek za účast:</b> {{ enrollment.agreed_participation_fee|money }}</li>
+    {% if enrollment.transaction is not None %}
+        <li><b>Stav transakce:</b> {% if enrollment.transaction.is_settled %}zaplacena{% else %}nezaplacena{% endif %}
+        </li>
+    {% endif %}
+{% endblock %}
+{% block child_notifications %}
+    {% if enrollment.transaction is not None %}
+        {% include 'one_time_events/components/enrollment_paid_alert.html' %}
+    {% endif %}
+{% endblock %}
+{% block delete_action %}{% url 'one_time_events:delete_participant_enrollment' enrollment.event.id enrollment.id %}{% endblock %}

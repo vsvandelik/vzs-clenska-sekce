@@ -11,10 +11,10 @@
             <li><b>Osoba:</b> <a target="_blank"
                                  href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></li>
             <li><b>Stav:</b> {{ enrollment.get_state_display }}</li>
+            {% block child_items %}{% endblock %}
         </ul>
     </div>
+    {% block child_notifications %}{% endblock %}
 {% endblock %}
 
-{% block delete_action %}
-    {% url 'events:delete_participant_enrollment' enrollment.event.id enrollment.id %}
-{% endblock %}
+{% block delete_action %}{% endblock %}

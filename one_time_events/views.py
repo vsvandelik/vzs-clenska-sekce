@@ -8,6 +8,7 @@ from events.views import (
     EventRestrictionMixin,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentUpdateMixin,
+    ParticipantEnrollmentDeleteMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -60,3 +61,7 @@ class OneTimeEventParticipantEnrollmentUpdateView(
     OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
 ):
     template_name = "one_time_events/edit_participant_enrollment.html"
+
+
+class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
+    template_name = "one_time_events/delete_participant_enrollment.html"

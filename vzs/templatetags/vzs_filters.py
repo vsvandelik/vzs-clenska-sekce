@@ -132,7 +132,7 @@ def join(separator, iterable):
 
 @register.filter
 def handle_missing(value):
-    if value in [None, ""]:
+    if value in [None, "", "None Kč"]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return value
 
@@ -166,6 +166,11 @@ def subtract(a, b):
 @register.filter
 def math_max(a, b):
     return max(a, b)
+
+
+@register.filter
+def money(value):
+    return f"{value} Kč"
 
 
 class _PermURLContextVariable:

@@ -5,11 +5,7 @@
     <script src="{% static 'one_time_events/create_edit_participant_enrollment.js' %}"></script>
 {% endblock %}
 {% block child_notifications %}
-    {% if enrollment.transaction.is_settled %}
-        <div class="alert alert-danger" role="alert">
-            Tato osoba má svoji účast uhrazenou!
-        </div>
-    {% endif %}
+    {% include 'one_time_events/components/enrollment_paid_alert.html' %}
 {% endblock %}
 {% block body %}
     {{ form.agreed_participation_fee|as_crispy_field }}

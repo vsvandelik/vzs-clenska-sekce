@@ -1,5 +1,3 @@
-{# blocks title, id, edit_enrollment_url #}
-{# vars enrollments #}
 {% load vzs_filters %}
 
 <div class="col-12 col-md-6">
@@ -31,7 +29,7 @@
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
                                        data-target="#delete-participant-enrollment-modal"
-                                       data-action="{% url 'events:delete_participant_enrollment' event.id enrollment.id %}">
+                                       data-action="{% block delete_enrollment_url %}{% endblock %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>

@@ -41,9 +41,4 @@ urlpatterns = [
         views.EventPositionAssignmentDeleteView.as_view(),
         name="delete_position_assignment",
     ),
-    path(
-        "<int:event_id>/smazat-prihlasku/<int:pk>",
-        views.ParticipantEnrollmentDeleteView.as_view(),
-        name="delete_participant_enrollment",
-    ),
 ]

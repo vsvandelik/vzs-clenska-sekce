@@ -38,7 +38,7 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
-                        <td class="w-100">{{ event.get_default_participation_fee_display|handle_missing }}</td>
+                        <td class="w-100">{{ event.default_participation_fee|money|handle_missing }}</td>
                     </tr>
                 </tbody>
             </table>

@@ -204,9 +204,8 @@ class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.Updat
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentDeleteView(ParticipantEnrollmentMixin, generic.DeleteView):
+class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.DeleteView):
     model = ParticipantEnrollment
-    template_name = "events/delete_participant_enrollment.html"
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
