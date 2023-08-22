@@ -208,6 +208,11 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
             self.fields["agreed_participation_fee"].widget.attrs[
                 "value"
             ] = self.event.default_participation_fee
+        if (
+            self.instance.transaction is not None
+            and self.instance.transaction.is_settled
+        ):
+            self.fields["agreed_participation_fee"].widget.attrs["readonly"] = True
 
     def clean(self):
         cleaned_data = super().clean()
@@ -235,11 +240,13 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
                 person=instance.person,
                 event=self.event,
             )
-            instance.transaction.save()
-        else:
+        elif not instance.transaction.is_settled:
             instance.transaction.amount = -instance.agreed_participation_fee
-            instance.transaction.save()
+        else:
+            instance.agreed_participation_fee = -instance.transaction.amount
 
         if commit:
+            if instance.transaction is not None:
+                instance.transaction.save()
             instance.save()
         return instance
