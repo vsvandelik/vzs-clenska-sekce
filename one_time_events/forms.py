@@ -236,6 +236,9 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
                 event=self.event,
             )
             instance.transaction.save()
+        else:
+            instance.transaction.amount = -instance.agreed_participation_fee
+            instance.transaction.save()
 
         if commit:
             instance.save()
