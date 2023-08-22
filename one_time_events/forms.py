@@ -229,7 +229,7 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
 
         elif instance.transaction is None:
             instance.transaction = Transaction(
-                amount=instance.agreed_participation_fee,
+                amount=-instance.agreed_participation_fee,
                 reason=f"Schválená přihláška na jednorázovou událost {self.event}",
                 date_due=self.event.date_start,
                 person=instance.person,
