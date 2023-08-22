@@ -1,14 +1,23 @@
+from django.views import generic
+
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
     EventUpdateMixin,
     EventGeneratesDatesMixin,
     EventRestrictionMixin,
+    ParticipantEnrollmentCreateMixin,
+    ParticipantEnrollmentUpdateMixin,
+    ParticipantEnrollmentDeleteMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
-from .forms import OneTimeEventForm, TrainingCategoryForm
-from django.views import generic
 from vzs.mixin_extensions import MessagesMixin
+from .forms import (
+    OneTimeEventForm,
+    TrainingCategoryForm,
+    OneTimeEventParticipantEnrollmentForm,
+)
+from .models import OneTimeEventParticipantEnrollment
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -35,3 +44,24 @@ class EditTrainingCategoryView(
     template_name = "one_time_events/edit_training_category.html"
     form_class = TrainingCategoryForm
     success_message = "Změna vyžadování skupiny uložena"
+
+
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
+    model = OneTimeEventParticipantEnrollment
+    form_class = OneTimeEventParticipantEnrollmentForm
+
+
+class OneTimeEventParticipantEnrollmentCreateView(
+    OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentCreateMixin
+):
+    template_name = "one_time_events/create_participant_enrollment.html"
+
+
+class OneTimeEventParticipantEnrollmentUpdateView(
+    OneTimeEventParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
+):
+    template_name = "one_time_events/edit_participant_enrollment.html"
+
+
+class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
+    template_name = "one_time_events/delete_participant_enrollment.html"

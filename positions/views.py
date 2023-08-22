@@ -100,4 +100,4 @@ class AddRemoveAllowedPersonTypeToPositionView(
     PositionMixin, PositionModelFormWithoutFormMixin, MessagesMixin, generic.UpdateView
 ):
     form_class = PositionAllowedPersonTypeForm
-    success_message = "Změna omezení pro typ členství uložena"
+    success_message = "Změna omezení na typ členství uložena"

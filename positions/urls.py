@@ -10,32 +10,32 @@ urlpatterns = [
     path("<int:pk>/smazat/", views.PositionDeleteView.as_view(), name="delete"),
     path("<int:pk>/", views.PositionDetailView.as_view(), name="detail"),
     path(
-        "<int:pk>/pridat/feature/",
+        "<int:pk>/pridat-feature/",
         views.AddRemoveFeatureRequirementPositionView.as_view(),
         name="add_feature",
     ),
     path(
-        "<int:pk>/smazat/feature/",
+        "<int:pk>/odebrat-feature/",
         views.AddRemoveFeatureRequirementPositionView.as_view(),
         name="remove_feature",
     ),
     path(
-        "<int:pk>/upravit/vekove-omezeni/",
+        "<int:pk>/upravit-vekove-omezeni/",
         views.EditAgeLimitView.as_view(),
         name="edit_age_limit",
     ),
     path(
-        "<int:pk>/upravit/skupinu/",
+        "<int:pk>/upravit-skupinu/",
         views.EditGroupMembershipView.as_view(),
         name="edit_group_membership",
     ),
     path(
-        "<int:pk>/pridat/typ-clenstvi/",
+        "<int:pk>/pridat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
         name="add_person_type",
     ),
     path(
-        "<int:pk>/smazat/typ-clenstvi/",
+        "<int:pk>/odebrat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
         name="remove_person_type",
     ),

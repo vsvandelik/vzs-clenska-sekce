@@ -2,11 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q
-from django.forms import ModelForm
 from django.utils import timezone
-from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
+from events.forms_bases import EventForm
 from events.models import EventOrOccurrenceState
 from events.utils import parse_czech_date
 from trainings.utils import (
@@ -14,20 +13,14 @@ from trainings.utils import (
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
-from vzs.widgets import DatePickerWithIcon, TimePickerWithIcon
+from vzs.widgets import TimePickerWithIcon
 from .models import Training, TrainingOccurrence, TrainingReplaceabilityForParticipants
 
 
-class TrainingForm(ModelForm):
-    class Meta:
+class TrainingForm(EventForm):
+    class Meta(EventForm.Meta):
         model = Training
         fields = [
-            "name",
-            "description",
-            "location",
-            "capacity",
-            "date_start",
-            "date_end",
             "category",
             "po_from",
             "po_to",
@@ -43,11 +36,8 @@ class TrainingForm(ModelForm):
             "so_to",
             "ne_from",
             "ne_to",
-        ]
+        ] + EventForm.Meta.fields
         widgets = {
-            "category": Select2Widget(),
-            "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-            "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
             "po_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
             "po_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
             "ut_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
@@ -62,7 +52,7 @@ class TrainingForm(ModelForm):
             "so_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
             "ne_from": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
             "ne_to": TimePickerWithIcon(attrs={"onchange": "timeChanged(this)"}),
-        }
+        } | EventForm.Meta.widgets
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -177,19 +167,7 @@ class TrainingForm(ModelForm):
         return self.cleaned_data
 
     def save(self, commit=True):
-        cleaned_data = self.cleaned_data
         instance = super().save(False)
-
-        for name in [
-            "name",
-            "description",
-            "location",
-            "capacity",
-            "date_start",
-            "date_end",
-            "category",
-        ]:
-            setattr(instance, name, cleaned_data[name])
 
         if commit:
             instance.save()

@@ -21,6 +21,10 @@
                         <td class="w-100">{{ event.location|handle_missing }}</td>
                     </tr>
                     <tr>
+                        <td class="text-nowrap text-bold">Noví účastníci jsou přidáni jako:</td>
+                        <td class="w-100">{{ event.get_participants_enroll_list_display }}</td>
+                    </tr>
+                    <tr>
                         <td class="text-nowrap text-bold">Stav:</td>
                         <td class="w-100">{{ event.get_state_display }}</td>
                     </tr>
@@ -38,7 +42,7 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
-                        <td class="w-100">{{ event.get_default_participation_fee_display|handle_missing }}</td>
+                        <td class="w-100">{{ event.default_participation_fee|money|handle_missing }}</td>
                     </tr>
                 </tbody>
             </table>

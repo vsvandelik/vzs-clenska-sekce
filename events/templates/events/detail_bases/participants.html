@@ -1,32 +1,35 @@
+{% load vzs_filters %}
+
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header">
-            <div class="card-title h5">Organizátorské pozice</div>
+            <div class="card-title h5">{% block title %}{% endblock %}</div>
         </div>
         <div class="card-body">
-            <table id="positions-table" class="table">
+            <table id="{% block id %}{% endblock %}" class="table">
                 <thead>
                     <tr>
-                        <th>Pozice</th>
-                        <th>Počet</th>
+                        <th>Osoba</th>
+                        <th>Datum</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for pa in event.eventpositionassignment_set.all %}
+                    {% for enrollment in enrollments %}
                         <tr>
-                            <td><a href="{% url 'positions:detail' pa.position.id %}">{{ pa.position }}</a></td>
-                            <td>{{ pa.count }}</td>
+                            <td><a href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></td>
+                            <td>{{ enrollment.created_datetime|datetime_precise }}</td>
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-success btn-sm"
-                                       href="{% url 'events:edit_position_assignment' event.id pa.id %}">
+                                       href="{% block edit_enrollment_action %}{% endblock %}"
+                                    >
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
-                                       data-target="#delete-position-assignment-modal"
-                                       data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                       data-target="#delete-participant-enrollment-modal"
+                                       data-action="{% block delete_enrollment_action %}{% endblock %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
@@ -35,9 +38,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat</a>
         </div>
     </div>
 </div>

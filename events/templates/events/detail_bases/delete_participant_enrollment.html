@@ -1,0 +1,20 @@
+{% extends "modal_delete.html" %}
+{% block modal_title %}
+    Smazání přihlášky
+{% endblock %}
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu smazat přihlášku?</p>
+    </div>
+    <div class="row">
+        <ul>
+            <li><b>Osoba:</b> <a target="_blank"
+                                 href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></li>
+            <li><b>Stav:</b> {{ enrollment.get_state_display }}</li>
+            {% block child_items %}{% endblock %}
+        </ul>
+    </div>
+    {% block child_notifications %}{% endblock %}
+{% endblock %}
+
+{% block delete_action %}{% endblock %}

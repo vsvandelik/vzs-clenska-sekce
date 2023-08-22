@@ -2,8 +2,10 @@ import re
 
 from django import template
 from django.template.base import Node
+from django.template.defaulttags import url
 from django.template.defaulttags import url, URLNode
 from django.urls import resolve
+from django.utils import formats
 from django.utils.safestring import mark_safe
 
 from one_time_events.models import OneTimeEvent
@@ -130,7 +132,7 @@ def join(separator, iterable):
 
 @register.filter
 def handle_missing(value):
-    if value in [None, ""]:
+    if value in [None, "", "None Kč"]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return value
 
@@ -140,6 +142,35 @@ def display_presence(value):
     if value in [None, "", False]:
         return mark_safe(settings.VALUE_MISSING_HTML)
     return mark_safe(settings.VALUE_PRESENT_HTML)
+
+
+@register.filter(expects_localtime=True)
+def datetime(value):
+    if value in [None, ""]:
+        return ""
+    return formats.date_format(value, settings.cs_formats.DATETIME_FORMAT)
+
+
+@register.filter(expects_localtime=True)
+def datetime_precise(value):
+    if value in [None, ""]:
+        return ""
+    return formats.date_format(value, settings.DATETIME_PRECISE_FORMAT)
+
+
+@register.filter
+def subtract(a, b):
+    return a - b
+
+
+@register.filter
+def math_max(a, b):
+    return max(a, b)
+
+
+@register.filter
+def money(value):
+    return f"{value} Kč"
 
 
 class _PermURLContextVariable:

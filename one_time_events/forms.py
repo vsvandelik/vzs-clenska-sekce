@@ -1,33 +1,25 @@
-import datetime
+from datetime import timedelta
 
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
-from vzs.widgets import DatePickerWithIcon
-from .models import OneTimeEvent, OneTimeEventOccurrence
-from events.models import EventOrOccurrenceState
 from events.forms import MultipleChoiceFieldNoValidation
+from events.forms_bases import EventForm
+from events.forms_bases import EventParticipantEnrollmentForm
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
+from transactions.models import Transaction
+from .models import (
+    OneTimeEvent,
+    OneTimeEventOccurrence,
+    OneTimeEventParticipantEnrollment,
+)
 
 
-class OneTimeEventForm(ModelForm):
-    class Meta:
+class OneTimeEventForm(EventForm):
+    class Meta(EventForm.Meta):
         model = OneTimeEvent
-        fields = [
-            "name",
-            "description",
-            "location",
-            "capacity",
-            "category",
-            "date_start",
-            "date_end",
-            "default_participation_fee",
-        ]
-        widgets = {
-            "category": Select2Widget(),
-            "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-            "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-        }
+        fields = ["default_participation_fee"] + EventForm.Meta.fields
 
     dates = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
@@ -153,7 +145,7 @@ class OneTimeEventForm(ModelForm):
                 output.append((True, date_start, hours))
             else:
                 output.append((False, date_start, None))
-            date_start += datetime.timedelta(days=1)
+            date_start += timedelta(days=1)
         return output
 
     def _find_date_hours_form(self, d):
@@ -195,11 +187,66 @@ class TrainingCategoryForm(ModelForm):
     class Meta:
         model = OneTimeEvent
         fields = ["training_category"]
-        labels = {"training_category": "Kategorie tréninku"}
-        widgets = {
-            "training_category": Select2Widget(),
-        }
+        widgets = {"training_category": Select2Widget()}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["training_category"].required = False
+
+
+class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
+    class Meta(EventParticipantEnrollmentForm.Meta):
+        model = OneTimeEventParticipantEnrollment
+        fields = [
+            "agreed_participation_fee"
+        ] + EventParticipantEnrollmentForm.Meta.fields
+        widgets = EventParticipantEnrollmentForm.Meta.widgets
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.event.default_participation_fee is not None:
+            self.fields["agreed_participation_fee"].widget.attrs[
+                "value"
+            ] = self.event.default_participation_fee
+        if (
+            self.instance.transaction is not None
+            and self.instance.transaction.is_settled
+        ):
+            self.fields["agreed_participation_fee"].widget.attrs["readonly"] = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if (
+            cleaned_data["state"] == ParticipantEnrollment.State.APPROVED.value
+            and cleaned_data["agreed_participation_fee"] is None
+        ):
+            self.add_error("agreed_participation_fee", "Toto pole musí být vyplněno")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+
+        if instance.state != ParticipantEnrollment.State.APPROVED:
+            instance.agreed_participation_fee = None
+            if instance.transaction is not None and not instance.transaction.is_settled:
+                instance.transaction.delete()
+                instance.transaction = None
+
+        elif instance.transaction is None:
+            instance.transaction = Transaction(
+                amount=-instance.agreed_participation_fee,
+                reason=f"Schválená přihláška na jednorázovou událost {self.event}",
+                date_due=self.event.date_start,
+                person=instance.person,
+                event=self.event,
+            )
+        elif not instance.transaction.is_settled:
+            instance.transaction.amount = -instance.agreed_participation_fee
+        else:
+            instance.agreed_participation_fee = -instance.transaction.amount
+
+        if commit:
+            if instance.transaction is not None:
+                instance.transaction.save()
+            instance.save()
+        return instance

@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, reverse
 from vzs.mixin_extensions import MessagesMixin
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
+from events.models import ParticipantEnrollment
 
 
 class EventMixin:
@@ -49,8 +50,10 @@ class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
 
 
-class EventCreateUpdateMixin(EventMixin, MessagesMixin, generic.FormView):
-    success_url = reverse_lazy("events:index")
+class EventCreateUpdateMixin(
+    EventMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin, generic.FormView
+):
+    pass
 
 
 class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
@@ -78,12 +81,7 @@ class PersonTypeDetailViewMixin:
 
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault(
-            "event_position_assignments",
-            EventPositionAssignment.objects.filter(event=self.object).all(),
-        )
-        return super().get_context_data(**kwargs)
+    pass
 
 
 class EventIndexView(EventMixin, generic.ListView):
@@ -104,11 +102,14 @@ class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccess
     context_object_name = "position_assignment"
 
 
+class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
+    form_class = EventPositionAssignmentForm
+
+
 class EventPositionAssignmentCreateView(
-    EventPositionAssignmentMixin, generic.CreateView
+    EventPositionAssignmentCreateUpdateMixin, generic.CreateView
 ):
     template_name = "events/create_event_position_assignment.html"
-    form_class = EventPositionAssignmentForm
     success_message = "Organizátorská pozice %(position)s přidána"
 
     def dispatch(self, request, *args, **kwargs):
@@ -122,16 +123,15 @@ class EventPositionAssignmentCreateView(
 
 
 class EventPositionAssignmentUpdateView(
-    EventPositionAssignmentMixin, generic.UpdateView
+    EventPositionAssignmentCreateUpdateMixin, generic.UpdateView
 ):
     template_name = "events/edit_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s upravena"
-    form_class = EventPositionAssignmentForm
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["position"] = self.object.position
         kwargs["event"] = self.object.event
+        kwargs["position"] = self.object.position
         return kwargs
 
 
@@ -160,10 +160,52 @@ class AddRemoveAllowedPersonTypeView(
     MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.UpdateView
 ):
     form_class = EventAllowedPersonTypeForm
-    success_message = "Změna omezení pro typ členství uložena"
+    success_message = "Změna omezení na typ členství uložena"
     model = Event
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = get_object_or_404(Event, pk=self.kwargs["pk"])
         return kwargs
+
+
+class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
+    context_object_name = "enrollment"
+
+
+class ParticipantEnrollmentCreateMixin(ParticipantEnrollmentMixin, generic.CreateView):
+    success_message = "Přihlášení nového účastníka proběhlo úspěšně"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
+    success_message = "Změna přihlášky proběhla úspěšně"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.object.event
+        kwargs["person"] = self.object.person
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.object.event)
+        return super().get_context_data(**kwargs)
+
+
+class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.DeleteView):
+    model = ParticipantEnrollment
+
+    def get_success_message(self, cleaned_data):
+        return f"Přihláška osoby {self.object.person} smazána"

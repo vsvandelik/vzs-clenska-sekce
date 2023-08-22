@@ -37,6 +37,3 @@ class EventPosition(models.Model):
 
     def __str__(self):
         return self.name
-
-    def get_wage_hour_display(self):
-        return f"{self.wage_hour} Kč"

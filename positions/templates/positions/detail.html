@@ -28,9 +28,9 @@
         {% include 'positions/detail_components/overview.html' %}
     </div>
     <div class="row">
-        {% include 'positions/detail_components/qualifications_required.html' %}
-        {% include 'positions/detail_components/permissions_required.html' %}
-        {% include 'positions/detail_components/equipment_required.html' %}
+        {% include 'positions/detail_components/qualifications.html' with already_required_features=position.required_qualifications %}
+        {% include 'positions/detail_components/permissions.html' with already_required_features=position.required_permissions %}
+        {% include 'positions/detail_components/equipment.html' with already_required_features=position.required_equipment %}
         {% include 'positions/detail_components/age_limit.html' %}
         {% include 'positions/detail_components/group_membership.html' %}
         {% include 'positions/detail_components/person_type.html' %}
@@ -59,15 +59,15 @@
                             </thead>
 
                             <tbody id="qualifications-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=qualifications detail_name='qualifications:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=qualifications features_required=position.required_qualifications detail_name='qualifications:detail' %}
                             </tbody>
 
                             <tbody id="permissions-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=permissions detail_name='permissions:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=permissions features_required=position.required_permissions detail_name='permissions:detail' %}
                             </tbody>
 
                             <tbody id="equipment-body" style="display: none">
-                                {% include 'positions/feature_tbody.html' with features=equipment detail_name='equipments:detail' %}
+                                {% include 'positions/feature_tbody.html' with features=equipment features_required=position.required_equipment detail_name='equipments:detail' %}
                             </tbody>
                         </table>
                     </form>

@@ -27,7 +27,7 @@ class Training(Event):
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantEnrollment",
-        related_name="training_participant_enrollment_1_set",
+        related_name="training_participant_enrollment_set",
     )
 
     coaches_assignment = models.ManyToManyField(
@@ -126,6 +126,16 @@ class Training(Event):
             i += 1
         return weekdays
 
+    def enrollments_by_state(self, state):
+        output = []
+        for enrolled_participant in self.enrolled_participants.all():
+            enrollment = enrolled_participant.trainingparticipantenrollment_set.get(
+                training=self
+            )
+            if enrollment.state == state:
+                output.append(enrollment)
+        return output
+
     def __str__(self):
         return self.name
 
@@ -223,7 +233,20 @@ class TrainingOneTimeCoachPosition(models.Model):
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
-    weekdays = models.ManyToManyField("trainings.TrainingWeekdays")
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    weekdays = models.ManyToManyField(
+        "trainings.TrainingWeekdays", related_name="training_weekdays_set"
+    )
+
+    @property
+    def event(self):
+        return self.training
+
+    @event.setter
+    def event(self, value):
+        self.training = value
 
 
 class TrainingWeekdays(models.Model):

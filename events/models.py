@@ -1,9 +1,11 @@
+import polymorphic.models
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from persons.models import Person
 from features.models import Feature
 from django.core.validators import MinValueValidator, MaxValueValidator
 from polymorphic.models import PolymorphicModel
+from polymorphic.managers import PolymorphicManager
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -15,6 +17,41 @@ class EventOrOccurrenceState(models.TextChoices):
 
     # transaction issued
     COMPLETED = "zpracovana", _("zpracována")
+
+
+class ParticipantEnrollmentApprovedManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
+
+
+class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
+        )
+
+
+class ParticipantEnrollmentRejectedManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
+
+
+class ParticipantEnrollment(PolymorphicModel):
+    class State(models.TextChoices):
+        APPROVED = "schvalen", _("schválen")
+        SUBSTITUTE = "nahradnik", _("nahradník")
+        REJECTED = "odminut", _("odmítnut")
+
+    objects = PolymorphicManager()
+    enrollments_approved = ParticipantEnrollmentApprovedManager()
+    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
+    enrollments_rejected = ParticipantEnrollmentRejectedManager()
+
+    created_datetime = models.DateTimeField()
+    state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
+    transaction = models.ForeignKey(
+        "transactions.Transaction", null=True, on_delete=models.SET_NULL
+    )
 
 
 class Event(PolymorphicModel):
@@ -31,6 +68,22 @@ class Event(PolymorphicModel):
         "positions.EventPosition",
         through="events.EventPositionAssignment",
         related_name="event_position_assignment_set",
+    )
+
+    participants_enroll_list = models.CharField(
+        "Přidat nové účastníky jako",
+        max_length=10,
+        default=ParticipantEnrollment.State.SUBSTITUTE.value,
+        choices=[
+            (
+                ParticipantEnrollment.State.SUBSTITUTE.value,
+                ParticipantEnrollment.State.SUBSTITUTE.label,
+            ),
+            (
+                ParticipantEnrollment.State.APPROVED.value,
+                ParticipantEnrollment.State.APPROVED.label,
+            ),
+        ],
     )
 
     # requirements for participants
@@ -51,10 +104,15 @@ class Event(PolymorphicModel):
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
 
-    group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
+    group = models.ForeignKey(
+        "groups.Group", null=True, verbose_name="Skupina", on_delete=models.SET_NULL
+    )
 
     # if NULL -> no effect (all person types are allowed)
-    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
+    allowed_person_types = models.ManyToManyField(
+        "events.EventPersonTypeConstraint",
+        related_name="event_person_type_constraint_set",
+    )
 
     def is_one_time_event(self):
         from one_time_events.models import OneTimeEvent
@@ -70,6 +128,36 @@ class Event(PolymorphicModel):
         if self.capacity is None:
             return "∞"
         return self.capacity
+
+    def occurrences_list(self):
+        raise NotImplementedError
+
+    def sorted_occurrences_list(self):
+        raise NotImplementedError
+
+    def enrollments_by_state(self, state):
+        raise NotImplementedError
+
+    def participants_by_state(self, state):
+        return [enrollment.person for enrollment in self.enrollments_by_state(state)]
+
+    def approved_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def substitute_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def rejected_enrollments(self):
+        return self.enrollments_by_state(ParticipantEnrollment.State.REJECTED)
+
+    def approved_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+
+    def substitute_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+
+    def rejected_participants(self):
+        return self.participants_by_state(ParticipantEnrollment.State.REJECTED)
 
 
 class EventOccurrence(PolymorphicModel):
@@ -90,24 +178,11 @@ class EventOccurrence(PolymorphicModel):
         pass  # TODO:
 
 
-class Enrollment(PolymorphicModel):
-    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    datetime = models.DateTimeField()
-
-
-class ParticipantEnrollment(Enrollment):
-    class State(models.TextChoices):
-        WAITING = "ceka", _("čeká")
-        APPROVED = "schvalen", _("schválen")
-        SUBSTITUTE = "nahradnik", _("nahradník")
-
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    state = models.CharField(max_length=10, choices=State.choices)
-
-
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
+    position = models.ForeignKey(
+        "positions.EventPosition", verbose_name="Pozice", on_delete=models.CASCADE
+    )
     count = models.PositiveSmallIntegerField(
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )

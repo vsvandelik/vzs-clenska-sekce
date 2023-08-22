@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.forms import ModelForm, MultipleChoiceField
 from django_select2.forms import Select2Widget
 
@@ -18,7 +19,6 @@ class EventPositionAssignmentForm(ModelForm):
             "position",
             "count",
         ]
-        labels = {"position": "Pozice"}
         widgets = {
             "position": Select2Widget(attrs={"onchange": "positionChanged(this)"})
         }
@@ -31,14 +31,9 @@ class EventPositionAssignmentForm(ModelForm):
         if self.position is not None:
             self.fields["position"].widget.attrs["disabled"] = True
         else:
+            not_assigned_query = ~Q(eventpositionassignment__event=self.event)
             self.fields["position"].queryset = EventPosition.objects.filter(
-                pk__in=EventPosition.objects.all()
-                .values_list("pk", flat=True)
-                .difference(
-                    EventPositionAssignment.objects.filter(
-                        event=self.event
-                    ).values_list("position_id", flat=True)
-                )
+                not_assigned_query
             )
 
     def save(self, commit=True):
@@ -53,22 +48,15 @@ class EventPositionAssignmentForm(ModelForm):
 
 
 class EventAgeLimitForm(AgeLimitForm):
-    class Meta:
+    class Meta(AgeLimitForm.Meta):
         model = Event
-        fields = ["min_age", "max_age"]
 
 
 class EventGroupMembershipForm(GroupMembershipForm):
-    class Meta:
+    class Meta(GroupMembershipForm.Meta):
         model = Event
-        fields = ["group"]
-        labels = {"group": "Skupina"}
-        widgets = {
-            "group": Select2Widget(attrs={"onchange": "groupChanged(this)"}),
-        }
 
 
 class EventAllowedPersonTypeForm(AllowedPersonTypeForm):
-    class Meta:
+    class Meta(AllowedPersonTypeForm.Meta):
         model = EventPosition
-        fields = []
