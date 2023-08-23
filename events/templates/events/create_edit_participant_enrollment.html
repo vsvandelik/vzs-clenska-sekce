@@ -33,7 +33,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <form method="POST"
+                <form id="form" method="POST"
                       action="{% block form_action %}{% endblock %}">
                     {% csrf_token %}
                     <div class="card-header">
@@ -50,7 +50,7 @@
                         {% block body %}{% endblock %}
                     </div>
                     <div class="card-footer text-center">
-                        <input type="submit" class="btn btn-primary" onclick="beforeSubmit()"
+                        <input type="submit" class="btn btn-primary"
                                value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>

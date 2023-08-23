@@ -40,7 +40,7 @@ class ParticipantEnrollment(PolymorphicModel):
     class State(models.TextChoices):
         APPROVED = "schvalen", _("schválen")
         SUBSTITUTE = "nahradnik", _("nahradník")
-        REJECTED = "odminut", _("odmítnut")
+        REJECTED = "odmitnut", _("odmítnut")
 
     objects = PolymorphicManager()
     enrollments_approved = ParticipantEnrollmentApprovedManager()
@@ -49,9 +49,6 @@ class ParticipantEnrollment(PolymorphicModel):
 
     created_datetime = models.DateTimeField()
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
-    transaction = models.ForeignKey(
-        "transactions.Transaction", null=True, on_delete=models.SET_NULL
-    )
 
 
 class Event(PolymorphicModel):

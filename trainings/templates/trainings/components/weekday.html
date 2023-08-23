@@ -1,0 +1,10 @@
+{% load vzs_filters %}
+{% load trainings_template_tags %}
+
+{% with day_shortcut=weekday|weekday_2_day_shortcut %}
+    {% with day_pretty=weekday|weekday_pretty time_from_var_name=day_shortcut|addstr:'_from' time_to_var_name=day_shortcut|addstr:'_to' %}
+        {% with time_from=event|getattribute:time_from_var_name time_to=event|getattribute:time_to_var_name %}
+            {{ day_pretty }}: {{ time_from }} – {{ time_to }}
+        {% endwith %}
+    {% endwith %}
+{% endwith %}

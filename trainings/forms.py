@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm
+from events.forms_bases import EventForm, EventParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState
 from events.utils import parse_czech_date
 from trainings.utils import (
@@ -14,7 +14,12 @@ from trainings.utils import (
     day_shortcut_2_weekday,
 )
 from vzs.widgets import TimePickerWithIcon
-from .models import Training, TrainingOccurrence, TrainingReplaceabilityForParticipants
+from .models import (
+    Training,
+    TrainingOccurrence,
+    TrainingReplaceabilityForParticipants,
+    TrainingParticipantEnrollment,
+)
 
 
 class TrainingForm(EventForm):
@@ -329,3 +334,20 @@ class TrainingReplaceableForm(forms.ModelForm):
             )
 
         return instance
+
+
+class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
+    class Meta(EventParticipantEnrollmentForm.Meta):
+        model = TrainingParticipantEnrollment
+
+    def __init__(self, *args, **kwargs):
+        self.weekdays = kwargs.pop("request").POST.getlist("weekdays")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        a = 1
+
+    def save(self, commit=True):
+        a = 1
+        pass

@@ -22,7 +22,3 @@ function getParticipationFeeDiv() {
 function getParticipationFeeElement() {
     return document.getElementById('id_agreed_participation_fee')
 }
-
-function getStateElement() {
-    return document.getElementById('id_state')
-}

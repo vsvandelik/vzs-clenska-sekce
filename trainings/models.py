@@ -239,6 +239,7 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
     weekdays = models.ManyToManyField(
         "trainings.TrainingWeekdays", related_name="training_weekdays_set"
     )
+    transactions = models.ManyToManyField("transactions.Transaction")
 
     @property
     def event(self):
