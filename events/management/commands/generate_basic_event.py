@@ -78,7 +78,7 @@ def generate_allowed_person_types_requirement(options):
         ]
 
     return [
-        EventPersonTypeConstraint.get_or_create_person_type(person_type)
+        EventPersonTypeConstraint.get_or_create(person_type)
         for person_type in chosen_person_types
     ]
 

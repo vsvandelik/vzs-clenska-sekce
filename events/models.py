@@ -201,7 +201,7 @@ class EventPersonTypeConstraint(models.Model):
     )
 
     @staticmethod
-    def get_or_create_person_type(person_type):
+    def get_or_create(person_type):
         return EventPersonTypeConstraint.objects.get_or_create(
             person_type=person_type, defaults={"person_type": person_type}
         )[0]

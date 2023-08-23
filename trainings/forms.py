@@ -19,6 +19,7 @@ from .models import (
     TrainingOccurrence,
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
+    TrainingWeekdays,
 )
 
 
@@ -340,14 +341,53 @@ class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
     class Meta(EventParticipantEnrollmentForm.Meta):
         model = TrainingParticipantEnrollment
 
+    weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
+
     def __init__(self, *args, **kwargs):
-        self.weekdays = kwargs.pop("request").POST.getlist("weekdays")
         super().__init__(*args, **kwargs)
 
+    def _check_conv_weekdays(self):
+        if (
+            "weekdays" not in self.cleaned_data
+            or len(self.cleaned_data["weekdays"]) == 0
+        ):
+            self.add_error(None, "Nejsou vybrány žádné dny v týdnu")
+
+        weekdays_list = self.event.weekdays_list()
+        for i in range(len(self.cleaned_data["weekdays"])):
+            weekday_str = self.cleaned_data["weekdays"][i]
+            try:
+                weekday = int(weekday_str)
+                if weekday not in weekdays_list:
+                    self.add_error(None, "Tento den v týdnu se trénink neodehrává")
+                self.cleaned_data["weekdays"][i] = weekday
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota dne v týdnu")
+
     def clean(self):
-        cleaned_data = super().clean()
-        a = 1
+        self.cleaned_data = super().clean()
+        self._check_conv_weekdays()
+        return self.cleaned_data
 
     def save(self, commit=True):
+        instance = super().save(False)
+        if instance.id is not None or commit:
+            if instance.id is None:
+                instance.save()
+            instance_weekdays_objs = instance.weekdays.all()
+            weekdays_cleaned = self.cleaned_data["weekdays"]
+            for weekday_obj in instance_weekdays_objs:
+                if weekday_obj.weekday not in weekdays_cleaned:
+                    weekday_obj.delete()
+                else:
+                    weekdays_cleaned.remove(weekday_obj.weekday)
+            for weekday in weekdays_cleaned:
+                weekday_obj = TrainingWeekdays.get_or_create(weekday)
+                instance.weekdays.add(weekday_obj)
+        if commit:
+            instance.save()
+        return instance
+
+    def unselected_weekdays(self):
         a = 1
         pass

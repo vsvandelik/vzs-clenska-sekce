@@ -1,7 +1,7 @@
 window.addEventListener('load', event => {
     window._showHideDetailLinkCallback = getCallbackShowHideDetailLink('url')
     window._showHideDetailLinkCallback(getPersonElement())
-    $('form').on('submit', beforeSubmit)
+    $('form').on('submit', enablePersonElement)
 })
 function personChanged(sender) {
     window._showHideDetailLinkCallback(sender)
@@ -15,6 +15,6 @@ function getStateElement() {
     return document.getElementById('id_state')
 }
 
-function beforeSubmit() {
+function enablePersonElement() {
     getPersonElement().disabled = false
 }
