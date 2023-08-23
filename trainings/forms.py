@@ -392,7 +392,10 @@ class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
     def checked_weekdays(self):
         if hasattr(self, "cleaned_data") and "weekdays" in self.cleaned_data:
             return self.cleaned_data["weekdays"]
-        elif self.instance.state != ParticipantEnrollment.State.REJECTED:
+        elif (
+            self.instance.id is not None
+            and self.instance.state != ParticipantEnrollment.State.REJECTED
+        ):
             return [weekday_obj.weekday for weekday_obj in self.instance.weekdays.all()]
 
         return self.event.weekdays_list()

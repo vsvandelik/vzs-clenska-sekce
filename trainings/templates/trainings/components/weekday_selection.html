@@ -1,0 +1,27 @@
+{% load trainings_template_tags %}
+<div id="weekdays-selection" class="card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Výběr dnů v týdnu</div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for weekday in event.weekdays_list %}
+                <div class="col-sm-6 col-md-4 col-lg-3 col-12">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <div class="card-title h5 text-bold">
+                                {% with day_shortcut=weekday|weekday_2_day_shortcut %}
+                                    <input name="weekdays" id="{{ day_shortcut }}" type="checkbox" value="{{ weekday }}"
+                                           onchange="weekdayCheckboxClicked(this)"
+                                           {% if weekday in checked_weekdays %}checked{% endif %}>
+                                    <label for="{{ day_shortcut }}">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
