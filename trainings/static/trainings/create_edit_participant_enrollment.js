@@ -6,7 +6,7 @@ window.addEventListener('load', event => {
 function stateChanged() {
     const newValue = getStateElement().value
     const weekdaysSelectionElement = getWeekdaysSelectionElement()
-    if(newValue !== 'odmitnut') {
+    if(newValue === 'schvalen' || newValue === 'nahradnik') {
         weekdaysSelectionElement.show()
         setWeekdaysState(true)
     }
