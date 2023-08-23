@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import EventForm, EventParticipantEnrollmentForm
-from events.models import EventOrOccurrenceState
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
 from trainings.utils import (
     weekday_2_day_shortcut,
@@ -366,7 +366,8 @@ class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
 
     def clean(self):
         self.cleaned_data = super().clean()
-        self._check_conv_weekdays()
+        if self.cleaned_data["state"] != ParticipantEnrollment.State.REJECTED:
+            self._check_conv_weekdays()
         return self.cleaned_data
 
     def save(self, commit=True):
@@ -388,6 +389,10 @@ class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
             instance.save()
         return instance
 
-    def unselected_weekdays(self):
-        a = 1
-        pass
+    def checked_weekdays(self):
+        if hasattr(self, "cleaned_data") and "weekdays" in self.cleaned_data:
+            return self.cleaned_data["weekdays"]
+        elif self.instance.state != ParticipantEnrollment.State.REJECTED:
+            return [weekday_obj.weekday for weekday_obj in self.instance.weekdays.all()]
+
+        return self.event.weekdays_list()

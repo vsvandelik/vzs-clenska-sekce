@@ -105,7 +105,7 @@ class TrainingParticipantEnrollmentCreateUpdateMixin:
     form_class = TrainingParticipantEnrollmentForm
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("unselected_weekdays", self.get_form().unselected_weekdays())
+        kwargs.setdefault("checked_weekdays", self.get_form().checked_weekdays())
         return super().get_context_data(**kwargs)
 
 

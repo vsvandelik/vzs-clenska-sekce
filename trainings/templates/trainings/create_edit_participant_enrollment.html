@@ -20,7 +20,7 @@
                             <div class="card-header border-0">
                                 <div class="card-title h5 text-bold">
                                     {% with day_shortcut=weekday|weekday_2_day_shortcut %}
-                                        <input name="weekdays" id="{{ day_shortcut }}" type="checkbox" value="{{ weekday }}" onchange="weekdayCheckboxClicked(this)" checked>
+                                        <input name="weekdays" id="{{ day_shortcut }}" type="checkbox" value="{{ weekday }}" onchange="weekdayCheckboxClicked(this)" {% if weekday in checked_weekdays %}checked{% endif %}>
                                         <label for="{{ day_shortcut }}">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
                                     {% endwith %}
                                 </div>
