@@ -1,5 +1,3 @@
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
 from django.views import generic
 
 from events.views import (
@@ -12,6 +10,8 @@ from events.views import (
     ParticipantEnrollmentUpdateMixin,
     ParticipantEnrollmentDeleteMixin,
     RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    InsertEventIntoModelFormKwargsMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -22,7 +22,6 @@ from .forms import (
     OneTimeEventEnrollMyselfParticipantForm,
 )
 from .models import OneTimeEventParticipantEnrollment
-from events.models import Event
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -75,45 +74,21 @@ class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMix
 class EnrollMyselfParticipantView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
     InsertRequestIntoModelFormKwargsMixin,
+    InsertEventIntoModelFormKwargsMixin,
     generic.CreateView,
 ):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventEnrollMyselfParticipantForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
-
-    def form_invalid(self, form):
-        super().form_invalid(form)
-        return redirect("one_time_events:detail", pk=self.event.pk)
+    success_message = "Přihlášení na událost proběhlo úspěšně"
 
 
 class UnenrollMyselfParticipantView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    InsertRequestIntoModelFormKwargsMixin,
+    RedirectToEventDetailOnFailureMixin,
     generic.DeleteView,
 ):
     model = OneTimeEventParticipantEnrollment
-    # form_class = OneTimeEventEnrollMyselfParticipantForm
-    #
-    # def dispatch(self, request, *args, **kwargs):
-    #     self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
-    #     return super().dispatch(request, *args, **kwargs)
-    #
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-    #     kwargs["event"] = self.event
-    #     return kwargs
-    #
-    # def form_invalid(self, form):
-    #     super().form_invalid(form)
-    #     return redirect("one_time_events:detail", pk=self.event.pk)
-    #
+    success_message = "Odhlášení z události proběhlo úspěšně"

@@ -90,9 +90,15 @@ class Training(Event):
         pass  # TODO
 
     def can_person_enroll_as_participant(self, person):
+        return True
         raise NotImplementedError
 
     def can_participant_unenroll(self, person):
+        return True
+        raise NotImplementedError
+
+    def get_participant_enrollment(self, person):
+        return True
         raise NotImplementedError
 
     def _occurrences_list(self):

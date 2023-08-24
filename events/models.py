@@ -146,6 +146,9 @@ class Event(PolymorphicModel):
     def can_participant_unenroll(self, person):
         raise NotImplementedError
 
+    def get_participant_enrollment(self, person):
+        raise NotImplementedError
+
     def occurrences_list(self):
         raise NotImplementedError
 

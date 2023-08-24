@@ -15,7 +15,7 @@ from events.views import (
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
 )
-from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     TrainingForm,
     TrainingReplaceableForm,

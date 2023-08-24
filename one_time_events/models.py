@@ -65,15 +65,18 @@ class OneTimeEvent(Event):
         return True
 
     def can_participant_unenroll(self, person):
-        try:
-            enrollment = person.onetimeeventparticipantenrollment_set.get(
-                one_time_event=self
-            )
-            if enrollment.transaction is None:
-                return True
-            return not enrollment.transaction.is_settled
-        except OneTimeEventParticipantEnrollment.DoesNotExist:
+        enrollment = self.get_participant_enrollment(person)
+        if enrollment is None:
             return False
+        if enrollment.transaction is None:
+            return True
+        return not enrollment.transaction.is_settled
+
+    def get_participant_enrollment(self, person):
+        try:
+            return person.onetimeeventparticipantenrollment_set.get(one_time_event=self)
+        except OneTimeEventParticipantEnrollment.DoesNotExist:
+            return None
 
     def _occurrences_list(self):
         return OneTimeEventOccurrence.objects.filter(event=self)

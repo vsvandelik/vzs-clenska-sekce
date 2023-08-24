@@ -12,7 +12,7 @@ from .forms import (
     EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
 )
-from django.shortcuts import get_object_or_404, reverse
+from django.shortcuts import get_object_or_404, reverse, redirect
 from vzs.mixin_extensions import MessagesMixin
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
@@ -24,14 +24,20 @@ class EventMixin:
     context_object_name = "event"
 
 
-class RedirectToEventDetailOnSuccessMixin:
-    def get_success_url(self):
-        if hasattr(self, "object") and (
-            type(self.object) is OneTimeEvent or type(self.object) is Training
-        ):
-            id = self.object.id
-        elif "event_id" in self.kwargs:
+class RedirectToEventDetail:
+    def _impl(self):
+        if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
+        elif hasattr(self, "object"):
+            if type(self.object) is OneTimeEvent or type(self.object) is Training:
+                id = self.object.id
+            elif hasattr(self.object, "event") and (
+                type(self.object.event) is OneTimeEvent
+                or type(self.object.event) is Training
+            ):
+                id = self.object.event.id
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 
@@ -42,8 +48,31 @@ class RedirectToEventDetailOnSuccessMixin:
             viewname = "trainings:detail"
         else:
             raise NotImplementedError
+        return viewname, id
 
+
+class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetail):
+    def get_success_url(self):
+        viewname, id = super()._impl()
         return reverse(viewname, args=[id])
+
+
+class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        viewname, id = super()._impl()
+        return redirect(viewname, pk=id)
+
+
+class InsertEventIntoModelFormKwargsMixin:
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
@@ -82,13 +111,17 @@ class PersonTypeDetailViewMixin:
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
+        p = self.request.active_person
         kwargs.setdefault(
             "active_person_can_enroll",
-            self.object.can_person_enroll_as_participant(self.request.active_person),
+            self.object.can_person_enroll_as_participant(p),
         )
         kwargs.setdefault(
             "active_person_can_unenroll",
-            self.object.can_participant_unenroll(self.request.active_person),
+            self.object.can_participant_unenroll(p),
+        )
+        kwargs.setdefault(
+            "active_person_enrollment", self.object.get_participant_enrollment(p)
         )
         return super().get_context_data(**kwargs)
 
@@ -116,19 +149,12 @@ class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
 
 
 class EventPositionAssignmentCreateView(
-    EventPositionAssignmentCreateUpdateMixin, generic.CreateView
+    EventPositionAssignmentCreateUpdateMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.CreateView,
 ):
     template_name = "events/create_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s přidána"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
 
 
 class EventPositionAssignmentUpdateView(
@@ -182,17 +208,10 @@ class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMi
     context_object_name = "enrollment"
 
 
-class ParticipantEnrollmentCreateMixin(ParticipantEnrollmentMixin, generic.CreateView):
+class ParticipantEnrollmentCreateMixin(
+    ParticipantEnrollmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView
+):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
