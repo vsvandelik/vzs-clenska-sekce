@@ -9,37 +9,37 @@
 
     <div class="row">
         <div class="col-12">
-            {% include "persons/detail_parts/_buttons.html" %}
+            {% include "persons/detail_components/_buttons.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-7">
-            {% include "persons/detail_parts/_basic_info_card.html" %}
+            {% include "persons/detail_components/_basic_info_card.html" %}
         </div>
         <div class="col-12 col-md-5">
-            {% include "persons/detail_parts/_user_account_card.html" %}
+            {% include "persons/detail_components/_user_account_card.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_groups_membership_card.html" %}
+            {% include "persons/detail_components/_groups_membership_card.html" %}
         </div>
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_managed_persons_card.html" %}
+            {% include "persons/detail_components/_managed_persons_card.html" %}
         </div>
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_hourly_rates_card.html" %}
+            {% include "persons/detail_components/_hourly_rates_card.html" %}
         </div>
     </div>
     <div class="row">
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_feature_assignment_card.html" with title="Kvalifikace" no_items_message="Žádná kvalifikace není přiřazena." texts=features_texts.qualifications items=qualifications edit_url='persons:qualifications:edit' delete_url="persons:qualifications:delete" add_url='persons:qualifications:add' %}
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Kvalifikace" no_items_message="Žádná kvalifikace není přiřazena." texts=features_texts.qualifications items=qualifications edit_url='persons:qualifications:edit' delete_url="persons:qualifications:delete" add_url='persons:qualifications:add' %}
         </div>
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
         </div>
         <div class="col-12 col-md-4">
-            {% include "persons/detail_parts/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' return_url='persons:equipments-return' %}
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' return_url='persons:equipments-return' %}
         </div>
     </div>
 
