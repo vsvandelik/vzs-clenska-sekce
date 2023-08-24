@@ -11,4 +11,4 @@
         {% include 'one_time_events/components/participant_enrollment_paid_alert.html' %}
     {% endif %}
 {% endblock %}
-{% block delete_action %}{% url 'one_time_events:delete_participant_enrollment' enrollment.event.id enrollment.id %}{% endblock %}
+{% block delete_action %}{% url 'one_time_events:delete-participant-enrollment' enrollment.event.id enrollment.id %}{% endblock %}

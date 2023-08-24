@@ -20,13 +20,13 @@
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-success btn-sm"
-                                       href="{% url 'events:edit_position_assignment' event.id pa.id %}">
+                                       href="{% url 'events:edit-position-assignment' event.id pa.id %}">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
                                        data-target="#delete-position-assignment-modal"
-                                       data-action="{% url 'events:delete_position_assignment' event.id pa.id %}">
+                                       data-action="{% url 'events:delete-position-assignment' event.id pa.id %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
@@ -37,7 +37,7 @@
             </table>
         </div>
         <div class="card-footer text-center">
-            <a href="{% url 'events:add_position_assignment' event.id %}" class="btn-primary btn">Přidat</a>
+            <a href="{% url 'events:add-position-assignment' event.id %}" class="btn-primary btn">Přidat</a>
         </div>
     </div>
 </div>

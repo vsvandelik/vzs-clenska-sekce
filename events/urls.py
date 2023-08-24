@@ -9,36 +9,36 @@ urlpatterns = [
     path(
         "<int:pk>/upravit-vekove-omezeni/",
         views.EditAgeLimitView.as_view(),
-        name="edit_age_limit",
+        name="edit-age-limit",
     ),
     path(
         "<int:pk>/upravit-skupinu/",
         views.EditGroupMembershipView.as_view(),
-        name="edit_group_membership",
+        name="edit-group-membership",
     ),
     path(
         "<int:pk>/pridat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeView.as_view(),
-        name="add_person_type",
+        name="add-person-type",
     ),
     path(
         "<int:pk>/odebrat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeView.as_view(),
-        name="remove_person_type",
+        name="remove-person-type",
     ),
     path(
         "<int:event_id>/pridat-pozici/",
         views.EventPositionAssignmentCreateView.as_view(),
-        name="add_position_assignment",
+        name="add-position-assignment",
     ),
     path(
         "<int:event_id>/upravit-pozici/<int:pk>",
         views.EventPositionAssignmentUpdateView.as_view(),
-        name="edit_position_assignment",
+        name="edit-position-assignment",
     ),
     path(
         "<int:event_id>/odebrat-pozici/<int:pk>/",
         views.EventPositionAssignmentDeleteView.as_view(),
-        name="delete_position_assignment",
+        name="delete-position-assignment",
     ),
 ]

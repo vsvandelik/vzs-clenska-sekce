@@ -48,7 +48,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{% url 'positions:add_feature' position.id %}">
+                    <form method="POST" action="{% url 'positions:add-feature' position.id %}">
                         {% csrf_token %}
                         <table class="table table-striped" id="add-feature-table">
                             <thead>

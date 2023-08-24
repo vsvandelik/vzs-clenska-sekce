@@ -18,21 +18,21 @@ urlpatterns = [
     path(
         "<int:pk>/upravit-dochazku-treninku",
         views.EditTrainingCategoryView.as_view(),
-        name="edit_training_category",
+        name="edit-training-category",
     ),
     path(
         "<int:event_id>/pridat-prihlasku/",
         views.OneTimeEventParticipantEnrollmentCreateView.as_view(),
-        name="create_participant_enrollment",
+        name="create-participant-enrollment",
     ),
     path(
         "<int:event_id>/upravit-prihlasku/<int:pk>",
         views.OneTimeEventParticipantEnrollmentUpdateView.as_view(),
-        name="edit_participant_enrollment",
+        name="edit-participant-enrollment",
     ),
     path(
         "<int:event_id>/smazat-prihlasku/<int:pk>",
         views.OneTimeEventParticipantEnrollmentDeleteView.as_view(),
-        name="delete_participant_enrollment",
+        name="delete-participant-enrollment",
     ),
 ]
