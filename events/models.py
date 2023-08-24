@@ -67,7 +67,7 @@ class Event(PolymorphicModel):
         related_name="event_position_assignment_set",
     )
 
-    participants_enroll_list = models.CharField(
+    participants_enroll_state = models.CharField(
         "Přidat nové účastníky jako",
         max_length=10,
         default=ParticipantEnrollment.State.SUBSTITUTE.value,
@@ -126,7 +126,9 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
-    def can_participant_enroll(self, person):
+    def can_person_enroll_as_participant(self, person):
+        if person is None:
+            return False
         if self.min_age is not None and self.min_age > person.age:
             return False
         if self.max_age is not None and self.max_age < person.age:
@@ -140,6 +142,9 @@ class Event(PolymorphicModel):
             return False
 
         return True
+
+    def can_participant_unenroll(self, person):
+        raise NotImplementedError
 
     def occurrences_list(self):
         raise NotImplementedError

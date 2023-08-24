@@ -81,7 +81,16 @@ class PersonTypeDetailViewMixin:
 
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
-    pass
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "active_person_can_enroll",
+            self.object.can_person_enroll_as_participant(self.request.active_person),
+        )
+        kwargs.setdefault(
+            "active_person_can_unenroll",
+            self.object.can_participant_unenroll(self.request.active_person),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class EventIndexView(EventMixin, generic.ListView):

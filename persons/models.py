@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import ExpressionWrapper, Case, When, Value, Q
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel
 
@@ -164,7 +165,10 @@ class Person(
 
     @property
     def age(self):
-        return datetime.now().year - self.date_of_birth.year
+        return (
+            datetime.now(tz=timezone.get_default_timezone()).year
+            - self.date_of_birth.year
+        )
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})

@@ -37,8 +37,8 @@ function setDefaultParticipationFeeRequired(state) {
     const labelElement = element.labels[0]
     if(state)
         labelElement.innerText = labelElement.innerText.concat('*')
-    else
-        labelElement.innerText = labelElement.innerText.slice(0, -1)
+    else if(labelElement.innerText.slice(-1) === '*')
+    labelElement.innerText = labelElement.innerText.slice(0, -1)
 }
 
 function beforeSubmit() {
@@ -139,7 +139,7 @@ function getEventScheduleRowElement() {
 }
 
 function getParticipantsEnrollList() {
-    return document.getElementById('id_participants_enroll_list')
+    return document.getElementById('id_participants_enroll_state')
 }
 
 function getDefaultParticipationFeeElement() {

@@ -44,8 +44,10 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
-    def can_participant_enroll(self, person):
-        if not super().can_participant_enroll(person):
+    def can_person_enroll_as_participant(self, person):
+        if not super().can_person_enroll_as_participant(person):
+            return False
+        if self.enrolled_participants.contains(person):
             return False
         if (
             self.capacity is not None
@@ -59,7 +61,19 @@ class OneTimeEvent(Event):
             )
         ):
             return False
+
         return True
+
+    def can_participant_unenroll(self, person):
+        try:
+            enrollment = person.onetimeeventparticipantenrollment_set.get(
+                one_time_event=self
+            )
+            if enrollment.transaction is None:
+                return True
+            return not enrollment.transaction.is_settled
+        except OneTimeEventParticipantEnrollment.DoesNotExist:
+            return False
 
     def _occurrences_list(self):
         return OneTimeEventOccurrence.objects.filter(event=self)
@@ -122,7 +136,7 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
             pk=self.pk
         ).transaction
         super().delete()
-        if not transaction.is_settled:
+        if transaction is not None and not transaction.is_settled:
             transaction.delete()
 
     @staticmethod

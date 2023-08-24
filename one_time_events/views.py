@@ -93,3 +93,27 @@ class EnrollMyselfParticipantView(
     def form_invalid(self, form):
         super().form_invalid(form)
         return redirect("one_time_events:detail", pk=self.event.pk)
+
+
+class UnenrollMyselfParticipantView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.DeleteView,
+):
+    model = OneTimeEventParticipantEnrollment
+    # form_class = OneTimeEventEnrollMyselfParticipantForm
+    #
+    # def dispatch(self, request, *args, **kwargs):
+    #     self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+    #     return super().dispatch(request, *args, **kwargs)
+    #
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     kwargs["event"] = self.event
+    #     return kwargs
+    #
+    # def form_invalid(self, form):
+    #     super().form_invalid(form)
+    #     return redirect("one_time_events:detail", pk=self.event.pk)
+    #

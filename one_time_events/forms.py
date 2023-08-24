@@ -1,11 +1,12 @@
 from datetime import timedelta, datetime
 
 from django.forms import ModelForm, CheckboxSelectMultiple
+from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm
-from events.forms_bases import EventParticipantEnrollmentForm
+from events.forms_bases import EventForm, EnrollMyselfParticipantForm
+from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
 from transactions.models import Transaction
@@ -21,7 +22,7 @@ class OneTimeEventForm(EventForm):
         model = OneTimeEvent
         fields = ["default_participation_fee"] + EventForm.Meta.fields
         widgets = EventForm.Meta.widgets | {
-            "participants_enroll_list": Select2Widget(
+            "participants_enroll_state": Select2Widget(
                 attrs={"onchange": "participantsEnrollListChanged()"}
             )
         }
@@ -87,7 +88,7 @@ class OneTimeEventForm(EventForm):
 
     def _check_participation_fee(self):
         if (
-            self.cleaned_data["participants_enroll_list"]
+            self.cleaned_data["participants_enroll_state"]
             == ParticipantEnrollment.State.APPROVED
         ):
             if self.cleaned_data["default_participation_fee"] is None:
@@ -210,12 +211,10 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
-    class Meta(EventParticipantEnrollmentForm.Meta):
+class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
+    class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
-        fields = [
-            "agreed_participation_fee"
-        ] + EventParticipantEnrollmentForm.Meta.fields
+        fields = ["agreed_participation_fee"] + ParticipantEnrollmentForm.Meta.fields
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -265,48 +264,34 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
         return instance
 
 
-class OneTimeEventEnrollMyselfParticipantForm(ModelForm):
-    class Meta:
-        fields = []
+class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
+    class Meta(EnrollMyselfParticipantForm.Meta):
         model = OneTimeEventParticipantEnrollment
 
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        self.person = kwargs.pop("request").active_person
-        super().__init__(*args, **kwargs)
-
-    def clean(self):
-        if not self.event.can_participant_enroll(self.person):
-            self.add_error(
-                None, f"Nejsou splněny požadavky kladené na účastníky události"
-            )
-
     def save(self, commit=True):
+        instance = super().save(False)
         fee = (
             self.event.default_participation_fee
-            if self.event.participants_enroll_list
+            if self.event.participants_enroll_state
             == ParticipantEnrollment.State.APPROVED
             else None
         )
-        enrollment = OneTimeEventParticipantEnrollment(
-            one_time_event=self.event,
-            person=self.person,
-            agreed_participation_fee=fee,
-            transaction=None,
-            created_datetime=datetime.now(),
-            state=self.event.participants_enroll_list,
-        )
+        instance.one_time_event = self.event
+        instance.person = self.person
+        instance.agreed_participation_fee = fee
+
         if commit:
-            enrollment.save()
+            instance.save()
             if (
-                self.event.participants_enroll_list
+                self.event.participants_enroll_state
                 == ParticipantEnrollment.State.APPROVED
             ):
                 transaction = (
                     OneTimeEventParticipantEnrollment.create_attached_transaction(
-                        enrollment, self.event
+                        instance, self.event
                     )
                 )
                 transaction.save()
-                enrollment.transaction = transaction
-                enrollment.save()
+                instance.transaction = transaction
+                instance.save()
+        return instance

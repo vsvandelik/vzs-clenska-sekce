@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm, EventParticipantEnrollmentForm
+from events.forms_bases import EventForm, ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
 from trainings.utils import (
@@ -337,8 +337,8 @@ class TrainingReplaceableForm(forms.ModelForm):
         return instance
 
 
-class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
-    class Meta(EventParticipantEnrollmentForm.Meta):
+class TrainingParticipantEnrollmentForm(ParticipantEnrollmentForm):
+    class Meta(ParticipantEnrollmentForm.Meta):
         model = TrainingParticipantEnrollment
 
     weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)

@@ -89,6 +89,12 @@ class Training(Event):
     def replaces_training_list(self):
         pass  # TODO
 
+    def can_person_enroll_as_participant(self, person):
+        raise NotImplementedError
+
+    def can_participant_unenroll(self, person):
+        raise NotImplementedError
+
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
 
