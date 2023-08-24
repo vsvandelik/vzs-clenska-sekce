@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views import generic
 
 from events.views import (
@@ -9,6 +11,7 @@ from events.views import (
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentUpdateMixin,
     ParticipantEnrollmentDeleteMixin,
+    RedirectToEventDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -16,8 +19,10 @@ from .forms import (
     OneTimeEventForm,
     TrainingCategoryForm,
     OneTimeEventParticipantEnrollmentForm,
+    OneTimeEventEnrollMyselfParticipantForm,
 )
 from .models import OneTimeEventParticipantEnrollment
+from events.models import Event
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
@@ -65,3 +70,26 @@ class OneTimeEventParticipantEnrollmentUpdateView(
 
 class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
     template_name = "one_time_events/delete_participant_enrollment.html"
+
+
+class EnrollMyselfParticipantView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.CreateView,
+):
+    model = OneTimeEventParticipantEnrollment
+    form_class = OneTimeEventEnrollMyselfParticipantForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
+
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        return redirect("one_time_events:detail", pk=self.event.pk)

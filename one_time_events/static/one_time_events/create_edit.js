@@ -15,8 +15,30 @@ function dayCheckboxClicked(checkboxElm) {
 
 }
 
+window.onload = function() {
+    participantsEnrollListChanged()
+}
+
 window.onbeforeunload = function () {
     localStorage.clear()
+}
+
+function participantsEnrollListChanged() {
+    const newValue = getParticipantsEnrollList().value
+    let required = false
+    if (newValue === 'schvalen')
+        required = true
+    setDefaultParticipationFeeRequired(required)
+}
+
+function setDefaultParticipationFeeRequired(state) {
+    const element = getDefaultParticipationFeeElement()
+    element.required = state
+    const labelElement = element.labels[0]
+    if(state)
+        labelElement.innerText = labelElement.innerText.concat('*')
+    else
+        labelElement.innerText = labelElement.innerText.slice(0, -1)
 }
 
 function beforeSubmit() {
@@ -114,6 +136,14 @@ function createRestoreOccurrences() {
 
 function getEventScheduleRowElement() {
     return document.getElementById('event-schedule-row')
+}
+
+function getParticipantsEnrollList() {
+    return document.getElementById('id_participants_enroll_list')
+}
+
+function getDefaultParticipationFeeElement() {
+    return document.getElementById('id_default_participation_fee')
 }
 
 function getDateParsed(id) {

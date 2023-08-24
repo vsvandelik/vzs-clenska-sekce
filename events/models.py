@@ -126,6 +126,21 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
+    def can_participant_enroll(self, person):
+        if self.min_age is not None and self.min_age > person.age:
+            return False
+        if self.max_age is not None and self.max_age < person.age:
+            return False
+        if self.group is not None and not person.groups.contains(self.group):
+            return False
+        if (
+            self.allowed_person_types.all().count() > 0
+            and not self.allowed_person_types.contains(person.person_type)
+        ):
+            return False
+
+        return True
+
     def occurrences_list(self):
         raise NotImplementedError
 

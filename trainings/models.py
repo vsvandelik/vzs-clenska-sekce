@@ -139,6 +139,16 @@ class Training(Event):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def does_person_attends_training_of_category(person, category):
+        for training_enrollment in person.trainingparticipantenrollment_set.all():
+            if (
+                training_enrollment.state == ParticipantEnrollment.State.APPROVED
+                and training_enrollment.training.category == category
+            ):
+                return True
+        return False
+
 
 class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
@@ -252,7 +262,7 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
 
 class TrainingWeekdays(models.Model):
     weekday = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(6)]
+        unique=True, validators=[MinValueValidator(0), MaxValueValidator(6)]
     )
 
     @staticmethod

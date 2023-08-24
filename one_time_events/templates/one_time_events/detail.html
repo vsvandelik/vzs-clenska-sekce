@@ -18,6 +18,12 @@
                    class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <form method="POST" action="{% url 'one_time_events:enroll-myself-participant' event.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-info" type="submit">Přihlásit se</button>
+                </form>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -58,7 +64,8 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'one_time_events:create-participant-enrollment' event.id %}" class="btn-primary btn">Přidat</a>
+                    <a href="{% url 'one_time_events:create-participant-enrollment' event.id %}"
+                       class="btn-primary btn">Přidat</a>
                 </div>
             </div>
         </div>

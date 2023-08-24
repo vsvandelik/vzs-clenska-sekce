@@ -11,6 +11,7 @@ from events.models import (
     OrganizerPositionAssignment,
 )
 from trainings.models import Training
+from transactions.models import Transaction
 from vzs import settings
 
 
@@ -42,6 +43,23 @@ class OneTimeEvent(Event):
     )
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
+
+    def can_participant_enroll(self, person):
+        if not super().can_participant_enroll(person):
+            return False
+        if (
+            self.capacity is not None
+            and len(self.approved_participants()) >= self.capacity
+        ):
+            return False
+        if (
+            self.training_category is not None
+            and not Training.does_person_attends_training_of_category(
+                person, self.training_category
+            )
+        ):
+            return False
+        return True
 
     def _occurrences_list(self):
         return OneTimeEventOccurrence.objects.filter(event=self)
@@ -106,6 +124,21 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
         super().delete()
         if not transaction.is_settled:
             transaction.delete()
+
+    @staticmethod
+    def create_attached_transaction(enrollment, event):
+        fee = (
+            -enrollment.agreed_participation_fee
+            if enrollment.agreed_participation_fee is not None
+            else -event.default_participation_fee
+        )
+        return Transaction(
+            amount=fee,
+            reason=f"Schválená přihláška na jednorázovou událost {event}",
+            date_due=event.date_start,
+            person=enrollment.person,
+            event=event,
+        )
 
     @property
     def event(self):

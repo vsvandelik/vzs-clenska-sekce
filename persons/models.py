@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from itertools import chain
 
 from django.core.validators import RegexValidator
@@ -161,6 +161,10 @@ class Person(
     @property
     def name(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def age(self):
+        return datetime.now().year - self.date_of_birth.year
 
     def get_absolute_url(self):
         return reverse("persons:detail", kwargs={"pk": self.pk})
