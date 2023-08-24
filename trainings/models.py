@@ -102,6 +102,11 @@ class Training(Event):
             weekdays__weekday=weekday
         )
 
+    def substitute_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE).filter(
+            weekdays__weekday=weekday
+        )
+
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
 

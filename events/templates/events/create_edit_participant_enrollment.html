@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-{% load vzs_filters %}
 {% load static %}
 {% block scripts %}
     <script src="{% static 'events/show_hide_detail_link.js' %}"></script>
@@ -18,15 +17,6 @@
             </div>
         </div>
     </div>
-    {% if event.capacity is not None %}
-        {% with approved_participants_length=event.approved_participants|length %}
-            {% with free_spots=event.capacity|subtract:approved_participants_length %}
-                <div class="alert {% if free_spots > 0 %}alert-success{% else %}alert-warning{% endif %}" role="alert">
-                    Počet volných míst: {{ free_spots|math_max:0 }}
-                </div>
-            {% endwith %}
-        {% endwith %}
-    {% endif %}
     {% block child_notifications %}{% endblock %}
 
     <input type="hidden" id="url" data-url="{% url 'persons:detail' 1 %}">

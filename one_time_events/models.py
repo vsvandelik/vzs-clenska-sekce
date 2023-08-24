@@ -73,6 +73,8 @@ class OneTimeEvent(Event):
         return not enrollment.transaction.is_settled
 
     def get_participant_enrollment(self, person):
+        if person is None:
+            return None
         try:
             return person.onetimeeventparticipantenrollment_set.get(one_time_event=self)
         except OneTimeEventParticipantEnrollment.DoesNotExist:

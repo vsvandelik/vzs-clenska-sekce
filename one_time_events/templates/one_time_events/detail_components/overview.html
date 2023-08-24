@@ -38,7 +38,9 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Účastníci:</td>
-                        <td class="w-100">{{ event.approved_participants|length }} / {{ event.get_capacity_display }}</td>
+                        {% with substitute_participants=event.substitute_participants %}
+                            <td class="w-100">{{ event.approved_participants|length }} / {{ event.get_capacity_display }} {% if substitute_participants|length > 0 %}({{ substitute_participants|length }}){% endif %}</td>
+                        {% endwith %}
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
