@@ -63,11 +63,7 @@ class Training(Event):
     ne_to = models.TimeField(_("Do*"), null=True, blank=True)
 
     def weekly_occurs_count(self):
-        count = 0
-        for day in days_shortcut_list():
-            if getattr(self, f"{day}_from") is not None:
-                count += 1
-        return count
+        return len(self.weekdays_list())
 
     def weekdays_list(self):
         days = days_shortcut_list()
@@ -90,16 +86,21 @@ class Training(Event):
         pass  # TODO
 
     def can_person_enroll_as_participant(self, person):
-        return True
+        return True  # TODO: remove
         raise NotImplementedError
 
     def can_participant_unenroll(self, person):
-        return True
+        return True  # TODO: remove
         raise NotImplementedError
 
     def get_participant_enrollment(self, person):
-        return True
+        return True  # TODO: remove
         raise NotImplementedError
+
+    def approved_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED).filter(
+            weekdays__weekday=weekday
+        )
 
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
@@ -139,27 +140,16 @@ class Training(Event):
         return weekdays
 
     def enrollments_by_state(self, state):
-        output = []
-        for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.trainingparticipantenrollment_set.get(
-                training=self
-            )
-            if enrollment.state == state:
-                output.append(enrollment)
-        return output
+        return self.trainingparticipantenrollment_set.filter(state=state)
 
     def __str__(self):
         return self.name
 
     @staticmethod
     def does_person_attends_training_of_category(person, category):
-        for training_enrollment in person.trainingparticipantenrollment_set.all():
-            if (
-                training_enrollment.state == ParticipantEnrollment.State.APPROVED
-                and training_enrollment.training.category == category
-            ):
-                return True
-        return False
+        return person.trainingparticipantenrollment_set.filter(
+            training__category=category
+        )
 
 
 class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
@@ -262,6 +252,9 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
         "trainings.TrainingWeekdays", related_name="training_weekdays_set"
     )
     transactions = models.ManyToManyField("transactions.Transaction")
+
+    class Meta:
+        unique_together = ["training", "person"]
 
     @property
     def event(self):

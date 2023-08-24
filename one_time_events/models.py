@@ -90,14 +90,7 @@ class OneTimeEvent(Event):
         return occurrences
 
     def enrollments_by_state(self, state):
-        output = []
-        for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.onetimeeventparticipantenrollment_set.get(
-                one_time_event=self
-            )
-            if enrollment.state == state:
-                output.append(enrollment)
-        return output
+        return self.onetimeeventparticipantenrollment_set.filter(state=state)
 
     def __str__(self):
         return self.name
@@ -133,6 +126,9 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     transaction = models.ForeignKey(
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
+
+    class Meta:
+        unique_together = ["one_time_event", "person"]
 
     def delete(self):
         transaction = OneTimeEventParticipantEnrollment.objects.get(
