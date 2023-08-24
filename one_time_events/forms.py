@@ -200,7 +200,6 @@ class OneTimeEventParticipantEnrollmentForm(EventParticipantEnrollmentForm):
         fields = [
             "agreed_participation_fee"
         ] + EventParticipantEnrollmentForm.Meta.fields
-        widgets = EventParticipantEnrollmentForm.Meta.widgets
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

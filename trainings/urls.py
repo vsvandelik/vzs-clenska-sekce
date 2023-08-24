@@ -22,4 +22,19 @@ urlpatterns = [
         views.TrainingRemoveReplaceableTrainingView.as_view(),
         name="remove-replaceable-training",
     ),
+    path(
+        "<int:event_id>/pridat-prihlasku/",
+        views.TrainingParticipantEnrollmentCreateView.as_view(),
+        name="create_participant_enrollment",
+    ),
+    path(
+        "<int:event_id>/upravit-prihlasku/<int:pk>",
+        views.TrainingParticipantEnrollmentUpdateView.as_view(),
+        name="edit_participant_enrollment",
+    ),
+    path(
+        "<int:event_id>/smazat-prihlasku/<int:pk>",
+        views.TrainingParticipantEnrollmentDeleteView.as_view(),
+        name="delete_participant_enrollment",
+    ),
 ]

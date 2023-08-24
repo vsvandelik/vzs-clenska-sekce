@@ -95,6 +95,9 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     agreed_participation_fee = models.PositiveIntegerField(
         _("Poplatek za účast*"), null=True, blank=True
     )
+    transaction = models.ForeignKey(
+        "transactions.Transaction", null=True, on_delete=models.SET_NULL
+    )
 
     def delete(self):
         transaction = OneTimeEventParticipantEnrollment.objects.get(

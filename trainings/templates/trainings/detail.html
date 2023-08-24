@@ -47,20 +47,46 @@
         </div>
     </div>
     <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Účastníci
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'trainings/detail_components/participants.html' with base_template='events/detail_bases/participants_approved.html' enrollments=event.approved_enrollments %}
+                        {% include 'trainings/detail_components/participants.html' with base_template='events/detail_bases/participants_substitute.html' enrollments=event.substitute_enrollments %}
+                        {% include 'trainings/detail_components/participants.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=event.rejected_enrollments %}
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'trainings:create_participant_enrollment' event.id %}" class="btn-primary btn">Přidat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         {% include 'trainings/detail_components/schedule.html' %}
     </div>
 
     {% include "modal_include.html" with id="choose-replaceable-training-modal" template="trainings/modals/replaceable_trainings_choose.html" classes="modal-lg" %}
     {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
+    {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
         simpleOrderableTableEnable("positions-table", [0, 1])
+        simpleOrderableTableEnable('participants-substitute-table', [0, 1])
+        simpleOrderableTableEnable('participants-rejected-table', [0, 1])
+        simpleOrderableTableEnable('participants-approved-table', [0, 1])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal("delete-position-assignment-modal")
+        registerModal('delete-participant-enrollment-modal')
     </script>
 {% endblock %}

@@ -11,10 +11,21 @@ from events.views import (
     EventDetailViewMixin,
     EventGeneratesDatesMixin,
     RedirectToEventDetailOnSuccessMixin,
+    ParticipantEnrollmentCreateMixin,
+    ParticipantEnrollmentDeleteMixin,
+    ParticipantEnrollmentUpdateMixin,
 )
-from vzs.mixin_extensions import MessagesMixin
-from .forms import TrainingForm, TrainingReplaceableForm
-from .models import Training, TrainingReplaceabilityForParticipants
+from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
+from .forms import (
+    TrainingForm,
+    TrainingReplaceableForm,
+    TrainingParticipantEnrollmentForm,
+)
+from .models import (
+    Training,
+    TrainingReplaceabilityForParticipants,
+    TrainingParticipantEnrollment,
+)
 
 
 class TrainingDetailView(EventDetailViewMixin):
@@ -87,3 +98,28 @@ class TrainingRemoveReplaceableTrainingView(generic.View):
             messages.error(request, "Nebyly nalezeny tréninky k odebrání.")
 
         return redirect(reverse("trainings:detail", args=[event_id]))
+
+
+class TrainingParticipantEnrollmentCreateUpdateMixin:
+    model = TrainingParticipantEnrollment
+    form_class = TrainingParticipantEnrollmentForm
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("checked_weekdays", self.get_form().checked_weekdays())
+        return super().get_context_data(**kwargs)
+
+
+class TrainingParticipantEnrollmentCreateView(
+    TrainingParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentCreateMixin
+):
+    template_name = "trainings/create_participant_enrollment.html"
+
+
+class TrainingParticipantEnrollmentUpdateView(
+    TrainingParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
+):
+    template_name = "trainings/edit_participant_enrollment.html"
+
+
+class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
+    template_name = "trainings/delete_participant_enrollment.html"

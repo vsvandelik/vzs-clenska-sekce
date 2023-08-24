@@ -1,0 +1,2 @@
+{% extends 'events/detail_bases/delete_participant_enrollment.html' %}
+{% block delete_action %}{% url 'trainings:delete_participant_enrollment' enrollment.event.id enrollment.id %}{% endblock %}

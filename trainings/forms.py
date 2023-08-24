@@ -5,8 +5,8 @@ from django.db.models import Q
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm
-from events.models import EventOrOccurrenceState
+from events.forms_bases import EventForm, EventParticipantEnrollmentForm
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
 from trainings.utils import (
     weekday_2_day_shortcut,
@@ -14,7 +14,13 @@ from trainings.utils import (
     day_shortcut_2_weekday,
 )
 from vzs.widgets import TimePickerWithIcon
-from .models import Training, TrainingOccurrence, TrainingReplaceabilityForParticipants
+from .models import (
+    Training,
+    TrainingOccurrence,
+    TrainingReplaceabilityForParticipants,
+    TrainingParticipantEnrollment,
+    TrainingWeekdays,
+)
 
 
 class TrainingForm(EventForm):
@@ -329,3 +335,67 @@ class TrainingReplaceableForm(forms.ModelForm):
             )
 
         return instance
+
+
+class TrainingParticipantEnrollmentForm(EventParticipantEnrollmentForm):
+    class Meta(EventParticipantEnrollmentForm.Meta):
+        model = TrainingParticipantEnrollment
+
+    weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _check_conv_weekdays(self):
+        if (
+            "weekdays" not in self.cleaned_data
+            or len(self.cleaned_data["weekdays"]) == 0
+        ):
+            self.add_error(None, "Nejsou vybrány žádné dny v týdnu")
+
+        weekdays_list = self.event.weekdays_list()
+        for i in range(len(self.cleaned_data["weekdays"])):
+            weekday_str = self.cleaned_data["weekdays"][i]
+            try:
+                weekday = int(weekday_str)
+                if weekday not in weekdays_list:
+                    self.add_error(None, "Tento den v týdnu se trénink neodehrává")
+                self.cleaned_data["weekdays"][i] = weekday
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota dne v týdnu")
+
+    def clean(self):
+        self.cleaned_data = super().clean()
+        if self.cleaned_data["state"] != ParticipantEnrollment.State.REJECTED:
+            self._check_conv_weekdays()
+        return self.cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if instance.id is not None or commit:
+            if instance.id is None:
+                instance.save()
+            instance_weekdays_objs = instance.weekdays.all()
+            weekdays_cleaned = self.cleaned_data["weekdays"]
+            for weekday_obj in instance_weekdays_objs:
+                if weekday_obj.weekday not in weekdays_cleaned:
+                    weekday_obj.delete()
+                else:
+                    weekdays_cleaned.remove(weekday_obj.weekday)
+            for weekday in weekdays_cleaned:
+                weekday_obj = TrainingWeekdays.get_or_create(weekday)
+                instance.weekdays.add(weekday_obj)
+        if commit:
+            instance.save()
+        return instance
+
+    def checked_weekdays(self):
+        if hasattr(self, "cleaned_data") and "weekdays" in self.cleaned_data:
+            return self.cleaned_data["weekdays"]
+        elif (
+            self.instance.id is not None
+            and self.instance.state != ParticipantEnrollment.State.REJECTED
+        ):
+            return [weekday_obj.weekday for weekday_obj in self.instance.weekdays.all()]
+
+        return self.event.weekdays_list()

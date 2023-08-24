@@ -239,6 +239,7 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
     weekdays = models.ManyToManyField(
         "trainings.TrainingWeekdays", related_name="training_weekdays_set"
     )
+    transactions = models.ManyToManyField("transactions.Transaction")
 
     @property
     def event(self):
@@ -253,3 +254,9 @@ class TrainingWeekdays(models.Model):
     weekday = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(6)]
     )
+
+    @staticmethod
+    def get_or_create(weekday):
+        return TrainingWeekdays.objects.get_or_create(
+            weekday=weekday, defaults={"weekday": weekday}
+        )[0]
