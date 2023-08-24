@@ -144,7 +144,15 @@ class Event(PolymorphicModel):
         return True
 
     def can_participant_unenroll(self, person):
-        raise NotImplementedError
+        enrollment = self.get_participant_enrollment(person)
+        if enrollment is None:
+            return False
+        if enrollment.state in [
+            ParticipantEnrollment.State.APPROVED,
+            ParticipantEnrollment.State.REJECTED,
+        ]:
+            return False
+        return True
 
     def get_participant_enrollment(self, person):
         raise NotImplementedError

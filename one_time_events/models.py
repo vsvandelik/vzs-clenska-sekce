@@ -65,9 +65,10 @@ class OneTimeEvent(Event):
         return True
 
     def can_participant_unenroll(self, person):
-        enrollment = self.get_participant_enrollment(person)
-        if enrollment is None:
+        if not super().can_participant_unenroll(person):
             return False
+
+        enrollment = self.get_participant_enrollment(person)
         if enrollment.transaction is None:
             return True
         return not enrollment.transaction.is_settled
