@@ -196,7 +196,7 @@ class Training(Event):
     @staticmethod
     def does_person_attends_training_of_category(person, category):
         return person.trainingparticipantenrollment_set.filter(
-            training__category=category
+            training__category=category, state=ParticipantEnrollment.State.APPROVED
         )
 
 
