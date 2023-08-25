@@ -4,7 +4,7 @@
             <div class="card-title h5">{% block title %}{% endblock %}</div>
         </div>
         <div class="card-body p-0">
-            <form method="POST" action="{% url 'positions:remove_feature' position.id %}">
+            <form method="POST" action="{% url 'positions:remove-feature' position.id %}">
                 {% csrf_token %}
                 {% if already_required_features %}
                     <table id="{% block id %}{% endblock %}" class="table table-striped">

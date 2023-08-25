@@ -12,31 +12,31 @@ urlpatterns = [
     path(
         "<int:pk>/pridat-feature/",
         views.AddRemoveFeatureRequirementPositionView.as_view(),
-        name="add_feature",
+        name="add-feature",
     ),
     path(
         "<int:pk>/odebrat-feature/",
         views.AddRemoveFeatureRequirementPositionView.as_view(),
-        name="remove_feature",
+        name="remove-feature",
     ),
     path(
         "<int:pk>/upravit-vekove-omezeni/",
         views.EditAgeLimitView.as_view(),
-        name="edit_age_limit",
+        name="edit-age-limit",
     ),
     path(
         "<int:pk>/upravit-skupinu/",
         views.EditGroupMembershipView.as_view(),
-        name="edit_group_membership",
+        name="edit-group-membership",
     ),
     path(
         "<int:pk>/pridat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
-        name="add_person_type",
+        name="add-person-type",
     ),
     path(
         "<int:pk>/odebrat-typ-clenstvi/",
         views.AddRemoveAllowedPersonTypeToPositionView.as_view(),
-        name="remove_person_type",
+        name="remove-person-type",
     ),
 ]
