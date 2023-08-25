@@ -127,7 +127,7 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
-    def does_participant_satisfies_requirements(self, person):
+    def does_participant_satisfy_requirements(self, person):
         person_with_age = Person.objects.with_age().get(id=person.id)
 
         if person_with_age.age is None and (
@@ -165,7 +165,7 @@ class Event(PolymorphicModel):
         if self.enrolled_participants.contains(person):
             return False
 
-        return self.does_participant_satisfies_requirements(person)
+        return self.does_participant_satisfy_requirements(person)
 
     def can_participant_unenroll(self, person):
         enrollment = self.get_participant_enrollment(person)

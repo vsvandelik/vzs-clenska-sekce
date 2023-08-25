@@ -137,7 +137,7 @@ class EnrollMyselfParticipantForm(ModelForm):
         if self.person is None:
             self.add_error(None, "Není přihlášena žádná osoba")
             return
-        if not self.event.does_participant_satisfies_requirements(self.person):
+        if not self.event.does_participant_satisfy_requirements(self.person):
             self.add_error(
                 None,
                 f"Nejsou splněny požadavky kladené na účastníky události",

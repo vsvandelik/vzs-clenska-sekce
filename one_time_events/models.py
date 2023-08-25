@@ -44,8 +44,8 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
-    def does_participant_satisfies_requirements(self, person):
-        if not super().does_participant_satisfies_requirements(person):
+    def does_participant_satisfy_requirements(self, person):
+        if not super().does_participant_satisfy_requirements(person):
             return False
 
         if (
