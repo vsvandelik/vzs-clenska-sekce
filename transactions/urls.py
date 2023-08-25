@@ -21,6 +21,11 @@ urlpatterns = [
         name="send-email",
     ),
     path(
+        "pridat-hromadne/",
+        views.TransactionCreateBulkView.as_view(),
+        name="add-bulk",
+    ),
+    path(
         "pridat/",
         views.TransactionCreateView.as_view(),
         name="add",

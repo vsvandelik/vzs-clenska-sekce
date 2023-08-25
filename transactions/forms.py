@@ -1,18 +1,16 @@
-from .models import Transaction
-from .utils import parse_transactions_filter_queryset
-
-from persons.widgets import PersonSelectWidget
-
-from vzs.widgets import DatePickerWithIcon
+import datetime
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div
-
 from django import forms
 from django.forms import ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
 
-import datetime
+from persons.forms import PersonsFilterForm
+from persons.widgets import PersonSelectWidget
+from vzs.widgets import DatePickerWithIcon
+from .models import Transaction
+from .utils import parse_transactions_filter_queryset
 
 
 class TransactionCreateEditMixin(ModelForm):
@@ -51,6 +49,45 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.instance.person = person
+
+
+class TransactionCreateBulkForm(TransactionCreateEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._attach_person_filter_form()
+        self._prepare_transaction_form()
+
+    def _attach_person_filter_form(self):
+        person_filter_form = PersonsFilterForm()
+
+        for field_name, field in person_filter_form.fields.items():
+            self.fields[field_name] = field
+
+        self.filter_helper = FormHelper()
+        self.filter_helper.form_tag = False
+
+        # Remove submit button and background from person filter form
+        person_filter_form_layout_rows = person_filter_form.helper.layout.fields[
+            0
+        ].fields
+
+        self.filter_helper.layout = Layout(
+            person_filter_form_layout_rows[0],
+            person_filter_form_layout_rows[1],
+            person_filter_form_layout_rows[2],
+        )
+
+    def _prepare_transaction_form(self):
+        self.transaction_helper = FormHelper()
+        self.transaction_helper.form_tag = False
+        self.transaction_helper.layout = Layout(
+            "amount", "reason", "date_due", "is_reward"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data = PersonsFilterForm.clean_with_given_values(cleaned_data)
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):

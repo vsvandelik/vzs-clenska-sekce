@@ -1,22 +1,22 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q, Sum
-from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views import generic
-from django.http import HttpResponseRedirect
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
+from vzs.utils import export_queryset_csv
 from .forms import (
     TransactionEditForm,
     TransactionCreateForm,
     TransactionCreateFromPersonForm,
     TransactionFilterForm,
+    TransactionCreateBulkForm,
 )
 from .models import Transaction
-from .utils import parse_transactions_filter_queryset, send_email_transactions
-from vzs.utils import export_queryset_csv
+from .utils import send_email_transactions
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -206,6 +206,14 @@ class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView
 
     def get_queryset(self):
         return self.filter_form.process_filter().order_by("date_due")
+
+
+class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.FormView):
+    template_name = "transactions/create_bulk.html"
+    form_class = TransactionCreateBulkForm
+
+    def get_success_url(self):
+        return reverse("transactions:index")
 
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
