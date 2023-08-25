@@ -134,7 +134,7 @@ class TrainingEnrollMyselfParticipantView(
 ):
     model = TrainingParticipantEnrollment
     form_class = TrainingEnrollMyselfParticipantForm
-    template_name = "trainings/enroll_myself_participant_form.html"
+    template_name = "trainings/enroll_myself_participant.html"
     success_message = "Přihlášení na trénink proběhlo úspěšně"
 
     def get_context_data(self, **kwargs):

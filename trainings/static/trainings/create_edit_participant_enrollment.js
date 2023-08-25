@@ -14,10 +14,6 @@ function stateChanged() {
 
 }
 
-function getWeekdaysSelectionElement() {
-    return $('#weekdays-selection')
-}
-
 function beforeSubmit() {
     return validateWeekdaySelection()
 }
