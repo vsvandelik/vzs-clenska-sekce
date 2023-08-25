@@ -16,6 +16,7 @@
                 <a href="{% url 'trainings:edit' event.id %}" class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
+            {% include 'events/detail_components/enroll_unenroll_button.html' with enroll_action_name='trainings:enroll-myself-participant' unenroll_action_name='trainings:unenroll-myself-participant' %}
         </div>
     </div>
     <div class="row">

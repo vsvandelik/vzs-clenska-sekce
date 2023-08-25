@@ -14,12 +14,15 @@ from events.views import (
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
+    EnrollMyselfParticipantMixin,
+    UnenrollMyselfParticipantMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     TrainingForm,
     TrainingReplaceableForm,
     TrainingParticipantEnrollmentForm,
+    TrainingEnrollMyselfParticipantForm,
 )
 from .models import (
     Training,
@@ -123,3 +126,14 @@ class TrainingParticipantEnrollmentUpdateView(
 
 class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
     template_name = "trainings/delete_participant_enrollment.html"
+
+
+class TrainingEnrollMyselfParticipantView(EnrollMyselfParticipantMixin):
+    model = TrainingParticipantEnrollment
+    form_class = TrainingEnrollMyselfParticipantForm
+    success_message = "Přihlášení na trénink proběhlo úspěšně"
+
+
+class TrainingUnenrollMyselfParticipantView(UnenrollMyselfParticipantMixin):
+    model = TrainingParticipantEnrollment
+    success_message = "Odhlášení z tréninku proběhlo úspěšně"

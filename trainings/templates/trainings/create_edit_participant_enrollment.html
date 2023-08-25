@@ -9,5 +9,5 @@
     <script src="{% static 'trainings/create_edit_participant_enrollment.js' %}"></script>
 {% endblock %}
 {% block body %}
-    {% include 'trainings/components/weekday_selection.html' with event=event %}
+    {% include 'trainings/components/weekday_selection.html' with event=event disable_when_full=False %}
 {% endblock %}

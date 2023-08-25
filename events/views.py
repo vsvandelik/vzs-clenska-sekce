@@ -13,7 +13,7 @@ from .forms import (
     EventAllowedPersonTypeForm,
 )
 from django.shortcuts import get_object_or_404, reverse, redirect
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
 from events.models import ParticipantEnrollment
@@ -237,3 +237,23 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
+
+
+class EnrollMyselfParticipantMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.CreateView,
+):
+    pass
+
+
+class UnenrollMyselfParticipantMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.DeleteView,
+):
+    pass

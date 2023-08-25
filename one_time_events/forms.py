@@ -277,7 +277,6 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
             else None
         )
         instance.one_time_event = self.event
-        instance.person = self.person
         instance.agreed_participation_fee = fee
 
         if commit:

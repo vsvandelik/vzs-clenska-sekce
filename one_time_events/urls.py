@@ -37,12 +37,12 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/prihlasit-ucastnika/",
-        views.EnrollMyselfParticipantView.as_view(),
+        views.OneTimeEventEnrollMyselfParticipantView.as_view(),
         name="enroll-myself-participant",
     ),
     path(
         "<int:pk>/odhlasit-ucastnika/",
-        views.UnenrollMyselfParticipantView.as_view(),
+        views.OneTimeEventUnenrollMyselfParticipantView.as_view(),
         name="unenroll-myself-participant",
     ),
 ]

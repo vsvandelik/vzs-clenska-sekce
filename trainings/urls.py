@@ -37,4 +37,14 @@ urlpatterns = [
         views.TrainingParticipantEnrollmentDeleteView.as_view(),
         name="delete-participant-enrollment",
     ),
+    path(
+        "<int:event_id>/prihlasit-ucastnika/",
+        views.TrainingEnrollMyselfParticipantView.as_view(),
+        name="enroll-myself-participant",
+    ),
+    path(
+        "<int:pk>/odhlasit-ucastnika/",
+        views.TrainingUnenrollMyselfParticipantView.as_view(),
+        name="unenroll-myself-participant",
+    ),
 ]

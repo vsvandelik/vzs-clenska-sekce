@@ -159,6 +159,11 @@ def datetime_precise(value):
 
 
 @register.filter
+def eq(a, b):
+    return a == b
+
+
+@register.filter
 def subtract(a, b):
     return a - b
 

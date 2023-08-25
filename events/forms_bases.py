@@ -147,6 +147,7 @@ class EnrollMyselfParticipantForm(ModelForm):
         instance = super().save(False)
         instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
         instance.state = self.event.participants_enroll_state
+        instance.person = self.person
         if commit:
             instance.save()
         return instance
