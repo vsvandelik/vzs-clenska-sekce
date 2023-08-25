@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from itertools import chain
 
 from django.core.validators import RegexValidator
@@ -6,7 +6,6 @@ from django.db import models
 from django.db.models import ExpressionWrapper, Case, When, Value, Q
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel
 
