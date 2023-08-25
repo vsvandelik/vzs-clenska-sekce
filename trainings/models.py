@@ -86,21 +86,39 @@ class Training(Event):
         pass  # TODO
 
     def can_person_enroll_as_participant(self, person):
-        return True  # TODO: remove
-        raise NotImplementedError
+        if not super().can_person_enroll_as_participant(person):
+            return False
+        if not any(map(self.has_weekday_free_spot, self.weekdays_list())):
+            return False
+        return True
 
     def can_participant_unenroll(self, person):
-        return True  # TODO: remove
-        raise NotImplementedError
+        if not super().can_participant_unenroll(person):
+            return False
+
+        enrollment = self.get_participant_enrollment(person)
+        for transaction in enrollment.transactions.all():
+            if transaction.is_settled:
+                return False
+
+        return True
 
     def get_participant_enrollment(self, person):
-        return True  # TODO: remove
-        raise NotImplementedError
+        if person is None:
+            return None
+        try:
+            return person.trainingparticipantenrollment_set.get(training=self)
+        except TrainingParticipantEnrollment.DoesNotExist:
+            return None
 
     def approved_enrollments_by_weekday(self, weekday):
         return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED).filter(
             weekdays__weekday=weekday
         )
+
+    def has_weekday_free_spot(self, weekday):
+        enrollments_length = self.approved_enrollments_by_weekday(weekday).count()
+        return enrollments_length < self.capacity
 
     def substitute_enrollments_by_weekday(self, weekday):
         return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE).filter(

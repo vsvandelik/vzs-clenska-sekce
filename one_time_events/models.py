@@ -47,8 +47,6 @@ class OneTimeEvent(Event):
     def can_person_enroll_as_participant(self, person):
         if not super().can_person_enroll_as_participant(person):
             return False
-        if self.enrolled_participants.contains(person):
-            return False
         if (
             self.capacity is not None
             and len(self.approved_participants()) >= self.capacity

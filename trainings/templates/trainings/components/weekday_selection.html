@@ -21,11 +21,7 @@
                                             <label for="{{ day_shortcut }}">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
                                         {% endwith %}
                                     </div>
-                                    {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}
-                                        <div class="h5 text-right">{{ approved_participants_length }}
-                                            / {{ event.capacity }} {% if substitute_participants_length > 0 %}(
-                                                {{ substitute_participants_length }}){% endif %}</div>
-                                    {% endwith %}
+                                    {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}<div class="h5 text-right">{{ approved_participants_length }} / {{ event.capacity }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}</div>{% endwith %}
                                 </div>
                             </div>
                         {% endwith %}

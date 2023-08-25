@@ -129,6 +129,8 @@ class Event(PolymorphicModel):
     def can_person_enroll_as_participant(self, person):
         if person is None:
             return False
+        if self.enrolled_participants.contains(person):
+            return False
         if self.min_age is not None and self.min_age > person.age:
             return False
         if self.max_age is not None and self.max_age < person.age:
