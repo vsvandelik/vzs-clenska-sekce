@@ -10,6 +10,10 @@ from persons.models import Person
 from vzs import models as vzs_models
 
 
+class BulkTransaction(models.Model):
+    reason = models.CharField(_("Popis transakce"), max_length=150)
+
+
 class Transaction(vzs_models.ExportableCSVMixin, models.Model):
     class Meta:
         permissions = [("spravce_transakci", _("Správce transakcí"))]
@@ -31,6 +35,9 @@ class Transaction(vzs_models.ExportableCSVMixin, models.Model):
         on_delete=models.SET_NULL,
         null=True,
         verbose_name=_("Vybavení"),
+    )
+    bulk_transaction = models.ForeignKey(
+        BulkTransaction, on_delete=models.SET_NULL, null=True
     )
     fio_transaction = models.ForeignKey(
         "FioTransaction", on_delete=models.SET_NULL, null=True
