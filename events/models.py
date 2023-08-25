@@ -128,15 +128,25 @@ class Event(PolymorphicModel):
         return self.capacity
 
     def does_participant_satisfies_requirements(self, person):
-        if self.min_age is not None and self.min_age > person.age:
+        person_with_age = Person.objects.with_age().get(id=person.id)
+
+        if person_with_age.age is None and (
+            self.min_age is not None or self.max_age is not None
+        ):
             return False
-        if self.max_age is not None and self.max_age < person.age:
+
+        if self.min_age is not None and self.min_age > person_with_age.age:
             return False
+        if self.max_age is not None and self.max_age < person_with_age.age:
+            return False
+
         if self.group is not None and not person.groups.contains(self.group):
             return False
         if (
             self.allowed_person_types.all().count() > 0
-            and not self.allowed_person_types.contains(person.person_type)
+            and not self.allowed_person_types.contains(
+                EventPersonTypeConstraint.get_or_create(person.person_type)
+            )
         ):
             return False
 
