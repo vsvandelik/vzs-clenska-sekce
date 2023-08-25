@@ -1,5 +1,6 @@
 import polymorphic.models
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from persons.models import Person
 from features.models import Feature
@@ -126,11 +127,7 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
-    def can_person_enroll_as_participant(self, person):
-        if person is None:
-            return False
-        if self.enrolled_participants.contains(person):
-            return False
+    def does_participant_satisfies_requirements(self, person):
         if self.min_age is not None and self.min_age > person.age:
             return False
         if self.max_age is not None and self.max_age < person.age:
@@ -144,6 +141,21 @@ class Event(PolymorphicModel):
             return False
 
         return True
+
+    def has_free_spot(self):
+        raise NotImplementedError
+
+    def can_person_enroll_as_participant(self, person):
+        return self.can_person_enroll_as_waiting(person) and self.has_free_spot()
+
+    def can_person_enroll_as_waiting(self, person):
+        if person is None:
+            return False
+
+        if self.enrolled_participants.contains(person):
+            return False
+
+        return self.does_participant_satisfies_requirements(person)
 
     def can_participant_unenroll(self, person):
         enrollment = self.get_participant_enrollment(person)
@@ -165,29 +177,35 @@ class Event(PolymorphicModel):
     def sorted_occurrences_list(self):
         raise NotImplementedError
 
-    def enrollments_by_state(self, state):
+    def enrollments_by_Q(self, state):
         raise NotImplementedError
 
-    def participants_by_state(self, state):
-        return [enrollment.person for enrollment in self.enrollments_by_state(state)]
+    def participants_by_Q(self, condition):
+        return [enrollment.person for enrollment in self.enrollments_by_Q(condition)]
 
     def approved_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED)
+        return self.enrollments_by_Q(Q(state=ParticipantEnrollment.State.APPROVED))
 
     def substitute_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+        return self.enrollments_by_Q(Q(state=ParticipantEnrollment.State.SUBSTITUTE))
 
     def rejected_enrollments(self):
-        return self.enrollments_by_state(ParticipantEnrollment.State.REJECTED)
+        return self.enrollments_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
+
+    def all_possible_participants(self):
+        return self.participants_by_Q(
+            Q(state=ParticipantEnrollment.State.APPROVED)
+            | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+        )
 
     def approved_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.APPROVED)
+        return self.participants_by_Q(Q(state=ParticipantEnrollment.State.APPROVED))
 
     def substitute_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.SUBSTITUTE)
+        return self.participants_by_Q(Q(state=ParticipantEnrollment.State.SUBSTITUTE))
 
     def rejected_participants(self):
-        return self.participants_by_state(ParticipantEnrollment.State.REJECTED)
+        return self.participants_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
 
 
 class EventOccurrence(PolymorphicModel):

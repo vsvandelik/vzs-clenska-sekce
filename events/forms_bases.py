@@ -6,7 +6,7 @@ from django.forms import ModelForm
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
-from events.models import EventPersonTypeConstraint
+from events.models import EventPersonTypeConstraint, ParticipantEnrollment
 from vzs.widgets import DatePickerWithIcon
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
@@ -137,16 +137,16 @@ class EnrollMyselfParticipantForm(ModelForm):
         if self.person is None:
             self.add_error(None, "Není přihlášena žádná osoba")
             return
-        if not self.event.can_person_enroll_as_participant(self.person):
+        if not self.event.does_participant_satisfies_requirements(self.person):
             self.add_error(
                 None,
-                f"Nejsou splněny požadavky kladené na účastníky události, nebo jste již přihlášen",
+                f"Nejsou splněny požadavky kladené na účastníky události",
             )
+        return self.cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
         instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
-        instance.state = self.event.participants_enroll_state
         instance.person = self.person
         if commit:
             instance.save()

@@ -341,16 +341,8 @@ class TrainingReplaceableForm(forms.ModelForm):
         return instance
 
 
-class TrainingParticipantEnrollmentForm(ParticipantEnrollmentForm):
-    class Meta(ParticipantEnrollmentForm.Meta):
-        model = TrainingParticipantEnrollment
-
-    weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def _check_conv_weekdays(self):
+class TrainingWeekdaysSelectionMixin:
+    def check_conv_weekdays(self):
         if (
             "weekdays" not in self.cleaned_data
             or len(self.cleaned_data["weekdays"]) == 0
@@ -368,10 +360,37 @@ class TrainingParticipantEnrollmentForm(ParticipantEnrollmentForm):
             except ValueError:
                 self.add_error(None, "Neplatná hodnota dne v týdnu")
 
+    def checked_weekdays(self):
+        if hasattr(self, "cleaned_data") and "weekdays" in self.cleaned_data:
+            return self.cleaned_data["weekdays"]
+        elif (
+            self.instance.id is not None
+            and self.instance.state != ParticipantEnrollment.State.REJECTED
+        ):
+            return [weekday_obj.weekday for weekday_obj in self.instance.weekdays.all()]
+
+        return self.event.free_weekdays_list()
+
+
+class InitializeWeekdays:
+    def initialize_weekdays(self, enrollment, weekdays_cleaned):
+        for weekday in weekdays_cleaned:
+            weekday_obj = TrainingWeekdays.get_or_create(weekday)
+            enrollment.weekdays.add(weekday_obj)
+
+
+class TrainingParticipantEnrollmentForm(
+    TrainingWeekdaysSelectionMixin, InitializeWeekdays, ParticipantEnrollmentForm
+):
+    class Meta(ParticipantEnrollmentForm.Meta):
+        model = TrainingParticipantEnrollment
+
+    weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
+
     def clean(self):
         self.cleaned_data = super().clean()
         if self.cleaned_data["state"] != ParticipantEnrollment.State.REJECTED:
-            self._check_conv_weekdays()
+            super().check_conv_weekdays()
         else:
             self.cleaned_data["weekdays"] = []
         return self.cleaned_data
@@ -388,36 +407,40 @@ class TrainingParticipantEnrollmentForm(ParticipantEnrollmentForm):
                     weekday_obj.delete()
                 else:
                     weekdays_cleaned.remove(weekday_obj.weekday)
-            for weekday in weekdays_cleaned:
-                weekday_obj = TrainingWeekdays.get_or_create(weekday)
-                instance.weekdays.add(weekday_obj)
+            super().initialize_weekdays(instance, weekdays_cleaned)
         if commit:
             instance.save()
         return instance
 
-    def checked_weekdays(self):
-        if hasattr(self, "cleaned_data") and "weekdays" in self.cleaned_data:
-            return self.cleaned_data["weekdays"]
-        elif (
-            self.instance.id is not None
-            and self.instance.state != ParticipantEnrollment.State.REJECTED
-        ):
-            return [weekday_obj.weekday for weekday_obj in self.instance.weekdays.all()]
 
-        return self.event.weekdays_list()
-
-
-class TrainingEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
+class TrainingEnrollMyselfParticipantForm(
+    TrainingWeekdaysSelectionMixin, InitializeWeekdays, EnrollMyselfParticipantForm
+):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = TrainingParticipantEnrollment
 
+    weekdays = MultipleChoiceFieldNoValidation(widget=forms.CheckboxSelectMultiple)
+
+    def clean(self):
+        self.cleaned_data = super().clean()
+        super().check_conv_weekdays()
+        return self.cleaned_data
+
     def save(self, commit=True):
         instance = super().save(False)
-
         instance.training = self.event
-        # TODO: handle weekdays
+        instance.state = ParticipantEnrollment.State.SUBSTITUTE
+        weekdays = self.cleaned_data["weekdays"]
+        if (
+            self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
+            and all(map(instance.training.has_weekday_free_spot, weekdays))
+        ):
+            instance.state = ParticipantEnrollment.State.APPROVED
 
         if commit:
+            instance.save()
+            weekdays_cleaned = self.cleaned_data["weekdays"]
+            super().initialize_weekdays(instance, weekdays_cleaned)
             instance.save()
 
         return instance

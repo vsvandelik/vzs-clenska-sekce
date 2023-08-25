@@ -42,9 +42,4 @@ urlpatterns = [
         views.TrainingEnrollMyselfParticipantView.as_view(),
         name="enroll-myself-participant",
     ),
-    path(
-        "<int:pk>/odhlasit-ucastnika/",
-        views.TrainingUnenrollMyselfParticipantView.as_view(),
-        name="unenroll-myself-participant",
-    ),
 ]

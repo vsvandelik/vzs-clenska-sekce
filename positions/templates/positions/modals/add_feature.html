@@ -1,0 +1,42 @@
+<div class="modal fade" id="add-features" tabindex="-1" role="dialog"
+     aria-labelledby="add-features"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="modal-title" class="modal-title">Přidat kvalifikaci</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'positions:add-feature' position.id %}">
+                    {% csrf_token %}
+                    <table class="table table-striped" id="add-feature-table">
+                        <thead>
+                            <tr>
+                                <th>Jméno</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="qualifications-body" style="display: none">
+                            {% include 'positions/feature_tbody.html' with features=qualifications features_required=position.required_qualifications detail_name='qualifications:detail' %}
+                        </tbody>
+
+                        <tbody id="permissions-body" style="display: none">
+                            {% include 'positions/feature_tbody.html' with features=permissions features_required=position.required_permissions detail_name='permissions:detail' %}
+                        </tbody>
+
+                        <tbody id="equipment-body" style="display: none">
+                            {% include 'positions/feature_tbody.html' with features=equipment features_required=position.required_equipment detail_name='equipments:detail' %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+            </div>
+        </div>
+    </div>
+</div>

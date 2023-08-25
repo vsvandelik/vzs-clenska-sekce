@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -73,6 +74,13 @@ class Training(Event):
                 output.append(i)
         return output
 
+    def free_weekdays_list(self):
+        return [
+            weekday
+            for weekday in self.weekdays_list()
+            if self.has_weekday_free_spot(weekday)
+        ]
+
     def weekdays_shortcut_list(self):
         return map(weekday_2_day_shortcut, self.weekdays_list())
 
@@ -85,9 +93,7 @@ class Training(Event):
     def replaces_training_list(self):
         pass  # TODO
 
-    def can_person_enroll_as_participant(self, person):
-        if not super().can_person_enroll_as_participant(person):
-            return False
+    def has_free_spot(self):
         if not any(map(self.has_weekday_free_spot, self.weekdays_list())):
             return False
         return True
@@ -111,19 +117,41 @@ class Training(Event):
         except TrainingParticipantEnrollment.DoesNotExist:
             return None
 
+    def enrollments_by_Q_weekday(self, condition, weekday):
+        return self.trainingparticipantenrollment_set.filter(
+            condition & Q(weekdays__weekday=weekday)
+        )
+
+    def enrollments_by_Q(self, condition):
+        return self.trainingparticipantenrollment_set.filter(condition)
+
     def approved_enrollments_by_weekday(self, weekday):
-        return self.enrollments_by_state(ParticipantEnrollment.State.APPROVED).filter(
-            weekdays__weekday=weekday
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.APPROVED), weekday
+        )
+
+    def substitute_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.SUBSTITUTE), weekday
+        )
+
+    def all_possible_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.APPROVED)
+            | Q(state=ParticipantEnrollment.State.SUBSTITUTE),
+            weekday,
         )
 
     def has_weekday_free_spot(self, weekday):
-        enrollments_length = self.approved_enrollments_by_weekday(weekday).count()
+        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+            enrollments_length = self.approved_enrollments_by_weekday(weekday).count()
+        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
+            enrollments_length = self.all_possible_enrollments_by_weekday(
+                weekday
+            ).count()
+        else:
+            raise NotImplementedError
         return enrollments_length < self.capacity
-
-    def substitute_enrollments_by_weekday(self, weekday):
-        return self.enrollments_by_state(ParticipantEnrollment.State.SUBSTITUTE).filter(
-            weekdays__weekday=weekday
-        )
 
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
@@ -161,9 +189,6 @@ class Training(Event):
                 weekdays.append(i)
             i += 1
         return weekdays
-
-    def enrollments_by_state(self, state):
-        return self.trainingparticipantenrollment_set.filter(state=state)
 
     def __str__(self):
         return self.name

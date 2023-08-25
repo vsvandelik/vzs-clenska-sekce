@@ -1,0 +1,14 @@
+<div class="btn-group-md btn-group mb-3 elevation-2">
+    {% if active_person_can_enroll %}
+        <form method="POST" action="{% if active_person_can_enroll %}{% url 'one_time_events:enroll-myself-participant' event.id %}{% else %}{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}{% endif %}">
+            {% csrf_token %}
+            <button class="btn btn-info" type="submit">Přihlásit se</button>
+        </form>
+    {% elif active_person_can_unenroll %}
+        <a data-toggle="modal" data-target="#unenroll-myself-participant"
+           data-action="{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}" class="btn btn-secondary">Odhlásit se</a>
+    {% elif active_person_can_enroll_as_waiting %}
+        <a data-toggle="modal" data-target="#enroll-myself-participant"
+           data-action="{% url 'one_time_events:enroll-myself-participant' event.id %}" class="btn btn-info">Přihlásit se jako náhradník</a>
+    {% endif %}
+</div>

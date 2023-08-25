@@ -1,0 +1,9 @@
+<div class="btn-group-md btn-group mb-3 elevation-2">
+    {% if active_person_can_enroll %}
+        <a class="btn btn-info" href="{% url 'trainings:enroll-myself-participant' event.id %}">Přihlásit se</a>
+    {% elif active_person_can_unenroll %}
+        <a data-toggle="modal" data-target="#unenroll-myself-participant"
+           data-action="{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}"
+           class="btn btn-secondary">Odhlásit se</a>
+    {% endif %}
+</div>

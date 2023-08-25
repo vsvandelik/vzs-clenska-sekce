@@ -54,7 +54,7 @@ class PositionUpdateView(PositionCreateUpdateMixin, generic.UpdateView):
 
 
 class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
-    template_name = "positions/delete.html"
+    template_name = "positions/modals/delete.html"
     success_url = reverse_lazy("positions:index")
 
     def get_success_message(self, cleaned_data):

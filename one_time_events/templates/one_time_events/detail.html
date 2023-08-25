@@ -18,7 +18,7 @@
                    class="btn btn-success">Upravit</a>
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
-            {% include 'events/detail_components/enroll_unenroll_button.html' with enroll_action_name='one_time_events:enroll-myself-participant' unenroll_action_name='one_time_events:unenroll-myself-participant' %}
+            {% include 'one_time_events/detail_components/enroll_unenroll_button.html' %}
         </div>
     </div>
     <div class="row">
@@ -70,9 +70,11 @@
     </div>
 
 
-    {% include "modal_include.html" with id="delete-event-modal" template="events/delete.html" %}
+    {% include "modal_include.html" with id="delete-event-modal" template="events/modals/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
+    {% include "modal_include.html" with id="enroll-myself-participant" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant" %}
 {% endblock %}
 
 {% block scripts %}
@@ -87,5 +89,7 @@
     <script>
         registerModal("delete-position-assignment-modal")
         registerModal('delete-participant-enrollment-modal')
+        registerModal('enroll-myself-participant')
+        registerModal('unenroll-myself-participant')
     </script>
 {% endblock %}

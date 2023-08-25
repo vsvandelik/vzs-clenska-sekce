@@ -41,4 +41,9 @@ urlpatterns = [
         views.EventPositionAssignmentDeleteView.as_view(),
         name="delete-position-assignment",
     ),
+    path(
+        "<int:pk>/odhlasit-ucastnika/",
+        views.UnenrollMyselfParticipantView.as_view(),
+        name="unenroll-myself-participant",
+    ),
 ]

@@ -117,6 +117,10 @@ class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.Detail
             self.object.can_person_enroll_as_participant(p),
         )
         kwargs.setdefault(
+            "active_person_can_enroll_as_waiting",
+            self.object.can_person_enroll_as_waiting(p),
+        )
+        kwargs.setdefault(
             "active_person_can_unenroll",
             self.object.can_participant_unenroll(p),
         )
@@ -132,7 +136,7 @@ class EventIndexView(EventMixin, generic.ListView):
 
 
 class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
-    template_name = "events/delete.html"
+    template_name = "events/modals/delete.html"
     success_url = reverse_lazy("events:index")
 
     def get_success_message(self, cleaned_data):
@@ -173,7 +177,7 @@ class EventPositionAssignmentUpdateView(
 class EventPositionAssignmentDeleteView(
     EventPositionAssignmentMixin, generic.DeleteView
 ):
-    template_name = "events/delete_event_position_assignment.html"
+    template_name = "events/modals/delete_event_position_assignment.html"
 
     def get_success_message(self, cleaned_data):
         return f"Organizátorská pozice {self.object.position} smazána"
@@ -242,7 +246,6 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
 class EnrollMyselfParticipantMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    RedirectToEventDetailOnFailureMixin,
     InsertRequestIntoModelFormKwargsMixin,
     InsertEventIntoModelFormKwargsMixin,
     generic.CreateView,
@@ -250,10 +253,13 @@ class EnrollMyselfParticipantMixin(
     pass
 
 
-class UnenrollMyselfParticipantMixin(
+class UnenrollMyselfParticipantView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
     generic.DeleteView,
 ):
-    pass
+    model = ParticipantEnrollment
+    context_object_name = "enrollment"
+    success_message = "Odhlášení z události proběhlo úspěšně"
+    template_name = "events/modals/unenroll_myself_participant.html"

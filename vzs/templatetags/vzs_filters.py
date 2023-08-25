@@ -159,8 +159,8 @@ def datetime_precise(value):
 
 
 @register.filter
-def eq(a, b):
-    return a == b
+def ge(a, b):
+    return a >= b
 
 
 @register.filter

@@ -44,14 +44,10 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
-    def can_person_enroll_as_participant(self, person):
-        if not super().can_person_enroll_as_participant(person):
+    def does_participant_satisfies_requirements(self, person):
+        if not super().does_participant_satisfies_requirements(person):
             return False
-        if (
-            self.capacity is not None
-            and len(self.approved_participants()) >= self.capacity
-        ):
-            return False
+
         if (
             self.training_category is not None
             and not Training.does_person_attends_training_of_category(
@@ -61,6 +57,13 @@ class OneTimeEvent(Event):
             return False
 
         return True
+
+    def has_free_spot(self):
+        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+            return len(self.approved_participants()) < self.capacity
+        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
+            return len(self.all_possible_participants()) < self.capacity
+        raise NotImplementedError
 
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
@@ -90,8 +93,8 @@ class OneTimeEvent(Event):
         occurrences = self._occurrences_list().order_by("date")
         return occurrences
 
-    def enrollments_by_state(self, state):
-        return self.onetimeeventparticipantenrollment_set.filter(state=state)
+    def enrollments_by_Q(self, condition):
+        return self.onetimeeventparticipantenrollment_set.filter(condition)
 
     def __str__(self):
         return self.name
