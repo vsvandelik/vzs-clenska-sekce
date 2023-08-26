@@ -270,12 +270,11 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
 
     def save(self, commit=True):
         instance = super().save(False)
-        fee = (
-            self.event.default_participation_fee
-            if self.event.participants_enroll_state
-            == ParticipantEnrollment.State.APPROVED
-            else None
-        )
+
+        fee = None
+        if self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+            fee = self.event.default_participation_fee
+
         instance.one_time_event = self.event
         instance.agreed_participation_fee = fee
         instance.state = ParticipantEnrollment.State.SUBSTITUTE
