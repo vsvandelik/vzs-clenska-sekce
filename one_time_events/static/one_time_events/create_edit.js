@@ -25,10 +25,7 @@ window.onbeforeunload = function () {
 
 function participantsEnrollListChanged() {
     const newValue = getParticipantsEnrollList().value
-    let required = false
-    if (newValue === 'schvalen')
-        required = true
-    setDefaultParticipationFeeRequired(required)
+    setDefaultParticipationFeeRequired(newValue === 'schvalen')
 }
 
 function setDefaultParticipationFeeRequired(state) {
