@@ -235,6 +235,11 @@ class TransactionFilterForm(forms.Form):
     amount_to = forms.IntegerField(label=_("Suma do"), required=False, min_value=1)
     date_due_from = forms.DateField(label=_("Datum splatnosti od"), required=False)
     date_due_to = forms.DateField(label=_("Datum splatnosti do"), required=False)
+    bulk_transaction = forms.ModelChoiceField(
+        label=_("Hromadná transakce"),
+        queryset=BulkTransaction.objects.all(),
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -251,10 +256,11 @@ class TransactionFilterForm(forms.Form):
                     css_class="row",
                 ),
                 Div(
-                    Div("amount_from", css_class="col-md-3"),
-                    Div("amount_to", css_class="col-md-3"),
-                    Div("date_due_from", css_class="col-md-3"),
-                    Div("date_due_to", css_class="col-md-3"),
+                    Div("amount_from", css_class="col-md-2"),
+                    Div("amount_to", css_class="col-md-2"),
+                    Div("date_due_from", css_class="col-md-2"),
+                    Div("date_due_to", css_class="col-md-2"),
+                    Div("bulk_transaction", css_class="col-md-4"),
                     css_class="row",
                 ),
                 Div(
