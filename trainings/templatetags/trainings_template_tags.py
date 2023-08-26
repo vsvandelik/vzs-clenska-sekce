@@ -30,3 +30,13 @@ def weekday_pretty(value):
 @register.filter
 def date_get_weekday(date):
     return date.weekday()
+
+
+@register.filter
+def approved_enrollments_by_weekday(training, weekday):
+    return training.approved_enrollments_by_weekday(weekday)
+
+
+@register.filter
+def substitute_enrollments_by_weekday(training, weekday):
+    return training.substitute_enrollments_by_weekday(weekday)

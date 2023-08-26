@@ -1,0 +1,8 @@
+{% load vzs_filters %}
+{% load trainings_template_tags %}
+
+{% with day_pretty=weekday|weekday_pretty %}
+    {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}
+        {{ day_pretty }}: {{ event|approved_enrollments_by_weekday:weekday|length }} / {{ event.capacity }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}
+    {% endwith %}
+{% endwith %}

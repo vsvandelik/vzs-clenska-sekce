@@ -14,12 +14,14 @@ from events.views import (
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
+    EnrollMyselfParticipantMixin,
 )
-from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     TrainingForm,
     TrainingReplaceableForm,
     TrainingParticipantEnrollmentForm,
+    TrainingEnrollMyselfParticipantForm,
 )
 from .models import (
     Training,
@@ -100,13 +102,15 @@ class TrainingRemoveReplaceableTrainingView(generic.View):
         return redirect(reverse("trainings:detail", args=[event_id]))
 
 
-class TrainingParticipantEnrollmentCreateUpdateMixin:
-    model = TrainingParticipantEnrollment
-    form_class = TrainingParticipantEnrollmentForm
-
+class TrainingWeekdaysSelectionMixin:
     def get_context_data(self, **kwargs):
         kwargs.setdefault("checked_weekdays", self.get_form().checked_weekdays())
         return super().get_context_data(**kwargs)
+
+
+class TrainingParticipantEnrollmentCreateUpdateMixin(TrainingWeekdaysSelectionMixin):
+    model = TrainingParticipantEnrollment
+    form_class = TrainingParticipantEnrollmentForm
 
 
 class TrainingParticipantEnrollmentCreateView(
@@ -122,4 +126,17 @@ class TrainingParticipantEnrollmentUpdateView(
 
 
 class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
-    template_name = "trainings/delete_participant_enrollment.html"
+    template_name = "trainings/modals/delete_participant_enrollment.html"
+
+
+class TrainingEnrollMyselfParticipantView(
+    TrainingWeekdaysSelectionMixin, EnrollMyselfParticipantMixin
+):
+    model = TrainingParticipantEnrollment
+    form_class = TrainingEnrollMyselfParticipantForm
+    template_name = "trainings/enroll_myself_participant.html"
+    success_message = "Přihlášení na trénink proběhlo úspěšně"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)

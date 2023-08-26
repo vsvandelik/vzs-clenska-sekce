@@ -12,8 +12,8 @@ from .forms import (
     EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
 )
-from django.shortcuts import get_object_or_404, reverse
-from vzs.mixin_extensions import MessagesMixin
+from django.shortcuts import get_object_or_404, reverse, redirect
+from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
 from events.models import ParticipantEnrollment
@@ -24,14 +24,20 @@ class EventMixin:
     context_object_name = "event"
 
 
-class RedirectToEventDetailOnSuccessMixin:
-    def get_success_url(self):
-        if hasattr(self, "object") and (
-            type(self.object) is OneTimeEvent or type(self.object) is Training
-        ):
-            id = self.object.id
-        elif "event_id" in self.kwargs:
+class RedirectToEventDetail:
+    def get_redirect_viewname_id(self):
+        if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
+        elif hasattr(self, "object"):
+            if type(self.object) is OneTimeEvent or type(self.object) is Training:
+                id = self.object.id
+            elif hasattr(self.object, "event") and (
+                type(self.object.event) is OneTimeEvent
+                or type(self.object.event) is Training
+            ):
+                id = self.object.event.id
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
 
@@ -42,8 +48,31 @@ class RedirectToEventDetailOnSuccessMixin:
             viewname = "trainings:detail"
         else:
             raise NotImplementedError
+        return viewname, id
 
+
+class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetail):
+    def get_success_url(self):
+        viewname, id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[id])
+
+
+class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        viewname, id = super().get_redirect_viewname_id()
+        return redirect(viewname, pk=id)
+
+
+class InsertEventIntoModelFormKwargsMixin:
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        return kwargs
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
@@ -81,7 +110,24 @@ class PersonTypeDetailViewMixin:
 
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
-    pass
+    def get_context_data(self, **kwargs):
+        p = self.request.active_person
+        kwargs.setdefault(
+            "active_person_can_enroll",
+            self.object.can_person_enroll_as_participant(p),
+        )
+        kwargs.setdefault(
+            "active_person_can_enroll_as_waiting",
+            self.object.can_person_enroll_as_waiting(p),
+        )
+        kwargs.setdefault(
+            "active_person_can_unenroll",
+            self.object.can_participant_unenroll(p),
+        )
+        kwargs.setdefault(
+            "active_person_enrollment", self.object.get_participant_enrollment(p)
+        )
+        return super().get_context_data(**kwargs)
 
 
 class EventIndexView(EventMixin, generic.ListView):
@@ -90,7 +136,7 @@ class EventIndexView(EventMixin, generic.ListView):
 
 
 class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
-    template_name = "events/delete.html"
+    template_name = "events/modals/delete.html"
     success_url = reverse_lazy("events:index")
 
     def get_success_message(self, cleaned_data):
@@ -107,19 +153,12 @@ class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
 
 
 class EventPositionAssignmentCreateView(
-    EventPositionAssignmentCreateUpdateMixin, generic.CreateView
+    EventPositionAssignmentCreateUpdateMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.CreateView,
 ):
     template_name = "events/create_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s přidána"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
 
 
 class EventPositionAssignmentUpdateView(
@@ -138,7 +177,7 @@ class EventPositionAssignmentUpdateView(
 class EventPositionAssignmentDeleteView(
     EventPositionAssignmentMixin, generic.DeleteView
 ):
-    template_name = "events/delete_event_position_assignment.html"
+    template_name = "events/modals/delete_event_position_assignment.html"
 
     def get_success_message(self, cleaned_data):
         return f"Organizátorská pozice {self.object.position} smazána"
@@ -173,17 +212,10 @@ class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMi
     context_object_name = "enrollment"
 
 
-class ParticipantEnrollmentCreateMixin(ParticipantEnrollmentMixin, generic.CreateView):
+class ParticipantEnrollmentCreateMixin(
+    ParticipantEnrollmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView
+):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["event"] = self.event
-        return kwargs
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
@@ -209,3 +241,25 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
+
+
+class EnrollMyselfParticipantMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.CreateView,
+):
+    pass
+
+
+class UnenrollMyselfParticipantView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.DeleteView,
+):
+    model = ParticipantEnrollment
+    context_object_name = "enrollment"
+    success_message = "Odhlášení z události proběhlo úspěšně"
+    template_name = "events/modals/unenroll_myself_participant.html"

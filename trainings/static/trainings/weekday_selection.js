@@ -20,3 +20,11 @@ function weekdayCheckboxClicked(sender) {
     if(sender.checked)
         setReportValidity(checkboxes[0], '', true)
 }
+
+function getWeekdaysCheckboxes() {
+    return [... getWeekdaysSelectionElement()[0].getElementsByTagName('input')]
+}
+
+function getWeekdaysSelectionElement() {
+    return $('#weekdays-selection')
+}

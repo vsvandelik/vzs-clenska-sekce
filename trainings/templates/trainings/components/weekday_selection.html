@@ -1,4 +1,5 @@
 {% load trainings_template_tags %}
+{% load vzs_filters %}
 <div id="weekdays-selection" class="card">
     <div class="card-header border-0">
         <div class="card-title h5">Výběr dnů v týdnu</div>
@@ -7,20 +8,25 @@
         <div class="row">
             {% for weekday in event.weekdays_list %}
                 <div class="col-sm-6 col-md-4 col-lg-3 col-12">
-                    <div class="card">
-                        <div class="card-header border-0">
-                            <div class="card-title h5 text-bold">
-                                {% with day_shortcut=weekday|weekday_2_day_shortcut %}
-                                    <input name="weekdays" id="{{ day_shortcut }}" type="checkbox" value="{{ weekday }}"
-                                           onchange="weekdayCheckboxClicked(this)"
-                                           {% if weekday in checked_weekdays %}checked{% endif %}>
-                                    <label for="{{ day_shortcut }}">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
-                                {% endwith %}
+                    {% with approved_participants_length=event|approved_enrollments_by_weekday:weekday|length %}
+                        {% with full=approved_participants_length|ge:event.capacity %}
+                            <div class="card {% if full %}bg-warning{% endif %}">
+                                <div class="card-header border-0">
+                                    <div class="card-title h5 text-bold">
+                                        {% with day_shortcut=weekday|weekday_2_day_shortcut %}
+                                            <input name="weekdays" id="{{ day_shortcut }}" type="checkbox"
+                                                   value="{{ weekday }}"
+                                                   onchange="weekdayCheckboxClicked(this)"
+                                                   {% if weekday in checked_weekdays %}checked{% endif %}>
+                                            <label for="{{ day_shortcut }}">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
+                                        {% endwith %}
+                                    </div>
+                                    {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}<div class="h5 text-right">{{ approved_participants_length }} / {{ event.capacity }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}</div>{% endwith %}
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        {% endwith %}
+                    {% endwith %}
                 </div>
-
             {% endfor %}
         </div>
     </div>

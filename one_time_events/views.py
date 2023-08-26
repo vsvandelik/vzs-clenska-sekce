@@ -9,6 +9,8 @@ from events.views import (
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentUpdateMixin,
     ParticipantEnrollmentDeleteMixin,
+    EnrollMyselfParticipantMixin,
+    RedirectToEventDetailOnFailureMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -16,6 +18,7 @@ from .forms import (
     OneTimeEventForm,
     TrainingCategoryForm,
     OneTimeEventParticipantEnrollmentForm,
+    OneTimeEventEnrollMyselfParticipantForm,
 )
 from .models import OneTimeEventParticipantEnrollment
 
@@ -64,4 +67,17 @@ class OneTimeEventParticipantEnrollmentUpdateView(
 
 
 class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
-    template_name = "one_time_events/delete_participant_enrollment.html"
+    template_name = "one_time_events/modals/delete_participant_enrollment.html"
+
+
+class OneTimeEventEnrollMyselfParticipantView(
+    RedirectToEventDetailOnFailureMixin, EnrollMyselfParticipantMixin
+):
+    model = OneTimeEventParticipantEnrollment
+    form_class = OneTimeEventEnrollMyselfParticipantForm
+    template_name = "one_time_events/modals/enroll_waiting.html"
+    success_message = "Přihlášení na událost proběhlo úspěšně"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)

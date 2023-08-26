@@ -25,7 +25,7 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Noví účastníci jsou přidáni jako:</td>
-                        <td class="w-100">{{ event.get_participants_enroll_list_display }}</td>
+                        <td class="w-100">{{ event.get_participants_enroll_state_display }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Začíná:</td>
@@ -44,6 +44,15 @@
                         <td class="w-100">
                             {% for weekday in event.weekdays_list %}
                                 {% include 'trainings/components/weekday.html' with event=event weekday=weekday %}
+                                {% if not forloop.last %} <br> {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Kapacita:</td>
+                        <td class="w-100">
+                            {% for weekday in event.weekdays_list %}
+                                {% include 'trainings/detail_components/capacity.html' with event=event weekday=weekday %}
                                 {% if not forloop.last %} <br> {% endif %}
                             {% endfor %}
                         </td>

@@ -3,9 +3,10 @@ from datetime import datetime
 from django.db.models import Q
 from django.forms import ChoiceField
 from django.forms import ModelForm
+from django.utils import timezone
 from django_select2.forms import Select2Widget
 
-from events.models import EventPersonTypeConstraint
+from events.models import EventPersonTypeConstraint, ParticipantEnrollment
 from vzs.widgets import DatePickerWithIcon
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
@@ -21,13 +22,13 @@ class EventForm(ModelForm):
             "location",
             "date_start",
             "date_end",
-            "participants_enroll_list",
+            "participants_enroll_state",
         ]
         widgets = {
             "category": Select2Widget(),
             "date_start": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
             "date_end": DatePickerWithIcon(attrs={"onchange": "dateChanged()"}),
-            "participants_enroll_list": Select2Widget(),
+            "participants_enroll_state": Select2Widget(),
         }
 
 
@@ -79,7 +80,7 @@ class AllowedPersonTypeForm(ModelForm):
         return instance
 
 
-class EventParticipantEnrollmentForm(ModelForm):
+class ParticipantEnrollmentForm(ModelForm):
     class Meta:
         fields = ["person", "state"]
         widgets = {
@@ -116,8 +117,37 @@ class EventParticipantEnrollmentForm(ModelForm):
         if instance.id is not None:
             instance.person = self.person
         else:
-            instance.created_datetime = datetime.now()
+            instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
 
+        if commit:
+            instance.save()
+        return instance
+
+
+class EnrollMyselfParticipantForm(ModelForm):
+    class Meta:
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        self.person = kwargs.pop("request").active_person
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.person is None:
+            self.add_error(None, "Není přihlášena žádná osoba")
+            return
+        if not self.event.does_participant_satisfy_requirements(self.person):
+            self.add_error(
+                None,
+                f"Nejsou splněny požadavky kladené na účastníky události",
+            )
+        return self.cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
+        instance.person = self.person
         if commit:
             instance.save()
         return instance

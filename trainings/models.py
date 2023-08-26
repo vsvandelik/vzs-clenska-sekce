@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -63,11 +64,7 @@ class Training(Event):
     ne_to = models.TimeField(_("Do*"), null=True, blank=True)
 
     def weekly_occurs_count(self):
-        count = 0
-        for day in days_shortcut_list():
-            if getattr(self, f"{day}_from") is not None:
-                count += 1
-        return count
+        return len(self.weekdays_list())
 
     def weekdays_list(self):
         days = days_shortcut_list()
@@ -76,6 +73,13 @@ class Training(Event):
             if getattr(self, f"{days[i]}_from") is not None:
                 output.append(i)
         return output
+
+    def free_weekdays_list(self):
+        return [
+            weekday
+            for weekday in self.weekdays_list()
+            if self.has_weekday_free_spot(weekday)
+        ]
 
     def weekdays_shortcut_list(self):
         return map(weekday_2_day_shortcut, self.weekdays_list())
@@ -88,6 +92,66 @@ class Training(Event):
 
     def replaces_training_list(self):
         pass  # TODO
+
+    def has_free_spot(self):
+        if not any(map(self.has_weekday_free_spot, self.weekdays_list())):
+            return False
+        return True
+
+    def can_participant_unenroll(self, person):
+        if not super().can_participant_unenroll(person):
+            return False
+
+        enrollment = self.get_participant_enrollment(person)
+        for transaction in enrollment.transactions.all():
+            if transaction.is_settled:
+                return False
+
+        return True
+
+    def get_participant_enrollment(self, person):
+        if person is None:
+            return None
+        try:
+            return person.trainingparticipantenrollment_set.get(training=self)
+        except TrainingParticipantEnrollment.DoesNotExist:
+            return None
+
+    def enrollments_by_Q_weekday(self, condition, weekday):
+        return self.trainingparticipantenrollment_set.filter(
+            condition & Q(weekdays__weekday=weekday)
+        )
+
+    def enrollments_by_Q(self, condition):
+        return self.trainingparticipantenrollment_set.filter(condition)
+
+    def approved_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.APPROVED), weekday
+        )
+
+    def substitute_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.SUBSTITUTE), weekday
+        )
+
+    def all_possible_enrollments_by_weekday(self, weekday):
+        return self.enrollments_by_Q_weekday(
+            Q(state=ParticipantEnrollment.State.APPROVED)
+            | Q(state=ParticipantEnrollment.State.SUBSTITUTE),
+            weekday,
+        )
+
+    def has_weekday_free_spot(self, weekday):
+        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+            enrollments_length = self.approved_enrollments_by_weekday(weekday).count()
+        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
+            enrollments_length = self.all_possible_enrollments_by_weekday(
+                weekday
+            ).count()
+        else:
+            raise NotImplementedError
+        return enrollments_length < self.capacity
 
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
@@ -126,18 +190,14 @@ class Training(Event):
             i += 1
         return weekdays
 
-    def enrollments_by_state(self, state):
-        output = []
-        for enrolled_participant in self.enrolled_participants.all():
-            enrollment = enrolled_participant.trainingparticipantenrollment_set.get(
-                training=self
-            )
-            if enrollment.state == state:
-                output.append(enrollment)
-        return output
-
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def does_person_attends_training_of_category(person, category):
+        return person.trainingparticipantenrollment_set.filter(
+            training__category=category, state=ParticipantEnrollment.State.APPROVED
+        )
 
 
 class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
@@ -241,6 +301,9 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
     )
     transactions = models.ManyToManyField("transactions.Transaction")
 
+    class Meta:
+        unique_together = ["training", "person"]
+
     @property
     def event(self):
         return self.training
@@ -252,7 +315,7 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
 
 class TrainingWeekdays(models.Model):
     weekday = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(6)]
+        unique=True, validators=[MinValueValidator(0), MaxValueValidator(6)]
     )
 
     @staticmethod
