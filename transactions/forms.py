@@ -5,6 +5,7 @@ from crispy_forms.layout import Submit, Layout, Div, Row, Column
 from django import forms
 from django.forms import ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2Widget
 
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
@@ -239,6 +240,7 @@ class TransactionFilterForm(forms.Form):
         label=_("Hromadná transakce"),
         queryset=BulkTransaction.objects.all(),
         required=False,
+        widget=Select2Widget,
     )
 
     def __init__(self, *args, **kwargs):
@@ -246,6 +248,7 @@ class TransactionFilterForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_method = "GET"
         self.helper.form_id = "transactions-filter-form"
+        self.helper.include_media = False
         self.helper.layout = Layout(
             Div(
                 Div(
