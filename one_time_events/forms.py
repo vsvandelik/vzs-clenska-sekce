@@ -277,12 +277,14 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
 
         instance.one_time_event = self.event
         instance.agreed_participation_fee = fee
-        instance.state = ParticipantEnrollment.State.SUBSTITUTE
+
         if (
             self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
             and self.event.can_person_enroll_as_participant(self.person)
         ):
             instance.state = ParticipantEnrollment.State.APPROVED
+        else:
+            instance.state = ParticipantEnrollment.State.SUBSTITUTE
 
         if commit:
             instance.save()
