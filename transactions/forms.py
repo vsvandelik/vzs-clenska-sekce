@@ -5,6 +5,7 @@ from crispy_forms.layout import Submit, Layout, Div, Row, Column
 from django import forms
 from django.forms import ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2Widget
 
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
@@ -191,7 +192,8 @@ class TransactionCreateBulkConfirmForm(forms.Form):
         return cleaned_data
 
     def create_transactions(self):
-        bulk_transaction = BulkTransaction(reason=self.reason).save()
+        bulk_transaction = BulkTransaction(reason=self.reason)
+        bulk_transaction.save()
 
         for transaction in self.prepared_transactions:
             transaction.bulk_transaction = bulk_transaction
@@ -234,12 +236,19 @@ class TransactionFilterForm(forms.Form):
     amount_to = forms.IntegerField(label=_("Suma do"), required=False, min_value=1)
     date_due_from = forms.DateField(label=_("Datum splatnosti od"), required=False)
     date_due_to = forms.DateField(label=_("Datum splatnosti do"), required=False)
+    bulk_transaction = forms.ModelChoiceField(
+        label=_("Hromadná transakce"),
+        queryset=BulkTransaction.objects.all(),
+        required=False,
+        widget=Select2Widget,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "GET"
         self.helper.form_id = "transactions-filter-form"
+        self.helper.include_media = False
         self.helper.layout = Layout(
             Div(
                 Div(
@@ -250,10 +259,11 @@ class TransactionFilterForm(forms.Form):
                     css_class="row",
                 ),
                 Div(
-                    Div("amount_from", css_class="col-md-3"),
-                    Div("amount_to", css_class="col-md-3"),
-                    Div("date_due_from", css_class="col-md-3"),
-                    Div("date_due_to", css_class="col-md-3"),
+                    Div("amount_from", css_class="col-md-2"),
+                    Div("amount_to", css_class="col-md-2"),
+                    Div("date_due_from", css_class="col-md-2"),
+                    Div("date_due_to", css_class="col-md-2"),
+                    Div("bulk_transaction", css_class="col-md-4"),
                     css_class="row",
                 ),
                 Div(

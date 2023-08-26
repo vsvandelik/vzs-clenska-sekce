@@ -13,6 +13,9 @@ from vzs import models as vzs_models
 class BulkTransaction(models.Model):
     reason = models.CharField(_("Popis transakce"), max_length=150)
 
+    def __str__(self):
+        return self.reason
+
 
 class Transaction(vzs_models.ExportableCSVMixin, models.Model):
     class Meta:

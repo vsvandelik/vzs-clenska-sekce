@@ -1,17 +1,14 @@
-from .models import Transaction, FioTransaction
-
-from vzs import settings
+import zoneinfo
 
 from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
-from django.utils import timezone
 from django.db.models import Q
 from django.template.loader import render_to_string
-
+from django.utils import timezone
 from fiobank import FioBank
 
-import zoneinfo
-
+from vzs import settings
+from .models import Transaction, FioTransaction
 
 _fio_client = FioBank(settings.FIO_TOKEN)
 
@@ -105,12 +102,16 @@ def parse_transactions_filter_queryset(cleaned_data, transactions):
     amount_to = cleaned_data.get("amount_to")
     date_due_from = cleaned_data.get("date_due_from")
     date_due_to = cleaned_data.get("date_due_to")
+    bulk_transaction = cleaned_data.get("bulk_transaction")
 
     if person_name:
         transactions = transactions.filter(
             Q(person__first_name__icontains=person_name)
             | Q(person__last_name__icontains=person_name)
         )
+
+    if reason:
+        transactions = transactions.filter(reason__icontains=reason)
 
     if transaction_type:
         query_expression = (
@@ -136,6 +137,9 @@ def parse_transactions_filter_queryset(cleaned_data, transactions):
 
     if date_due_to:
         transactions = transactions.filter(date_due__lte=date_due_to)
+
+    if bulk_transaction:
+        transactions = transactions.filter(bulk_transaction=bulk_transaction)
 
     return transactions
 

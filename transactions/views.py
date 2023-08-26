@@ -198,7 +198,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView
     context_object_name = "transactions"
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("filter_form", self.filter_form)
+        kwargs.setdefault("form", self.filter_form)
         kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
         return super().get_context_data(**kwargs)
