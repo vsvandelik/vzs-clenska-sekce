@@ -138,7 +138,6 @@ def parse_transactions_filter_queryset(cleaned_data, transactions):
     if date_due_to:
         transactions = transactions.filter(date_due__lte=date_due_to)
 
-    print(bulk_transaction)
     if bulk_transaction:
         transactions = transactions.filter(bulk_transaction=bulk_transaction)
 
