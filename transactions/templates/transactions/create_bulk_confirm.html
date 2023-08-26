@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Přidat hromadnou transakci{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <form method="post">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">Potvrzení hromadné transakce</div>
+                    </div>
+                    <div class="card-body">
+                        {% crispy form %}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Přidat transakce" class="btn btn-primary" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

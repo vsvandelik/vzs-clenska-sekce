@@ -1,18 +1,16 @@
-from .models import Transaction
-from .utils import parse_transactions_filter_queryset
-
-from persons.widgets import PersonSelectWidget
-
-from vzs.widgets import DatePickerWithIcon
+import datetime
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div
-
+from crispy_forms.layout import Submit, Layout, Div, Row, Column
 from django import forms
 from django.forms import ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
 
-import datetime
+from persons.forms import PersonsFilterForm
+from persons.widgets import PersonSelectWidget
+from vzs.widgets import DatePickerWithIcon
+from .models import Transaction, BulkTransaction
+from .utils import parse_transactions_filter_queryset
 
 
 class TransactionCreateEditMixin(ModelForm):
@@ -51,6 +49,153 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.instance.person = person
+
+
+class TransactionCreateBulkForm(TransactionCreateEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._attach_person_filter_form()
+        self._prepare_transaction_form()
+
+    def _attach_person_filter_form(self):
+        person_filter_form = PersonsFilterForm()
+
+        for field_name, field in person_filter_form.fields.items():
+            self.fields[field_name] = field
+
+        self.filter_helper = FormHelper()
+        self.filter_helper.form_tag = False
+
+        # Remove submit button and background from person filter form
+        person_filter_form_layout_rows = person_filter_form.helper.layout.fields[
+            0
+        ].fields
+
+        self.filter_helper.layout = Layout(
+            person_filter_form_layout_rows[0],
+            person_filter_form_layout_rows[1],
+            person_filter_form_layout_rows[2],
+        )
+
+    def _prepare_transaction_form(self):
+        self.transaction_helper = FormHelper()
+        self.transaction_helper.form_tag = False
+        self.transaction_helper.layout = Layout(
+            "amount", "reason", "date_due", "is_reward"
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data = PersonsFilterForm.clean_with_given_values(cleaned_data)
+
+        return cleaned_data
+
+
+class Label:
+    def __init__(self, text=None):
+        self.text = text
+
+    def render(self, form, context, template_pack, extra_context=None, **kwargs):
+        if not self.text:
+            return ""
+
+        return f"<label class='col-form-label'>{self.text}</label>"
+
+
+class TransactionCreateBulkConfirmForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        persons_transactions = kwargs.pop("persons_transactions", [])
+        self.reason = kwargs.pop("reason", [])
+
+        super().__init__(*args, **kwargs)
+
+        layout_divs = []
+        self._add_fields_by_persons_transactions_list(persons_transactions, layout_divs)
+        self._prepare_form_helper(layout_divs)
+
+        self.persons = [transaction["person"] for transaction in persons_transactions]
+        self.prepared_transactions = []
+
+    def _add_fields_by_persons_transactions_list(
+        self, persons_transactions, layout_divs
+    ):
+        for transaction in persons_transactions:
+            person = transaction["person"]
+            field_name_amount = f"transactions-{person.id}-amount"
+            field_name_date_due = f"transactions-{person.id}-date_due"
+
+            self.fields[field_name_amount] = forms.IntegerField(
+                required=False, initial=transaction["amount"]
+            )
+            self.fields[field_name_date_due] = forms.DateField(
+                required=False,
+                initial=transaction["date_due"],
+                widget=DatePickerWithIcon(),
+            )
+
+            layout_divs.append(
+                Row(
+                    Column(Label(person), css_class="col-md-4"),
+                    Column(field_name_amount, css_class="col-md-4"),
+                    Column(field_name_date_due, css_class="col-md-4"),
+                    css_class="row",
+                ),
+            )
+
+    def _prepare_form_helper(self, layout_divs):
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Row(
+                Column(Label(), css_class="col-md-4"),
+                Column(Label(_("Částka")), css_class="col-md-4 text-center"),
+                Column(Label(_("Datum splatnosti")), css_class="col-md-4 text-center"),
+                css_class="row",
+            ),
+            *layout_divs,
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for person in self.persons:
+            field_name_amount = f"transactions-{person.id}-amount"
+            field_name_date_due = f"transactions-{person.id}-date_due"
+
+            amount = cleaned_data.get(field_name_amount)
+            date_due = cleaned_data.get(field_name_date_due)
+
+            if not amount or amount == 0:
+                cleaned_data.pop(field_name_amount)
+                cleaned_data.pop(field_name_date_due)
+            elif not date_due:
+                self.add_error(
+                    field_name_date_due, _("Datum splatnosti musí být vyplněno.")
+                )
+            elif date_due < datetime.date.today():
+                self.add_error(
+                    field_name_date_due, _("Datum splatnosti nemůže být v minulosti.")
+                )
+            else:
+                self.prepared_transactions.append(
+                    Transaction(
+                        person=person,
+                        amount=amount,
+                        reason=self.reason,
+                        date_due=date_due,
+                    )
+                )
+
+        return cleaned_data
+
+    def create_transactions(self):
+        bulk_transaction = BulkTransaction(reason=self.reason).save()
+
+        for transaction in self.prepared_transactions:
+            transaction.bulk_transaction = bulk_transaction
+            transaction.save()
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):

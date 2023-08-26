@@ -1,22 +1,26 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.exceptions import ImproperlyConfigured
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
-from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
-from django.http import HttpResponseRedirect
 
 from persons.models import Person
+from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
+from vzs.utils import export_queryset_csv, reverse_with_get_params
 from .forms import (
     TransactionEditForm,
     TransactionCreateForm,
     TransactionCreateFromPersonForm,
     TransactionFilterForm,
+    TransactionCreateBulkForm,
+    TransactionCreateBulkConfirmForm,
 )
 from .models import Transaction
-from .utils import parse_transactions_filter_queryset, send_email_transactions
-from vzs.utils import export_queryset_csv
+from .utils import send_email_transactions
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -206,6 +210,82 @@ class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView
 
     def get_queryset(self):
         return self.filter_form.process_filter().order_by("date_due")
+
+
+class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.FormView):
+    template_name = "transactions/create_bulk.html"
+    form_class = TransactionCreateBulkForm
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.confirm_get_params = None
+
+    def get_success_url(self):
+        return reverse_with_get_params(
+            "transactions:add-bulk-confirm", get=self.confirm_get_params
+        )
+
+    def form_valid(self, form):
+        self.confirm_get_params = {
+            k: v
+            for k, v in form.cleaned_data.items()
+            if v not in [None, ""] and k != "csrfmiddlewaretoken"
+        }
+
+        return super().form_valid(form)
+
+
+class TransactionCreateBulkConfirmView(
+    SuccessMessageMixin, TransactionEditPermissionMixin, generic.edit.FormView
+):
+    template_name = "transactions/create_bulk_confirm.html"
+    form_class = TransactionCreateBulkConfirmForm
+    success_url = reverse_lazy("transactions:index")
+    success_message = _("Hromadná transakce byla přidána")
+
+    def dispatch(self, request, *args, **kwargs):
+        required_params = ["amount", "date_due", "reason"]
+        get_params = self.request.GET
+
+        if not all(param in get_params for param in required_params):
+            return HttpResponseBadRequest("Missing parameters")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        get_params = self.request.GET
+
+        persons_transactions = self._create_person_transactions(get_params)
+        kwargs.setdefault("persons_transactions", persons_transactions)
+        kwargs.setdefault("reason", get_params.get("reason", ""))
+
+        return kwargs
+
+    def _create_person_transactions(self, params):
+        selected_persons = parse_persons_filter_queryset(
+            params,
+            PersonPermissionMixin.get_queryset_by_permission(
+                self.request.user, Person.objects.with_age()
+            ),
+        )
+
+        persons_transactions = []
+        for person in selected_persons:
+            persons_transactions.append(
+                {
+                    "person": person,
+                    "amount": params["amount"],
+                    "date_due": params["date_due"],
+                }
+            )
+
+        return persons_transactions
+
+    def form_valid(self, form):
+        form.create_transactions()
+        return super().form_valid(form)
 
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):

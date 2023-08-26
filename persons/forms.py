@@ -193,11 +193,17 @@ class PersonsFilterForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        return self.clean_with_given_values(cleaned_data)
+
+    @staticmethod
+    def clean_with_given_values(cleaned_data):
         age_from = cleaned_data.get("age_from")
         age_to = cleaned_data.get("age_to")
 
         if age_from and age_to and age_from > age_to:
             raise ValidationError(_("Věk od musí být menší nebo roven věku do."))
+
+        return cleaned_data
 
 
 class PersonHourlyRateForm(forms.Form):

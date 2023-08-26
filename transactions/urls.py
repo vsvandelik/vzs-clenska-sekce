@@ -21,6 +21,16 @@ urlpatterns = [
         name="send-email",
     ),
     path(
+        "pridat-hromadne/",
+        views.TransactionCreateBulkView.as_view(),
+        name="add-bulk",
+    ),
+    path(
+        "pridat-hromadne/potvrdit/",
+        views.TransactionCreateBulkConfirmView.as_view(),
+        name="add-bulk-confirm",
+    ),
+    path(
         "pridat/",
         views.TransactionCreateView.as_view(),
         name="add",
