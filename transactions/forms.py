@@ -191,7 +191,8 @@ class TransactionCreateBulkConfirmForm(forms.Form):
         return cleaned_data
 
     def create_transactions(self):
-        bulk_transaction = BulkTransaction(reason=self.reason).save()
+        bulk_transaction = BulkTransaction(reason=self.reason)
+        bulk_transaction.save()
 
         for transaction in self.prepared_transactions:
             transaction.bulk_transaction = bulk_transaction
