@@ -342,7 +342,7 @@ class TrainingReplaceableForm(forms.ModelForm):
 
 
 class TrainingWeekdaysSelectionMixin:
-    def check_conv_weekdays(self):
+    def clean_parse_weekdays(self):
         if (
             "weekdays" not in self.cleaned_data
             or len(self.cleaned_data["weekdays"]) == 0
@@ -390,7 +390,7 @@ class TrainingParticipantEnrollmentForm(
     def clean(self):
         self.cleaned_data = super().clean()
         if self.cleaned_data["state"] != ParticipantEnrollment.State.REJECTED:
-            super().check_conv_weekdays()
+            super().clean_parse_weekdays()
         else:
             self.cleaned_data["weekdays"] = []
         return self.cleaned_data
@@ -423,7 +423,7 @@ class TrainingEnrollMyselfParticipantForm(
 
     def clean(self):
         self.cleaned_data = super().clean()
-        super().check_conv_weekdays()
+        super().clean_parse_weekdays()
         return self.cleaned_data
 
     def save(self, commit=True):
