@@ -247,11 +247,12 @@ class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
                 instance.transaction = None
 
         elif instance.transaction is None:
-            instance.transaction = (
-                OneTimeEventParticipantEnrollment.create_attached_transaction(
-                    instance, self.event
+            if instance.agreed_participation_fee:
+                instance.transaction = (
+                    OneTimeEventParticipantEnrollment.create_attached_transaction(
+                        instance, self.event
+                    )
                 )
-            )
         elif not instance.transaction.is_settled:
             instance.transaction.amount = -instance.agreed_participation_fee
         else:
@@ -286,12 +287,18 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
         else:
             instance.state = ParticipantEnrollment.State.SUBSTITUTE
 
-        if self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+        if (
+            self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
+            and instance.agreed_participation_fee
+        ):
             transaction = OneTimeEventParticipantEnrollment.create_attached_transaction(
                 instance, self.event
             )
             if commit:
                 transaction.save()
                 instance.transaction = transaction
-                instance.save()
+
+        if commit:
+            instance.save()
+
         return instance
