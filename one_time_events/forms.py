@@ -286,17 +286,11 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
         else:
             instance.state = ParticipantEnrollment.State.SUBSTITUTE
 
-        if commit:
-            instance.save()
-            if (
-                self.event.participants_enroll_state
-                == ParticipantEnrollment.State.APPROVED
-            ):
-                transaction = (
-                    OneTimeEventParticipantEnrollment.create_attached_transaction(
-                        instance, self.event
-                    )
-                )
+        if self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+            transaction = OneTimeEventParticipantEnrollment.create_attached_transaction(
+                instance, self.event
+            )
+            if commit:
                 transaction.save()
                 instance.transaction = transaction
                 instance.save()
