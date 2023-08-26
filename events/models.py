@@ -143,7 +143,7 @@ class Event(PolymorphicModel):
         if self.group is not None and not person.groups.contains(self.group):
             return False
         if (
-            self.allowed_person_types.all().count() > 0
+            self.allowed_person_types.exists()
             and not self.allowed_person_types.contains(
                 EventPersonTypeConstraint.get_or_create(person.person_type)
             )
