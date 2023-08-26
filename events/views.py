@@ -25,7 +25,7 @@ class EventMixin:
 
 
 class RedirectToEventDetail:
-    def _impl(self):
+    def get_redirect_viewname_id(self):
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
         elif hasattr(self, "object"):
@@ -53,14 +53,14 @@ class RedirectToEventDetail:
 
 class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetail):
     def get_success_url(self):
-        viewname, id = super()._impl()
+        viewname, id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[id])
 
 
 class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
     def form_invalid(self, form):
         super().form_invalid(form)
-        viewname, id = super()._impl()
+        viewname, id = super().get_redirect_viewname_id()
         return redirect(viewname, pk=id)
 
 
