@@ -219,6 +219,19 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.confirm_get_params = None
+        self.already_filtered_get_params = None
+
+    def dispatch(self, request, is_already_filtered=False, *args, **kwargs):
+        if is_already_filtered:
+            self.already_filtered_get_params = request.GET
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        if self.already_filtered_get_params is not None:
+            kwargs.setdefault("is_already_filtered", True)
+
+        return super().get_context_data(**kwargs)
 
     def get_success_url(self):
         return reverse_with_get_params(
@@ -226,11 +239,19 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
         )
 
     def form_valid(self, form):
-        self.confirm_get_params = {
-            k: v
-            for k, v in form.cleaned_data.items()
-            if v not in [None, ""] and k != "csrfmiddlewaretoken"
-        }
+        if self.already_filtered_get_params is None:
+            self.confirm_get_params = {
+                k: v
+                for k, v in form.cleaned_data.items()
+                if v not in [None, ""] and k != "csrfmiddlewaretoken"
+            }
+        else:
+            self.confirm_get_params = {
+                "amount": form.cleaned_data["amount"],
+                "reason": form.cleaned_data["reason"],
+                "date_due": form.cleaned_data["date_due"],
+                **self.already_filtered_get_params.dict(),
+            }
 
         return super().form_valid(form)
 

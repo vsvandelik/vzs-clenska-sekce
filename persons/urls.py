@@ -35,6 +35,12 @@ urlpatterns = [
         views.SendEmailToSelectedPersonsView.as_view(),
         name="send-mail",
     ),
+    path(
+        "pridat-transakci/",
+        transactions_views.TransactionCreateBulkView.as_view(),
+        name="add-bulk-transaction",
+        kwargs={"is_already_filtered": True},
+    ),
     path("exportovat/", views.ExportSelectedPersonsView.as_view(), name="export"),
     path("pridat/", views.PersonCreateView.as_view(), name="add"),
     path("<int:pk>/", views.PersonDetailView.as_view(), name="detail"),
