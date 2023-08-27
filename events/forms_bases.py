@@ -10,6 +10,7 @@ from events.models import (
     EventPersonTypeConstraint,
     OrganizerOccurrenceAssignment,
     EventPositionAssignment,
+    ParticipantEnrollment,
 )
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
@@ -84,7 +85,16 @@ class AllowedPersonTypeForm(ModelForm):
         return instance
 
 
-class ParticipantEnrollmentForm(ModelForm):
+class ParticipantEnrollmentUpdateAttendanceMixin:
+    def update_attendance(self, instance):
+        for occurrence in instance.event.eventoccurrence_set.all():
+            if instance.state == ParticipantEnrollment.State.APPROVED:
+                occurrence.attending_participants.add(instance.person)
+            else:
+                occurrence.attending_participants.remove(instance.person)
+
+
+class ParticipantEnrollmentForm(ParticipantEnrollmentUpdateAttendanceMixin, ModelForm):
     class Meta:
         fields = ["person", "state"]
         widgets = {
@@ -123,12 +133,16 @@ class ParticipantEnrollmentForm(ModelForm):
         else:
             instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
 
+        super().update_attendance(instance)
+
         if commit:
             instance.save()
         return instance
 
 
-class EnrollMyselfParticipantForm(ModelForm):
+class EnrollMyselfParticipantForm(
+    ParticipantEnrollmentUpdateAttendanceMixin, ModelForm
+):
     class Meta:
         fields = []
 
@@ -152,6 +166,9 @@ class EnrollMyselfParticipantForm(ModelForm):
         instance = super().save(False)
         instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
         instance.person = self.person
+
+        super().update_attendance(instance)
+
         if commit:
             instance.save()
         return instance

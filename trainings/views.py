@@ -15,9 +15,6 @@ from events.views import (
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
     EnrollMyselfParticipantMixin,
-    OrganizerAssignmentMixin,
-    OrganizerAssignmentCreateMixin,
-    OrganizerAssignmentUpdateMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
