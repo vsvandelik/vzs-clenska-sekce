@@ -143,15 +143,22 @@ class Training(Event):
         )
 
     def has_weekday_free_spot(self, weekday):
-        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
-            enrollments_length = self.approved_enrollments_by_weekday(weekday).count()
-        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
-            enrollments_length = self.all_possible_enrollments_by_weekday(
-                weekday
-            ).count()
-        else:
-            raise NotImplementedError
-        return enrollments_length < self.capacity
+        possibly_free = super().has_free_spot()
+        if not possibly_free:
+            if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+                enrollments_length = self.approved_enrollments_by_weekday(
+                    weekday
+                ).count()
+            elif (
+                self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE
+            ):
+                enrollments_length = self.all_possible_enrollments_by_weekday(
+                    weekday
+                ).count()
+            else:
+                raise NotImplementedError
+            return enrollments_length < self.capacity
+        return True
 
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)

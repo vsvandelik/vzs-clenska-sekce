@@ -59,11 +59,16 @@ class OneTimeEvent(Event):
         return True
 
     def has_free_spot(self):
-        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
-            return len(self.approved_participants()) < self.capacity
-        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
-            return len(self.all_possible_participants()) < self.capacity
-        raise NotImplementedError
+        possibly_free = super().has_free_spot()
+        if not possibly_free:
+            if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+                return len(self.approved_participants()) < self.capacity
+            elif (
+                self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE
+            ):
+                return len(self.all_possible_participants()) < self.capacity
+            raise NotImplementedError
+        return True
 
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
