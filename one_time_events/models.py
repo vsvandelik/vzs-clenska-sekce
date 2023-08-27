@@ -130,6 +130,7 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
         transaction = OneTimeEventParticipantEnrollment.objects.get(
             pk=self.pk
         ).transaction
+
         super().delete()
         if transaction is not None and not transaction.is_settled:
             transaction.delete()

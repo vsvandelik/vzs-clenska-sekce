@@ -51,6 +51,11 @@ class ParticipantEnrollment(PolymorphicModel):
     created_datetime = models.DateTimeField()
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
+    def delete(self):
+        for occurrence in self.event.eventoccurrence_set.all():
+            occurrence.attending_participants.remove(self.person)
+        return super().delete()
+
 
 class Event(PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
