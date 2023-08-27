@@ -6,10 +6,10 @@ from django.forms import ModelForm
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
-from events.models import EventPersonTypeConstraint, ParticipantEnrollment
-from vzs.widgets import DatePickerWithIcon
+from events.models import EventPersonTypeConstraint
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from vzs.widgets import DatePickerWithIcon
 
 
 class EventForm(ModelForm):
