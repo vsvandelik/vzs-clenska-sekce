@@ -15,6 +15,7 @@ from events.views import (
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
     EnrollMyselfParticipantMixin,
+    InsertEventIntoModelFormKwargsMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -22,12 +23,13 @@ from .forms import (
     TrainingReplaceableForm,
     TrainingParticipantEnrollmentForm,
     TrainingEnrollMyselfParticipantForm,
-    TrainingOrganizerAssignmentForm,
+    CoachAssignmentForm,
 )
 from .models import (
     Training,
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
+    CoachPositionAssignment,
 )
 
 
@@ -143,17 +145,32 @@ class TrainingEnrollMyselfParticipantView(
         return super().get_context_data(**kwargs)
 
 
-# class TrainingOrganizerAssignmentCreateUpdateMixin(OrganizerAssignmentMixin):
-#     form_class = TrainingOrganizerAssignmentForm
-#
-#
-# class TrainingOrganizerAssignmentCreateView(
-#     TrainingOrganizerAssignmentCreateUpdateMixin, OrganizerAssignmentCreateMixin, generic.CreateView
-# ):
-#     template_name = "trainings/create_organizer_assignment.html"
-#
-#
-# class TrainingOrganizerAssignmentUpdateView(
-#     TrainingOrganizerAssignmentCreateUpdateMixin, OrganizerAssignmentUpdateMixin, generic.UpdateView
-# ):
-#     template_name = "trainings/edit_organizer_assignment.html"
+class CoachAssignmentCreateUpdateMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+):
+    model = CoachPositionAssignment
+    context_object_name = "coach_assignment"
+    form_class = CoachAssignmentForm
+
+
+class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
+    template_name = "trainings/create_coach_assignment.html"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.UpdateView):
+    template_name = "trainings/edit_coach_assignment.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["person"] = self.object.person
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)

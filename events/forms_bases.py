@@ -176,6 +176,7 @@ class EnrollMyselfParticipantForm(
 
 class OrganizerAssignmentForm(ModelForm):
     class Meta:
+        model = OrganizerOccurrenceAssignment
         fields = ["position", "person"]
         widgets = {
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
@@ -188,10 +189,10 @@ class OrganizerAssignmentForm(ModelForm):
 
     def save(self, commit=True):
         instance = super().save(False)
-        # instance._state.adding = True
-        # for occurrence in self.event.eventoccurrence_set.all():
-        #     instance.id = None
-        #     instance.occurrence = occurrence
-        #     #if commit:
-        #         #instance.save()
-        # return instance
+        instance._state.adding = True
+        for occurrence in self.event.eventoccurrence_set.all():
+            instance.id = None
+            instance.occurrence = occurrence
+            if commit:
+                instance.save()
+        return instance

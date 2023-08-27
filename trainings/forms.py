@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q, F, Count
+from django.forms import ModelForm
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -11,7 +12,11 @@ from events.forms_bases import (
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
 )
-from events.models import EventOrOccurrenceState, ParticipantEnrollment
+from events.models import (
+    EventOrOccurrenceState,
+    ParticipantEnrollment,
+    OrganizerOccurrenceAssignment,
+)
 from events.utils import parse_czech_date
 from trainings.utils import (
     weekday_2_day_shortcut,
@@ -25,7 +30,7 @@ from .models import (
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
     TrainingWeekdays,
-    TrainingCoachPositionAssignment,
+    CoachPositionAssignment,
 )
 
 
@@ -448,9 +453,10 @@ class TrainingEnrollMyselfParticipantForm(
         return instance
 
 
-class TrainingOrganizerAssignmentForm(OrganizerAssignmentForm):
+class CoachAssignmentForm(ModelForm):
     class Meta(OrganizerAssignmentForm.Meta):
-        pass
+        fields = ["person", "position"]
+        model = CoachPositionAssignment
 
     main_coach = forms.BooleanField(
         label="Garantující trenér",
@@ -459,16 +465,42 @@ class TrainingOrganizerAssignmentForm(OrganizerAssignmentForm):
     )
 
     def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
+        if self.instance.id is not None and self.event.main_coach == self.person:
+            self.fields["main_coach"].initial = True
         # self.position_assignment_queryset = self.position_assignment_queryset.annotate(organizers=Count('organizerpositionassignment')).filter(organizers__lte=F('count'))
         # self.fields['position_assignment'].queryset = self.position_assignment_queryset
 
     def save(self, commit=True):
-        instance = super().save(commit)
-        # coach_assignment = TrainingCoachPositionAssignment(
-        #     person=instance.person,
-        #     training=self.event,
-        #     position=instance.position
-        # )
-        # if commit:
-        #     coach_assignment.save()
+        instance = super().save(False)
+        instance.training = self.event
+        if instance.id is not None:
+            instance.person = self.person
+
+        if self.cleaned_data["main_coach"]:
+            instance.training.main_coach = instance.person
+        elif instance.person == instance.training.main_coach:
+            instance.training.main_coach = None
+
+        for occurrence in self.event.eventoccurrence_set.all():
+            (
+                organizer_assignment,
+                _,
+            ) = OrganizerOccurrenceAssignment.objects.get_or_create(
+                occurrence=occurrence,
+                person=instance.person,
+                defaults={
+                    "position": instance.position,
+                    "person": instance.person,
+                    "occurrence": occurrence,
+                },
+            )
+            if commit:
+                organizer_assignment.save()
+
+        if commit:
+            instance.save()
+            instance.training.save()
+        return instance

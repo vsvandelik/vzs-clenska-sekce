@@ -32,7 +32,7 @@ class Training(Event):
 
     coaches = models.ManyToManyField(
         "persons.Person",
-        through="trainings.TrainingCoachPositionAssignment",
+        through="trainings.CoachPositionAssignment",
         related_name="training_coach_position_assignment_set",
     )
 
@@ -208,10 +208,25 @@ class Training(Event):
         )
 
 
-class TrainingCoachPositionAssignment(models.Model):
+class CoachPositionAssignment(models.Model):
     person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
     position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ["person", "training", "position"]
+
+    def delete(self, using=None, keep_parents=False):
+        self.training.coaches.remove(self.person)
+
+        for occurrence in self.training.trainingoccurrences_set.all():
+            occurrence.missing_organizers.remove(self.person)
+            occurrence.organizers.remove(self.person)
+
+        if self.training.main_coach == self.person:
+            self.training.main_coach = None
+
+        return super().delete(using, keep_parents)
 
 
 class TrainingReplaceabilityForParticipants(models.Model):
