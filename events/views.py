@@ -2,6 +2,7 @@ from django.urls import reverse_lazy
 from .models import (
     Event,
     EventPositionAssignment,
+    OrganizerOccurrenceAssignment,
 )
 from persons.models import Person
 from django.views import generic
@@ -263,3 +264,25 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+
+# class OrganizerAssignmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
+#     model = OrganizerOccurrenceAssignment
+#     context_object_name = 'organizer_assignment'
+#
+#
+# class OrganizerAssignmentCreateMixin(OrganizerAssignmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView):
+#     def get_context_data(self, **kwargs):
+#         kwargs.setdefault("event", self.event)
+#         return super().get_context_data(**kwargs)
+#
+#
+# class OrganizerAssignmentUpdateMixin(OrganizerAssignmentMixin, generic.UpdateView):
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         kwargs["person"] = self.object.person
+#         return kwargs
+#
+#     def get_context_data(self, **kwargs):
+#         kwargs.setdefault("event", self.object.position_assignment.event)
+#         return super().get_context_data(**kwargs)

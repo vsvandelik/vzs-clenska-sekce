@@ -11,6 +11,7 @@ from events.views import (
     ParticipantEnrollmentDeleteMixin,
     EnrollMyselfParticipantMixin,
     RedirectToEventDetailOnFailureMixin,
+    OrganizerAssignmentMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -19,6 +20,7 @@ from .forms import (
     TrainingCategoryForm,
     OneTimeEventParticipantEnrollmentForm,
     OneTimeEventEnrollMyselfParticipantForm,
+    OneTimeEventOrganizerAssignmentForm,
 )
 from .models import OneTimeEventParticipantEnrollment
 

@@ -58,10 +58,6 @@
                         {% include 'one_time_events/detail_components/participants.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=event.rejected_enrollments %}
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'one_time_events:create-participant-enrollment' event.id %}"
-                       class="btn-primary btn">Přidat</a>
-                </div>
             </div>
         </div>
     </div>
@@ -84,6 +80,7 @@
         simpleOrderableTableEnable('participants-substitute-table', [0, 1])
         simpleOrderableTableEnable('participants-rejected-table', [0, 1])
         simpleOrderableTableEnable('participants-approved-table', [0, 1])
+        simpleOrderableTableEnable("organizers-table", [0, 1])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>

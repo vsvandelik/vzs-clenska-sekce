@@ -1,0 +1,46 @@
+{% load vzs_filters %}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Hlavní trenéři</div>
+        </div>
+        <div class="card-body">
+            <table id="organizers-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Pozice</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coaches_assignment in coaches_assignments %}
+                        <tr>
+                            <td><a href="{% url 'persons:detail' coaches_assignment.person.id %}">{{ coaches_assignment.person }}</a></td>
+                            <td>{{ coaches_assignment.position }}</td>
+                            <td>TODO</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm"
+                                       href="{% url 'trainings:edit-organizer-assignment' event.id organizer_assignment.id %}">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-organizer-assignment-modal"
+                                       data-action="{% url 'events:delete-organizer-assignment' organizer_assignment.position_assignment.event.id organizer_assignment.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a class="btn btn-primary" href="{% url 'trainings:create-organizer-assignment' event.id %}">Přidat</a>
+        </div>
+    </div>
+</div>

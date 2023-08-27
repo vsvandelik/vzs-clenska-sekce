@@ -69,6 +69,9 @@
         </div>
     </div>
     <div class="row">
+        {% include 'trainings/detail_components/organizers.html' with organizers_assignments=event.organizers_assignments %}
+    </div>
+    <div class="row">
         {% include 'trainings/detail_components/schedule.html' %}
     </div>
 
@@ -85,6 +88,7 @@
         simpleOrderableTableEnable('participants-substitute-table', [0, 1])
         simpleOrderableTableEnable('participants-rejected-table', [0, 1])
         simpleOrderableTableEnable('participants-approved-table', [0, 1])
+        simpleOrderableTableEnable("organizers-table", [0, 1])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>

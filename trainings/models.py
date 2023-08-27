@@ -8,7 +8,6 @@ from events.models import (
     Event,
     EventOccurrence,
     ParticipantEnrollment,
-    OrganizerPositionAssignment,
 )
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
 
@@ -31,10 +30,12 @@ class Training(Event):
         related_name="training_participant_enrollment_set",
     )
 
-    coaches_assignment = models.ManyToManyField(
-        "trainings.TrainingCoachPositionAssignment",
+    coaches = models.ManyToManyField(
+        "persons.Person",
+        through="trainings.TrainingCoachPositionAssignment",
         related_name="training_coach_position_assignment_set",
     )
+
     main_coach = models.ForeignKey(
         "persons.Person", null=True, on_delete=models.SET_NULL
     )
@@ -207,8 +208,10 @@ class Training(Event):
         )
 
 
-class TrainingCoachPositionAssignment(OrganizerPositionAssignment):
+class TrainingCoachPositionAssignment(models.Model):
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
+    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
 
 
 class TrainingReplaceabilityForParticipants(models.Model):
@@ -231,71 +234,10 @@ class TrainingOccurrence(EventOccurrence):
     datetime_start = models.DateTimeField(_("Začíná"))
     datetime_end = models.DateTimeField(_("Končí"))
 
-    missing_participants_excused = models.ManyToManyField(
+    missing_coaches = models.ManyToManyField(
         "persons.Person",
-        through="trainings.TrainingOccurrenceAttendanceCompensationOpportunity",
-        through_fields=("training_occurrence_excused", "person"),
-        related_name="training_occurrence_attendance_compensation_opportunity_set",
+        related_name="missing_coaches_set",
     )
-
-    missing_coaches_excused = models.ManyToManyField(
-        "persons.Person",
-        through="trainings.TrainingOneTimeCoachPosition",
-        through_fields=("training_occurrence", "coach_excused"),
-        related_name="training_one_time_coach_position_set",
-    )
-
-
-class TrainingOccurrenceAttendanceCompensationOpportunity(models.Model):
-    training_occurrence_excused = models.ForeignKey(
-        "trainings.TrainingOccurrence",
-        on_delete=models.CASCADE,
-        related_name="training_occurrence_excused",
-    )
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
-    attendance = models.CharField(max_length=11, choices=TrainingAttendance.choices)
-    training_occurrence_substitute = models.ForeignKey(
-        "trainings.TrainingOccurrence",
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="training_occurrence_substitute",
-    )
-    excuse_datetime = models.DateTimeField()
-
-    class Meta:
-        unique_together = ["training_occurrence_excused", "person"]
-        indexes = [models.Index(fields=["training_occurrence_substitute"])]
-
-
-class TrainingOneTimeCoachPositionManager(models.Manager):
-    def get_queryset(self):
-        # TODO: somehow add condition that the training_occurrence is upcoming
-        return self.get_queryset().filter(coach_substitute=None)
-
-
-class TrainingOneTimeCoachPosition(models.Model):
-    objects = models.Manager()
-    free_upcoming = TrainingOneTimeCoachPositionManager()
-
-    training_occurrence = models.ForeignKey(
-        "trainings.TrainingOccurrence", on_delete=models.CASCADE
-    )
-    coach_excused = models.ForeignKey(
-        "persons.Person", on_delete=models.CASCADE, related_name="coach_excused"
-    )
-    coach_substitute = models.ForeignKey(
-        "persons.Person",
-        null=True,
-        on_delete=models.CASCADE,
-        related_name="coach_substitute",
-    )
-    coach_substitute_attendance = models.CharField(
-        max_length=11, choices=TrainingAttendance.choices
-    )
-    excuse_datetime = models.DateTimeField()
-
-    class Meta:
-        unique_together = ["training_occurrence", "coach_excused"]
 
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):

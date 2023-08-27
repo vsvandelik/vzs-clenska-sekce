@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from django import forms
-from django.db.models import Q
+from django.db.models import Q, F, Count
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -9,6 +9,7 @@ from events.forms_bases import (
     EventForm,
     ParticipantEnrollmentForm,
     EnrollMyselfParticipantForm,
+    OrganizerAssignmentForm,
 )
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
@@ -24,6 +25,7 @@ from .models import (
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
     TrainingWeekdays,
+    TrainingCoachPositionAssignment,
 )
 
 
@@ -444,3 +446,29 @@ class TrainingEnrollMyselfParticipantForm(
             instance.save()
 
         return instance
+
+
+class TrainingOrganizerAssignmentForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
+        pass
+
+    main_coach = forms.BooleanField(
+        label="Garantující trenér",
+        required=False,
+        widget=forms.CheckboxInput(),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.position_assignment_queryset = self.position_assignment_queryset.annotate(organizers=Count('organizerpositionassignment')).filter(organizers__lte=F('count'))
+        # self.fields['position_assignment'].queryset = self.position_assignment_queryset
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+        # coach_assignment = TrainingCoachPositionAssignment(
+        #     person=instance.person,
+        #     training=self.event,
+        #     position=instance.position
+        # )
+        # if commit:
+        #     coach_assignment.save()

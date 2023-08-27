@@ -1,6 +1,5 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -8,11 +7,9 @@ from events.models import (
     EventOrOccurrenceState,
     EventOccurrence,
     ParticipantEnrollment,
-    OrganizerPositionAssignment,
 )
 from trainings.models import Training
 from transactions.models import Transaction
-from vzs import settings
 
 
 class OneTimeEvent(Event):
@@ -109,16 +106,6 @@ class OneTimeEventOccurrence(EventOccurrence):
     date = models.DateField(_("Den konání"))
     hours = models.PositiveSmallIntegerField(
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
-    )
-    organizers_assignment = models.ManyToManyField(
-        "one_time_events.OneTimeEventOccurrenceOrganizerPositionAssignment",
-        related_name="one_time_event_occurrence_organizer_position_assignment_set",
-    )
-
-
-class OneTimeEventOccurrenceOrganizerPositionAssignment(OrganizerPositionAssignment):
-    one_time_event_ocurrence = models.ForeignKey(
-        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
 
 

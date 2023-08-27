@@ -6,7 +6,11 @@ from django.forms import ModelForm
 from django.utils import timezone
 from django_select2.forms import Select2Widget
 
-from events.models import EventPersonTypeConstraint
+from events.models import (
+    EventPersonTypeConstraint,
+    OrganizerOccurrenceAssignment,
+    EventPositionAssignment,
+)
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
@@ -151,3 +155,26 @@ class EnrollMyselfParticipantForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class OrganizerAssignmentForm(ModelForm):
+    class Meta:
+        fields = ["position", "person"]
+        widgets = {
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+            "position": Select2Widget(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        # instance._state.adding = True
+        # for occurrence in self.event.eventoccurrence_set.all():
+        #     instance.id = None
+        #     instance.occurrence = occurrence
+        #     #if commit:
+        #         #instance.save()
+        # return instance

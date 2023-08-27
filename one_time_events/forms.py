@@ -5,7 +5,11 @@ from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm, EnrollMyselfParticipantForm
+from events.forms_bases import (
+    EventForm,
+    EnrollMyselfParticipantForm,
+    OrganizerAssignmentForm,
+)
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date

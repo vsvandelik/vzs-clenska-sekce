@@ -42,4 +42,14 @@ urlpatterns = [
         views.TrainingEnrollMyselfParticipantView.as_view(),
         name="enroll-myself-participant",
     ),
+    # path(
+    #     "<int:event_id>/pridat-trenera/",
+    #     views.TrainingOrganizerAssignmentCreateView.as_view(),
+    #     name="create-organizer-assignment",
+    # ),
+    # path(
+    #     "<int:event_id>/upravit-trenera/<int:pk>",
+    #     views.TrainingOrganizerAssignmentUpdateView.as_view(),
+    #     name="edit-organizer-assignment",
+    # )
 ]
