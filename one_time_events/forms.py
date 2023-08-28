@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Q, F, Count, When, Case, IntegerField
 from django.forms import ModelForm, CheckboxSelectMultiple
 from django_select2.forms import Select2Widget
 
@@ -8,10 +9,13 @@ from events.forms_bases import EventForm, EnrollMyselfParticipantForm
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
+from persons.models import Person
+from persons.widgets import PersonSelectWidget
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
+    OrganizerOccurrenceAssignment,
 )
 
 
@@ -316,4 +320,48 @@ class OneTimeEventEnrollMyselfParticipantForm(
         if commit:
             instance.save()
 
+        return instance
+
+
+class OrganizerOccurrenceAssignmentForm(ModelForm):
+    class Meta:
+        fields = ["person", "position_assignment"]
+        model = OrganizerOccurrenceAssignment
+        widgets = {
+            "person": PersonSelectWidget(),
+            "position_assignment": Select2Widget(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.occurrence = kwargs.pop("occurrence")
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+        # Do not include full positions
+        include_organizers_query = Q(organizers__lt=F("count"))
+
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+
+        else:
+            # Person is not an organizer
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(organizeroccurrenceassignment__occurrence=self.occurrence)
+            )
+
+        # self.fields[
+        #     "position_assignment"
+        # ].queryset = self.occurrence.event.eventpositionassignment_set.annotate(
+        #     organizers=Count(F("organizerassignment"))
+        # ).filter(
+        #     include_organizers_query
+        # )
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
         return instance

@@ -2,6 +2,7 @@ from django.urls import reverse_lazy
 from .models import (
     Event,
     EventPositionAssignment,
+    EventOccurrence,
 )
 from persons.models import Person
 from django.views import generic
@@ -28,6 +29,8 @@ class RedirectToEventDetail:
     def get_redirect_viewname_id(self):
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
+        elif "occurrence_id" in self.kwargs:
+            id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).event.id
         elif hasattr(self, "object"):
             if type(self.object) is OneTimeEvent or type(self.object) is Training:
                 id = self.object.id
