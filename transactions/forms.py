@@ -93,6 +93,23 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         return cleaned_data
 
 
+class TransactionAddTrainingPaymentForm(forms.Form):
+    date_due = forms.DateField(label=_("Datum splatnosti"), widget=DatePickerWithIcon())
+    reason = forms.CharField(label=_("Popis transakce"))
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event", 0)
+        super().__init__(*args, **kwargs)
+
+        for i in range(1, self.event.weekly_occurs_count() + 1):
+            self.fields[f"amount_{i}"] = forms.IntegerField(
+                label=_("Suma za trénink {0}x týdně").format(i),
+                min_value=1,
+            )
+
+        self.initial["reason"] = _("Platba za tréninky - {0}").format(self.event)
+
+
 class Label:
     def __init__(self, text=None):
         self.text = text
