@@ -124,6 +124,7 @@ class Label:
 class TransactionCreateBulkConfirmForm(forms.Form):
     def __init__(self, *args, **kwargs):
         persons_transactions = kwargs.pop("persons_transactions", [])
+        self.event = kwargs.pop("event", None)
         self.reason = kwargs.pop("reason", [])
 
         super().__init__(*args, **kwargs)
@@ -203,13 +204,14 @@ class TransactionCreateBulkConfirmForm(forms.Form):
                         amount=amount,
                         reason=self.reason,
                         date_due=date_due,
+                        event=self.event,
                     )
                 )
 
         return cleaned_data
 
     def create_transactions(self):
-        bulk_transaction = BulkTransaction(reason=self.reason)
+        bulk_transaction = BulkTransaction(reason=self.reason, event=self.event)
         bulk_transaction.save()
 
         for transaction in self.prepared_transactions:

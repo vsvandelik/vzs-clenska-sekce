@@ -386,7 +386,7 @@ class TransactionCreateTrainingBulkConfirmView(
         for enrollment in approved_enrollments:
             person = enrollment.person
             repetition_per_week = enrollment.weekdays.count()
-            amount = params[f"amount_{repetition_per_week}"]
+            amount = -params[f"amount_{repetition_per_week}"]
 
             persons_transactions.append(
                 {
@@ -397,6 +397,11 @@ class TransactionCreateTrainingBulkConfirmView(
             )
 
         return persons_transactions
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.setdefault("event", self.event)
+        return kwargs
 
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
