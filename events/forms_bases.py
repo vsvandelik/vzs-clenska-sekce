@@ -177,7 +177,7 @@ class EnrollMyselfParticipantForm(
 class OrganizerAssignmentForm(ModelForm):
     class Meta:
         model = OrganizerOccurrenceAssignment
-        fields = ["position", "person"]
+        fields = ["position_assignment", "person"]
         widgets = {
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "position": Select2Widget(),

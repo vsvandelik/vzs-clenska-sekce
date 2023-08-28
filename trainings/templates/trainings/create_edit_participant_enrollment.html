@@ -3,11 +3,11 @@
 {% load trainings_template_tags %}
 {% load vzs_filters %}
 {% load static %}
-{% block child_scripts %}
+{% block child2_scripts %}
     <script src="{% static 'events/set_report_validity.js' %}"></script>
     <script src="{% static 'trainings/weekday_selection.js' %}"></script>
     <script src="{% static 'trainings/create_edit_participant_enrollment.js' %}"></script>
 {% endblock %}
-{% block body %}
-    {% include 'trainings/components/weekday_selection.html' with event=event %}
+{% block body2 %}
+    {% include 'trainings/components/weekday_selection.html' %}
 {% endblock %}

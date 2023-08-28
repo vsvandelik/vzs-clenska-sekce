@@ -6,7 +6,7 @@
             <div class="card-title h5">Trenéři</div>
         </div>
         <div class="card-body">
-            <table id="organizers-table" class="table">
+            <table id="coaches-table" class="table">
                 <thead>
                     <tr>
                         <th>Osoba</th>
@@ -16,14 +16,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for coaches_assignment in event.coachpositionassignment_set.all %}
+                    {% for coach in event.coachpositionassignment_set.all %}
                         <tr>
                             <td>
-                                <a href="{% url 'persons:detail' coaches_assignment.person.id %}">{{ coaches_assignment.person }}</a>
+                                <a href="{% url 'persons:detail' coach.person.id %}">{{ coach.person }}</a>
                             </td>
-                            <td>{{ coaches_assignment.position }}</td>
+                            <td><a href="{% url 'positions:detail' coach.position_assignment.position.id %}">{{ coach.position_assignment.position }}</a></td>
                             <td>
-                                {% if coaches_assignment.training.main_coach == coaches_assignment.person %}
+                                {% if coach.training.main_coach == coach.person %}
                                     {% value_present_symbol %}
                                 {% else %}
                                     {% value_missing_symbol %}
@@ -32,7 +32,7 @@
                             <td>
                                 <div class="btn-group">
                                     <a class="btn btn-success btn-sm"
-                                       href="{% url 'trainings:edit-coach-assignment' event.id coaches_assignment.id %}">
+                                       href="{% url 'trainings:edit-coach-assignment' event.id coach.id %}">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     <a class="btn btn-danger btn-sm"

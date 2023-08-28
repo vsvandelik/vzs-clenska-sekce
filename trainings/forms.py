@@ -4,6 +4,7 @@ from django import forms
 from django.db.models import Q, F, Count
 from django.forms import ModelForm
 from django.utils import timezone
+from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -12,12 +13,14 @@ from events.forms_bases import (
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
 )
+from persons.models import Person
 from events.models import (
     EventOrOccurrenceState,
     ParticipantEnrollment,
     OrganizerOccurrenceAssignment,
 )
 from events.utils import parse_czech_date
+from persons.widgets import PersonSelectWidget
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
@@ -454,9 +457,13 @@ class TrainingEnrollMyselfParticipantForm(
 
 
 class CoachAssignmentForm(ModelForm):
-    class Meta(OrganizerAssignmentForm.Meta):
-        fields = ["person", "position"]
+    class Meta:
+        fields = ["person", "position_assignment"]
         model = CoachPositionAssignment
+        widgets = {
+            "person": PersonSelectWidget(),
+            "position_assignment": Select2Widget(),
+        }
 
     main_coach = forms.BooleanField(
         label="Garantující trenér",
@@ -468,10 +475,33 @@ class CoachAssignmentForm(ModelForm):
         self.event = kwargs.pop("event")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
-        if self.instance.id is not None and self.event.main_coach == self.person:
-            self.fields["main_coach"].initial = True
-        # self.position_assignment_queryset = self.position_assignment_queryset.annotate(organizers=Count('organizerpositionassignment')).filter(organizers__lte=F('count'))
-        # self.fields['position_assignment'].queryset = self.position_assignment_queryset
+        if self.instance.id is not None:
+            # Editing a coach
+
+            self.fields["main_coach"].initial = self.event.main_coach == self.person
+            self.fields["person"].widget.attrs["disabled"] = True
+
+            # Include full positions (editing myself)
+            include_coaches_query = Q(coaches__lte=F("count"))
+        else:
+            # Adding a new coach
+
+            # Person is not a coach
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(coachpositionassignment__training=self.event)
+            )
+
+            # Do not include full positions
+            include_coaches_query = Q(coaches__lt=F("count"))
+
+        # Include only positions of this event that have 0 or 1 free spots
+        self.fields[
+            "position_assignment"
+        ].queryset = self.event.eventpositionassignment_set.annotate(
+            coaches=Count(F("coachpositionassignment"))
+        ).filter(
+            include_coaches_query
+        )
 
     def save(self, commit=True):
         instance = super().save(False)
@@ -480,9 +510,9 @@ class CoachAssignmentForm(ModelForm):
             instance.person = self.person
 
         if self.cleaned_data["main_coach"]:
-            instance.training.main_coach = instance.person
-        elif instance.person == instance.training.main_coach:
-            instance.training.main_coach = None
+            self.event.main_coach = instance.person
+        elif instance.person == self.event.main_coach:
+            self.event.main_coach = None
 
         for occurrence in self.event.eventoccurrence_set.all():
             (
@@ -492,7 +522,7 @@ class CoachAssignmentForm(ModelForm):
                 occurrence=occurrence,
                 person=instance.person,
                 defaults={
-                    "position": instance.position,
+                    "position_assignment": instance.position_assignment,
                     "person": instance.person,
                     "occurrence": occurrence,
                 },
@@ -502,5 +532,5 @@ class CoachAssignmentForm(ModelForm):
 
         if commit:
             instance.save()
-            instance.training.save()
+            self.event.save()
         return instance

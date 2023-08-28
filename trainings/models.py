@@ -209,12 +209,18 @@ class Training(Event):
 
 
 class CoachPositionAssignment(models.Model):
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
     training = models.ForeignKey("trainings.Training", on_delete=models.CASCADE)
-    position = models.ForeignKey("positions.EventPosition", on_delete=models.CASCADE)
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
+        verbose_name="Pozice události",
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
-        unique_together = ["person", "training", "position"]
+        unique_together = ["person", "training"]
 
     def delete(self, using=None, keep_parents=False):
         self.training.coaches.remove(self.person)

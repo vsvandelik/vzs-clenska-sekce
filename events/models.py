@@ -257,8 +257,8 @@ class EventPositionAssignment(models.Model):
 
 
 class OrganizerOccurrenceAssignment(models.Model):
-    position = models.ForeignKey(
-        "positions.EventPosition",
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
         verbose_name="Pozice události",
         on_delete=models.CASCADE,
     )
