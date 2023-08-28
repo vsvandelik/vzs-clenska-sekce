@@ -8,7 +8,9 @@ from events.models import (
     Event,
     EventOccurrence,
     ParticipantEnrollment,
+    OrganizerAssignment,
 )
+from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
 
 
@@ -36,9 +38,13 @@ class Training(Event):
         related_name="training_coach_position_assignment_set",
     )
 
-    main_coach = models.ForeignKey(
-        "persons.Person", null=True, on_delete=models.SET_NULL
+    main_coach_assignment = models.ForeignKey(
+        "trainings.CoachPositionAssignment",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="main_coach_assignment",
     )
+
     category = models.CharField(
         _("Druh události"), max_length=10, choices=Category.choices
     )
@@ -198,6 +204,11 @@ class Training(Event):
             i += 1
         return weekdays
 
+    def organizers_assignments(self):
+        return CoachOccurrenceAssignment.objects.filter(
+            position__in=self.positions.all()
+        )
+
     def __str__(self):
         return self.name
 
@@ -222,18 +233,6 @@ class CoachPositionAssignment(models.Model):
     class Meta:
         unique_together = ["person", "training"]
 
-    def delete(self, using=None, keep_parents=False):
-        self.training.coaches.remove(self.person)
-
-        for occurrence in self.training.trainingoccurrences_set.all():
-            occurrence.missing_organizers.remove(self.person)
-            occurrence.organizers.remove(self.person)
-
-        if self.training.main_coach == self.person:
-            self.training.main_coach = None
-
-        return super().delete(using, keep_parents)
-
 
 class TrainingReplaceabilityForParticipants(models.Model):
     training_1 = models.ForeignKey(
@@ -251,14 +250,49 @@ class TrainingReplaceabilityForParticipants(models.Model):
         unique_together = ["training_1", "training_2"]
 
 
+class CoachOccurrenceAssignment(OrganizerAssignment):
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    occurrence = models.ForeignKey(
+        "trainings.TrainingOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
 class TrainingOccurrence(EventOccurrence):
     datetime_start = models.DateTimeField(_("Začíná"))
     datetime_end = models.DateTimeField(_("Končí"))
 
-    missing_coaches = models.ManyToManyField(
+    coaches = models.ManyToManyField(
         "persons.Person",
-        related_name="missing_coaches_set",
+        through="trainings.CoachOccurrenceAssignment",
+        related_name="coaches_occurrence_assignment_set",
     )
+
+    attending_participants = models.ManyToManyField(
+        "persons.Person",
+        through="trainings.TrainingParticipantAttendance",
+        related_name="training_participants_attendance_set",
+    )
+
+    def weekday(self):
+        return self.datetime_start.weekday()
+
+
+class TrainingParticipantAttendance(models.Model):
+    enrollment = models.ForeignKey(
+        "trainings.TrainingParticipantEnrollment", null=True, on_delete=models.CASCADE
+    )
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    occurrence = models.ForeignKey(
+        "trainings.TrainingOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
 
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):
@@ -273,6 +307,13 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
 
     class Meta:
         unique_together = ["training", "person"]
+
+    def attends_on_weekday(self, weekday):
+        try:
+            self.weekdays.get(weekday=weekday)
+            return True
+        except TrainingWeekdays.DoesNotExist:
+            return False
 
     @property
     def event(self):

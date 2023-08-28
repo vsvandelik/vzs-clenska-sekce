@@ -1,19 +1,13 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.forms import ModelForm, CheckboxSelectMultiple
-from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import (
-    EventForm,
-    EnrollMyselfParticipantForm,
-    OrganizerAssignmentForm,
-)
+from events.forms_bases import EventForm, EnrollMyselfParticipantForm
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
-from transactions.models import Transaction
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -215,7 +209,18 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
+class OneTimeEventParticipantEnrollmentUpdateAttendanceMixin:
+    def update_attendance(self, instance):
+        for occurrence in instance.event.eventoccurrence_set.all():
+            if instance.state == ParticipantEnrollment.State.APPROVED:
+                occurrence.attending_participants.add(instance.person)
+            else:
+                occurrence.attending_participants.remove(instance.person)
+
+
+class OneTimeEventParticipantEnrollmentForm(
+    ParticipantEnrollmentForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
         fields = ["agreed_participation_fee"] + ParticipantEnrollmentForm.Meta.fields
@@ -262,6 +267,8 @@ class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
         else:
             instance.agreed_participation_fee = -instance.transaction.amount
 
+        super().update_attendance(instance)
+
         if commit:
             if instance.transaction is not None:
                 instance.transaction.save()
@@ -269,7 +276,9 @@ class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
         return instance
 
 
-class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
+class OneTimeEventEnrollMyselfParticipantForm(
+    EnrollMyselfParticipantForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = OneTimeEventParticipantEnrollment
 
@@ -301,6 +310,8 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
             if commit:
                 transaction.save()
                 instance.transaction = transaction
+
+        super().update_attendance(instance)
 
         if commit:
             instance.save()

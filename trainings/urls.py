@@ -52,4 +52,9 @@ urlpatterns = [
         views.CoachAssignmentUpdateView.as_view(),
         name="edit-coach-assignment",
     ),
+    path(
+        "<int:event_id>/odebrat-trenera/<int:pk>",
+        views.CoachAssignmentDeleteView.as_view(),
+        name="delete-coach-assignment",
+    ),
 ]

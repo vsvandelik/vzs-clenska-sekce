@@ -80,6 +80,7 @@
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
     {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include "modal_include.html" with id="delete-coach-assignment-modal" %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -95,5 +96,6 @@
         registerModal("delete-position-assignment-modal")
         registerModal('delete-participant-enrollment-modal')
         registerModal('unenroll-myself-participant')
+        registerModal('delete-coach-assignment-modal')
     </script>
 {% endblock %}

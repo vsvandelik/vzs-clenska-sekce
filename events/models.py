@@ -20,23 +20,6 @@ class EventOrOccurrenceState(models.TextChoices):
     COMPLETED = "zpracovana", _("zpracována")
 
 
-class ParticipantEnrollmentApprovedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
-
-
-class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
-    def get_queryset(self):
-        return (
-            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
-        )
-
-
-class ParticipantEnrollmentRejectedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
-
-
 class ParticipantEnrollment(PolymorphicModel):
     class State(models.TextChoices):
         APPROVED = "schvalen", _("schválen")
@@ -44,17 +27,9 @@ class ParticipantEnrollment(PolymorphicModel):
         REJECTED = "odmitnut", _("odmítnut")
 
     objects = PolymorphicManager()
-    enrollments_approved = ParticipantEnrollmentApprovedManager()
-    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
-    enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
     created_datetime = models.DateTimeField()
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
-
-    def delete(self):
-        for occurrence in self.event.eventoccurrence_set.all():
-            occurrence.attending_participants.remove(self.person)
-        return super().delete()
 
 
 class Event(PolymorphicModel):
@@ -221,22 +196,11 @@ class Event(PolymorphicModel):
         return self.participants_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
 
     def organizers_assignments(self):
-        return OrganizerOccurrenceAssignment.objects.filter(
-            position__in=self.positions.all()
-        )
+        raise NotImplementedError
 
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-
-    organizers = models.ManyToManyField(
-        "persons.Person",
-        through="events.OrganizerOccurrenceAssignment",
-    )
-
-    attending_participants = models.ManyToManyField(
-        "persons.Person", related_name="missing_participants_set"
-    )
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
 
@@ -256,22 +220,16 @@ class EventPositionAssignment(models.Model):
         return self.position.name
 
 
-class OrganizerOccurrenceAssignment(models.Model):
+class OrganizerAssignment(PolymorphicModel):
     position_assignment = models.ForeignKey(
         "events.EventPositionAssignment",
         verbose_name="Pozice události",
         on_delete=models.CASCADE,
     )
-    person = models.ForeignKey(
-        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
-    )
-    occurrence = models.ForeignKey("events.EventOccurrence", on_delete=models.CASCADE)
+
     transaction = models.ForeignKey(
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
-
-    class Meta:
-        unique_together = ["person", "occurrence"]
 
 
 class EventPersonTypeConstraint(models.Model):

@@ -145,13 +145,18 @@ class TrainingEnrollMyselfParticipantView(
         return super().get_context_data(**kwargs)
 
 
-class CoachAssignmentCreateUpdateMixin(
+class CoachAssignmentMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    InsertEventIntoModelFormKwargsMixin,
 ):
     model = CoachPositionAssignment
     context_object_name = "coach_assignment"
+
+
+class CoachAssignmentCreateUpdateMixin(
+    CoachAssignmentMixin,
+    InsertEventIntoModelFormKwargsMixin,
+):
     form_class = CoachAssignmentForm
 
 
@@ -174,3 +179,8 @@ class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.Update
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
         return super().get_context_data(**kwargs)
+
+
+class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
+    success_message = "Odhlášení trenéra z události proběhlo úspěšně"
+    template_name = "trainings/modals/delete_coach_assignment.html"

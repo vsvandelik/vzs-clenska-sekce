@@ -8,8 +8,6 @@ from django_select2.forms import Select2Widget
 
 from events.models import (
     EventPersonTypeConstraint,
-    OrganizerOccurrenceAssignment,
-    EventPositionAssignment,
     ParticipantEnrollment,
 )
 from persons.models import Person
@@ -85,16 +83,7 @@ class AllowedPersonTypeForm(ModelForm):
         return instance
 
 
-class ParticipantEnrollmentUpdateAttendanceMixin:
-    def update_attendance(self, instance):
-        for occurrence in instance.event.eventoccurrence_set.all():
-            if instance.state == ParticipantEnrollment.State.APPROVED:
-                occurrence.attending_participants.add(instance.person)
-            else:
-                occurrence.attending_participants.remove(instance.person)
-
-
-class ParticipantEnrollmentForm(ParticipantEnrollmentUpdateAttendanceMixin, ModelForm):
+class ParticipantEnrollmentForm(ModelForm):
     class Meta:
         fields = ["person", "state"]
         widgets = {
@@ -133,16 +122,12 @@ class ParticipantEnrollmentForm(ParticipantEnrollmentUpdateAttendanceMixin, Mode
         else:
             instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
 
-        super().update_attendance(instance)
-
         if commit:
             instance.save()
         return instance
 
 
-class EnrollMyselfParticipantForm(
-    ParticipantEnrollmentUpdateAttendanceMixin, ModelForm
-):
+class EnrollMyselfParticipantForm(ModelForm):
     class Meta:
         fields = []
 
@@ -167,32 +152,30 @@ class EnrollMyselfParticipantForm(
         instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
         instance.person = self.person
 
-        super().update_attendance(instance)
-
         if commit:
             instance.save()
         return instance
 
 
-class OrganizerAssignmentForm(ModelForm):
-    class Meta:
-        model = OrganizerOccurrenceAssignment
-        fields = ["position_assignment", "person"]
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-            "position": Select2Widget(),
-        }
-
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        super().__init__(*args, **kwargs)
-
-    def save(self, commit=True):
-        instance = super().save(False)
-        instance._state.adding = True
-        for occurrence in self.event.eventoccurrence_set.all():
-            instance.id = None
-            instance.occurrence = occurrence
-            if commit:
-                instance.save()
-        return instance
+# class OrganizerAssignmentForm(ModelForm):
+#     class Meta:
+#         model = OrganizerOccurrenceAssignment
+#         fields = ["position_assignment", "person"]
+#         widgets = {
+#             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+#             "position": Select2Widget(),
+#         }
+#
+#     def __init__(self, *args, **kwargs):
+#         self.event = kwargs.pop("event")
+#         super().__init__(*args, **kwargs)
+#
+#     def save(self, commit=True):
+#         instance = super().save(False)
+#         instance._state.adding = True
+#         for occurrence in self.event.eventoccurrence_set.all():
+#             instance.id = None
+#             instance.occurrence = occurrence
+#             if commit:
+#                 instance.save()
+#         return instance

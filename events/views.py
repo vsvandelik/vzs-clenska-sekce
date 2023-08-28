@@ -2,7 +2,6 @@ from django.urls import reverse_lazy
 from .models import (
     Event,
     EventPositionAssignment,
-    OrganizerOccurrenceAssignment,
 )
 from persons.models import Person
 from django.views import generic

@@ -11,13 +11,11 @@ from events.forms_bases import (
     EventForm,
     ParticipantEnrollmentForm,
     EnrollMyselfParticipantForm,
-    OrganizerAssignmentForm,
 )
 from persons.models import Person
 from events.models import (
     EventOrOccurrenceState,
     ParticipantEnrollment,
-    OrganizerOccurrenceAssignment,
 )
 from events.utils import parse_czech_date
 from persons.widgets import PersonSelectWidget
@@ -34,6 +32,7 @@ from .models import (
     TrainingParticipantEnrollment,
     TrainingWeekdays,
     CoachPositionAssignment,
+    CoachOccurrenceAssignment,
 )
 
 
@@ -389,8 +388,23 @@ class InitializeWeekdays:
             enrollment.weekdays.add(weekday_obj)
 
 
+class TrainingParticipantEnrollmentUpdateAttendanceMixin:
+    def update_attendance(self, instance):
+        for occurrence in instance.event.eventoccurrence_set.all():
+            if (
+                instance.state == ParticipantEnrollment.State.APPROVED
+                and instance.attends_on_weekday(occurrence.weekday())
+            ):
+                occurrence.attending_participants.add(instance.person)
+            else:
+                occurrence.attending_participants.remove(instance.person)
+
+
 class TrainingParticipantEnrollmentForm(
-    TrainingWeekdaysSelectionMixin, InitializeWeekdays, ParticipantEnrollmentForm
+    TrainingWeekdaysSelectionMixin,
+    InitializeWeekdays,
+    ParticipantEnrollmentForm,
+    TrainingParticipantEnrollmentUpdateAttendanceMixin,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = TrainingParticipantEnrollment
@@ -418,13 +432,17 @@ class TrainingParticipantEnrollmentForm(
                 else:
                     weekdays_cleaned.remove(weekday_obj.weekday)
             super().initialize_weekdays(instance, weekdays_cleaned)
+            super().update_attendance(instance)
         if commit:
             instance.save()
         return instance
 
 
 class TrainingEnrollMyselfParticipantForm(
-    TrainingWeekdaysSelectionMixin, InitializeWeekdays, EnrollMyselfParticipantForm
+    TrainingWeekdaysSelectionMixin,
+    InitializeWeekdays,
+    EnrollMyselfParticipantForm,
+    TrainingParticipantEnrollmentUpdateAttendanceMixin,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = TrainingParticipantEnrollment
@@ -451,6 +469,7 @@ class TrainingEnrollMyselfParticipantForm(
             instance.save()
             weekdays_cleaned = self.cleaned_data["weekdays"]
             super().initialize_weekdays(instance, weekdays_cleaned)
+            super().update_attendance(instance)
             instance.save()
 
         return instance
@@ -465,7 +484,7 @@ class CoachAssignmentForm(ModelForm):
             "position_assignment": Select2Widget(),
         }
 
-    main_coach = forms.BooleanField(
+    main_coach_assignment = forms.BooleanField(
         label="Garantující trenér",
         required=False,
         widget=forms.CheckboxInput(),
@@ -475,26 +494,30 @@ class CoachAssignmentForm(ModelForm):
         self.event = kwargs.pop("event")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
+
+        # Do not include full positions
+        include_coaches_query = Q(coaches__lt=F("count"))
+
         if self.instance.id is not None:
             # Editing a coach
 
-            self.fields["main_coach"].initial = self.event.main_coach == self.person
+            if self.event.main_coach_assignment is not None:
+                self.fields["main_coach_assignment"].initial = (
+                    self.event.main_coach_assignment.person == self.person
+                )
+
             self.fields["person"].widget.attrs["disabled"] = True
 
-            # Include full positions (editing myself)
-            include_coaches_query = Q(coaches__lte=F("count"))
+            # Include positions where I am currently a coach (editing myself)
+            include_coaches_query = include_coaches_query | Q(
+                coachpositionassignment__person=self.person
+            )
         else:
-            # Adding a new coach
-
             # Person is not a coach
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(coachpositionassignment__training=self.event)
             )
 
-            # Do not include full positions
-            include_coaches_query = Q(coaches__lt=F("count"))
-
-        # Include only positions of this event that have 0 or 1 free spots
         self.fields[
             "position_assignment"
         ].queryset = self.event.eventpositionassignment_set.annotate(
@@ -509,16 +532,16 @@ class CoachAssignmentForm(ModelForm):
         if instance.id is not None:
             instance.person = self.person
 
-        if self.cleaned_data["main_coach"]:
-            self.event.main_coach = instance.person
-        elif instance.person == self.event.main_coach:
-            self.event.main_coach = None
+        if self.cleaned_data["main_coach_assignment"] is not None:
+            self.event.main_coach_assignment = instance
+        elif instance.person == self.event.main_coach_assignment:
+            self.event.main_coach_assignment = None
 
         for occurrence in self.event.eventoccurrence_set.all():
             (
                 organizer_assignment,
                 _,
-            ) = OrganizerOccurrenceAssignment.objects.get_or_create(
+            ) = CoachOccurrenceAssignment.objects.get_or_create(
                 occurrence=occurrence,
                 person=instance.person,
                 defaults={

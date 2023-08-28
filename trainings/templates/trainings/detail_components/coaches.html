@@ -23,7 +23,7 @@
                             </td>
                             <td><a href="{% url 'positions:detail' coach.position_assignment.position.id %}">{{ coach.position_assignment.position }}</a></td>
                             <td>
-                                {% if coach.training.main_coach == coach.person %}
+                                {% if coach.training.main_coach_assignment == coach %}
                                     {% value_present_symbol %}
                                 {% else %}
                                     {% value_missing_symbol %}
@@ -37,8 +37,8 @@
                                     </a>
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
-                                       data-target="#delete-organizer-assignment-modal"
-                                       data-action="TODO">
+                                       data-target="#delete-coach-assignment-modal"
+                                       data-action="{% url 'trainings:delete-coach-assignment' event.id coach.id %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>

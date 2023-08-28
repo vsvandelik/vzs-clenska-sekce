@@ -7,6 +7,7 @@ from events.models import (
     EventOrOccurrenceState,
     EventOccurrence,
     ParticipantEnrollment,
+    OrganizerAssignment,
 )
 from trainings.models import Training
 from transactions.models import Transaction
@@ -98,11 +99,50 @@ class OneTimeEvent(Event):
     def enrollments_by_Q(self, condition):
         return self.onetimeeventparticipantenrollment_set.filter(condition)
 
+    def organizers_assignments(self):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            position__in=self.positions.all()
+        )
+
     def __str__(self):
         return self.name
 
 
+class OrganizerOccurrenceAssignment(OrganizerAssignment):
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
+class OneTimeEventParticipantAttendance(models.Model):
+    enrollment = models.ForeignKey(
+        "one_time_events.OneTimeEventParticipantEnrollment", on_delete=models.CASCADE
+    )
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
 class OneTimeEventOccurrence(EventOccurrence):
+    organizers = models.ManyToManyField(
+        "persons.Person",
+        through="one_time_events.OrganizerOccurrenceAssignment",
+        related_name="organizer_occurrence_assignment_set",
+    )
+    attending_participants = models.ManyToManyField(
+        "persons.Person", through="one_time_events.OneTimeEventParticipantAttendance"
+    )
+
     date = models.DateField(_("Den konání"))
     hours = models.PositiveSmallIntegerField(
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
