@@ -109,6 +109,11 @@ class OneTimeEvent(Event):
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
+        verbose_name="Pozice události",
+        on_delete=models.CASCADE,
+    )
     person = models.ForeignKey(
         "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
     )

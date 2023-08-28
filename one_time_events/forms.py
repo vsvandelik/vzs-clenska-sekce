@@ -343,19 +343,29 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         if self.instance.id is not None:
             self.fields["person"].widget.attrs["disabled"] = True
 
+            # Include positions where I am currently an organizer (editing myself)
+            include_organizers_query = include_organizers_query | Q(
+                organizeroccurrenceassignment__person=self.person
+            )
+
         else:
-            # Person is not an organizer
+            # Person is not an organizer (creating a new organizer)
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(organizeroccurrenceassignment__occurrence=self.occurrence)
             )
 
-        # self.fields[
-        #     "position_assignment"
-        # ].queryset = self.occurrence.event.eventpositionassignment_set.annotate(
-        #     organizers=Count(F("organizerassignment"))
-        # ).filter(
-        #     include_organizers_query
-        # )
+        # Filter out positions that are full in this occurrence
+        self.fields[
+            "position_assignment"
+        ].queryset = self.occurrence.event.eventpositionassignment_set.annotate(
+            organizers=Count(
+                F("organizeroccurrenceassignment"),
+                filter=Q(organizeroccurrenceassignment__occurrence=self.occurrence),
+                distinct=True,
+            )
+        ).filter(
+            include_organizers_query
+        )
 
     def save(self, commit=True):
         instance = super().save(False)

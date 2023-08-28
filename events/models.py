@@ -221,12 +221,6 @@ class EventPositionAssignment(models.Model):
 
 
 class OrganizerAssignment(PolymorphicModel):
-    position_assignment = models.ForeignKey(
-        "events.EventPositionAssignment",
-        verbose_name="Pozice události",
-        on_delete=models.CASCADE,
-    )
-
     transaction = models.ForeignKey(
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )

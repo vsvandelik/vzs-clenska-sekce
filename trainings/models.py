@@ -251,6 +251,11 @@ class TrainingReplaceabilityForParticipants(models.Model):
 
 
 class CoachOccurrenceAssignment(OrganizerAssignment):
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
+        verbose_name="Pozice události",
+        on_delete=models.CASCADE,
+    )
     person = models.ForeignKey(
         "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
     )
