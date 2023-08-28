@@ -13,7 +13,11 @@ from vzs import models as vzs_models
 class BulkTransaction(models.Model):
     reason = models.CharField(_("Popis transakce"), max_length=150)
     event = models.ForeignKey(
-        "events.Event", on_delete=models.SET_NULL, null=True, verbose_name=_("Událost")
+        "events.Event",
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("Událost"),
+        related_name="event_transactions",
     )
 
     def __str__(self):

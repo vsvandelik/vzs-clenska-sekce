@@ -1,0 +1,18 @@
+<div class="card">
+    <div class="card-header border-bottom-0">
+        <div class="card-title h5">
+            Transakce
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <table class="table table-stripped">
+            {% for transaction in object.event_transactions.all %}
+                <tr>
+                    <td>{{ transaction }}</td>
+                    <td><a href="{% url "transactions:index" %}?bulk_transaction={{ transaction.id }}" class="btn btn-info btn-sm"><i class="fas fa-search"></i></a></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
