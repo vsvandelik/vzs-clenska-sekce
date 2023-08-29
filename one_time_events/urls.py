@@ -60,4 +60,9 @@ urlpatterns = [
         views.BulkDeleteOrganizerFromOneTimeEvent.as_view(),
         name="bulk-delete-organizer",
     ),
+    path(
+        "<int:event_id>/hromadne-pridani-organizatora/",
+        views.BulkAddOrganizerToOneTimeEvent.as_view(),
+        name="bulk-add-organizer",
+    ),
 ]

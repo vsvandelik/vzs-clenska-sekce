@@ -7,7 +7,7 @@
         </div>
         <div class="card-body">
             <div class="row">
-                {% for occurrence in event.eventoccurrence_set.all %}
+                {% for occurrence in event.sorted_occurrences_list %}
                     {% include 'one_time_events/detail_components/organizers_occurrence.html' %}
                 {% endfor %}
 
@@ -16,7 +16,7 @@
         <div class="card-footer text-center">
             <div class="btn-group">
                 <a href="{% url 'one_time_events:bulk-delete-organizer' event.id %}" class="btn-danger btn mr-3">Odebrat organizátora</a>
-                <a href="" class="btn-primary btn mr-3">Přidat nového organizátora</a>
+                <a href="{% url 'one_time_events:bulk-add-organizer' event.id %}" class="btn-primary btn mr-3">Přidat nového organizátora</a>
             </div>
         </div>
     </div>

@@ -329,8 +329,10 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         fields = ["person", "position_assignment"]
         model = OrganizerOccurrenceAssignment
         widgets = {
-            "person": PersonSelectWidget(),
-            "position_assignment": Select2Widget(),
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+            "position_assignment": Select2Widget(
+                attrs={"onchange": "stateChanged(this)"}
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -401,3 +403,27 @@ class BulkDeleteOrganizerFromOneTimeEventForm(Form):
         except Person.DoesNotExist:
             self.add_error("person", f"Osoba s id {person} neexistuje")
         return cleaned_data
+
+
+class BulkAddOrganizerFromOneTimeEventForm(ModelForm):
+    class Meta:
+        fields = ["person", "position_assignment"]
+        model = OrganizerOccurrenceAssignment
+        widgets = {
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+            "position_assignment": Select2Widget(),
+        }
+
+    occurrences_ids = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        pass
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        a = 1
+        return instance

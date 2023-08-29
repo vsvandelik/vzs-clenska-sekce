@@ -25,6 +25,7 @@ from .forms import (
     OneTimeEventEnrollMyselfParticipantForm,
     OrganizerOccurrenceAssignmentForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
+    BulkAddOrganizerFromOneTimeEventForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -168,6 +169,20 @@ class BulkDeleteOrganizerFromOneTimeEvent(
             organizer_assignment.delete()
 
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class BulkAddOrganizerToOneTimeEvent(
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.CreateView,
+):
+    model = OneTimeEvent
+    form_class = BulkAddOrganizerFromOneTimeEventForm
+    template_name = "one_time_events/bulk_add_organizer.html"
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
