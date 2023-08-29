@@ -378,7 +378,7 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         return instance
 
 
-class BulkDeleteOrganizerConfirmFromOneTimeEventForm(Form):
+class BulkDeleteOrganizerFromOneTimeEventForm(Form):
     person = forms.IntegerField(
         label="Osoba",
         widget=PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
@@ -389,11 +389,12 @@ class BulkDeleteOrganizerConfirmFromOneTimeEventForm(Form):
         super().__init__(*args, **kwargs)
         self.fields["person"].widget.queryset = Person.objects.filter(
             organizeroccurrenceassignment__occurrence__event=self.event
-        )
+        ).distinct()
 
     def clean(self):
         cleaned_data = super().clean()
-        person = cleaned_data["person_id"]
+        cleaned_data["event"] = self.event
+        person = cleaned_data["person"]
         try:
             person = Person.objects.get(pk=person)
             cleaned_data["person"] = person

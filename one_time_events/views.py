@@ -24,7 +24,7 @@ from .forms import (
     OneTimeEventParticipantEnrollmentForm,
     OneTimeEventEnrollMyselfParticipantForm,
     OrganizerOccurrenceAssignmentForm,
-    BulkDeleteOrganizerConfirmFromOneTimeEventForm,
+    BulkDeleteOrganizerFromOneTimeEventForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -146,22 +146,28 @@ class DeleteOrganizerForOccurrenceView(
     context_object_name = "organizer_assignment"
 
 
-class BulkDeleteOrganizerConfirmFromOneTimeEvent(
+class BulkDeleteOrganizerFromOneTimeEvent(
+    MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     generic.FormView,
 ):
     model = OneTimeEvent
-    form_class = BulkDeleteOrganizerConfirmFromOneTimeEventForm
+    form_class = BulkDeleteOrganizerFromOneTimeEventForm
     template_name = "one_time_events/bulk_delete_organizer.html"
+    success_message = "Organizátor %(person)s úspěšně odebrán ze všech dnů"
 
     def form_valid(self, form):
-        a = 1
-        pass
+        person = form.cleaned_data["person"]
+        event = form.cleaned_data["event"]
 
-    def form_invalid(self, form):
-        a = 1
-        pass
+        organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+            person=person, occurrence__event=event
+        )
+        for organizer_assignment in organizer_assignments:
+            organizer_assignment.delete()
+
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
