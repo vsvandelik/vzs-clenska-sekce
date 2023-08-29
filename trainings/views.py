@@ -16,6 +16,7 @@ from events.views import (
     ParticipantEnrollmentUpdateMixin,
     EnrollMyselfParticipantMixin,
     InsertEventIntoModelFormKwargsMixin,
+    RedirectToEventDetailOnFailureMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -69,7 +70,10 @@ class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
 
 
 class TrainingAddReplaceableTrainingView(
-    MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.CreateView
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.CreateView,
 ):
     form_class = TrainingReplaceableForm
     success_message = _("Tréninky pro náhrady byl přidán.")
@@ -79,10 +83,6 @@ class TrainingAddReplaceableTrainingView(
         kwargs = super().get_form_kwargs()
         kwargs["training_1"] = get_object_or_404(Training, pk=self.kwargs["event_id"])
         return kwargs
-
-    def form_invalid(self, form):
-        super().form_invalid(form)
-        return redirect(reverse("trainings:detail", args=[self.kwargs["event_id"]]))
 
 
 class TrainingRemoveReplaceableTrainingView(generic.View):
@@ -139,10 +139,6 @@ class TrainingEnrollMyselfParticipantView(
     form_class = TrainingEnrollMyselfParticipantForm
     template_name = "trainings/enroll_myself_participant.html"
     success_message = "Přihlášení na trénink proběhlo úspěšně"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
 
 
 class CoachAssignmentMixin(

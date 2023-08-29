@@ -67,15 +67,23 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
         return redirect(viewname, pk=id)
 
 
-class InsertEventIntoModelFormKwargsMixin:
+class InsertEventIntoSelfObjectMixin:
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
         return super().dispatch(request, *args, **kwargs)
 
+
+class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.event
         return kwargs
+
+
+class InsertEventIntoContextData(InsertEventIntoSelfObjectMixin):
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
@@ -216,13 +224,12 @@ class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMi
 
 
 class ParticipantEnrollmentCreateMixin(
-    ParticipantEnrollmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView
+    ParticipantEnrollmentMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    generic.CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
 
 
 class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
@@ -251,6 +258,7 @@ class EnrollMyselfParticipantMixin(
     RedirectToEventDetailOnSuccessMixin,
     InsertRequestIntoModelFormKwargsMixin,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
     generic.CreateView,
 ):
     pass
@@ -266,25 +274,3 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
-
-
-# class OrganizerAssignmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
-#     model = OrganizerOccurrenceAssignment
-#     context_object_name = 'organizer_assignment'
-#
-#
-# class OrganizerAssignmentCreateMixin(OrganizerAssignmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView):
-#     def get_context_data(self, **kwargs):
-#         kwargs.setdefault("event", self.event)
-#         return super().get_context_data(**kwargs)
-#
-#
-# class OrganizerAssignmentUpdateMixin(OrganizerAssignmentMixin, generic.UpdateView):
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         kwargs["person"] = self.object.person
-#         return kwargs
-#
-#     def get_context_data(self, **kwargs):
-#         kwargs.setdefault("event", self.object.position_assignment.event)
-#         return super().get_context_data(**kwargs)

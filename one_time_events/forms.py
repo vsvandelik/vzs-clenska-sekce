@@ -6,7 +6,11 @@ from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm, EnrollMyselfParticipantForm
+from events.forms_bases import (
+    EventForm,
+    EnrollMyselfParticipantForm,
+    OrganizerAssignmentForm,
+)
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
@@ -324,14 +328,9 @@ class OneTimeEventEnrollMyselfParticipantForm(
         return instance
 
 
-class OrganizerOccurrenceAssignmentForm(ModelForm):
-    class Meta:
-        fields = ["person", "position_assignment"]
+class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-            "position_assignment": Select2Widget(),
-        }
 
     def __init__(self, *args, **kwargs):
         self.occurrence = kwargs.pop("occurrence")
@@ -341,7 +340,6 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         if self.instance.id is not None:
             self.fields["person"].widget.attrs["disabled"] = True
         else:
-            # Person is not an organizer (creating a new organizer)
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(organizeroccurrenceassignment__occurrence=self.occurrence)
             )
@@ -384,14 +382,9 @@ class BulkDeleteOrganizerFromOneTimeEventForm(Form):
         return cleaned_data
 
 
-class BulkAddOrganizerFromOneTimeEventForm(ModelForm):
-    class Meta:
-        fields = ["person", "position_assignment"]
+class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-            "position_assignment": Select2Widget(),
-        }
 
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 

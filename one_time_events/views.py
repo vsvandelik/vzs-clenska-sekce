@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
-from events.models import Event
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -15,6 +14,7 @@ from events.views import (
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -31,7 +31,6 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OneTimeEventOccurrence,
     OrganizerOccurrenceAssignment,
-    OneTimeEvent,
 )
 
 
@@ -90,17 +89,16 @@ class OneTimeEventEnrollMyselfParticipantView(
     template_name = "one_time_events/modals/enroll_waiting.html"
     success_message = "Přihlášení na událost proběhlo úspěšně"
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
+
+class OrganizerForOccurrenceMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
+    pass
 
 
-class AddOrganizerForOccurrenceView(
-    RedirectToEventDetailOnSuccessMixin, generic.CreateView
-):
+class AddOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.CreateView):
     model = OrganizerOccurrenceAssignment
     form_class = OrganizerOccurrenceAssignmentForm
     template_name = "one_time_events/create_organizer_occurrence_assignment.html"
+    success_message = "Organizátor %(person)s přidán"
 
     def dispatch(self, request, *args, **kwargs):
         self.occurrence = get_object_or_404(
@@ -119,11 +117,10 @@ class AddOrganizerForOccurrenceView(
         return super().get_context_data(**kwargs)
 
 
-class EditOrganizerForOccurrenceView(
-    RedirectToEventDetailOnSuccessMixin, generic.UpdateView
-):
+class EditOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.UpdateView):
     model = OrganizerOccurrenceAssignment
     form_class = OrganizerOccurrenceAssignmentForm
+    success_message = "Organizátor %(person)s upraven"
     template_name = "one_time_events/edit_organizer_occurrence_assignment.html"
     context_object_name = "organizer_assignment"
 
@@ -139,21 +136,28 @@ class EditOrganizerForOccurrenceView(
         return super().get_context_data(**kwargs)
 
 
-class DeleteOrganizerForOccurrenceView(
-    RedirectToEventDetailOnSuccessMixin, generic.DeleteView
-):
+class DeleteOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.DeleteView):
     model = OrganizerOccurrenceAssignment
     template_name = "one_time_events/modals/delete_organizer_assignment.html"
     context_object_name = "organizer_assignment"
 
+    def get_success_message(self, cleaned_data):
+        return f"Organizátor {self.object.person} odebrán"
 
-class BulkDeleteOrganizerFromOneTimeEvent(
+
+class BulkCreateDeleteOrganizerMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+):
+    pass
+
+
+class BulkDeleteOrganizerFromOneTimeEvent(
+    BulkCreateDeleteOrganizerMixin,
     generic.FormView,
 ):
-    model = OneTimeEvent
     form_class = BulkDeleteOrganizerFromOneTimeEventForm
     template_name = "one_time_events/bulk_delete_organizer.html"
     success_message = "Organizátor %(person)s úspěšně odebrán ze všech dnů"
@@ -170,20 +174,11 @@ class BulkDeleteOrganizerFromOneTimeEvent(
 
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
-
 
 class BulkAddOrganizerToOneTimeEvent(
-    RedirectToEventDetailOnSuccessMixin,
-    InsertEventIntoModelFormKwargsMixin,
+    BulkCreateDeleteOrganizerMixin,
     generic.CreateView,
 ):
-    model = OneTimeEvent
     form_class = BulkAddOrganizerFromOneTimeEventForm
     template_name = "one_time_events/bulk_add_organizer.html"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
+    success_message = "Organizátor %(person)s přidán na vybrané dny"

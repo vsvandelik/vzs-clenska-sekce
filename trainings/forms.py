@@ -11,6 +11,7 @@ from events.forms_bases import (
     EventForm,
     ParticipantEnrollmentForm,
     EnrollMyselfParticipantForm,
+    OrganizerAssignmentForm,
 )
 from persons.models import Person
 from events.models import (
@@ -475,14 +476,9 @@ class TrainingEnrollMyselfParticipantForm(
         return instance
 
 
-class CoachAssignmentForm(ModelForm):
-    class Meta:
-        fields = ["person", "position_assignment"]
+class CoachAssignmentForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
         model = CoachPositionAssignment
-        widgets = {
-            "person": PersonSelectWidget(),
-            "position_assignment": Select2Widget(),
-        }
 
     main_coach_assignment = forms.BooleanField(
         label="Garantující trenér",
@@ -503,7 +499,6 @@ class CoachAssignmentForm(ModelForm):
 
             self.fields["person"].widget.attrs["disabled"] = True
         else:
-            # Person is not a coach
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(coachpositionassignment__training=self.event)
             )

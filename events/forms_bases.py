@@ -9,6 +9,7 @@ from django_select2.forms import Select2Widget
 from events.models import (
     EventPersonTypeConstraint,
     ParticipantEnrollment,
+    OrganizerAssignment,
 )
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
@@ -68,7 +69,7 @@ class AllowedPersonTypeForm(ModelForm):
     class Meta:
         fields = []
 
-    person_type = ChoiceField(required=True, choices=Person.Type.choices)
+    person_type = ChoiceField(choices=Person.Type.choices)
 
     def save(self, commit=True):
         instance = super().save(False)
@@ -157,25 +158,10 @@ class EnrollMyselfParticipantForm(ModelForm):
         return instance
 
 
-# class OrganizerAssignmentForm(ModelForm):
-#     class Meta:
-#         model = OrganizerOccurrenceAssignment
-#         fields = ["position_assignment", "person"]
-#         widgets = {
-#             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-#             "position": Select2Widget(),
-#         }
-#
-#     def __init__(self, *args, **kwargs):
-#         self.event = kwargs.pop("event")
-#         super().__init__(*args, **kwargs)
-#
-#     def save(self, commit=True):
-#         instance = super().save(False)
-#         instance._state.adding = True
-#         for occurrence in self.event.eventoccurrence_set.all():
-#             instance.id = None
-#             instance.occurrence = occurrence
-#             if commit:
-#                 instance.save()
-#         return instance
+class OrganizerAssignmentForm(ModelForm):
+    class Meta:
+        fields = ["position_assignment", "person"]
+        widgets = {
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+            "position_assignment": Select2Widget(),
+        }
