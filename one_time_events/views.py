@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
+from events.models import Event
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -13,6 +14,7 @@ from events.views import (
     EnrollMyselfParticipantMixin,
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -22,11 +24,13 @@ from .forms import (
     OneTimeEventParticipantEnrollmentForm,
     OneTimeEventEnrollMyselfParticipantForm,
     OrganizerOccurrenceAssignmentForm,
+    BulkDeleteOrganizerConfirmFromOneTimeEventForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
     OneTimeEventOccurrence,
     OrganizerOccurrenceAssignment,
+    OneTimeEvent,
 )
 
 
@@ -140,3 +144,25 @@ class DeleteOrganizerForOccurrenceView(
     model = OrganizerOccurrenceAssignment
     template_name = "one_time_events/modals/delete_organizer_assignment.html"
     context_object_name = "organizer_assignment"
+
+
+class BulkDeleteOrganizerConfirmFromOneTimeEvent(
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    generic.FormView,
+):
+    model = OneTimeEvent
+    form_class = BulkDeleteOrganizerConfirmFromOneTimeEventForm
+    template_name = "one_time_events/bulk_delete_organizer.html"
+
+    def form_valid(self, form):
+        a = 1
+        pass
+
+    def form_invalid(self, form):
+        a = 1
+        pass
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)

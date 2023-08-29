@@ -1,7 +1,8 @@
 from datetime import timedelta
 
-from django.db.models import Q, F, Count, When, Case, IntegerField
-from django.forms import ModelForm, CheckboxSelectMultiple
+from django import forms
+from django.db.models import Q, F, Count
+from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -375,3 +376,27 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class BulkDeleteOrganizerConfirmFromOneTimeEventForm(Form):
+    person = forms.IntegerField(
+        label="Osoba",
+        widget=PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+        self.fields["person"].widget.queryset = Person.objects.filter(
+            organizeroccurrenceassignment__occurrence__event=self.event
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        person = cleaned_data["person_id"]
+        try:
+            person = Person.objects.get(pk=person)
+            cleaned_data["person"] = person
+        except Person.DoesNotExist:
+            self.add_error("person", f"Osoba s id {person} neexistuje")
+        return cleaned_data

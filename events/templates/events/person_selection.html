@@ -42,7 +42,7 @@
                         {% block body2 %}{% endblock %}
                     </div>
                     <div class="card-footer text-center">
-                        <input type="submit" class="btn btn-primary"
+                        <input type="submit" class="btn {% block savebtn_class %}{% endblock %}"
                                value="{% block savebtn_value %}{% endblock %}">
                     </div>
                 </form>

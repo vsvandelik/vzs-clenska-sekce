@@ -55,4 +55,9 @@ urlpatterns = [
         views.DeleteOrganizerForOccurrenceView.as_view(),
         name="delete-organizer-from-occurrence",
     ),
+    path(
+        "<int:event_id>/hromadne-odebrani-organizatora-potvrzeni/",
+        views.BulkDeleteOrganizerConfirmFromOneTimeEvent.as_view(),
+        name="bulk-delete-organizer-confirm",
+    ),
 ]
