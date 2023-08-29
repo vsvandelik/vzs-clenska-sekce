@@ -31,13 +31,17 @@
                                             <div class="card">
                                                 <div class="card-header border-0">
                                                     <div class="card-title h5 text-bold">
-                                                        <input id="{{ date }}_checkbox"
-                                                               name="dates"
-                                                               type="checkbox"
-                                                               value="{{ date }}"
-                                                               onclick="dayCheckboxClicked(this)"
-                                                               {% if checked %}checked{% endif %}>
-                                                        <label for="{{ date }}_checkbox">{{ date }}</label>
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input id="{{ date }}_checkbox"
+                                                                   name="dates"
+                                                                   type="checkbox"
+                                                                   class="custom-control-input"
+                                                                   value="{{ date }}"
+                                                                   onclick="dayCheckboxClicked(this)"
+                                                                   {% if checked %}checked{% endif %}>
+                                                            <label for="{{ date }}_checkbox"
+                                                                   class="custom-control-label">{{ date }}</label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="card-body p-0">

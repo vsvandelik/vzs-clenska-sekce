@@ -22,7 +22,7 @@ function dayToggled(sender) {
 }
 
 function trainingDayToggled(sender) {
-    const day = sender.parentElement.parentElement.parentElement.id.split('_')[1]
+    const day = sender.parentElement.parentElement.parentElement.parentElement.id.split('_')[1]
     if (sender.checked) {
         localStorage.removeItem(sender.value)
         clearCustomValidityFromTrainingDayElementsOf(day)
@@ -247,6 +247,7 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     checkbox.name = name
     checkbox.value = value
     checkbox.id = value
+    checkbox.classList.add('custom-control-input')
     checkbox.checked = localStorage.getItem(value) === null
     checkbox.addEventListener('change', () =>
         trainingDayToggled(checkbox), false)
@@ -254,15 +255,19 @@ function createCheckboxWithLabel(name, value, labelTxt) {
     const label = document.createElement('label')
     label.htmlFor = value
     label.style.paddingLeft = '3px'
-    label.classList.add('font-weight-normal')
+    label.classList.add('font-weight-normal', 'custom-control-label')
 
     const txtNode = document.createTextNode(labelTxt)
     label.appendChild(txtNode)
 
+    const div = document.createElement('div')
+    div.classList.add('custom-control', 'custom-checkbox')
+    div.appendChild(checkbox)
+    div.appendChild(label)
+
     const td = document.createElement('td')
     td.classList.add('w-100')
-    td.appendChild(checkbox)
-    td.appendChild(label)
+    td.appendChild(div)
 
     const tr = document.createElement('tr')
     tr.appendChild(td)

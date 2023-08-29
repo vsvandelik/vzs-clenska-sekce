@@ -56,14 +56,18 @@
                                                                                 <tr>
                                                                                     {% with dateFormatted=date|date %}
                                                                                         <td class="w-100">
-                                                                                            <input id="{{ dateFormatted }}"
-                                                                                                   type="checkbox" name="day"
-                                                                                                   {% if checked %}
-                                                                                                       checked {% endif %}
-                                                                                                   onchange="trainingDayToggled(this)"
-                                                                                                   value="{{ dateFormatted }}">
-                                                                                            <label class="font-weight-normal"
-                                                                                                   for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                            <div class="custom-control custom-checkbox">
+                                                                                                <input id="{{ dateFormatted }}"
+                                                                                                       type="checkbox" name="day"
+                                                                                                       class="custom-control-input"
+                                                                                                       {% if checked %}
+                                                                                                           checked {% endif %}
+                                                                                                       onchange="trainingDayToggled(this)"
+                                                                                                       value="{{ dateFormatted }}">
+                                                                                                <label class="font-weight-normal"
+                                                                                                       class="custom-control-label"
+                                                                                                       for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                            </div>
                                                                                     {% endwith %}
                                                                                 </td>
                                                                                 </tr>
