@@ -8,7 +8,7 @@ window.addEventListener('load', event => {
     loadOccurrences()
     const position = $('#id_position_assignment')
     position.on('change', positionChanged)
-    //update(position.val())
+    update(position.val())
 })
 
 
@@ -25,21 +25,11 @@ function update(positionId) {
         const actual = $(`#position-${positionId}-${oid}-count`).val()
         $(`#occurrence-${oid}-capacity`).text(max)
         $(`#occurrence-${oid}-count`).text(actual)
-        let setCheckboxDisabled
         const card = $(`#occurrence-${oid}-card`)
-        if(actual >= max) {
+        if(actual >= max)
             card.addClass('bg-warning')
-            setCheckboxDisabled = true
-        }
-        else {
+        else
             card.removeClass('bg-warning')
-            setCheckboxDisabled = false
-        }
-        const checkbox = $(`#occurrence-${oid}`)
-        checkbox.prop('disabled', setCheckboxDisabled)
-
-        if((checkbox.prop('checked') && setCheckboxDisabled) || (!checkbox.prop('checked') && !setCheckboxDisabled))
-            checkbox.prop('checked', !checkbox.prop('checked'))
     }
 }
 

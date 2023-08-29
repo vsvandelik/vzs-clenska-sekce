@@ -495,36 +495,21 @@ class CoachAssignmentForm(ModelForm):
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
 
-        # Do not include full positions
-        include_coaches_query = Q(coaches__lt=F("count"))
-
         if self.instance.id is not None:
-            # Editing a coach
-
             if self.event.main_coach_assignment is not None:
                 self.fields["main_coach_assignment"].initial = (
                     self.event.main_coach_assignment.person == self.person
                 )
 
             self.fields["person"].widget.attrs["disabled"] = True
-
-            # Include positions where I am currently a coach (editing myself)
-            include_coaches_query = include_coaches_query | Q(
-                coachpositionassignment__person=self.person
-            )
         else:
             # Person is not a coach
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(coachpositionassignment__training=self.event)
             )
-
         self.fields[
             "position_assignment"
-        ].queryset = self.event.eventpositionassignment_set.annotate(
-            coaches=Count(F("coachpositionassignment"))
-        ).filter(
-            include_coaches_query
-        )
+        ].queryset = self.event.eventpositionassignment_set.all()
 
     def save(self, commit=True):
         instance = super().save(False)

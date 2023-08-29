@@ -330,9 +330,7 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         model = OrganizerOccurrenceAssignment
         widgets = {
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-            "position_assignment": Select2Widget(
-                attrs={"onchange": "stateChanged(this)"}
-            ),
+            "position_assignment": Select2Widget(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -340,35 +338,16 @@ class OrganizerOccurrenceAssignmentForm(ModelForm):
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
 
-        # Do not include full positions
-        include_organizers_query = Q(organizers__lt=F("count"))
-
         if self.instance.id is not None:
             self.fields["person"].widget.attrs["disabled"] = True
-
-            # Include positions where I am currently an organizer (editing myself)
-            include_organizers_query = include_organizers_query | Q(
-                organizeroccurrenceassignment__person=self.person
-            )
-
         else:
             # Person is not an organizer (creating a new organizer)
             self.fields["person"].queryset = Person.objects.filter(
                 ~Q(organizeroccurrenceassignment__occurrence=self.occurrence)
             )
-
-        # Filter out positions that are full in this occurrence
         self.fields[
             "position_assignment"
-        ].queryset = self.occurrence.event.eventpositionassignment_set.annotate(
-            organizers=Count(
-                F("organizeroccurrenceassignment"),
-                filter=Q(organizeroccurrenceassignment__occurrence=self.occurrence),
-                distinct=True,
-            )
-        ).filter(
-            include_organizers_query
-        )
+        ].queryset = self.occurrence.event.eventpositionassignment_set.all()
 
     def save(self, commit=True):
         instance = super().save(False)
@@ -419,6 +398,12 @@ class BulkAddOrganizerFromOneTimeEventForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event")
         super().__init__(*args, **kwargs)
+        self.fields["person"].queryset = Person.objects.filter(
+            ~Q(organizeroccurrenceassignment__occurrence__event=self.event)
+        ).all()
+        self.fields[
+            "position_assignment"
+        ].queryset = self.event.eventpositionassignment_set.all()
 
     def _clean_parse_occurrences(self):
         occurrences = []
@@ -431,22 +416,17 @@ class BulkAddOrganizerFromOneTimeEventForm(ModelForm):
                 self.add_error(None, f"Vybrán neplatný den {occurrence_id_str}")
         self.cleaned_data["occurrences"] = occurrences
 
-    def _check_position_is_free(self):
-        occurrences = self.cleaned_data["occurrences"]
-        position_assignment = self.cleaned_data["position_assignment"]
-        person = self.cleaned_data["person"]
-
-        # for occurrence in self.cleaned_data['occurrences']:
-        #     organizers = occurrence.position_organizers(position_assignment)
-        #     if len(organizers) > position_assignment.count or organizers.contains(person)
-
     def clean(self):
         self.cleaned_data = super().clean()
         self._clean_parse_occurrences()
-        self._check_position_is_free()
         return self.cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
-        a = 1
+        for occurrence in self.cleaned_data["occurrences"]:
+            instance.pk = None
+            instance.id = None
+            instance.occurrence = occurrence
+            if commit:
+                instance.save()
         return instance
