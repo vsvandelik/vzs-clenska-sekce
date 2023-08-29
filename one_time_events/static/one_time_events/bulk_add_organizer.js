@@ -1,28 +1,28 @@
-let occurrencies_ids = []
+let occurrenciesIds = []
 
 function loadOccurrences() {
-    occurrencies_ids = [... document.getElementsByTagName('input')].filter(x=>x.type === 'checkbox').map(x=>x.id.split('-')[1])
+    occurrenciesIds = [... document.getElementsByTagName('input')].filter(x=>x.type === 'checkbox').map(x=>x.id.split('-')[1])
 }
 
 window.addEventListener('load', event => {
     loadOccurrences()
     const position = $('#id_position_assignment')
     position.on('change', positionChanged)
-    update(position.val())
+    //update(position.val())
 })
 
 
-function update(position_id) {
-    if(position_id === undefined || position_id === '') {
+function update(positionId) {
+    if(positionId === undefined || positionId === '') {
         $('#occurrences-card').hide()
         return
     }
     else
         $('#occurrences-card').show()
 
-    const max = $(`#position-${position_id}-capacity`).val()
-    for (const oid of occurrencies_ids) {
-        const actual = $(`#position-${position_id}-${oid}-count`).val()
+    const max = $(`#position-${positionId}-capacity`).val()
+    for (const oid of occurrenciesIds) {
+        const actual = $(`#position-${positionId}-${oid}-count`).val()
         $(`#occurrence-${oid}-capacity`).text(max)
         $(`#occurrence-${oid}-count`).text(actual)
         let setCheckboxDisabled
@@ -44,6 +44,6 @@ function update(position_id) {
 }
 
 function positionChanged() {
-    const position_id = $('#id_position_assignment').val()
-    update(position_id)
+    const positionId = $('#id_position_assignment').val()
+    update(positionId)
 }

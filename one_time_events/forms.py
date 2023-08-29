@@ -414,14 +414,37 @@ class BulkAddOrganizerFromOneTimeEventForm(ModelForm):
             "position_assignment": Select2Widget(),
         }
 
-    occurrences_ids = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event")
         super().__init__(*args, **kwargs)
 
+    def _clean_parse_occurrences(self):
+        occurrences = []
+        for occurrence_id_str in self.cleaned_data["occurrences"]:
+            try:
+                occurrence_id_int = int(occurrence_id_str)
+                occurrence = OneTimeEventOccurrence.objects.get(pk=occurrence_id_int)
+                occurrences.append(occurrence)
+            except (ValueError, OneTimeEventOccurrence.DoesNotExist):
+                self.add_error(None, f"Vybrán neplatný den {occurrence_id_str}")
+        self.cleaned_data["occurrences"] = occurrences
+
+    def _check_position_is_free(self):
+        occurrences = self.cleaned_data["occurrences"]
+        position_assignment = self.cleaned_data["position_assignment"]
+        person = self.cleaned_data["person"]
+
+        # for occurrence in self.cleaned_data['occurrences']:
+        #     organizers = occurrence.position_organizers(position_assignment)
+        #     if len(organizers) > position_assignment.count or organizers.contains(person)
+
     def clean(self):
-        pass
+        self.cleaned_data = super().clean()
+        self._clean_parse_occurrences()
+        self._check_position_is_free()
+        return self.cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
