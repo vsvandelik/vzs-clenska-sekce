@@ -1,14 +1,15 @@
 {% load trainings_template_tags %}
-<div class="card {% if full %}bg-warning{% endif %}">
+<div id="occurrence-{{ occurrence.id }}-card" class="card">
     <div class="card-header border-0">
         <div class="card-title h5 text-bold">
             <div class="custom-control custom-checkbox">
-                <input name="weekdays" id="" type="checkbox"
+                <input name="occurrences" id="occurrence-{{ occurrence.id }}" type="checkbox"
+                       checked
                        class="custom-control-input"
-                       value="">
-                <label for="" class="custom-control-label">DATUM</label>
+                       value="{{ occurrence.id }}">
+                <label for="occurrence_{{ occurrence.id }}" class="custom-control-label">{{ occurrence.date|date }}</label>
             </div>
         </div>
-        <div class="h5 text-right">A / B</div>
+        <div class="h5 text-right"><span id="occurrence-{{ occurrence.id }}-count"></span> / <span id="occurrence-{{ occurrence.id }}-capacity"></span></div>
     </div>
 </div>

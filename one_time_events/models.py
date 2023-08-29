@@ -153,6 +153,11 @@ class OneTimeEventOccurrence(EventOccurrence):
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
 
+    def position_organizers(self, position_assignment):
+        return self.organizeroccurrenceassignment_set.filter(
+            position_assignment=position_assignment
+        )
+
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(

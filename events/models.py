@@ -203,6 +203,9 @@ class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    def position_organizers(self, position_assignment):
+        raise NotImplementedError
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
