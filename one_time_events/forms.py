@@ -405,14 +405,17 @@ class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
 
     def _clean_parse_occurrences(self):
         occurrences = []
+        occurrences_ids = []
         for occurrence_id_str in self.cleaned_data["occurrences"]:
             try:
                 occurrence_id_int = int(occurrence_id_str)
                 occurrence = OneTimeEventOccurrence.objects.get(pk=occurrence_id_int)
                 occurrences.append(occurrence)
+                occurrences_ids.append(occurrence_id_int)
             except (ValueError, OneTimeEventOccurrence.DoesNotExist):
                 self.add_error(None, f"Vybrán neplatný den {occurrence_id_str}")
         self.cleaned_data["occurrences"] = occurrences
+        self.cleaned_data["occurrences_ids"] = occurrences_ids
 
     def clean(self):
         self.cleaned_data = super().clean()
@@ -428,3 +431,8 @@ class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
             if commit:
                 instance.save()
         return instance
+
+    def checked_occurrences(self):
+        if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
+            return self.cleaned_data["occurrences_ids"]
+        return self.event.eventoccurrence_set.all().values_list("id", flat=True)

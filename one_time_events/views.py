@@ -182,3 +182,7 @@ class BulkAddOrganizerToOneTimeEvent(
     form_class = BulkAddOrganizerFromOneTimeEventForm
     template_name = "one_time_events/bulk_add_organizer.html"
     success_message = "Organizátor %(person)s přidán na vybrané dny"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
+        return super().get_context_data(**kwargs)

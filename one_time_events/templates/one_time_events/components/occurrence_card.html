@@ -4,7 +4,7 @@
         <div class="card-title h5 text-bold">
             <div class="custom-control custom-checkbox">
                 <input name="occurrences" id="occurrence-{{ occurrence.id }}" type="checkbox"
-                       checked
+                       {% if occurrence.id in checked_occurrences %}checked{% endif %}
                        class="custom-control-input"
                        value="{{ occurrence.id }}">
                 <label for="occurrence-{{ occurrence.id }}" class="custom-control-label">{{ occurrence.date|date }}</label>
