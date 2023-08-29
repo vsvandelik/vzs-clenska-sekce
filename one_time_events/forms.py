@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django import forms
-from django.db.models import Q, F, Count
+from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django_select2.forms import Select2Widget
 
@@ -21,6 +21,7 @@ from .models import (
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
+    OneTimeEventParticipantAttendance,
 )
 
 
@@ -222,9 +223,15 @@ class OneTimeEventParticipantEnrollmentUpdateAttendanceMixin:
     def update_attendance(self, instance):
         for occurrence in instance.event.eventoccurrence_set.all():
             if instance.state == ParticipantEnrollment.State.APPROVED:
-                occurrence.attending_participants.add(instance.person)
+                OneTimeEventParticipantAttendance(
+                    enrollment=instance, person=instance.person, occurrence=occurrence
+                ).save()
             else:
-                occurrence.attending_participants.remove(instance.person)
+                attendance = OneTimeEventParticipantAttendance.objects.filter(
+                    occurrence=occurrence, person=instance.person
+                ).first()
+                if attendance is not None:
+                    attendance.delete()
 
 
 class OneTimeEventParticipantEnrollmentForm(
@@ -258,30 +265,29 @@ class OneTimeEventParticipantEnrollmentForm(
     def save(self, commit=True):
         instance = super().save(False)
 
-        if instance.state != ParticipantEnrollment.State.APPROVED:
-            instance.agreed_participation_fee = None
-            if instance.transaction is not None and not instance.transaction.is_settled:
-                instance.transaction.delete()
-                instance.transaction = None
-
-        elif instance.transaction is None:
-            if instance.agreed_participation_fee:
+        if instance.state == ParticipantEnrollment.State.APPROVED:
+            if instance.transaction is not None:
+                if not instance.transaction.is_settled:
+                    instance.transaction.amount = -instance.agreed_participation_fee
+                else:
+                    instance.agreed_participation_fee = -instance.transaction.amount
+            elif instance.agreed_participation_fee:
                 instance.transaction = (
                     OneTimeEventParticipantEnrollment.create_attached_transaction(
                         instance, self.event
                     )
                 )
-        elif not instance.transaction.is_settled:
-            instance.transaction.amount = -instance.agreed_participation_fee
         else:
-            instance.agreed_participation_fee = -instance.transaction.amount
-
-        super().update_attendance(instance)
+            instance.agreed_participation_fee = None
+            if instance.transaction is not None and not instance.transaction.is_settled:
+                instance.transaction.delete()
+                instance.transaction = None
 
         if commit:
             if instance.transaction is not None:
                 instance.transaction.save()
             instance.save()
+            super().update_attendance(instance)
         return instance
 
 
@@ -320,10 +326,9 @@ class OneTimeEventEnrollMyselfParticipantForm(
                 transaction.save()
                 instance.transaction = transaction
 
-        super().update_attendance(instance)
-
         if commit:
             instance.save()
+            super().update_attendance(instance)
 
         return instance
 

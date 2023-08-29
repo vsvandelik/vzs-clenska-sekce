@@ -158,6 +158,7 @@ class CoachAssignmentCreateUpdateMixin(
 
 class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
     template_name = "trainings/create_coach_assignment.html"
+    success_message = "Trenér %(person)s přidán"
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
@@ -166,6 +167,7 @@ class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.Create
 
 class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.UpdateView):
     template_name = "trainings/edit_coach_assignment.html"
+    success_message = "Trenér %(person)s upraven"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -180,3 +182,6 @@ class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.Update
 class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
     success_message = "Odhlášení trenéra z události proběhlo úspěšně"
     template_name = "trainings/modals/delete_coach_assignment.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Trenér {self.object.person} odebrán"

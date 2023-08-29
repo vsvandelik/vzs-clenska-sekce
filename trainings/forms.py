@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 from django import forms
-from django.db.models import Q, F, Count
-from django.forms import ModelForm
+from django.db.models import Q
 from django.utils import timezone
-from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -13,13 +11,12 @@ from events.forms_bases import (
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
 )
-from persons.models import Person
 from events.models import (
     EventOrOccurrenceState,
     ParticipantEnrollment,
 )
 from events.utils import parse_czech_date
-from persons.widgets import PersonSelectWidget
+from persons.models import Person
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
@@ -34,6 +31,7 @@ from .models import (
     TrainingWeekdays,
     CoachPositionAssignment,
     CoachOccurrenceAssignment,
+    TrainingParticipantAttendance,
 )
 
 
@@ -396,9 +394,15 @@ class TrainingParticipantEnrollmentUpdateAttendanceMixin:
                 instance.state == ParticipantEnrollment.State.APPROVED
                 and instance.attends_on_weekday(occurrence.weekday())
             ):
-                occurrence.attending_participants.add(instance.person)
+                TrainingParticipantAttendance(
+                    enrollment=instance, person=instance.person, occurrence=occurrence
+                ).save()
             else:
-                occurrence.attending_participants.remove(instance.person)
+                attendance = TrainingParticipantAttendance.objects.filter(
+                    occurrence=occurrence, person=instance.person
+                ).first()
+                if attendance is not None:
+                    attendance.delete()
 
 
 class TrainingParticipantEnrollmentForm(
@@ -422,20 +426,21 @@ class TrainingParticipantEnrollmentForm(
 
     def save(self, commit=True):
         instance = super().save(False)
+        weekdays_cleaned = self.cleaned_data["weekdays"]
         if instance.id is not None or commit:
             if instance.id is None:
                 instance.save()
             instance_weekdays_objs = instance.weekdays.all()
-            weekdays_cleaned = self.cleaned_data["weekdays"]
             for weekday_obj in instance_weekdays_objs:
                 if weekday_obj.weekday not in weekdays_cleaned:
                     weekday_obj.delete()
                 else:
                     weekdays_cleaned.remove(weekday_obj.weekday)
-            super().initialize_weekdays(instance, weekdays_cleaned)
-            super().update_attendance(instance)
+
         if commit:
+            super().initialize_weekdays(instance, weekdays_cleaned)
             instance.save()
+            super().update_attendance(instance)
         return instance
 
 
@@ -470,8 +475,8 @@ class TrainingEnrollMyselfParticipantForm(
             instance.save()
             weekdays_cleaned = self.cleaned_data["weekdays"]
             super().initialize_weekdays(instance, weekdays_cleaned)
-            super().update_attendance(instance)
             instance.save()
+            super().update_attendance(instance)
 
         return instance
 
