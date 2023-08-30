@@ -517,9 +517,12 @@ class CoachAssignmentForm(OrganizerAssignmentForm):
         if instance.id is not None:
             instance.person = self.person
 
-        if self.cleaned_data["main_coach_assignment"] is not None:
+        if self.cleaned_data["main_coach_assignment"]:
             self.event.main_coach_assignment = instance
-        elif instance.person == self.event.main_coach_assignment:
+        elif (
+            self.event.main_coach_assignment is not None
+            and instance.person == self.event.main_coach_assignment.person
+        ):
             self.event.main_coach_assignment = None
 
         for occurrence in self.event.eventoccurrence_set.all():
