@@ -393,6 +393,7 @@ class TransactionCreateTrainingBulkConfirmView(
                     "person": person,
                     "amount": amount,
                     "date_due": params["date_due"],
+                    "enrollment": enrollment,
                 }
             )
 

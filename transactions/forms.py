@@ -133,7 +133,7 @@ class TransactionCreateBulkConfirmForm(forms.Form):
         self._add_fields_by_persons_transactions_list(persons_transactions, layout_divs)
         self._prepare_form_helper(layout_divs)
 
-        self.persons = [transaction["person"] for transaction in persons_transactions]
+        self.persons_transactions = persons_transactions
         self.prepared_transactions = []
 
     def _add_fields_by_persons_transactions_list(
@@ -179,7 +179,8 @@ class TransactionCreateBulkConfirmForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
-        for person in self.persons:
+        for person_transaction in self.persons_transactions:
+            person = person_transaction["person"]
             field_name_amount = f"transactions-{person.id}-amount"
             field_name_date_due = f"transactions-{person.id}-date_due"
 
@@ -199,12 +200,15 @@ class TransactionCreateBulkConfirmForm(forms.Form):
                 )
             else:
                 self.prepared_transactions.append(
-                    Transaction(
-                        person=person,
-                        amount=amount,
-                        reason=self.reason,
-                        date_due=date_due,
-                        event=self.event,
+                    (
+                        Transaction(
+                            person=person,
+                            amount=amount,
+                            reason=self.reason,
+                            date_due=date_due,
+                            event=self.event,
+                        ),
+                        person_transaction["enrollment"],
                     )
                 )
 
@@ -214,9 +218,10 @@ class TransactionCreateBulkConfirmForm(forms.Form):
         bulk_transaction = BulkTransaction(reason=self.reason, event=self.event)
         bulk_transaction.save()
 
-        for transaction in self.prepared_transactions:
+        for transaction, enrollment in self.prepared_transactions:
             transaction.bulk_transaction = bulk_transaction
             transaction.save()
+            enrollment.transactions.add(transaction)
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
