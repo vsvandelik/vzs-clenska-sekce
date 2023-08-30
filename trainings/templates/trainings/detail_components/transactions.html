@@ -15,4 +15,8 @@
             {% endfor %}
         </table>
     </div>
+
+    <div class="card-footer text-center">
+        <a href="{% url 'trainings:add-transaction' event.id %}?event_id={{ event.id }}" class="btn btn-primary">Přidat transakci</a>
+    </div>
 </div>
