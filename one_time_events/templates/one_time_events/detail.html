@@ -89,7 +89,8 @@
         simpleOrderableTableEnable('participants-approved-table', [0, 1])
         simpleOrderableTableEnable("organizers-table", [0, 1])
         {% for occurrence in event.eventoccurrence_set.all %}
-            simpleOrderableTableEnable("organizers-{{ occurrence.id}}-table", [0,1])
+            simpleOrderableTableEnable("organizers-{{ occurrence.id}}-table", [0, 1])
+            simpleOrderableTableEnable('positions-{{ occurrence.id }}-table', [0, 1])
         {% endfor %}
     </script>
     <script src="{% static "register_modal.js" %}"></script>
