@@ -386,7 +386,7 @@ class TransactionCreateTrainingBulkConfirmView(
         for enrollment in approved_enrollments:
             person = enrollment.person
             repetition_per_week = enrollment.weekdays.count()
-            amount = -params[f"amount_{repetition_per_week}"]
+            amount = -int(params[f"amount_{repetition_per_week}"])
 
             persons_transactions.append(
                 {
