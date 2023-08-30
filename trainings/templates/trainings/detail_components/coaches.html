@@ -1,11 +1,30 @@
 {% load vzs_filters %}
-
+{% load trainings_template_tags %}
 <div class="col-12">
     <div class="card">
         <div class="card-header">
             <div class="card-title h5">Trenéři</div>
         </div>
         <div class="card-body">
+            <table id="coaches-positions-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Pozice</th>
+                        <th>Zaplněnost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position_assignment in event.eventpositionassignment_set.all %}
+                        <tr>
+                            {% with coaches_count=event|coach_position_assignment_coaches:position_assignment|length %}
+                                <td>{{ position_assignment.position }}</td>
+                                <td class="{% if coaches_count == position_assignment.count %}bg-success{% elif coaches_count > position_assignment.count %}bg-warning{% endif %}">{{ coaches_count }}
+                                    / {{ position_assignment.count }}</td>
+                            {% endwith %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             <table id="coaches-table" class="table">
                 <thead>
                     <tr>

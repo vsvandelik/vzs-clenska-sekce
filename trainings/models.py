@@ -209,6 +209,11 @@ class Training(Event):
             position__in=self.positions.all()
         )
 
+    def position_coaches(self, position_assignment):
+        return self.coachpositionassignment_set.filter(
+            position_assignment=position_assignment
+        )
+
     def __str__(self):
         return self.name
 
