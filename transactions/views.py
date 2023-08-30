@@ -265,7 +265,7 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
 class TransactionAddTrainingPaymentView(
     InsertEventIntoModelFormKwargsMixin, generic.FormView
 ):
-    template_name = "trainings/add_transaction.html"
+    template_name = "transactions/create_training_transaction.html"
     form_class = TransactionAddTrainingPaymentForm
 
     def __init__(self, *args, **kwargs):
