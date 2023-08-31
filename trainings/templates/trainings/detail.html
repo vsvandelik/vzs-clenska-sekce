@@ -17,6 +17,9 @@
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
             {% include 'trainings/detail_components/enroll_unenroll_button.html' %}
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'trainings:add-transaction' event.id %}?event_id={{ event.id }}" class="btn btn-info">Přidat transakci</a>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -45,6 +48,9 @@
     <div class="row">
         <div class="col col-md-4">
             {% include 'trainings/detail_components/replaceable_trainings.html' %}
+        </div>
+        <div class="col col-md-4">
+            {% include 'trainings/detail_components/transactions.html' %}
         </div>
     </div>
     <div class="row">

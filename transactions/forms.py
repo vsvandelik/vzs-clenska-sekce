@@ -93,6 +93,23 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         return cleaned_data
 
 
+class TransactionAddTrainingPaymentForm(forms.Form):
+    date_due = forms.DateField(label=_("Datum splatnosti"), widget=DatePickerWithIcon())
+    reason = forms.CharField(label=_("Popis transakce"))
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event", 0)
+        super().__init__(*args, **kwargs)
+
+        for i in range(1, self.event.weekly_occurs_count() + 1):
+            self.fields[f"amount_{i}"] = forms.IntegerField(
+                label=_("Suma za trénink {0}x týdně").format(i),
+                min_value=1,
+            )
+
+        self.initial["reason"] = _("Platba za tréninky - {0}").format(self.event)
+
+
 class Label:
     def __init__(self, text=None):
         self.text = text
@@ -107,6 +124,7 @@ class Label:
 class TransactionCreateBulkConfirmForm(forms.Form):
     def __init__(self, *args, **kwargs):
         persons_transactions = kwargs.pop("persons_transactions", [])
+        self.event = kwargs.pop("event", None)
         self.reason = kwargs.pop("reason", [])
 
         super().__init__(*args, **kwargs)
@@ -115,7 +133,7 @@ class TransactionCreateBulkConfirmForm(forms.Form):
         self._add_fields_by_persons_transactions_list(persons_transactions, layout_divs)
         self._prepare_form_helper(layout_divs)
 
-        self.persons = [transaction["person"] for transaction in persons_transactions]
+        self.persons_transactions = persons_transactions
         self.prepared_transactions = []
 
     def _add_fields_by_persons_transactions_list(
@@ -161,7 +179,8 @@ class TransactionCreateBulkConfirmForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
-        for person in self.persons:
+        for person_transaction in self.persons_transactions:
+            person = person_transaction["person"]
             field_name_amount = f"transactions-{person.id}-amount"
             field_name_date_due = f"transactions-{person.id}-date_due"
 
@@ -181,23 +200,28 @@ class TransactionCreateBulkConfirmForm(forms.Form):
                 )
             else:
                 self.prepared_transactions.append(
-                    Transaction(
-                        person=person,
-                        amount=amount,
-                        reason=self.reason,
-                        date_due=date_due,
+                    (
+                        Transaction(
+                            person=person,
+                            amount=amount,
+                            reason=self.reason,
+                            date_due=date_due,
+                            event=self.event,
+                        ),
+                        person_transaction["enrollment"],
                     )
                 )
 
         return cleaned_data
 
     def create_transactions(self):
-        bulk_transaction = BulkTransaction(reason=self.reason)
+        bulk_transaction = BulkTransaction(reason=self.reason, event=self.event)
         bulk_transaction.save()
 
-        for transaction in self.prepared_transactions:
+        for transaction, enrollment in self.prepared_transactions:
             transaction.bulk_transaction = bulk_transaction
             transaction.save()
+            enrollment.transactions.add(transaction)
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):

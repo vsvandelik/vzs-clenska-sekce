@@ -7,9 +7,14 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from events.views import (
+    InsertEventIntoModelFormKwargsMixin,
+    RedirectToEventDetailOnSuccessMixin,
+)
 from persons.models import Person
 from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
+from trainings.models import Training
 from vzs.utils import export_queryset_csv, reverse_with_get_params
 from .forms import (
     TransactionEditForm,
@@ -18,6 +23,7 @@ from .forms import (
     TransactionFilterForm,
     TransactionCreateBulkForm,
     TransactionCreateBulkConfirmForm,
+    TransactionAddTrainingPaymentForm,
 )
 from .models import Transaction
 from .utils import send_email_transactions
@@ -256,16 +262,42 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
         return super().form_valid(form)
 
 
-class TransactionCreateBulkConfirmView(
+class TransactionAddTrainingPaymentView(
+    InsertEventIntoModelFormKwargsMixin, generic.FormView
+):
+    template_name = "transactions/create_training_transaction.html"
+    form_class = TransactionAddTrainingPaymentForm
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.confirm_get_params = None
+
+    def get_success_url(self):
+        return reverse_with_get_params(
+            "trainings:add-transaction-confirm",
+            kwargs={"event_id": self.event.id},
+            get=self.confirm_get_params,
+        )
+
+    def form_valid(self, form):
+        self.confirm_get_params = {
+            "reason": form.cleaned_data["reason"],
+            "date_due": form.cleaned_data["date_due"],
+        }
+
+        for i in range(1, self.event.weekly_occurs_count() + 1):
+            self.confirm_get_params[f"amount_{i}"] = form.cleaned_data[f"amount_{i}"]
+
+        return super().form_valid(form)
+
+
+class TransactionCreateBulkConfirmMixin(
     SuccessMessageMixin, TransactionEditPermissionMixin, generic.edit.FormView
 ):
-    template_name = "transactions/create_bulk_confirm.html"
     form_class = TransactionCreateBulkConfirmForm
-    success_url = reverse_lazy("transactions:index")
-    success_message = _("Hromadná transakce byla přidána")
 
     def dispatch(self, request, *args, **kwargs):
-        required_params = ["amount", "date_due", "reason"]
+        required_params = kwargs.pop("required_params", [])
         get_params = self.request.GET
 
         if not all(param in get_params for param in required_params):
@@ -283,6 +315,26 @@ class TransactionCreateBulkConfirmView(
         kwargs.setdefault("reason", get_params.get("reason", ""))
 
         return kwargs
+
+    def form_valid(self, form):
+        form.create_transactions()
+        return super().form_valid(form)
+
+    def _create_person_transactions(self, params):
+        raise NotImplementedError()
+
+
+class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMixin):
+    template_name = "transactions/create_bulk_confirm.html"
+    success_url = reverse_lazy("transactions:index")
+    success_message = _("Hromadná transakce byla přidána")
+
+    def dispatch(self, request, *args, **kwargs):
+        required_params = ["amount", "date_due", "reason"]
+
+        return super().dispatch(
+            request, required_params=required_params, *args, **kwargs
+        )
 
     def _create_person_transactions(self, params):
         selected_persons = parse_persons_filter_queryset(
@@ -304,9 +356,53 @@ class TransactionCreateBulkConfirmView(
 
         return persons_transactions
 
-    def form_valid(self, form):
-        form.create_transactions()
-        return super().form_valid(form)
+
+class TransactionCreateTrainingBulkConfirmView(
+    RedirectToEventDetailOnSuccessMixin, TransactionCreateBulkConfirmMixin
+):
+    template_name = "transactions/create_bulk_confirm.html"
+    success_message = _("Hromadná transakce byla přidána")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = None
+
+    def dispatch(self, request, *args, **kwargs):
+        required_params = ["date_due", "reason"]
+        self.event = get_object_or_404(Training, pk=self.kwargs["event_id"])
+
+        for i in range(1, self.event.weekly_occurs_count() + 1):
+            required_params.append(f"amount_{i}")
+
+        return super().dispatch(
+            request, required_params=required_params, *args, **kwargs
+        )
+
+    def _create_person_transactions(self, params):
+        approved_enrollments = self.event.approved_enrollments()
+
+        persons_transactions = []
+
+        for enrollment in approved_enrollments:
+            person = enrollment.person
+            repetition_per_week = enrollment.weekdays.count()
+            amount = -int(params[f"amount_{repetition_per_week}"])
+
+            persons_transactions.append(
+                {
+                    "person": person,
+                    "amount": amount,
+                    "date_due": params["date_due"],
+                    "enrollment": enrollment,
+                }
+            )
+
+        return persons_transactions
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.setdefault("event", self.event)
+        return kwargs
 
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
