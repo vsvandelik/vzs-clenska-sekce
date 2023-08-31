@@ -27,7 +27,7 @@ urlpatterns = [
     ),
     path(
         "pridat-hromadne/potvrdit/",
-        views.TransactionCreateBulkConfirmView.as_view(),
+        views.TransactionCreateSameAmountBulkConfirmView.as_view(),
         name="add-bulk-confirm",
     ),
     path(

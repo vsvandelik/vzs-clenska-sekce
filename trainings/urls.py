@@ -1,5 +1,6 @@
 from django.urls import path
 
+from transactions import views as transactions_views
 from . import views
 
 app_name = "trainings"
@@ -56,5 +57,15 @@ urlpatterns = [
         "<int:event_id>/odebrat-trenera/<int:pk>",
         views.CoachAssignmentDeleteView.as_view(),
         name="delete-coach-assignment",
+    ),
+    path(
+        "<int:event_id>/pridat-transakci/",
+        transactions_views.TransactionAddTrainingPaymentView.as_view(),
+        name="add-transaction",
+    ),
+    path(
+        "<int:event_id>/pridat-transakci/potvrdit",
+        transactions_views.TransactionCreateTrainingBulkConfirmView.as_view(),
+        name="add-transaction-confirm",
     ),
 ]

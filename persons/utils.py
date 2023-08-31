@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import redirect
 
+from events.models import Event
 from features.models import Feature, FeatureAssignment
 
 
@@ -13,6 +14,7 @@ def parse_persons_filter_queryset(params_dict, persons):
     person_type = params_dict.get("person_type")
     age_from = params_dict.get("age_from")
     age_to = params_dict.get("age_to")
+    event_id = params_dict.get("event_id")
 
     if name:
         persons = persons.filter(
@@ -48,6 +50,10 @@ def parse_persons_filter_queryset(params_dict, persons):
 
     if age_to:
         persons = persons.filter(age__lte=age_to)
+
+    if event_id:
+        approved_participants = Event.objects.get(pk=event_id).approved_participants()
+        persons = persons.filter(id__in=[p.pk for p in approved_participants])
 
     return persons.order_by("last_name")
 
