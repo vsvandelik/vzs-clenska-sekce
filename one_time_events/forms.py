@@ -377,13 +377,17 @@ class BulkDeleteOrganizerFromOneTimeEventForm(Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        cleaned_data["event"] = self.event
-        person = cleaned_data["person"]
-        try:
-            person = Person.objects.get(pk=person)
-            cleaned_data["person"] = person
-        except Person.DoesNotExist:
+
+        person_pk = cleaned_data["person"]
+
+        person = Person.objects.filter(pk=person_pk).first()
+
+        if person is not None:
             self.add_error("person", f"Osoba s id {person} neexistuje")
+
+        cleaned_data["person"] = person
+        cleaned_data["event"] = self.event
+
         return cleaned_data
 
 
