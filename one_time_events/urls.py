@@ -40,4 +40,29 @@ urlpatterns = [
         views.OneTimeEventEnrollMyselfParticipantView.as_view(),
         name="enroll-myself-participant",
     ),
+    path(
+        "<int:occurrence_id>/pridat-organizatora-na-den",
+        views.AddOrganizerForOccurrenceView.as_view(),
+        name="add-organizer-for-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/upravit-organizatora-na-den/<int:pk>",
+        views.EditOrganizerForOccurrenceView.as_view(),
+        name="edit-organizer-for-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/smazat-organizatora-na-den/<int:pk>",
+        views.DeleteOrganizerForOccurrenceView.as_view(),
+        name="delete-organizer-from-occurrence",
+    ),
+    path(
+        "<int:event_id>/hromadne-odebrani-organizatora/",
+        views.BulkDeleteOrganizerFromOneTimeEvent.as_view(),
+        name="bulk-delete-organizer",
+    ),
+    path(
+        "<int:event_id>/hromadne-pridani-organizatora/",
+        views.BulkAddOrganizerToOneTimeEvent.as_view(),
+        name="bulk-add-organizer",
+    ),
 ]

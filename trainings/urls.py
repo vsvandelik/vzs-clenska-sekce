@@ -44,6 +44,21 @@ urlpatterns = [
         name="enroll-myself-participant",
     ),
     path(
+        "<int:event_id>/pridat-trenera/",
+        views.CoachAssignmentCreateView.as_view(),
+        name="create-coach-assignment",
+    ),
+    path(
+        "<int:event_id>/upravit-trenera/<int:pk>",
+        views.CoachAssignmentUpdateView.as_view(),
+        name="edit-coach-assignment",
+    ),
+    path(
+        "<int:event_id>/odebrat-trenera/<int:pk>",
+        views.CoachAssignmentDeleteView.as_view(),
+        name="delete-coach-assignment",
+    ),
+    path(
         "<int:event_id>/pridat-transakci/",
         transactions_views.TransactionAddTrainingPaymentView.as_view(),
         name="add-transaction",

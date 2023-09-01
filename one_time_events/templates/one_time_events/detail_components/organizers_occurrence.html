@@ -1,0 +1,69 @@
+{% load events_template_tags %}
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">{{ occurrence.date|date }}</div>
+        </div>
+        <div class="card-body">
+            <table id="positions-{{ occurrence.id }}-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Pozice</th>
+                        <th>Zaplněnost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position_assignment in occurrence.event.eventpositionassignment_set.all %}
+                        <tr>
+                            {% with organizers_count=occurrence|occurrence_position_assignment_organizers:position_assignment|length %}
+                                <td>{{ position_assignment.position }}</td>
+                                <td class="{% if organizers_count == position_assignment.count %}bg-success{% elif organizers_count > position_assignment.count %}bg-warning{% endif %}">{{ organizers_count }}
+                                    / {{ position_assignment.count }}</td>
+                            {% endwith %}
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+            <table class="table" id="organizers-{{ occurrence.id }}-table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Pozice</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for organizer_assignment in occurrence.organizeroccurrenceassignment_set.all %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'positions:detail' organizer_assignment.position_assignment.position.id %}">{{ organizer_assignment.position_assignment.position }}</a>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm"
+                                       href="{% url 'one_time_events:edit-organizer-for-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a href="#" data-toggle="modal" data-target="#delete-organizer-assignment-modal"
+                                       data-action="{% url 'one_time_events:delete-organizer-from-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}"
+                                       class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'one_time_events:add-organizer-for-occurrence' occurrence.id %}" class="btn-primary btn">Přidat</a>
+        </div>
+    </div>
+</div>

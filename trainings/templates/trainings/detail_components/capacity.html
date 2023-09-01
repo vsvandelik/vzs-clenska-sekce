@@ -3,6 +3,6 @@
 
 {% with day_pretty=weekday|weekday_pretty %}
     {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}
-        {{ day_pretty }}: {{ event|approved_enrollments_by_weekday:weekday|length }} / {{ event.capacity }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}
+        {{ day_pretty }}: {{ event|approved_enrollments_by_weekday:weekday|length }} / {{ event.get_capacity_display }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}
     {% endwith %}
 {% endwith %}

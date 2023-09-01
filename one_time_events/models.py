@@ -1,6 +1,5 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -8,11 +7,10 @@ from events.models import (
     EventOrOccurrenceState,
     EventOccurrence,
     ParticipantEnrollment,
-    OrganizerPositionAssignment,
+    OrganizerAssignment,
 )
 from trainings.models import Training
 from transactions.models import Transaction
-from vzs import settings
 
 
 class OneTimeEvent(Event):
@@ -59,11 +57,16 @@ class OneTimeEvent(Event):
         return True
 
     def has_free_spot(self):
-        if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
-            return len(self.approved_participants()) < self.capacity
-        elif self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE:
-            return len(self.all_possible_participants()) < self.capacity
-        raise NotImplementedError
+        possibly_free = super().has_free_spot()
+        if not possibly_free:
+            if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+                return len(self.approved_participants()) < self.capacity
+            elif (
+                self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE
+            ):
+                return len(self.all_possible_participants()) < self.capacity
+            raise NotImplementedError
+        return True
 
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
@@ -96,25 +99,64 @@ class OneTimeEvent(Event):
     def enrollments_by_Q(self, condition):
         return self.onetimeeventparticipantenrollment_set.filter(condition)
 
+    def organizers_assignments(self):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            position__in=self.positions.all()
+        )
+
     def __str__(self):
         return self.name
 
 
+class OrganizerOccurrenceAssignment(OrganizerAssignment):
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
+        verbose_name="Pozice události",
+        on_delete=models.CASCADE,
+    )
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
+class OneTimeEventParticipantAttendance(models.Model):
+    enrollment = models.ForeignKey(
+        "one_time_events.OneTimeEventParticipantEnrollment", on_delete=models.CASCADE
+    )
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
 class OneTimeEventOccurrence(EventOccurrence):
+    organizers = models.ManyToManyField(
+        "persons.Person",
+        through="one_time_events.OrganizerOccurrenceAssignment",
+        related_name="organizer_occurrence_assignment_set",
+    )
+    attending_participants = models.ManyToManyField(
+        "persons.Person", through="one_time_events.OneTimeEventParticipantAttendance"
+    )
+
     date = models.DateField(_("Den konání"))
     hours = models.PositiveSmallIntegerField(
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
-    organizers_assignment = models.ManyToManyField(
-        "one_time_events.OneTimeEventOccurrenceOrganizerPositionAssignment",
-        related_name="one_time_event_occurrence_organizer_position_assignment_set",
-    )
 
-
-class OneTimeEventOccurrenceOrganizerPositionAssignment(OrganizerPositionAssignment):
-    one_time_event_ocurrence = models.ForeignKey(
-        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
-    )
+    def position_organizers(self, position_assignment):
+        return self.organizeroccurrenceassignment_set.filter(
+            position_assignment=position_assignment
+        )
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
@@ -138,6 +180,7 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
         transaction = OneTimeEventParticipantEnrollment.objects.get(
             pk=self.pk
         ).transaction
+
         super().delete()
         if transaction is not None and not transaction.is_settled:
             transaction.delete()

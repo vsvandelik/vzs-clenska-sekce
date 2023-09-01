@@ -1,0 +1,5 @@
+{% extends 'trainings/create_edit_coach_assignment.html' %}
+{% block title %}Přihlášení trenéra na trénink{% endblock %}
+{% block form_action %}{% url 'trainings:create-coach-assignment' event.id %}{% endblock %}
+{% block card_title %}Přidání{% endblock %}
+{% block savebtn_value %}Přidat{% endblock %}

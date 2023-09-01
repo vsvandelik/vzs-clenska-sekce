@@ -1,12 +1,12 @@
-import polymorphic.models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
-from persons.models import Person
-from features.models import Feature
-from django.core.validators import MinValueValidator, MaxValueValidator
-from polymorphic.models import PolymorphicModel
 from polymorphic.managers import PolymorphicManager
+from polymorphic.models import PolymorphicModel
+
+from features.models import Feature
+from persons.models import Person
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -20,23 +20,6 @@ class EventOrOccurrenceState(models.TextChoices):
     COMPLETED = "zpracovana", _("zpracována")
 
 
-class ParticipantEnrollmentApprovedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.APPROVED)
-
-
-class ParticipantEnrollmentSubstituteManager(PolymorphicManager):
-    def get_queryset(self):
-        return (
-            super().get_queryset().filter(state=ParticipantEnrollment.State.SUBSTITUTE)
-        )
-
-
-class ParticipantEnrollmentRejectedManager(PolymorphicManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(state=ParticipantEnrollment.State.REJECTED)
-
-
 class ParticipantEnrollment(PolymorphicModel):
     class State(models.TextChoices):
         APPROVED = "schvalen", _("schválen")
@@ -44,9 +27,6 @@ class ParticipantEnrollment(PolymorphicModel):
         REJECTED = "odmitnut", _("odmítnut")
 
     objects = PolymorphicManager()
-    enrollments_approved = ParticipantEnrollmentApprovedManager()
-    enrollments_substitute = ParticipantEnrollmentSubstituteManager()
-    enrollments_rejected = ParticipantEnrollmentRejectedManager()
 
     created_datetime = models.DateTimeField()
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
@@ -63,9 +43,7 @@ class Event(PolymorphicModel):
     date_end = models.DateField(_("Končí"))
 
     positions = models.ManyToManyField(
-        "positions.EventPosition",
-        through="events.EventPositionAssignment",
-        related_name="event_position_assignment_set",
+        "positions.EventPosition", through="events.EventPositionAssignment"
     )
 
     participants_enroll_state = models.CharField(
@@ -153,7 +131,7 @@ class Event(PolymorphicModel):
         return True
 
     def has_free_spot(self):
-        raise NotImplementedError
+        return self.capacity is None
 
     def can_person_enroll_as_participant(self, person):
         return self.can_person_enroll_as_waiting(person) and self.has_free_spot()
@@ -217,23 +195,16 @@ class Event(PolymorphicModel):
     def rejected_participants(self):
         return self.participants_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
 
+    def organizers_assignments(self):
+        raise NotImplementedError
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-
-    # These two fields contain person that were missing and their absence was not excused
-    # Persons that were absent and were excused will be removed from participants or organizers
-    missing_organizers_unexcused = models.ManyToManyField(
-        "persons.Person", related_name="missing_organizers_set"
-    )
-
-    missing_participants_unexcused = models.ManyToManyField(
-        "persons.Person", related_name="missing_participants_set"
-    )
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
-    def enrolled_organizers(self):
-        pass  # TODO:
+    def position_organizers(self, position_assignment):
+        raise NotImplementedError
 
 
 class EventPositionAssignment(models.Model):
@@ -248,12 +219,14 @@ class EventPositionAssignment(models.Model):
     class Meta:
         unique_together = ["event", "position"]
 
+    def __str__(self):
+        return self.position.name
 
-class OrganizerPositionAssignment(PolymorphicModel):
-    position_assignment = models.ForeignKey(
-        "events.EventPositionAssignment", on_delete=models.CASCADE
+
+class OrganizerAssignment(PolymorphicModel):
+    transaction = models.ForeignKey(
+        "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
-    organizers = models.ManyToManyField("persons.Person")
 
 
 class EventPersonTypeConstraint(models.Model):

@@ -1,19 +1,27 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
-from django.forms import ModelForm, CheckboxSelectMultiple
-from django.utils import timezone
+from django import forms
+from django.db.models import Q
+from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
-from events.forms_bases import EventForm, EnrollMyselfParticipantForm
+from events.forms_bases import (
+    EventForm,
+    EnrollMyselfParticipantForm,
+    OrganizerAssignmentForm,
+)
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
-from transactions.models import Transaction
+from persons.models import Person
+from persons.widgets import PersonSelectWidget
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
+    OrganizerOccurrenceAssignment,
+    OneTimeEventParticipantAttendance,
 )
 
 
@@ -211,7 +219,24 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
+class OneTimeEventParticipantEnrollmentUpdateAttendanceMixin:
+    def update_attendance(self, instance):
+        for occurrence in instance.event.eventoccurrence_set.all():
+            if instance.state == ParticipantEnrollment.State.APPROVED:
+                OneTimeEventParticipantAttendance(
+                    enrollment=instance, person=instance.person, occurrence=occurrence
+                ).save()
+            else:
+                attendance = OneTimeEventParticipantAttendance.objects.filter(
+                    occurrence=occurrence, person=instance.person
+                ).first()
+                if attendance is not None:
+                    attendance.delete()
+
+
+class OneTimeEventParticipantEnrollmentForm(
+    ParticipantEnrollmentForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
         fields = ["agreed_participation_fee"] + ParticipantEnrollmentForm.Meta.fields
@@ -240,32 +265,35 @@ class OneTimeEventParticipantEnrollmentForm(ParticipantEnrollmentForm):
     def save(self, commit=True):
         instance = super().save(False)
 
-        if instance.state != ParticipantEnrollment.State.APPROVED:
-            instance.agreed_participation_fee = None
-            if instance.transaction is not None and not instance.transaction.is_settled:
-                instance.transaction.delete()
-                instance.transaction = None
-
-        elif instance.transaction is None:
-            if instance.agreed_participation_fee:
+        if instance.state == ParticipantEnrollment.State.APPROVED:
+            if instance.transaction is not None:
+                if not instance.transaction.is_settled:
+                    instance.transaction.amount = -instance.agreed_participation_fee
+                else:
+                    instance.agreed_participation_fee = -instance.transaction.amount
+            elif instance.agreed_participation_fee:
                 instance.transaction = (
                     OneTimeEventParticipantEnrollment.create_attached_transaction(
                         instance, self.event
                     )
                 )
-        elif not instance.transaction.is_settled:
-            instance.transaction.amount = -instance.agreed_participation_fee
         else:
-            instance.agreed_participation_fee = -instance.transaction.amount
+            instance.agreed_participation_fee = None
+            if instance.transaction is not None and not instance.transaction.is_settled:
+                instance.transaction.delete()
+                instance.transaction = None
 
         if commit:
             if instance.transaction is not None:
                 instance.transaction.save()
             instance.save()
+            super().update_attendance(instance)
         return instance
 
 
-class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
+class OneTimeEventEnrollMyselfParticipantForm(
+    EnrollMyselfParticipantForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = OneTimeEventParticipantEnrollment
 
@@ -300,5 +328,115 @@ class OneTimeEventEnrollMyselfParticipantForm(EnrollMyselfParticipantForm):
 
         if commit:
             instance.save()
+            super().update_attendance(instance)
 
         return instance
+
+
+class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = OrganizerOccurrenceAssignment
+
+    def __init__(self, *args, **kwargs):
+        self.occurrence = kwargs.pop("occurrence")
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+        else:
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(organizeroccurrenceassignment__occurrence=self.occurrence)
+            )
+        self.fields[
+            "position_assignment"
+        ].queryset = self.occurrence.event.eventpositionassignment_set.all()
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
+        return instance
+
+
+class BulkDeleteOrganizerFromOneTimeEventForm(Form):
+    person = forms.IntegerField(
+        label="Osoba",
+        widget=PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+        self.fields["person"].widget.queryset = Person.objects.filter(
+            organizeroccurrenceassignment__occurrence__event=self.event
+        ).distinct()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        person_pk = cleaned_data["person"]
+
+        person = Person.objects.filter(pk=person_pk).first()
+
+        if person is not None:
+            self.add_error("person", f"Osoba s id {person} neexistuje")
+
+        cleaned_data["person"] = person
+        cleaned_data["event"] = self.event
+
+        return cleaned_data
+
+
+class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = OrganizerOccurrenceAssignment
+
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+        self.fields["person"].queryset = Person.objects.filter(
+            ~Q(organizeroccurrenceassignment__occurrence__event=self.event)
+        ).all()
+        self.fields[
+            "position_assignment"
+        ].queryset = self.event.eventpositionassignment_set.all()
+
+    def _clean_parse_occurrences(self):
+        occurrences = []
+        occurrences_ids = []
+        for occurrence_id_str in self.cleaned_data["occurrences"]:
+            try:
+                occurrence_id_int = int(occurrence_id_str)
+                occurrence = OneTimeEventOccurrence.objects.get(pk=occurrence_id_int)
+                occurrences.append(occurrence)
+                occurrences_ids.append(occurrence_id_int)
+            except (ValueError, OneTimeEventOccurrence.DoesNotExist):
+                self.add_error(None, f"Vybrán neplatný den {occurrence_id_str}")
+        self.cleaned_data["occurrences"] = occurrences
+        self.cleaned_data["occurrences_ids"] = occurrences_ids
+
+    def clean(self):
+        self.cleaned_data = super().clean()
+        self._clean_parse_occurrences()
+        return self.cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        for occurrence in self.cleaned_data["occurrences"]:
+            instance.pk = None
+            instance.id = None
+            instance.occurrence = occurrence
+            if commit:
+                instance.save()
+        return instance
+
+    def checked_occurrences(self):
+        if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
+            return self.cleaned_data["occurrences_ids"]
+        return self.event.eventoccurrence_set.all().values_list("id", flat=True)

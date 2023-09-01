@@ -15,6 +15,8 @@ from events.views import (
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
     EnrollMyselfParticipantMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    RedirectToEventDetailOnFailureMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -22,11 +24,13 @@ from .forms import (
     TrainingReplaceableForm,
     TrainingParticipantEnrollmentForm,
     TrainingEnrollMyselfParticipantForm,
+    CoachAssignmentForm,
 )
 from .models import (
     Training,
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
+    CoachPositionAssignment,
 )
 
 
@@ -66,7 +70,10 @@ class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
 
 
 class TrainingAddReplaceableTrainingView(
-    MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.CreateView
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.CreateView,
 ):
     form_class = TrainingReplaceableForm
     success_message = _("Tréninky pro náhrady byl přidán.")
@@ -76,10 +83,6 @@ class TrainingAddReplaceableTrainingView(
         kwargs = super().get_form_kwargs()
         kwargs["training_1"] = get_object_or_404(Training, pk=self.kwargs["event_id"])
         return kwargs
-
-    def form_invalid(self, form):
-        super().form_invalid(form)
-        return redirect(reverse("trainings:detail", args=[self.kwargs["event_id"]]))
 
 
 class TrainingRemoveReplaceableTrainingView(generic.View):
@@ -137,6 +140,48 @@ class TrainingEnrollMyselfParticipantView(
     template_name = "trainings/enroll_myself_participant.html"
     success_message = "Přihlášení na trénink proběhlo úspěšně"
 
+
+class CoachAssignmentMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+):
+    model = CoachPositionAssignment
+    context_object_name = "coach_assignment"
+
+
+class CoachAssignmentCreateUpdateMixin(
+    CoachAssignmentMixin,
+    InsertEventIntoModelFormKwargsMixin,
+):
+    form_class = CoachAssignmentForm
+
+
+class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
+    template_name = "trainings/create_coach_assignment.html"
+    success_message = "Trenér %(person)s přidán"
+
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
         return super().get_context_data(**kwargs)
+
+
+class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.UpdateView):
+    template_name = "trainings/edit_coach_assignment.html"
+    success_message = "Trenér %(person)s upraven"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["person"] = self.object.person
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
+    success_message = "Odhlášení trenéra z události proběhlo úspěšně"
+    template_name = "trainings/modals/delete_coach_assignment.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Trenér {self.object.person} odebrán"

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events/show_hide_detail_link.js' %}"></script>
+    <script src="{% static 'events/person_selection.js' %}"></script>
+    {% block child1_scripts %}{% endblock %}
+    {% block child2_scripts %}{% endblock %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ event }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block child1_notifications %}{% endblock %}
+    {% block child2_notifications %}{% endblock %}
+
+    <input type="hidden" id="url" data-url="{% url 'persons:detail' 1 %}">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form id="form" method="POST"
+                      action="{% block form_action %}{% endblock %}">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
+                    </div>
+                    <div class="card-body">
+                        {{ form.person|as_crispy_field }}
+                        <div class="form-group">
+                            <a id="detail-link" style="display: none" target="_blank">
+                                Detail vybrané osoby
+                            </a>
+                        </div>
+                        {% block body1 %}{% endblock %}
+                        {% block body2 %}{% endblock %}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn {% block savebtn_class %}{% endblock %}"
+                               value="{% block savebtn_value %}{% endblock %}">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

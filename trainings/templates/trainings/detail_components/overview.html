@@ -17,7 +17,7 @@
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Garant</td>
-                        <td class="w-100">{{ event.main_coach|handle_missing }}</td>
+                        <td class="w-100">{{ event.main_coach_assignment.person|handle_missing }}</td>
                     </tr>
                     <tr>
                         <td class="text-nowrap text-bold">Místo konání:</td>
@@ -43,7 +43,7 @@
                         <td class="text-nowrap text-bold align-middle">Čas konání:</td>
                         <td class="w-100">
                             {% for weekday in event.weekdays_list %}
-                                {% include 'trainings/components/weekday.html' with event=event weekday=weekday %}
+                                {% include 'trainings/components/weekday.html' %}
                                 {% if not forloop.last %} <br> {% endif %}
                             {% endfor %}
                         </td>
@@ -52,7 +52,7 @@
                         <td class="text-nowrap text-bold align-middle">Kapacita:</td>
                         <td class="w-100">
                             {% for weekday in event.weekdays_list %}
-                                {% include 'trainings/detail_components/capacity.html' with event=event weekday=weekday %}
+                                {% include 'trainings/detail_components/capacity.html' %}
                                 {% if not forloop.last %} <br> {% endif %}
                             {% endfor %}
                         </td>

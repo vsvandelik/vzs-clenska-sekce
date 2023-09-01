@@ -45,7 +45,7 @@ def generate_min_max_age(options):
         valid_range_min, in_age_max or valid_range_max
     )
     out_age_max = in_age_max or _generate_age(
-        in_age_min or valid_range_min, valid_range_max
+        out_age_min or valid_range_min, valid_range_max
     )
 
     return out_age_min, out_age_max

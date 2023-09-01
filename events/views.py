@@ -2,6 +2,7 @@ from django.urls import reverse_lazy
 from .models import (
     Event,
     EventPositionAssignment,
+    EventOccurrence,
 )
 from persons.models import Person
 from django.views import generic
@@ -28,6 +29,8 @@ class RedirectToEventDetail:
     def get_redirect_viewname_id(self):
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
+        elif "occurrence_id" in self.kwargs:
+            id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).event.id
         elif hasattr(self, "object"):
             if type(self.object) is OneTimeEvent or type(self.object) is Training:
                 id = self.object.id
@@ -64,15 +67,23 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
         return redirect(viewname, pk=id)
 
 
-class InsertEventIntoModelFormKwargsMixin:
+class InsertEventIntoSelfObjectMixin:
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
         return super().dispatch(request, *args, **kwargs)
 
+
+class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.event
         return kwargs
+
+
+class InsertEventIntoContextData(InsertEventIntoSelfObjectMixin):
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
 
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
@@ -213,13 +224,12 @@ class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMi
 
 
 class ParticipantEnrollmentCreateMixin(
-    ParticipantEnrollmentMixin, InsertEventIntoModelFormKwargsMixin, generic.CreateView
+    ParticipantEnrollmentMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    generic.CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
 
 
 class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
@@ -248,6 +258,7 @@ class EnrollMyselfParticipantMixin(
     RedirectToEventDetailOnSuccessMixin,
     InsertRequestIntoModelFormKwargsMixin,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
     generic.CreateView,
 ):
     pass

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         (
             "events",
-            "0005_rename_participants_enroll_list_event_participants_enroll_state",
+            "0002_initial",
         ),
         ("transactions", "0002_bulktransaction_transaction_bulk_transaction"),
     ]

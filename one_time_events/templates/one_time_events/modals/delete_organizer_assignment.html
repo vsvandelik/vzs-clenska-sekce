@@ -1,0 +1,26 @@
+{% extends "modal_delete.html" %}
+{% block modal_title %}
+    Smazání organizátora z jednoho dne
+{% endblock %}
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu organizátora ze dne {{ organizer_assignment.occurrence.date|date }}?</p>
+    </div>
+    <div class="row">
+        <ul>
+            <li>
+                <b>Osoba:</b> <a target="_blank"
+                                 href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+            </li>
+            <li>
+                <b>Pozice: </b> <a target="_blank"
+                                   href="{% url 'positions:detail' organizer_assignment.position_assignment.position.id %}">{{ organizer_assignment.position_assignment.position }}</a>
+            </li>
+        </ul>
+    </div>
+
+{% endblock %}
+
+{% block delete_action %}
+    {% url 'one_time_events:delete-organizer-from-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}
+{% endblock %}

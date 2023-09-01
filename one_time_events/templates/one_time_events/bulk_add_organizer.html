@@ -1,0 +1,13 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% load static %}
+{% block title %}Přidání organizátora na více dnů{% endblock %}
+{% block child2_scripts %}
+    <script src="{% static 'one_time_events/bulk_add_organizer.js' %}"></script>
+{% endblock %}
+{% block form_action %}{% url 'one_time_events:bulk-add-organizer' event.id %}{% endblock %}
+{% block card_title %}Přidání{% endblock %}
+{% block savebtn_value %}Přidat{% endblock %}
+{% block savebtn_class %}btn-primary{% endblock %}
+{% block body2 %}
+    {% include 'one_time_events/components/occurrence_selection.html' %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% load events_template_tags %}
+{% load vzs_filters %}
+<div class="card" id="occurrences-card">
+    <div class="card-header border-0">
+        <div class="card-title h5">Výběr dnů</div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for occurrence in event.sorted_occurrences_list %}
+                <div class="col-sm-6 col-md-4 col-lg-3 col-12">
+                    {% include 'one_time_events/components/occurrence_card.html' %}
+                </div>
+                {% for position_assignment in event.eventpositionassignment_set.all %}
+                    <input type="hidden" id="position-{{ position_assignment.id }}-{{ occurrence.id }}-count" value="{{ occurrence|occurrence_position_assignment_organizers:position_assignment|length }}">
+                {% endfor %}
+            {% endfor %}
+            {% for position_assignment in event.eventpositionassignment_set.all %}
+                <input type="hidden" id="position-{{ position_assignment.id }}-capacity" value="{{ position_assignment.count }}">
+            {% endfor %}
+        </div>
+    </div>
+</div>

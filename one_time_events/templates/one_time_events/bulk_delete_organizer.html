@@ -1,0 +1,6 @@
+{% extends 'events/person_selection.html' %}
+{% block title %}Odebrání organizátora ze všech dnů{% endblock %}
+{% block form_action %}{% url 'one_time_events:bulk-delete-organizer' event.id %}{% endblock %}
+{% block card_title %}Odebrání{% endblock %}
+{% block savebtn_value %}Odstranit{% endblock %}
+{% block savebtn_class %}btn-danger{% endblock %}

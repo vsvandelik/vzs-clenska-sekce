@@ -178,6 +178,16 @@ def money(value):
     return f"{value} Kč"
 
 
+@register.simple_tag
+def value_present_symbol():
+    return mark_safe(settings.VALUE_PRESENT_HTML)
+
+
+@register.simple_tag
+def value_missing_symbol():
+    return mark_safe(settings.VALUE_MISSING_HTML)
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url

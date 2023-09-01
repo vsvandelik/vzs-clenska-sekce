@@ -1,0 +1,8 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% load crispy_forms_tags %}
+{% load trainings_template_tags %}
+{% load vzs_filters %}
+{% load static %}
+{% block body2 %}
+    {{ form.main_coach_assignment|as_crispy_field }}
+{% endblock %}

@@ -9,25 +9,15 @@
             {% for weekday in event.weekdays_list %}
                 <div class="col-sm-6 col-md-4 col-lg-3 col-12">
                     {% with approved_participants_length=event|approved_enrollments_by_weekday:weekday|length %}
-                        {% with full=approved_participants_length|ge:event.capacity %}
-                            <div class="card {% if full %}bg-warning{% endif %}">
-                                <div class="card-header border-0">
-                                    <div class="card-title h5 text-bold">
-                                        <div class="custom-control custom-checkbox">
-                                            {% with day_shortcut=weekday|weekday_2_day_shortcut %}
-                                                <input name="weekdays" id="{{ day_shortcut }}" type="checkbox"
-                                                       class="custom-control-input"
-                                                       value="{{ weekday }}"
-                                                       onchange="weekdayCheckboxClicked(this)"
-                                                       {% if weekday in checked_weekdays %}checked{% endif %}>
-                                                <label for="{{ day_shortcut }}" class="custom-control-label">{% include 'trainings/components/weekday.html' with event=event weekday=weekday %}</label>
-                                            {% endwith %}
-                                        </div>
-                                    </div>
-                                    {% with substitute_participants_length=event|substitute_enrollments_by_weekday:weekday|length %}<div class="h5 text-right">{{ approved_participants_length }} / {{ event.capacity }} {% if substitute_participants_length > 0 %}({{ substitute_participants_length }}){% endif %}</div>{% endwith %}
-                                </div>
-                            </div>
-                        {% endwith %}
+                        {% if event.capacity is None %}
+                            {% with full=False %}
+                                {% include 'trainings/components/weekday_card.html' %}
+                            {% endwith %}
+                        {% else %}
+                            {% with full=approved_participants_length|ge:event.capacity %}
+                                {% include 'trainings/components/weekday_card.html' %}
+                            {% endwith %}
+                        {% endif %}
                     {% endwith %}
                 </div>
             {% endfor %}

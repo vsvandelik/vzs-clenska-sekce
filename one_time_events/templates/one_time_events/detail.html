@@ -59,11 +59,13 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{% url 'one_time_events:create-participant-enrollment' event.id %}"
-                       class="btn-primary btn">Přidat</a>
+                    <a href="{% url 'one_time_events:create-participant-enrollment' event.id %}" class="btn-primary btn">Přidat</a>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="row">
+        {% include 'one_time_events/detail_components/organizers.html' %}
     </div>
     <div class="row">
         {% include 'one_time_events/detail_components/schedule.html' %}
@@ -75,6 +77,7 @@
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
     {% include "modal_include.html" with id="enroll-myself-participant" %}
     {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include 'modal_include.html' with id='delete-organizer-assignment-modal' %}
 {% endblock %}
 
 {% block scripts %}
@@ -84,6 +87,11 @@
         simpleOrderableTableEnable('participants-substitute-table', [0, 1])
         simpleOrderableTableEnable('participants-rejected-table', [0, 1])
         simpleOrderableTableEnable('participants-approved-table', [0, 1])
+        simpleOrderableTableEnable("organizers-table", [0, 1])
+        {% for occurrence in event.eventoccurrence_set.all %}
+            simpleOrderableTableEnable("organizers-{{ occurrence.id}}-table", [0, 1])
+            simpleOrderableTableEnable('positions-{{ occurrence.id }}-table', [0, 1])
+        {% endfor %}
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>
@@ -91,5 +99,6 @@
         registerModal('delete-participant-enrollment-modal')
         registerModal('enroll-myself-participant')
         registerModal('unenroll-myself-participant')
+        registerModal('delete-organizer-assignment-modal')
     </script>
 {% endblock %}

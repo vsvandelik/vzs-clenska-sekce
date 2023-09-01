@@ -40,3 +40,8 @@ def approved_enrollments_by_weekday(training, weekday):
 @register.filter
 def substitute_enrollments_by_weekday(training, weekday):
     return training.substitute_enrollments_by_weekday(weekday)
+
+
+@register.filter
+def coach_position_assignment_coaches(training, position_assignment):
+    return training.position_coaches(position_assignment)
