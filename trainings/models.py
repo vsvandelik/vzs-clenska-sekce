@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q
@@ -222,6 +224,31 @@ class Training(Event):
         return person.trainingparticipantenrollment_set.filter(
             training__category=category, state=ParticipantEnrollment.State.APPROVED
         )
+
+    def substitute_enrollments_2_capacity(self):
+        enrollments = self.substitute_enrollments().order_by("created_datetime")
+        if self.capacity is None:
+            return enrollments
+
+        enrolled_count = {}
+        for weekday in self.weekdays_list():
+            enrolled_count[weekday] = len(self.approved_enrollments_by_weekday(weekday))
+
+        chosen_count = defaultdict(lambda: 0)
+        chosen_enrollments = []
+        for enrollment in enrollments:
+            fullness_vec = [
+                enrolled_count[w.weekday] for w in enrollment.weekdays.all()
+            ]
+            chosen_vec = [chosen_count[w.weekday] for w in enrollment.weekdays.all()]
+            if [x + y for x, y in zip(fullness_vec, chosen_vec)] < [
+                self.capacity
+            ] * len(fullness_vec):
+                chosen_enrollments.append(enrollment)
+                for w in enrollment.weekdays.all():
+                    chosen_count[w.weekday] += 1
+
+        return chosen_enrollments
 
 
 class CoachPositionAssignment(models.Model):

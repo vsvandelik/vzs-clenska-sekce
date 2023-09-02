@@ -13,7 +13,12 @@
             </div>
         </div>
         <div class="card-footer text-center">
-            <a href="{% url 'trainings:create-participant-enrollment' event.id %}" class="btn-primary btn">Přidat</a>
+            <a href="{% url 'trainings:create-participant-enrollment' event.id %}" class="btn-primary btn mr-2 ml-2">Přidat</a>
+            <form method="POST" style="display: inline"
+                  action="{% url 'trainings:bulk-approve-participants' event.id %}">
+                {% csrf_token %}
+                <button class="btn btn-info mr-2 ml-2" type="submit">Schválit náhradníky</button>
+            </form>
         </div>
     </div>
 </div>

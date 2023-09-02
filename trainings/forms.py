@@ -559,6 +559,7 @@ class TrainingBulkApproveParticipantsForm(
         for enrollment in enrollments_2_approve:
             enrollment.state = ParticipantEnrollment.State.APPROVED
             if commit:
+                enrollment.save()
                 super().update_attendance(enrollment)
 
         self.cleaned_data["count"] = len(enrollments_2_approve)

@@ -1,9 +1,9 @@
 {% if event.default_participation_fee is None %}
-    <a href="{% url 'one_time_events:bulk-approve-participants' event.id %}" class="btn-info btn mr-3">Schválit
+    <a href="{% url 'one_time_events:bulk-approve-participants' event.id %}" class="btn-info btn mr-2 ml-2">Schválit
         náhradníky</a>
 {% else %}
     <form method="POST" style="display: inline" action="{% url 'one_time_events:bulk-approve-participants' event.id %}">
         {% csrf_token %}
-        <button class="btn btn-info mr-3" type="submit">Schválit náhradníky</button>
+        <button class="btn btn-info mr-2 ml-2" type="submit">Schválit náhradníky</button>
     </form>
 {% endif %}
