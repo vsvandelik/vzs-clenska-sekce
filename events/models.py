@@ -198,6 +198,9 @@ class Event(PolymorphicModel):
     def organizers_assignments(self):
         raise NotImplementedError
 
+    def substitute_enrollments_2_capacity(self):
+        raise NotImplementedError
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

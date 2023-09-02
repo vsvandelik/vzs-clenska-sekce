@@ -16,7 +16,7 @@
                     {% for position_assignment in occurrence.event.eventpositionassignment_set.all %}
                         <tr>
                             {% with organizers_count=occurrence|occurrence_position_assignment_organizers:position_assignment|length %}
-                                <td>{{ position_assignment.position }}</td>
+                                <td><a href="{% url 'positions:detail' position_assignment.position.id %}">{{ position_assignment.position }}</a></td>
                                 <td class="{% if organizers_count == position_assignment.count %}bg-success{% elif organizers_count > position_assignment.count %}bg-warning{% endif %}">{{ organizers_count }}
                                     / {{ position_assignment.count }}</td>
                             {% endwith %}

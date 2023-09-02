@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
+from events.models import ParticipantEnrollment
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -26,6 +27,8 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
     BulkAddOrganizerFromOneTimeEventForm,
+    BulkApproveOrganizersForm,
+    OneTimeEventEnrollmentApprovedHooks,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -154,7 +157,7 @@ class BulkCreateDeleteOrganizerMixin(
     pass
 
 
-class BulkDeleteOrganizerFromOneTimeEvent(
+class BulkDeleteOrganizerFromOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
     generic.FormView,
 ):
@@ -164,7 +167,7 @@ class BulkDeleteOrganizerFromOneTimeEvent(
 
     def form_valid(self, form):
         person = form.cleaned_data["person"]
-        event = form.cleaned_data["event"]
+        event = self.event
 
         organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
             person=person, occurrence__event=event
@@ -175,7 +178,7 @@ class BulkDeleteOrganizerFromOneTimeEvent(
         return super().form_valid(form)
 
 
-class BulkAddOrganizerToOneTimeEvent(
+class BulkAddOrganizerToOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
     generic.CreateView,
 ):
@@ -186,3 +189,29 @@ class BulkAddOrganizerToOneTimeEvent(
     def get_context_data(self, **kwargs):
         kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
         return super().get_context_data(**kwargs)
+
+
+class BulkApproveParticipantsView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    OneTimeEventEnrollmentApprovedHooks,
+    generic.FormView,
+):
+    form_class = BulkApproveOrganizersForm
+    template_name = "one_time_events/bulk_approve_participants.html"
+    success_message = "Počet schválených přihlášek: %(count)s"
+
+    def form_valid(self, form):
+        fee = form.cleaned_data["agreed_participation_fee"]
+        enrollments_2_approve = self.event.substitute_enrollments_2_capacity()
+
+        for enrollment in enrollments_2_approve:
+            enrollment.agreed_participation_fee = fee
+            enrollment.state = ParticipantEnrollment.State.APPROVED
+            super().approved_hooks(enrollment, self.event)
+            super().save_enrollment(enrollment)
+
+        form.cleaned_data["count"] = len(enrollments_2_approve)
+        return super().form_valid(form)

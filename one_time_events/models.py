@@ -107,6 +107,13 @@ class OneTimeEvent(Event):
     def __str__(self):
         return self.name
 
+    def substitute_enrollments_2_capacity(self):
+        enrollments = self.substitute_enrollments().order_by("created_datetime")
+        take = len(enrollments)
+        if self.capacity is not None:
+            take = self.capacity - len(self.approved_participants())
+        return enrollments[:take]
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(

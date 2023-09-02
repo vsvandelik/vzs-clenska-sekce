@@ -387,7 +387,7 @@ class InitializeWeekdays:
             enrollment.weekdays.add(weekday_obj)
 
 
-class TrainingParticipantEnrollmentUpdateAttendanceMixin:
+class TrainingParticipantEnrollmentUpdateAttendanceProvider:
     def update_attendance(self, instance):
         for occurrence in instance.event.eventoccurrence_set.all():
             if (
@@ -409,7 +409,7 @@ class TrainingParticipantEnrollmentForm(
     TrainingWeekdaysSelectionMixin,
     InitializeWeekdays,
     ParticipantEnrollmentForm,
-    TrainingParticipantEnrollmentUpdateAttendanceMixin,
+    TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = TrainingParticipantEnrollment
@@ -448,7 +448,7 @@ class TrainingEnrollMyselfParticipantForm(
     TrainingWeekdaysSelectionMixin,
     InitializeWeekdays,
     EnrollMyselfParticipantForm,
-    TrainingParticipantEnrollmentUpdateAttendanceMixin,
+    TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = TrainingParticipantEnrollment

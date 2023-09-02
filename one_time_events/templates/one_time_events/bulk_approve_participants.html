@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}
+    Schválit náhradníky dle času přihlášky do maximální kapacity
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ event }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form id="form" method="POST" action="{% url 'one_time_events:bulk-approve-participants' event.id %}">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">Schválení</div>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            Událost nemá vyplněnou standardní výše poplatku pro účastníky. Vyplňte prosím výši poplatku, kterou zaplatí jedna osoba.
+                        </p>
+                        {{ form.agreed_participation_fee|as_crispy_field }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="Schválit">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
