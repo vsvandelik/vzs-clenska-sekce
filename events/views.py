@@ -68,8 +68,10 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
 
 
 class InsertEventIntoSelfObjectMixin:
+    event_id_key = "event_id"
+
     def dispatch(self, request, *args, **kwargs):
-        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        self.event = get_object_or_404(Event, pk=self.kwargs[self.event_id_key])
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -207,15 +209,19 @@ class EditGroupMembershipView(MessagesMixin, EventRestrictionMixin, generic.Upda
 
 
 class AddRemoveAllowedPersonTypeView(
-    MessagesMixin, RedirectToEventDetailOnSuccessMixin, generic.UpdateView
+    MessagesMixin,
+    InsertEventIntoSelfObjectMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    generic.UpdateView,
 ):
+    event_id_key = "pk"
     form_class = EventAllowedPersonTypeForm
     success_message = "Změna omezení na typ členství uložena"
     model = Event
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["instance"] = get_object_or_404(Event, pk=self.kwargs["pk"])
+        kwargs["instance"] = self.event
         return kwargs
 
 
@@ -274,3 +280,19 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+
+class BulkApproveParticipantsMixin(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoContextData,
+    generic.UpdateView,
+):
+    event_id_key = "pk"
+    success_message = "Počet schválených přihlášek: %(count)s"
+    model = Event
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.event
+        return kwargs

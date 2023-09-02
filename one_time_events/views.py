@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
-from events.models import ParticipantEnrollment
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -16,6 +15,7 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
+    BulkApproveParticipantsMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -27,8 +27,7 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
     BulkAddOrganizerFromOneTimeEventForm,
-    BulkApproveOrganizersForm,
-    OneTimeEventEnrollmentApprovedHooks,
+    OneTimeEventBulkApproveParticipantsForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -191,27 +190,6 @@ class BulkAddOrganizerToOneTimeEventView(
         return super().get_context_data(**kwargs)
 
 
-class BulkApproveParticipantsView(
-    MessagesMixin,
-    RedirectToEventDetailOnSuccessMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
-    OneTimeEventEnrollmentApprovedHooks,
-    generic.FormView,
-):
-    form_class = BulkApproveOrganizersForm
+class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
+    form_class = OneTimeEventBulkApproveParticipantsForm
     template_name = "one_time_events/bulk_approve_participants.html"
-    success_message = "Počet schválených přihlášek: %(count)s"
-
-    def form_valid(self, form):
-        fee = form.cleaned_data["agreed_participation_fee"]
-        enrollments_2_approve = self.event.substitute_enrollments_2_capacity()
-
-        for enrollment in enrollments_2_approve:
-            enrollment.agreed_participation_fee = fee
-            enrollment.state = ParticipantEnrollment.State.APPROVED
-            super().approved_hooks(enrollment, self.event)
-            super().save_enrollment(enrollment)
-
-        form.cleaned_data["count"] = len(enrollments_2_approve)
-        return super().form_valid(form)

@@ -11,6 +11,7 @@ from events.forms_bases import (
     EventForm,
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
+    BulkApproveParticipantsForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
@@ -452,26 +453,44 @@ class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
         return self.event.eventoccurrence_set.all().values_list("id", flat=True)
 
 
-class BulkApproveOrganizersForm(Form):
+class OneTimeEventBulkApproveParticipantsForm(
+    OneTimeEventEnrollmentApprovedHooks, BulkApproveParticipantsForm
+):
+    class Meta(BulkApproveParticipantsForm.Meta):
+        model = OneTimeEvent
+
     agreed_participation_fee = forms.IntegerField(
         label="Poplatek za účast*",
         validators=[MinValueValidator(0)],
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        super().__init__(*args, **kwargs)
-
     def clean(self):
         cleaned_data = super().clean()
+        event = self.instance
         if cleaned_data["agreed_participation_fee"] is None:
-            if self.event.default_participation_fee is not None:
+            if event.default_participation_fee is not None:
                 cleaned_data[
                     "agreed_participation_fee"
-                ] = self.event.default_participation_fee
+                ] = event.default_participation_fee
             else:
                 self.add_error(
                     "agreed_participation_fee", "Toto pole musí být vyplněno"
                 )
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        cleaned_data = self.cleaned_data
+        fee = cleaned_data["agreed_participation_fee"]
+        enrollments_2_approve = instance.substitute_enrollments_2_capacity()
+
+        for enrollment in enrollments_2_approve:
+            enrollment.agreed_participation_fee = fee
+            enrollment.state = ParticipantEnrollment.State.APPROVED
+            super().approved_hooks(enrollment, instance)
+            if commit:
+                super().save_enrollment(enrollment)
+
+        cleaned_data["count"] = len(enrollments_2_approve)
+        return instance

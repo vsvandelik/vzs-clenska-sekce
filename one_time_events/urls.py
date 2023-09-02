@@ -66,8 +66,8 @@ urlpatterns = [
         name="bulk-add-organizer",
     ),
     path(
-        "<int:event_id>/hromadne-schvalit",
-        views.BulkApproveParticipantsView.as_view(),
+        "<int:pk>/hromadne-schvalit",
+        views.OneTimeEventBulkApproveParticipantsView.as_view(),
         name="bulk-approve-participants",
     ),
 ]

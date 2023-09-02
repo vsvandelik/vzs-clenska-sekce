@@ -10,6 +10,7 @@ from events.forms_bases import (
     ParticipantEnrollmentForm,
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
+    BulkApproveParticipantsForm,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -380,7 +381,7 @@ class TrainingWeekdaysSelectionMixin:
         return self.event.free_weekdays_list()
 
 
-class InitializeWeekdays:
+class InitializeWeekdaysProvider:
     def initialize_weekdays(self, enrollment, weekdays_cleaned):
         for weekday in weekdays_cleaned:
             weekday_obj = TrainingWeekdays.get_or_create(weekday)
@@ -407,8 +408,8 @@ class TrainingParticipantEnrollmentUpdateAttendanceProvider:
 
 class TrainingParticipantEnrollmentForm(
     TrainingWeekdaysSelectionMixin,
-    InitializeWeekdays,
     ParticipantEnrollmentForm,
+    InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
@@ -446,8 +447,8 @@ class TrainingParticipantEnrollmentForm(
 
 class TrainingEnrollMyselfParticipantForm(
     TrainingWeekdaysSelectionMixin,
-    InitializeWeekdays,
     EnrollMyselfParticipantForm,
+    InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
@@ -473,11 +474,9 @@ class TrainingEnrollMyselfParticipantForm(
 
         if commit:
             instance.save()
-            weekdays_cleaned = self.cleaned_data["weekdays"]
-            super().initialize_weekdays(instance, weekdays_cleaned)
+            super().initialize_weekdays(instance, weekdays)
             instance.save()
             super().update_attendance(instance)
-
         return instance
 
 
@@ -544,4 +543,23 @@ class CoachAssignmentForm(OrganizerAssignmentForm):
         if commit:
             instance.save()
             self.event.save()
+        return instance
+
+
+class TrainingBulkApproveParticipantsForm(
+    TrainingParticipantEnrollmentUpdateAttendanceProvider, BulkApproveParticipantsForm
+):
+    class Meta(BulkApproveParticipantsForm.Meta):
+        model = Training
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        enrollments_2_approve = instance.substitute_enrollments_2_capacity()
+
+        for enrollment in enrollments_2_approve:
+            enrollment.state = ParticipantEnrollment.State.APPROVED
+            if commit:
+                super().update_attendance(enrollment)
+
+        self.cleaned_data["count"] = len(enrollments_2_approve)
         return instance

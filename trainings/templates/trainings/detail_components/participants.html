@@ -1,3 +1,19 @@
-{% extends base_template %}
-{% block edit_enrollment_action %}{% url 'trainings:edit-participant-enrollment' event.id enrollment.id %}{% endblock %}
-{% block delete_enrollment_action %}{% url 'trainings:delete-participant-enrollment' event.id enrollment.id %}{% endblock %}
+<div class="col-12">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">
+                Účastníci
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_approved.html' enrollments=event.approved_enrollments %}
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_substitute.html' enrollments=event.substitute_enrollments %}
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=event.rejected_enrollments %}
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'trainings:create-participant-enrollment' event.id %}" class="btn-primary btn">Přidat</a>
+        </div>
+    </div>
+</div>
