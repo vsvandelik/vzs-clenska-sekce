@@ -57,12 +57,17 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/hromadne-odebrani-organizatora/",
-        views.BulkDeleteOrganizerFromOneTimeEvent.as_view(),
+        views.BulkDeleteOrganizerFromOneTimeEventView.as_view(),
         name="bulk-delete-organizer",
     ),
     path(
         "<int:event_id>/hromadne-pridani-organizatora/",
-        views.BulkAddOrganizerToOneTimeEvent.as_view(),
+        views.BulkAddOrganizerToOneTimeEventView.as_view(),
         name="bulk-add-organizer",
+    ),
+    path(
+        "<int:pk>/hromadne-schvalit",
+        views.OneTimeEventBulkApproveParticipantsView.as_view(),
+        name="bulk-approve-participants",
     ),
 ]

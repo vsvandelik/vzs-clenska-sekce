@@ -68,4 +68,9 @@ urlpatterns = [
         transactions_views.TransactionCreateTrainingBulkConfirmView.as_view(),
         name="add-transaction-confirm",
     ),
+    path(
+        "<int:pk>/hromadne-schvalit",
+        views.TrainingBulkApproveParticipantsView.as_view(),
+        name="bulk-approve-participants",
+    ),
 ]

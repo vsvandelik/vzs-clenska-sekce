@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django import forms
+from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django_select2.forms import Select2Widget
@@ -10,6 +11,7 @@ from events.forms_bases import (
     EventForm,
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
+    BulkApproveParticipantsForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
@@ -219,7 +221,7 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentUpdateAttendanceMixin:
+class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
     def update_attendance(self, instance):
         for occurrence in instance.event.eventoccurrence_set.all():
             if instance.state == ParticipantEnrollment.State.APPROVED:
@@ -234,8 +236,31 @@ class OneTimeEventParticipantEnrollmentUpdateAttendanceMixin:
                     attendance.delete()
 
 
+class OneTimeEventEnrollmentApprovedHooks(
+    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
+):
+    def approved_hooks(self, instance, event):
+        if instance.transaction is not None:
+            if not instance.transaction.is_settled:
+                instance.transaction.amount = -instance.agreed_participation_fee
+            else:
+                instance.agreed_participation_fee = -instance.transaction.amount
+        elif instance.agreed_participation_fee:
+            instance.transaction = (
+                OneTimeEventParticipantEnrollment.create_attached_transaction(
+                    instance, event
+                )
+            )
+
+    def save_enrollment(self, instance):
+        if instance.transaction is not None:
+            instance.transaction.save()
+        instance.save()
+        super().update_attendance(instance)
+
+
 class OneTimeEventParticipantEnrollmentForm(
-    ParticipantEnrollmentForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+    ParticipantEnrollmentForm, OneTimeEventEnrollmentApprovedHooks
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
@@ -266,17 +291,7 @@ class OneTimeEventParticipantEnrollmentForm(
         instance = super().save(False)
 
         if instance.state == ParticipantEnrollment.State.APPROVED:
-            if instance.transaction is not None:
-                if not instance.transaction.is_settled:
-                    instance.transaction.amount = -instance.agreed_participation_fee
-                else:
-                    instance.agreed_participation_fee = -instance.transaction.amount
-            elif instance.agreed_participation_fee:
-                instance.transaction = (
-                    OneTimeEventParticipantEnrollment.create_attached_transaction(
-                        instance, self.event
-                    )
-                )
+            super().approved_hooks(instance, self.event)
         else:
             instance.agreed_participation_fee = None
             if instance.transaction is not None and not instance.transaction.is_settled:
@@ -284,15 +299,13 @@ class OneTimeEventParticipantEnrollmentForm(
                 instance.transaction = None
 
         if commit:
-            if instance.transaction is not None:
-                instance.transaction.save()
-            instance.save()
-            super().update_attendance(instance)
+            super().save_enrollment(instance)
         return instance
 
 
 class OneTimeEventEnrollMyselfParticipantForm(
-    EnrollMyselfParticipantForm, OneTimeEventParticipantEnrollmentUpdateAttendanceMixin
+    EnrollMyselfParticipantForm,
+    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
         model = OneTimeEventParticipantEnrollment
@@ -386,8 +399,6 @@ class BulkDeleteOrganizerFromOneTimeEventForm(Form):
             self.add_error("person", f"Osoba s id {person} neexistuje")
 
         cleaned_data["person"] = person
-        cleaned_data["event"] = self.event
-
         return cleaned_data
 
 
@@ -440,3 +451,46 @@ class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
         if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
             return self.cleaned_data["occurrences_ids"]
         return self.event.eventoccurrence_set.all().values_list("id", flat=True)
+
+
+class OneTimeEventBulkApproveParticipantsForm(
+    OneTimeEventEnrollmentApprovedHooks, BulkApproveParticipantsForm
+):
+    class Meta(BulkApproveParticipantsForm.Meta):
+        model = OneTimeEvent
+
+    agreed_participation_fee = forms.IntegerField(
+        label="Poplatek za účast*",
+        validators=[MinValueValidator(0)],
+        required=False,
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        event = self.instance
+        if cleaned_data["agreed_participation_fee"] is None:
+            if event.default_participation_fee is not None:
+                cleaned_data[
+                    "agreed_participation_fee"
+                ] = event.default_participation_fee
+            else:
+                self.add_error(
+                    "agreed_participation_fee", "Toto pole musí být vyplněno"
+                )
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        cleaned_data = self.cleaned_data
+        fee = cleaned_data["agreed_participation_fee"]
+        enrollments_2_approve = instance.substitute_enrollments_2_capacity()
+
+        for enrollment in enrollments_2_approve:
+            enrollment.agreed_participation_fee = fee
+            enrollment.state = ParticipantEnrollment.State.APPROVED
+            super().approved_hooks(enrollment, instance)
+            if commit:
+                super().save_enrollment(enrollment)
+
+        cleaned_data["count"] = len(enrollments_2_approve)
+        return instance

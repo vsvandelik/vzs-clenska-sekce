@@ -15,6 +15,7 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
+    BulkApproveParticipantsMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -26,6 +27,7 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
     BulkAddOrganizerFromOneTimeEventForm,
+    OneTimeEventBulkApproveParticipantsForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -154,7 +156,7 @@ class BulkCreateDeleteOrganizerMixin(
     pass
 
 
-class BulkDeleteOrganizerFromOneTimeEvent(
+class BulkDeleteOrganizerFromOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
     generic.FormView,
 ):
@@ -164,7 +166,7 @@ class BulkDeleteOrganizerFromOneTimeEvent(
 
     def form_valid(self, form):
         person = form.cleaned_data["person"]
-        event = form.cleaned_data["event"]
+        event = self.event
 
         organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
             person=person, occurrence__event=event
@@ -175,7 +177,7 @@ class BulkDeleteOrganizerFromOneTimeEvent(
         return super().form_valid(form)
 
 
-class BulkAddOrganizerToOneTimeEvent(
+class BulkAddOrganizerToOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
     generic.CreateView,
 ):
@@ -186,3 +188,8 @@ class BulkAddOrganizerToOneTimeEvent(
     def get_context_data(self, **kwargs):
         kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
         return super().get_context_data(**kwargs)
+
+
+class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
+    form_class = OneTimeEventBulkApproveParticipantsForm
+    template_name = "one_time_events/bulk_approve_participants.html"

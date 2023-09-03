@@ -165,3 +165,8 @@ class OrganizerAssignmentForm(ModelForm):
             "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "position_assignment": Select2Widget(),
         }
+
+
+class BulkApproveParticipantsForm(ModelForm):
+    class Meta:
+        fields = []

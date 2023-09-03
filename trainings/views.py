@@ -17,6 +17,7 @@ from events.views import (
     EnrollMyselfParticipantMixin,
     InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnFailureMixin,
+    BulkApproveParticipantsMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -25,6 +26,7 @@ from .forms import (
     TrainingParticipantEnrollmentForm,
     TrainingEnrollMyselfParticipantForm,
     CoachAssignmentForm,
+    TrainingBulkApproveParticipantsForm,
 )
 from .models import (
     Training,
@@ -185,3 +187,7 @@ class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
 
     def get_success_message(self, cleaned_data):
         return f"Trenér {self.object.person} odebrán"
+
+
+class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
+    form_class = TrainingBulkApproveParticipantsForm
