@@ -33,6 +33,7 @@ from .forms import (
     BulkAddOrganizerFromOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
+    OneTimeEventDeleteOrganizerOccurrenceForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -215,9 +216,10 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
-    generic.DeleteView,
+    generic.UpdateView,
 ):
     model = OrganizerOccurrenceAssignment
+    form_class = OneTimeEventDeleteOrganizerOccurrenceForm
     context_object_name = "assignment"
     success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
     template_name = "one_time_events/modals/unenroll_myself_organizer.html"

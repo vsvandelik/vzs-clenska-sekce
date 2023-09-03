@@ -525,3 +525,24 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfForm):
         if commit:
             instance.save()
         return instance
+
+
+class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
+    class Meta:
+        model = OrganizerOccurrenceAssignment
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.can_unenroll():
+            self.add_error(None, "Již se není možné odhlásit z události")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            instance.delete()
+        return instance

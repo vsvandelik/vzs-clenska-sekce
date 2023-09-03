@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q
@@ -13,6 +14,7 @@ from events.models import (
 from features.models import Feature, FeatureAssignment
 from trainings.models import Training
 from transactions.models import Transaction
+from vzs import settings
 
 
 class OneTimeEvent(Event):
@@ -133,6 +135,11 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     class Meta:
         unique_together = ["person", "occurrence"]
 
+    def can_unenroll(self):
+        return self.occurrence.can_unenroll_position(
+            self.person, self.position_assignment
+        )
+
 
 class OneTimeEventParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(
@@ -211,6 +218,18 @@ class OneTimeEventOccurrence(EventOccurrence):
                 if assignment is None:
                     return False
         return True
+
+    def can_unenroll_position(self, person, position_assignment):
+        can_possibly_unenroll = super().can_unenroll_position(
+            person, position_assignment
+        )
+        if not can_possibly_unenroll:
+            return False
+        return (
+            datetime.now().date()
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.date
+        )
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

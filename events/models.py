@@ -232,7 +232,6 @@ class EventOccurrence(PolymorphicModel):
 
     def can_unenroll_position(self, person, position_assignment):
         return self.is_organizer_of_position(person, position_assignment)
-        # TODO: add some time requirements
 
 
 class EventPositionAssignment(models.Model):
@@ -255,6 +254,9 @@ class OrganizerAssignment(PolymorphicModel):
     transaction = models.ForeignKey(
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
+
+    def can_unenroll_position(self):
+        raise NotImplementedError
 
 
 class EventPersonTypeConstraint(models.Model):
