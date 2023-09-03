@@ -174,11 +174,14 @@ class OneTimeEventOccurrence(EventOccurrence):
         )
 
     def is_organizer_of_position(self, person, position_assignment):
-        assignments = self.position_organizers(position_assignment)
-        person_assignment = assignments.filter(person=person).first()
-        if person_assignment is None:
+        assignment = self.get_organizer_assignment(person, position_assignment)
+        if assignment is None:
             return False
         return True
+
+    def get_organizer_assignment(self, person, position_assignment):
+        assignments = self.position_organizers(position_assignment)
+        return assignments.filter(person=person).first()
 
     def satisfies_position_requirements(self, person, position_assignment):
         possibly_satisfies = super().satisfies_position_requirements(
@@ -197,15 +200,16 @@ class OneTimeEventOccurrence(EventOccurrence):
 
         for condition in feature_type_conditions:
             observed_features = features.filter(condition)
-            assignment = FeatureAssignment.objects.filter(
-                Q(feature__in=observed_features)
-                & Q(person=person)
-                & Q(date_assigned__lte=self.date)
-                & Q(date_returned=None)
-                & (Q(date_expire=None) | Q(date_expire__gte=self.date))
-            ).first()
-            if assignment is None:
-                return False
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=self.date)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.date))
+                ).first()
+                if assignment is None:
+                    return False
         return True
 
 

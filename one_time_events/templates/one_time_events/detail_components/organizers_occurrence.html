@@ -33,7 +33,14 @@
                                         <button class="btn btn-info" type="submit">Přihlásit se</button>
                                     </form>
                                 {% elif occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
-                                    <a class="btn btn-secondary">Odhlásit se</a>
+                                    {% with assignment=occurrence|tuple:active_person|get_organizer_assignment:position_assignment %}
+                                        <a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                           class="btn btn-secondary"
+                                           data-toggle="modal"
+                                           data-target="#unenroll-myself-organizer-occurrence-modal"
+                                           data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                        >Odhlásit se</a>
+                                    {% endwith %}
                                 {% endif %}
                             </td>
                         </tr>

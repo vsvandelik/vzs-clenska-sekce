@@ -60,6 +60,7 @@
     {% include "modal_include.html" with id="enroll-myself-participant" %}
     {% include "modal_include.html" with id="unenroll-myself-participant" %}
     {% include 'modal_include.html' with id='delete-organizer-assignment-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
 {% endblock %}
 
 {% block scripts %}
@@ -82,5 +83,6 @@
         registerModal('enroll-myself-participant')
         registerModal('unenroll-myself-participant')
         registerModal('delete-organizer-assignment-modal')
+        registerModal('unenroll-myself-organizer-occurrence-modal')
     </script>
 {% endblock %}

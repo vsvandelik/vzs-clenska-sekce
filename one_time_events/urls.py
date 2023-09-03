@@ -51,7 +51,7 @@ urlpatterns = [
         name="edit-organizer-for-occurrence",
     ),
     path(
-        "<int:occurrence_id>/smazat-organizatora-na-den/<int:pk>",
+        "<int:occurrence_id>/smazat-organizatora-na-dne/<int:pk>",
         views.DeleteOrganizerForOccurrenceView.as_view(),
         name="delete-organizer-from-occurrence",
     ),
@@ -71,8 +71,13 @@ urlpatterns = [
         name="bulk-approve-participants",
     ),
     path(
-        "<int:occurrence_id>/prihlasit-organizatora/<int:position_assignment_id>",
+        "<int:occurrence_id>/prihlasit-organizatora-na-den/<int:position_assignment_id>",
         views.OneTimeEventEnrollMyselfOrganizerOccurrenceView.as_view(),
         name="enroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/odhlasit-organizatora-na-den/<int:pk>",
+        views.OneTimeEventUnenrollMyselfOrganizerOccurrenceView.as_view(),
+        name="unenroll-myself-organizer-occurrence",
     ),
 ]

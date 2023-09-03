@@ -197,7 +197,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
 ):
     model = OrganizerOccurrenceAssignment
     form_class = OneTimeEventEnrollMyselfOrganizerOccurrenceForm
-    success_message = "TODO"
+    success_message = "Přihlášení na organizátorskou pozici proběhlo úspěšně"
 
     def dispatch(self, request, *args, **kwargs):
         self.position_assignment = get_object_or_404(
@@ -209,3 +209,15 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
         kwargs = super().get_form_kwargs()
         kwargs["position_assignment"] = self.position_assignment
         return kwargs
+
+
+class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.DeleteView,
+):
+    model = OrganizerOccurrenceAssignment
+    context_object_name = "assignment"
+    success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
+    template_name = "one_time_events/modals/unenroll_myself_organizer.html"
