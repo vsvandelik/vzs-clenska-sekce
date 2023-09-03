@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
-from features.models import Feature
 from persons.models import Person
 
 
@@ -219,9 +218,7 @@ class EventOccurrence(PolymorphicModel):
     def satisfies_position_requirements(self, person, position_assignment):
         if not Event.check_common_requirements(position_assignment.position, person):
             return False
-
         return True
-        # TODO kvalifikace, opravneni, vybaveni
 
     def is_organizer_of_position(self, person, position_assignment):
         raise NotImplementedError

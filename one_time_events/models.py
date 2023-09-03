@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -9,6 +10,7 @@ from events.models import (
     ParticipantEnrollment,
     OrganizerAssignment,
 )
+from features.models import Feature, FeatureAssignment
 from trainings.models import Training
 from transactions.models import Transaction
 
@@ -176,6 +178,34 @@ class OneTimeEventOccurrence(EventOccurrence):
         person_assignment = assignments.filter(person=person).first()
         if person_assignment is None:
             return False
+        return True
+
+    def satisfies_position_requirements(self, person, position_assignment):
+        possibly_satisfies = super().satisfies_position_requirements(
+            person, position_assignment
+        )
+        if not possibly_satisfies:
+            return False
+
+        features = position_assignment.position.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            assignment = FeatureAssignment.objects.filter(
+                Q(feature__in=observed_features)
+                & Q(person=person)
+                & Q(date_assigned__lte=self.date)
+                & Q(date_returned=None)
+                & (Q(date_expire=None) | Q(date_expire__gte=self.date))
+            ).first()
+            if assignment is None:
+                return False
         return True
 
 

@@ -12,6 +12,7 @@ from events.forms_bases import (
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
     BulkApproveParticipantsForm,
+    EnrollMyselfForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
@@ -493,4 +494,30 @@ class OneTimeEventBulkApproveParticipantsForm(
                 super().save_enrollment(enrollment)
 
         cleaned_data["count"] = len(enrollments_2_approve)
+        return instance
+
+
+class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfForm):
+    class Meta(EnrollMyselfForm.Meta):
+        model = OrganizerOccurrenceAssignment
+
+    def __init__(self, *args, **kwargs):
+        self.occurrence = kwargs.pop("occurrence")
+        self.position_assignment = kwargs.pop("position_assignment")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person is not None and not self.occurrence.can_enroll_position(
+            self.person, self.position_assignment
+        ):
+            self.add_error(
+                None,
+                f"Nejsou splněny požadavky kladené na organizátora pozice {self.position_assignment.position}",
+            )
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        a = 1
         return instance

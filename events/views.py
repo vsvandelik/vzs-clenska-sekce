@@ -75,6 +75,16 @@ class InsertEventIntoSelfObjectMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class InsertOccurrenceIntoSelfObjectMixin:
+    occurrence_id_key = "occurrence_id"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.occurrence = get_object_or_404(
+            EventOccurrence, pk=self.kwargs[self.occurrence_id_key]
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+
 class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -82,9 +92,23 @@ class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
         return kwargs
 
 
+class InsertOccurrenceIntoModelFormKwargsMixin(InsertOccurrenceIntoSelfObjectMixin):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["occurrence"] = self.occurrence
+        return kwargs
+
+
 class InsertEventIntoContextData(InsertEventIntoSelfObjectMixin):
     def get_context_data(self, **kwargs):
         kwargs.setdefault("event", self.event)
+        return super().get_context_data(**kwargs)
+
+
+class InsertOccurrenceIntoContextData(InsertOccurrenceIntoSelfObjectMixin):
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("occurrence", self.occurrence)
+        kwargs.setdefault("event", self.occurrence.event)
         return super().get_context_data(**kwargs)
 
 
@@ -259,13 +283,17 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
         return f"Přihláška osoby {self.object.person} smazána"
 
 
-class EnrollMyselfParticipantMixin(
+class EnrollMyselfMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertRequestIntoModelFormKwargsMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
     generic.CreateView,
+):
+    pass
+
+
+class EnrollMyselfParticipantMixin(
+    InsertEventIntoModelFormKwargsMixin, InsertEventIntoContextData, EnrollMyselfMixin
 ):
     pass
 

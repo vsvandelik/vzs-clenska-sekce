@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
+from events.models import EventPositionAssignment
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -16,6 +17,9 @@ from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
     BulkApproveParticipantsMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    EnrollMyselfMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -28,6 +32,7 @@ from .forms import (
     BulkDeleteOrganizerFromOneTimeEventForm,
     BulkAddOrganizerFromOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
+    OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -96,27 +101,16 @@ class OrganizerForOccurrenceMixin(RedirectToEventDetailOnSuccessMixin, MessagesM
     pass
 
 
-class AddOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.CreateView):
+class AddOrganizerForOccurrenceView(
+    OrganizerForOccurrenceMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    generic.CreateView,
+):
     model = OrganizerOccurrenceAssignment
     form_class = OrganizerOccurrenceAssignmentForm
     template_name = "one_time_events/create_organizer_occurrence_assignment.html"
     success_message = "Organizátor %(person)s přidán"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.occurrence = get_object_or_404(
-            OneTimeEventOccurrence, pk=self.kwargs["occurrence_id"]
-        )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["occurrence"] = self.occurrence
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("occurrence", self.occurrence)
-        kwargs.setdefault("event", self.occurrence.event)
-        return super().get_context_data(**kwargs)
 
 
 class EditOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.UpdateView):
@@ -196,8 +190,22 @@ class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
 
 
 class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
-    RedirectToEventDetailOnFailureMixin, EnrollMyselfParticipantMixin
+    RedirectToEventDetailOnFailureMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    EnrollMyselfMixin,
 ):
     model = OrganizerOccurrenceAssignment
-    # form_class =
+    form_class = OneTimeEventEnrollMyselfOrganizerOccurrenceForm
     success_message = "TODO"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.position_assignment = get_object_or_404(
+            EventPositionAssignment, pk=self.kwargs["position_assignment_id"]
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["position_assignment"] = self.position_assignment
+        return kwargs
