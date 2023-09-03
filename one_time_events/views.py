@@ -193,3 +193,11 @@ class BulkAddOrganizerToOneTimeEventView(
 class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
     form_class = OneTimeEventBulkApproveParticipantsForm
     template_name = "one_time_events/bulk_approve_participants.html"
+
+
+class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
+    RedirectToEventDetailOnFailureMixin, EnrollMyselfParticipantMixin
+):
+    model = OrganizerOccurrenceAssignment
+    # form_class =
+    success_message = "TODO"

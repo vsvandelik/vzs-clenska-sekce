@@ -188,6 +188,11 @@ def value_missing_symbol():
     return mark_safe(settings.VALUE_MISSING_HTML)
 
 
+@register.filter
+def tuple(a, b):
+    return a, b
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url
