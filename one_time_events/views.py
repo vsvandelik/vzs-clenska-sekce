@@ -37,13 +37,23 @@ from .forms import (
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
-    OneTimeEventOccurrence,
     OrganizerOccurrenceAssignment,
 )
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "one_time_events/detail.html"
+
+    def get_context_data(self, **kwargs):
+        p = self.request.active_person
+        kwargs.setdefault(
+            "active_person_can_enroll_organizer", self.object.can_enroll_organizer(p)
+        )
+        kwargs.setdefault(
+            "active_person_can_unenroll_organizer",
+            self.object.can_unenroll_organizer(p),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class OneTimeEventCreateView(

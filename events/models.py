@@ -223,6 +223,10 @@ class EventOccurrence(PolymorphicModel):
     def is_organizer_of_position(self, person, position_assignment):
         raise NotImplementedError
 
+    def get_organizer_assignment(self, person, position_assignment):
+        assignments = self.position_organizers(position_assignment)
+        return assignments.filter(person=person).first()
+
     def can_enroll_position(self, person, position_assignment):
         if not self.has_position_free_spot(position_assignment):
             return False

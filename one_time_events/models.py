@@ -118,6 +118,26 @@ class OneTimeEvent(Event):
             take = self.capacity - len(self.approved_participants())
         return enrollments[:take]
 
+    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
+        if person is None:
+            return False
+
+        for occurrence in self.eventoccurrence_set.all():
+            for position_assignment in self.eventpositionassignment_set.all():
+                if enroll_unenroll_func(occurrence, person, position_assignment):
+                    return True
+        return False
+
+    def can_unenroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_unenroll_position
+        )
+
+    def can_enroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_enroll_position
+        )
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -186,10 +206,6 @@ class OneTimeEventOccurrence(EventOccurrence):
             return False
         return True
 
-    def get_organizer_assignment(self, person, position_assignment):
-        assignments = self.position_organizers(position_assignment)
-        return assignments.filter(person=person).first()
-
     def satisfies_position_requirements(self, person, position_assignment):
         possibly_satisfies = super().satisfies_position_requirements(
             person, position_assignment
@@ -219,6 +235,12 @@ class OneTimeEventOccurrence(EventOccurrence):
                     return False
         return True
 
+    def can_enroll_position(self, person, position_assignment):
+        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
+        if not can_possibly_enroll:
+            return False
+        return datetime.now().date() < self.event.date_start
+
     def can_unenroll_position(self, person, position_assignment):
         can_possibly_unenroll = super().can_unenroll_position(
             person, position_assignment
@@ -228,7 +250,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         return (
             datetime.now().date()
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
-            <= self.date
+            <= self.event.date_start
         )
 
 
