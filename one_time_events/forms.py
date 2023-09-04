@@ -13,6 +13,7 @@ from events.forms_bases import (
     BulkApproveParticipantsForm,
     ActivePersonFormMixin,
     EventFormMixin,
+    OrganizerAssignmentForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -352,10 +353,9 @@ class OneTimeEventEnrollMyselfParticipantForm(
         return instance
 
 
-class OrganizerOccurrenceAssignmentForm(ModelForm):
-    class Meta:
+class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
-        fields = []
 
     def __init__(self, *args, **kwargs):
         self.occurrence = kwargs.pop("occurrence")
@@ -594,6 +594,18 @@ class OneTimeEventEnrollMyselfOrganizerForm(
         ].queryset = EventPositionAssignment.objects.filter(
             id__in=can_enroll_positions_ids
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        position_assignment = cleaned_data.get("position_assignment")
+        for occurrence in cleaned_data["occurrences"]:
+            if position_assignment is not None and not occurrence.can_enroll_position(
+                self.person, position_assignment
+            ):
+                self.add_error(
+                    None, "Není možné se přihlásit na vybranou kombinací dnů a pozice"
+                )
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
