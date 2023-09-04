@@ -10,17 +10,20 @@ from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
     EventForm,
     EnrollMyselfParticipantForm,
-    OrganizerAssignmentForm,
     BulkApproveParticipantsForm,
-    EnrollMyselfForm,
     ActivePersonFormMixin,
     EventFormMixin,
 )
 from events.forms_bases import ParticipantEnrollmentForm
-from events.models import EventOrOccurrenceState, ParticipantEnrollment
+from events.models import (
+    EventOrOccurrenceState,
+    ParticipantEnrollment,
+    EventPositionAssignment,
+)
 from events.utils import parse_czech_date
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from .forms_bases import OneTimeEventOrganizerEnrollMyselfForm
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -349,9 +352,10 @@ class OneTimeEventEnrollMyselfParticipantForm(
         return instance
 
 
-class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
-    class Meta(OrganizerAssignmentForm.Meta):
+class OrganizerOccurrenceAssignmentForm(ModelForm):
+    class Meta:
         model = OrganizerOccurrenceAssignment
+        fields = []
 
     def __init__(self, *args, **kwargs):
         self.occurrence = kwargs.pop("occurrence")
@@ -404,21 +408,7 @@ class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
         return cleaned_data
 
 
-class BulkAddOrganizerFromOneTimeEventForm(EventFormMixin, OrganizerAssignmentForm):
-    class Meta(OrganizerAssignmentForm.Meta):
-        model = OrganizerOccurrenceAssignment
-
-    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["person"].queryset = Person.objects.filter(
-            ~Q(organizeroccurrenceassignment__occurrence__event=self.event)
-        ).all()
-        self.fields[
-            "position_assignment"
-        ].queryset = self.event.eventpositionassignment_set.all()
-
+class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
     def _clean_parse_occurrences(self):
         occurrences = []
         occurrences_ids = []
@@ -438,6 +428,27 @@ class BulkAddOrganizerFromOneTimeEventForm(EventFormMixin, OrganizerAssignmentFo
         self._clean_parse_occurrences()
         return self.cleaned_data
 
+    def checked_occurrences(self):
+        if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
+            return self.cleaned_data["occurrences_ids"]
+        return self.event.eventoccurrence_set.all().values_list("id", flat=True)
+
+
+class BulkAddOrganizerToOneTimeEventForm(
+    BulkAddOrganizerToOneTimeEventMixin, OneTimeEventOrganizerEnrollMyselfForm
+):
+    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
+        pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["person"].queryset = Person.objects.filter(
+            ~Q(organizeroccurrenceassignment__occurrence__event=self.event)
+        ).all()
+        self.fields[
+            "position_assignment"
+        ].queryset = self.event.eventpositionassignment_set.all()
+
     def save(self, commit=True):
         instance = super().save(False)
         for occurrence in self.cleaned_data["occurrences"]:
@@ -447,11 +458,6 @@ class BulkAddOrganizerFromOneTimeEventForm(EventFormMixin, OrganizerAssignmentFo
             if commit:
                 instance.save()
         return instance
-
-    def checked_occurrences(self):
-        if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
-            return self.cleaned_data["occurrences_ids"]
-        return self.event.eventoccurrence_set.all().values_list("id", flat=True)
 
 
 class OneTimeEventBulkApproveParticipantsForm(
@@ -497,9 +503,10 @@ class OneTimeEventBulkApproveParticipantsForm(
         return instance
 
 
-class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfForm):
-    class Meta(EnrollMyselfForm.Meta):
+class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(ActivePersonFormMixin, ModelForm):
+    class Meta:
         model = OrganizerOccurrenceAssignment
+        fields = []
 
     def __init__(self, *args, **kwargs):
         self.occurrence = kwargs.pop("occurrence")
@@ -562,3 +569,39 @@ class OneTimeEventUnenrollMyselfOrganizerForm(
 
         cleaned_data["assignments_2_delete"] = observed_assignments
         return cleaned_data
+
+
+class OneTimeEventEnrollMyselfOrganizerForm(
+    ActivePersonFormMixin,
+    BulkAddOrganizerToOneTimeEventMixin,
+    OneTimeEventOrganizerEnrollMyselfForm,
+):
+    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
+        pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        positions = self.event.eventpositionassignment_set.all()
+        can_enroll_positions_ids = []
+        for position in positions:
+            for occurrence in self.event.eventoccurrence_set.all():
+                if occurrence.can_enroll_position(self.person, position):
+                    can_enroll_positions_ids.append(position.id)
+                    break
+        self.fields[
+            "position_assignment"
+        ].queryset = EventPositionAssignment.objects.filter(
+            id__in=can_enroll_positions_ids
+        )
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.person = self.person
+        for occurrence in self.cleaned_data["occurrences"]:
+            instance.pk = None
+            instance.id = None
+            instance.occurrence = occurrence
+            if commit:
+                instance.save()
+        return instance

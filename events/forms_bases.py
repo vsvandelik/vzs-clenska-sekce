@@ -11,6 +11,7 @@ from events.models import (
     ParticipantEnrollment,
     OrganizerAssignment,
 )
+from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
@@ -145,14 +146,9 @@ class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
         return instance
 
 
-class EnrollMyselfForm(ActivePersonFormMixin, ModelForm):
+class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelForm):
     class Meta:
         fields = []
-
-
-class EnrollMyselfParticipantForm(EventFormMixin, EnrollMyselfForm):
-    class Meta(EnrollMyselfForm.Meta):
-        pass
 
     def clean(self):
         cleaned_data = super().clean()
@@ -176,13 +172,20 @@ class EnrollMyselfParticipantForm(EventFormMixin, EnrollMyselfForm):
         return instance
 
 
-class OrganizerAssignmentForm(ModelForm):
+class OrganizerEnrollMyselfForm(ModelForm):
     class Meta:
-        fields = ["position_assignment", "person"]
+        fields = ["position_assignment"]
         widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "position_assignment": Select2Widget(),
         }
+
+
+class OrganizerAssignmentForm(OrganizerEnrollMyselfForm):
+    class Meta(OrganizerEnrollMyselfForm.Meta):
+        fields = ["person"] + OrganizerEnrollMyselfForm.Meta.fields
+        widgets = {
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+        } | OrganizerEnrollMyselfForm.Meta.widgets
 
 
 class BulkApproveParticipantsForm(ModelForm):

@@ -9,9 +9,9 @@ from events.forms_bases import (
     EventForm,
     ParticipantEnrollmentForm,
     EnrollMyselfParticipantForm,
-    OrganizerAssignmentForm,
     BulkApproveParticipantsForm,
     EventFormMixin,
+    OrganizerAssignmentForm,
 )
 from events.models import (
     EventOrOccurrenceState,

@@ -11,7 +11,7 @@
                        data-toggle="modal"
                        data-target="#unenroll-myself-organizer-modal">Odhlásit se ze všech dnů</a>
                 {% elif active_person_can_enroll_organizer %}
-                    <a class="btn btn-info">Přihlásit se na více dnů</a>
+                    <a class="btn btn-info" href="{% url 'one_time_events:enroll-myself-organizer' event.id %}">Přihlásit se na více dnů</a>
 
                 {% endif %}
             </div>

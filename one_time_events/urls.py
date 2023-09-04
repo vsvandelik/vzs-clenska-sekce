@@ -85,4 +85,9 @@ urlpatterns = [
         views.OneTimeEventUnenrollMyselfOrganizerView.as_view(),
         name="unenroll-myself-organizer",
     ),
+    path(
+        "<int:event_id>/prihlasit-organizatora/",
+        views.OneTimeEventEnrollMyselfOrganizerView.as_view(),
+        name="enroll-myself-organizer",
+    ),
 ]

@@ -2,12 +2,10 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block scripts %}
-    <script src="{% static 'events/set_report_validity.js' %}"></script>
-    <script src="{% static 'trainings/weekday_selection.js' %}"></script>
-    <script src="{% static 'trainings/enroll_myself_participant.js' %}"></script>
+    <script src="{% static 'one_time_events/bulk_add_organizer.js' %}"></script>
 {% endblock %}
 {% block title %}
-    Přihláška na trénink
+    Přihláška na organizátora
 {% endblock %}
 {% block content %}
     <div class="row">
@@ -30,8 +28,8 @@
                         <div class="card-title h5">Přihláška</div>
                     </div>
                     <div class="card-body">
-                        <p>Dny zobrazené jako žluté políčko jsou již zaplněny! Při jejich výběru, bude vaše přihláška zařazena mezi náhradníky.</p>
-                        {% include 'trainings/components/weekday_selection.html' %}
+                        {{ form.position_assignment|as_crispy_field }}
+                        {% include 'one_time_events/components/occurrence_selection.html' %}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" class="btn btn-primary"
