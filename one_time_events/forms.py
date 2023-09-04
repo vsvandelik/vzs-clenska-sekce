@@ -548,4 +548,17 @@ class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
 class OneTimeEventUnenrollMyselfOrganizerForm(
     ActivePersonFormMixin, EventFormMixin, Form
 ):
-    pass
+    def clean(self):
+        cleaned_data = super().clean()
+        observed_assignments = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__event=self.event, person=self.person
+        )
+        for assignment in observed_assignments:
+            if not assignment.can_unenroll():
+                self.add_error(
+                    None,
+                    f"Z pozice {assignment.position_assignment.position} se již nemůžete odhlásit",
+                )
+
+        cleaned_data["assignments_2_delete"] = observed_assignments
+        return cleaned_data

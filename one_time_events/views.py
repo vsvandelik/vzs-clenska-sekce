@@ -250,5 +250,5 @@ class OneTimeEventUnenrollMyselfOrganizerView(
     success_message = "Odhlášení ze všech dnů události proběhlo úspěšně"
 
     def form_valid(self, form):
-        a = 1
+        form.cleaned_data["assignments_2_delete"].delete()
         return super().form_valid(form)
