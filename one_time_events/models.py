@@ -227,9 +227,9 @@ class OneTimeEventOccurrence(EventOccurrence):
                 assignment = FeatureAssignment.objects.filter(
                     Q(feature__in=observed_features)
                     & Q(person=person)
-                    & Q(date_assigned__lte=self.date)
+                    & Q(date_assigned__lte=self.event.date_start)
                     & Q(date_returned=None)
-                    & (Q(date_expire=None) | Q(date_expire__gte=self.date))
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
                 ).first()
                 if assignment is None:
                     return False
