@@ -26,21 +26,23 @@
                                     / {{ position_assignment.count }}</td>
                             {% endwith %}
                             <td>
-                                {% if occurrence|tuple:active_person|can_enroll_position:position_assignment %}
-                                    <form method="POST" style="display: inline"
-                                          action="{% url 'one_time_events:enroll-myself-organizer-occurrence' occurrence.id position_assignment.id %}">
-                                        {% csrf_token %}
-                                        <button class="btn btn-info" type="submit">Přihlásit se</button>
-                                    </form>
-                                {% elif occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
-                                    {% with assignment=occurrence|tuple:active_person|get_organizer_assignment:position_assignment %}
-                                        <a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
-                                           class="btn btn-secondary"
-                                           data-toggle="modal"
-                                           data-target="#unenroll-myself-organizer-occurrence-modal"
-                                           data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
-                                        >Odhlásit se</a>
-                                    {% endwith %}
+                                {% if active_person is not None %}
+                                    {% if occurrence|tuple:active_person|can_enroll_position:position_assignment %}
+                                        <form method="POST" style="display: inline"
+                                              action="{% url 'one_time_events:enroll-myself-organizer-occurrence' occurrence.id position_assignment.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-info" type="submit">Přihlásit se</button>
+                                        </form>
+                                    {% elif occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
+                                        {% with assignment=occurrence|tuple:active_person|get_organizer_assignment:position_assignment %}
+                                            <a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                               class="btn btn-secondary"
+                                               data-toggle="modal"
+                                               data-target="#unenroll-myself-organizer-occurrence-modal"
+                                               data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                            >Odhlásit se</a>
+                                        {% endwith %}
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>
