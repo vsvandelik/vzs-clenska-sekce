@@ -548,7 +548,4 @@ class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
 class OneTimeEventUnenrollMyselfOrganizerForm(
     ActivePersonFormMixin, EventFormMixin, Form
 ):
-    def clean(self):
-        cleaned_data = super().clean()
-        a = 1
-        return cleaned_data
+    pass
