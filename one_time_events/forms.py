@@ -14,6 +14,7 @@ from events.forms_bases import (
     ActivePersonFormMixin,
     EventFormMixin,
     OrganizerAssignmentForm,
+    OrganizerEnrollMyselfForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -24,7 +25,6 @@ from events.models import (
 from events.utils import parse_czech_date
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
-from .forms_bases import OneTimeEventOrganizerEnrollMyselfForm
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -432,6 +432,13 @@ class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
         if hasattr(self, "cleaned_data") and "occurrences_ids" in self.cleaned_data:
             return self.cleaned_data["occurrences_ids"]
         return self.event.eventoccurrence_set.all().values_list("id", flat=True)
+
+
+class OneTimeEventOrganizerEnrollMyselfForm(OrganizerEnrollMyselfForm):
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    class Meta(OrganizerEnrollMyselfForm.Meta):
+        model = OrganizerOccurrenceAssignment
 
 
 class BulkAddOrganizerToOneTimeEventForm(
