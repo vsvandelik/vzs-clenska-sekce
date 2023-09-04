@@ -3,7 +3,12 @@ from django.forms import ModelForm, MultipleChoiceField
 from django_select2.forms import Select2Widget
 
 from positions.models import EventPosition
-from .forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
+from .forms_bases import (
+    AgeLimitForm,
+    GroupMembershipForm,
+    AllowedPersonTypeForm,
+    EventFormMixin,
+)
 from .models import Event, EventPositionAssignment
 
 
@@ -12,7 +17,7 @@ class MultipleChoiceFieldNoValidation(MultipleChoiceField):
         pass
 
 
-class EventPositionAssignmentForm(ModelForm):
+class EventPositionAssignmentForm(EventFormMixin, ModelForm):
     class Meta:
         model = EventPositionAssignment
         fields = [
@@ -24,7 +29,6 @@ class EventPositionAssignmentForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         self.position = kwargs.pop("position", None)
         super().__init__(*args, **kwargs)
         self.fields["count"].widget.attrs["min"] = 1

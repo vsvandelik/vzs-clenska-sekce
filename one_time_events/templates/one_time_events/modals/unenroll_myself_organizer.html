@@ -1,23 +1,22 @@
 {% extends "modal.html" %}
 {% block modal_title %}
-    Odhlásit se z organizátorské pozice
+    Odhlásit se jako organizátor z události ze všech dnů
 {% endblock %}
 {% block modal_body %}
     <div class="row">
-        <p class="px-4">Chcete opravdu odhlásit z pozice "{{ assignment.position_assignment.position }}"?</p>
+        <p class="px-4">Chcete opravdu odhlásit ze všech dnů události jako organizátor?</p>
     </div>
     <div class="row">
         <ul>
-            <li><b>Událost:</b> {{ assignment.occurrence.event }}</li>
-            <li><b>Datum:</b> {{ assignment.occurrence.date }}</li>
+            <li><b>Událost:</b> TODO </li>
         </ul>
     </div>
 {% endblock %}
 {% block modal_footer_classes %}justify-content-center{% endblock %}
 {% block modal_footer %}
-    <form method="post" action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' assignment.occurrence.id assignment.id %}">
+    <form method="post" action="">
         {% csrf_token %}
         <button type="submit"
-                class="btn btn-secondary">Odhlásit se</button>
+                class="btn btn-secondary">Odhlásit se ze všech dnů</button>
     </form>
 {% endblock %}

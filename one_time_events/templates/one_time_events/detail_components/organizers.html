@@ -6,7 +6,7 @@
             </div>
             <div class="card-tools ml-2">
                 {% if active_person_can_unenroll_organizer %}
-                    <a class="btn btn-secondary">Odhlásit se ze všech dnů</a>
+                    <a href="{% url 'one_time_events:unenroll-myself-organizer' event.id %}" class="btn btn-secondary">Odhlásit se ze všech dnů</a>
                 {% elif active_person_can_enroll_organizer %}
                     <a class="btn btn-info">Přihlásit se na více dnů</a>
 

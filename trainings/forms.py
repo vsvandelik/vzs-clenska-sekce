@@ -11,6 +11,7 @@ from events.forms_bases import (
     EnrollMyselfParticipantForm,
     OrganizerAssignmentForm,
     BulkApproveParticipantsForm,
+    EventFormMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -480,7 +481,7 @@ class TrainingEnrollMyselfParticipantForm(
         return instance
 
 
-class CoachAssignmentForm(OrganizerAssignmentForm):
+class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
     class Meta(OrganizerAssignmentForm.Meta):
         model = CoachPositionAssignment
 
@@ -491,7 +492,6 @@ class CoachAssignmentForm(OrganizerAssignmentForm):
     )
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
 

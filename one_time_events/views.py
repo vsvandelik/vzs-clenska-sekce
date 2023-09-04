@@ -20,6 +20,7 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
     EnrollMyselfMixin,
+    InsertEventIntoSelfObjectMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -34,6 +35,7 @@ from .forms import (
     OneTimeEventBulkApproveParticipantsForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
     OneTimeEventDeleteOrganizerOccurrenceForm,
+    OneTimeEventUnenrollMyselfOrganizerForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -232,4 +234,20 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     form_class = OneTimeEventDeleteOrganizerOccurrenceForm
     context_object_name = "assignment"
     success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
+    template_name = "one_time_events/modals/unenroll_myself_organizer_occurrence.html"
+
+
+class OneTimeEventUnenrollMyselfOrganizerView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.FormView,
+):
+    form_class = OneTimeEventUnenrollMyselfOrganizerForm
     template_name = "one_time_events/modals/unenroll_myself_organizer.html"
+    success_message = "Odhlášení ze všech dnů události proběhlo úspěšně"
+
+    def form_valid(self, form):
+        return super().form_valid(form)

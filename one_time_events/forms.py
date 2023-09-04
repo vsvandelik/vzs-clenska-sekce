@@ -13,6 +13,8 @@ from events.forms_bases import (
     OrganizerAssignmentForm,
     BulkApproveParticipantsForm,
     EnrollMyselfForm,
+    ActivePersonFormMixin,
+    EventFormMixin,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
@@ -376,14 +378,13 @@ class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
         return instance
 
 
-class BulkDeleteOrganizerFromOneTimeEventForm(Form):
+class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
     person = forms.IntegerField(
         label="Osoba",
         widget=PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
     )
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         super().__init__(*args, **kwargs)
         self.fields["person"].widget.queryset = Person.objects.filter(
             organizeroccurrenceassignment__occurrence__event=self.event
@@ -403,14 +404,13 @@ class BulkDeleteOrganizerFromOneTimeEventForm(Form):
         return cleaned_data
 
 
-class BulkAddOrganizerFromOneTimeEventForm(OrganizerAssignmentForm):
+class BulkAddOrganizerFromOneTimeEventForm(EventFormMixin, OrganizerAssignmentForm):
     class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
 
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         super().__init__(*args, **kwargs)
         self.fields["person"].queryset = Person.objects.filter(
             ~Q(organizeroccurrenceassignment__occurrence__event=self.event)
@@ -532,9 +532,6 @@ class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
         model = OrganizerOccurrenceAssignment
         fields = []
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def clean(self):
         cleaned_data = super().clean()
         if not self.instance.can_unenroll():
@@ -546,3 +543,12 @@ class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
         if commit:
             instance.delete()
         return instance
+
+
+class OneTimeEventUnenrollMyselfOrganizerForm(
+    ActivePersonFormMixin, EventFormMixin, Form
+):
+    def clean(self):
+        cleaned_data = super().clean()
+        a = 1
+        return cleaned_data

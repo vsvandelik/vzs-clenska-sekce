@@ -16,6 +16,24 @@ from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
 
 
+class ActivePersonFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("request").active_person
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person is None:
+            self.add_error(None, "Není přihlášena žádná osoba")
+        return cleaned_data
+
+
+class EventFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+
+
 class EventForm(ModelForm):
     class Meta:
         fields = [
@@ -84,7 +102,7 @@ class AllowedPersonTypeForm(ModelForm):
         return instance
 
 
-class ParticipantEnrollmentForm(ModelForm):
+class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
     class Meta:
         fields = ["person", "state"]
         widgets = {
@@ -93,7 +111,6 @@ class ParticipantEnrollmentForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
         if self.instance.id is None:
@@ -128,28 +145,14 @@ class ParticipantEnrollmentForm(ModelForm):
         return instance
 
 
-class EnrollMyselfForm(ModelForm):
+class EnrollMyselfForm(ActivePersonFormMixin, ModelForm):
     class Meta:
         fields = []
 
-    def __init__(self, *args, **kwargs):
-        self.person = kwargs.pop("request").active_person
-        super().__init__(*args, **kwargs)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        if self.person is None:
-            self.add_error(None, "Není přihlášena žádná osoba")
-        return cleaned_data
-
-
-class EnrollMyselfParticipantForm(EnrollMyselfForm):
+class EnrollMyselfParticipantForm(EventFormMixin, EnrollMyselfForm):
     class Meta(EnrollMyselfForm.Meta):
         pass
-
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
