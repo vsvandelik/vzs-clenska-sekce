@@ -401,7 +401,7 @@ class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
 
         person = Person.objects.filter(pk=person_pk).first()
 
-        if person is not None:
+        if person is None:
             self.add_error("person", f"Osoba s id {person} neexistuje")
 
         cleaned_data["person"] = person
