@@ -20,7 +20,6 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
     EnrollMyselfMixin,
-    InsertEventIntoSelfObjectMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -259,13 +258,10 @@ class OneTimeEventUnenrollMyselfOrganizerView(
 
 
 class OneTimeEventEnrollMyselfOrganizerView(
-    MessagesMixin,
-    RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
-    InsertRequestIntoModelFormKwargsMixin,
     OrganizerSelectOccurrencesMixin,
-    generic.CreateView,
+    EnrollMyselfMixin,
 ):
     form_class = OneTimeEventEnrollMyselfOrganizerForm
     success_message = "Přihlášení jako organizátor proběhlo úspěšně"
