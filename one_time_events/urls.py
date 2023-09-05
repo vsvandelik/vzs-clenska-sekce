@@ -51,7 +51,7 @@ urlpatterns = [
         name="edit-organizer-for-occurrence",
     ),
     path(
-        "<int:occurrence_id>/smazat-organizatora-na-dne/<int:pk>",
+        "<int:occurrence_id>/smazat-organizatora-na-den/<int:pk>",
         views.DeleteOrganizerForOccurrenceView.as_view(),
         name="delete-organizer-from-occurrence",
     ),
