@@ -70,4 +70,24 @@ urlpatterns = [
         views.OneTimeEventBulkApproveParticipantsView.as_view(),
         name="bulk-approve-participants",
     ),
+    path(
+        "<int:occurrence_id>/prihlasit-organizatora-na-den/<int:position_assignment_id>",
+        views.OneTimeEventEnrollMyselfOrganizerOccurrenceView.as_view(),
+        name="enroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/odhlasit-organizatora-na-den/<int:pk>",
+        views.OneTimeEventUnenrollMyselfOrganizerOccurrenceView.as_view(),
+        name="unenroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:event_id>/odhlasit-organizatora/",
+        views.OneTimeEventUnenrollMyselfOrganizerView.as_view(),
+        name="unenroll-myself-organizer",
+    ),
+    path(
+        "<int:event_id>/prihlasit-organizatora/",
+        views.OneTimeEventEnrollMyselfOrganizerView.as_view(),
+        name="enroll-myself-organizer",
+    ),
 ]

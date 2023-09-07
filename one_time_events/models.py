@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -9,8 +11,10 @@ from events.models import (
     ParticipantEnrollment,
     OrganizerAssignment,
 )
+from features.models import Feature, FeatureAssignment
 from trainings.models import Training
 from transactions.models import Transaction
+from vzs import settings
 
 
 class OneTimeEvent(Event):
@@ -114,6 +118,26 @@ class OneTimeEvent(Event):
             take = self.capacity - len(self.approved_participants())
         return enrollments[:take]
 
+    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
+        if person is None:
+            return False
+
+        for occurrence in self.eventoccurrence_set.all():
+            for position_assignment in self.eventpositionassignment_set.all():
+                if enroll_unenroll_func(occurrence, person, position_assignment):
+                    return True
+        return False
+
+    def can_unenroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_unenroll_position
+        )
+
+    def can_enroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_enroll_position
+        )
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -130,6 +154,11 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
 
     class Meta:
         unique_together = ["person", "occurrence"]
+
+    def can_unenroll(self):
+        return self.occurrence.can_unenroll_position(
+            self.person, self.position_assignment
+        )
 
 
 class OneTimeEventParticipantAttendance(models.Model):
@@ -163,6 +192,65 @@ class OneTimeEventOccurrence(EventOccurrence):
     def position_organizers(self, position_assignment):
         return self.organizeroccurrenceassignment_set.filter(
             position_assignment=position_assignment
+        )
+
+    def has_position_free_spot(self, position_assignment):
+        return (
+            len(self.position_organizers(position_assignment))
+            < position_assignment.count
+        )
+
+    def is_organizer_of_position(self, person, position_assignment):
+        assignment = self.get_organizer_assignment(person, position_assignment)
+        if assignment is None:
+            return False
+        return True
+
+    def satisfies_position_requirements(self, person, position_assignment):
+        possibly_satisfies = super().satisfies_position_requirements(
+            person, position_assignment
+        )
+        if not possibly_satisfies:
+            return False
+
+        features = position_assignment.position.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=self.event.date_start)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
+                ).first()
+                if assignment is None:
+                    return False
+        return True
+
+    def can_enroll_position(self, person, position_assignment):
+        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
+        if not can_possibly_enroll:
+            return False
+        return datetime.now().date() < self.event.date_start
+
+    def can_unenroll_position(self, person, position_assignment):
+        can_possibly_unenroll = super().can_unenroll_position(
+            person, position_assignment
+        )
+        if not can_possibly_unenroll:
+            return False
+        return (
+            datetime.now().date()
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.event.date_start
         )
 
 

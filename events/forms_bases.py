@@ -11,9 +11,28 @@ from events.models import (
     ParticipantEnrollment,
     OrganizerAssignment,
 )
+from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
+
+
+class ActivePersonFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("request").active_person
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person is None:
+            self.add_error(None, "Není přihlášena žádná osoba")
+        return cleaned_data
+
+
+class EventFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
 
 
 class EventForm(ModelForm):
@@ -84,7 +103,7 @@ class AllowedPersonTypeForm(ModelForm):
         return instance
 
 
-class ParticipantEnrollmentForm(ModelForm):
+class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
     class Meta:
         fields = ["person", "state"]
         widgets = {
@@ -93,7 +112,6 @@ class ParticipantEnrollmentForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
         if self.instance.id is None:
@@ -128,25 +146,21 @@ class ParticipantEnrollmentForm(ModelForm):
         return instance
 
 
-class EnrollMyselfParticipantForm(ModelForm):
+class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelForm):
     class Meta:
         fields = []
 
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event")
-        self.person = kwargs.pop("request").active_person
-        super().__init__(*args, **kwargs)
-
     def clean(self):
-        if self.person is None:
-            self.add_error(None, "Není přihlášena žádná osoba")
-            return
-        if not self.event.does_participant_satisfy_requirements(self.person):
+        cleaned_data = super().clean()
+        if (
+            self.person is not None
+            and not self.event.does_participant_satisfy_requirements(self.person)
+        ):
             self.add_error(
                 None,
                 f"Nejsou splněny požadavky kladené na účastníky události",
             )
-        return self.cleaned_data
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
@@ -158,13 +172,20 @@ class EnrollMyselfParticipantForm(ModelForm):
         return instance
 
 
-class OrganizerAssignmentForm(ModelForm):
+class OrganizerEnrollMyselfForm(ModelForm):
     class Meta:
-        fields = ["position_assignment", "person"]
+        fields = ["position_assignment"]
         widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
             "position_assignment": Select2Widget(),
         }
+
+
+class OrganizerAssignmentForm(OrganizerEnrollMyselfForm):
+    class Meta(OrganizerEnrollMyselfForm.Meta):
+        fields = ["person"] + OrganizerEnrollMyselfForm.Meta.fields
+        widgets = {
+            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+        } | OrganizerEnrollMyselfForm.Meta.widgets
 
 
 class BulkApproveParticipantsForm(ModelForm):

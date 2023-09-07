@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
-from features.models import Feature
 from persons.models import Person
 
 
@@ -105,30 +104,34 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
-    def does_participant_satisfy_requirements(self, person):
+    @staticmethod
+    def check_common_requirements(req_obj, person):
         person_with_age = Person.objects.with_age().get(id=person.id)
 
         if person_with_age.age is None and (
-            self.min_age is not None or self.max_age is not None
+            req_obj.min_age is not None or req_obj.max_age is not None
         ):
             return False
 
-        if self.min_age is not None and self.min_age > person_with_age.age:
+        if req_obj.min_age is not None and req_obj.min_age > person_with_age.age:
             return False
-        if self.max_age is not None and self.max_age < person_with_age.age:
+        if req_obj.max_age is not None and req_obj.max_age < person_with_age.age:
             return False
 
-        if self.group is not None and not person.groups.contains(self.group):
+        if req_obj.group is not None and not person.groups.contains(req_obj.group):
             return False
         if (
-            self.allowed_person_types.exists()
-            and not self.allowed_person_types.contains(
+            req_obj.allowed_person_types.exists()
+            and not req_obj.allowed_person_types.contains(
                 EventPersonTypeConstraint.get_or_create(person.person_type)
             )
         ):
             return False
 
         return True
+
+    def does_participant_satisfy_requirements(self, person):
+        return self.check_common_requirements(self, person)
 
     def has_free_spot(self):
         return self.capacity is None
@@ -209,6 +212,31 @@ class EventOccurrence(PolymorphicModel):
     def position_organizers(self, position_assignment):
         raise NotImplementedError
 
+    def has_position_free_spot(self, position_assignment):
+        raise NotImplementedError
+
+    def satisfies_position_requirements(self, person, position_assignment):
+        if not Event.check_common_requirements(position_assignment.position, person):
+            return False
+        return True
+
+    def is_organizer_of_position(self, person, position_assignment):
+        raise NotImplementedError
+
+    def get_organizer_assignment(self, person, position_assignment):
+        assignments = self.position_organizers(position_assignment)
+        return assignments.filter(person=person).first()
+
+    def can_enroll_position(self, person, position_assignment):
+        if not self.has_position_free_spot(position_assignment):
+            return False
+        if self.is_organizer_of_position(person, position_assignment):
+            return False
+        return self.satisfies_position_requirements(person, position_assignment)
+
+    def can_unenroll_position(self, person, position_assignment):
+        return self.is_organizer_of_position(person, position_assignment)
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -230,6 +258,9 @@ class OrganizerAssignment(PolymorphicModel):
     transaction = models.ForeignKey(
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
+
+    def can_unenroll_position(self):
+        raise NotImplementedError
 
 
 class EventPersonTypeConstraint(models.Model):

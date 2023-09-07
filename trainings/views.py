@@ -18,6 +18,7 @@ from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnFailureMixin,
     BulkApproveParticipantsMixin,
+    InsertEventIntoContextData,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -154,6 +155,7 @@ class CoachAssignmentMixin(
 class CoachAssignmentCreateUpdateMixin(
     CoachAssignmentMixin,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
 ):
     form_class = CoachAssignmentForm
 
@@ -161,10 +163,6 @@ class CoachAssignmentCreateUpdateMixin(
 class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
     template_name = "trainings/create_coach_assignment.html"
     success_message = "Trenér %(person)s přidán"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
 
 
 class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.UpdateView):
@@ -175,10 +173,6 @@ class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.Update
         kwargs = super().get_form_kwargs()
         kwargs["person"] = self.object.person
         return kwargs
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("event", self.event)
-        return super().get_context_data(**kwargs)
 
 
 class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):

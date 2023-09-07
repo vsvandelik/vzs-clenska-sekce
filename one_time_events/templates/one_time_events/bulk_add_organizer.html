@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Přidání organizátora na více dnů{% endblock %}
 {% block child2_scripts %}
+    <script src="{% static 'one_time_events/bulk_add_organizer_checkboxes.js' %}"></script>
     <script src="{% static 'one_time_events/bulk_add_organizer.js' %}"></script>
 {% endblock %}
 {% block form_action %}{% url 'one_time_events:bulk-add-organizer' event.id %}{% endblock %}

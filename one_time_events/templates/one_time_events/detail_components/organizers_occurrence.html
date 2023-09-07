@@ -1,4 +1,6 @@
 {% load events_template_tags %}
+{% load one_time_events_template_tags %}
+{% load vzs_filters %}
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header">
@@ -10,16 +12,39 @@
                     <tr>
                         <th>Pozice</th>
                         <th>Zaplněnost</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for position_assignment in occurrence.event.eventpositionassignment_set.all %}
                         <tr>
                             {% with organizers_count=occurrence|occurrence_position_assignment_organizers:position_assignment|length %}
-                                <td><a href="{% url 'positions:detail' position_assignment.position.id %}">{{ position_assignment.position }}</a></td>
+                                <td>
+                                    <a href="{% url 'positions:detail' position_assignment.position.id %}">{{ position_assignment.position }}</a>
+                                </td>
                                 <td class="{% if organizers_count == position_assignment.count %}bg-success{% elif organizers_count > position_assignment.count %}bg-warning{% endif %}">{{ organizers_count }}
                                     / {{ position_assignment.count }}</td>
                             {% endwith %}
+                            <td>
+                                {% if active_person is not None %}
+                                    {% if occurrence|tuple:active_person|can_enroll_position:position_assignment %}
+                                        <form method="POST" style="display: inline"
+                                              action="{% url 'one_time_events:enroll-myself-organizer-occurrence' occurrence.id position_assignment.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-info" type="submit">Přihlásit se</button>
+                                        </form>
+                                    {% elif occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
+                                        {% with assignment=occurrence|tuple:active_person|get_organizer_assignment:position_assignment %}
+                                            <a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                               class="btn btn-secondary"
+                                               data-toggle="modal"
+                                               data-target="#unenroll-myself-organizer-occurrence-modal"
+                                               data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id assignment.id %}"
+                                            >Odhlásit se</a>
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
 
                     {% endfor %}

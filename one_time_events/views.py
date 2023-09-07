@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
+from events.models import EventPositionAssignment
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -16,6 +17,9 @@ from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
     BulkApproveParticipantsMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    EnrollMyselfMixin,
 )
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.mixin_extensions import MessagesMixin
@@ -26,18 +30,32 @@ from .forms import (
     OneTimeEventEnrollMyselfParticipantForm,
     OrganizerOccurrenceAssignmentForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
-    BulkAddOrganizerFromOneTimeEventForm,
+    BulkAddOrganizerToOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
+    OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
+    OneTimeEventDeleteOrganizerOccurrenceForm,
+    OneTimeEventUnenrollMyselfOrganizerForm,
+    OneTimeEventEnrollMyselfOrganizerForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
-    OneTimeEventOccurrence,
     OrganizerOccurrenceAssignment,
 )
 
 
 class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "one_time_events/detail.html"
+
+    def get_context_data(self, **kwargs):
+        p = self.request.active_person
+        kwargs.setdefault(
+            "active_person_can_enroll_organizer", self.object.can_enroll_organizer(p)
+        )
+        kwargs.setdefault(
+            "active_person_can_unenroll_organizer",
+            self.object.can_unenroll_organizer(p),
+        )
+        return super().get_context_data(**kwargs)
 
 
 class OneTimeEventCreateView(
@@ -96,27 +114,16 @@ class OrganizerForOccurrenceMixin(RedirectToEventDetailOnSuccessMixin, MessagesM
     pass
 
 
-class AddOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.CreateView):
+class AddOrganizerForOccurrenceView(
+    OrganizerForOccurrenceMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    generic.CreateView,
+):
     model = OrganizerOccurrenceAssignment
     form_class = OrganizerOccurrenceAssignmentForm
     template_name = "one_time_events/create_organizer_occurrence_assignment.html"
     success_message = "Organizátor %(person)s přidán"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.occurrence = get_object_or_404(
-            OneTimeEventOccurrence, pk=self.kwargs["occurrence_id"]
-        )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["occurrence"] = self.occurrence
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("occurrence", self.occurrence)
-        kwargs.setdefault("event", self.occurrence.event)
-        return super().get_context_data(**kwargs)
 
 
 class EditOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.UpdateView):
@@ -156,6 +163,12 @@ class BulkCreateDeleteOrganizerMixin(
     pass
 
 
+class OrganizerSelectOccurrencesMixin:
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
+        return super().get_context_data(**kwargs)
+
+
 class BulkDeleteOrganizerFromOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
     generic.FormView,
@@ -179,17 +192,77 @@ class BulkDeleteOrganizerFromOneTimeEventView(
 
 class BulkAddOrganizerToOneTimeEventView(
     BulkCreateDeleteOrganizerMixin,
+    OrganizerSelectOccurrencesMixin,
     generic.CreateView,
 ):
-    form_class = BulkAddOrganizerFromOneTimeEventForm
+    form_class = BulkAddOrganizerToOneTimeEventForm
     template_name = "one_time_events/bulk_add_organizer.html"
     success_message = "Organizátor %(person)s přidán na vybrané dny"
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
-        return super().get_context_data(**kwargs)
 
 
 class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
     form_class = OneTimeEventBulkApproveParticipantsForm
     template_name = "one_time_events/bulk_approve_participants.html"
+
+
+class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
+    RedirectToEventDetailOnFailureMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    EnrollMyselfMixin,
+):
+    model = OrganizerOccurrenceAssignment
+    form_class = OneTimeEventEnrollMyselfOrganizerOccurrenceForm
+    success_message = "Přihlášení na organizátorskou pozici proběhlo úspěšně"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.position_assignment = get_object_or_404(
+            EventPositionAssignment, pk=self.kwargs["position_assignment_id"]
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["position_assignment"] = self.position_assignment
+        return kwargs
+
+
+class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    RedirectToEventDetailOnFailureMixin,
+    generic.UpdateView,
+):
+    model = OrganizerOccurrenceAssignment
+    form_class = OneTimeEventDeleteOrganizerOccurrenceForm
+    context_object_name = "assignment"
+    success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
+    template_name = "one_time_events/modals/unenroll_myself_organizer_occurrence.html"
+
+
+class OneTimeEventUnenrollMyselfOrganizerView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.FormView,
+):
+    form_class = OneTimeEventUnenrollMyselfOrganizerForm
+    template_name = "one_time_events/modals/unenroll_myself_organizer.html"
+    success_message = "Odhlášení ze všech dnů události proběhlo úspěšně"
+
+    def form_valid(self, form):
+        form.cleaned_data["assignments_2_delete"].delete()
+        return super().form_valid(form)
+
+
+class OneTimeEventEnrollMyselfOrganizerView(
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    OrganizerSelectOccurrencesMixin,
+    EnrollMyselfMixin,
+):
+    form_class = OneTimeEventEnrollMyselfOrganizerForm
+    success_message = "Přihlášení jako organizátor proběhlo úspěšně"
+    template_name = "one_time_events/enroll_myself_organizer.html"
