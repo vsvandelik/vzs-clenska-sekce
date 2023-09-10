@@ -27,3 +27,10 @@ class InsertRequestIntoModelFormKwargsMixin:
         kwargs = super().get_form_kwargs()
         kwargs["request"] = self.request
         return kwargs
+
+
+class InsertActivePersonIntoModelFormKwargsMixin:
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["active_person"] = self.request.active_person
+        return kwargs

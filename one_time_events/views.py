@@ -47,13 +47,17 @@ class OneTimeEventDetailView(EventDetailViewMixin):
     template_name = "one_time_events/detail.html"
 
     def get_context_data(self, **kwargs):
-        p = self.request.active_person
+        active_person = self.request.active_person
         kwargs.setdefault(
-            "active_person_can_enroll_organizer", self.object.can_enroll_organizer(p)
+            "active_person_can_enroll_organizer",
+            self.object.can_enroll_organizer(active_person),
         )
         kwargs.setdefault(
             "active_person_can_unenroll_organizer",
-            self.object.can_unenroll_organizer(p),
+            self.object.can_unenroll_organizer(active_person),
+        )
+        kwargs.setdefault(
+            "active_person_is_organizer", self.object.is_organizer(active_person)
         )
         return super().get_context_data(**kwargs)
 

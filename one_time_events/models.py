@@ -138,6 +138,11 @@ class OneTimeEvent(Event):
             person, OneTimeEventOccurrence.can_enroll_position
         )
 
+    def is_organizer(self, person):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__event=self, person=person
+        ).exists()
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(

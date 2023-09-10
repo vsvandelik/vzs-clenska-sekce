@@ -19,7 +19,7 @@ from vzs.widgets import DatePickerWithIcon
 
 class ActivePersonFormMixin:
     def __init__(self, *args, **kwargs):
-        self.person = kwargs.pop("request").active_person
+        self.person = kwargs.pop("active_person")
         super().__init__(*args, **kwargs)
 
     def clean(self):

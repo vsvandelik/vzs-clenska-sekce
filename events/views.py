@@ -14,7 +14,11 @@ from .forms import (
     EventAllowedPersonTypeForm,
 )
 from django.shortcuts import get_object_or_404, reverse, redirect
-from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import (
+    MessagesMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+)
 from trainings.models import Training
 from one_time_events.models import OneTimeEvent
 from events.models import ParticipantEnrollment
@@ -148,21 +152,22 @@ class PersonTypeDetailViewMixin:
 
 class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
-        p = self.request.active_person
+        active_person = self.request.active_person
         kwargs.setdefault(
             "active_person_can_enroll",
-            self.object.can_person_enroll_as_participant(p),
+            self.object.can_person_enroll_as_participant(active_person),
         )
         kwargs.setdefault(
             "active_person_can_enroll_as_waiting",
-            self.object.can_person_enroll_as_waiting(p),
+            self.object.can_person_enroll_as_waiting(active_person),
         )
         kwargs.setdefault(
             "active_person_can_unenroll",
-            self.object.can_participant_unenroll(p),
+            self.object.can_participant_unenroll(active_person),
         )
         kwargs.setdefault(
-            "active_person_enrollment", self.object.get_participant_enrollment(p)
+            "active_person_enrollment",
+            self.object.get_participant_enrollment(active_person),
         )
         return super().get_context_data(**kwargs)
 
@@ -286,7 +291,7 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
 class EnrollMyselfMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    InsertRequestIntoModelFormKwargsMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
     generic.CreateView,
 ):
     pass
