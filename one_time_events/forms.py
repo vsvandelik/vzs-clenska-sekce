@@ -31,6 +31,7 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
     OneTimeEventParticipantAttendance,
+    OneTimeEventAttendance,
 )
 
 
@@ -233,7 +234,10 @@ class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
         for occurrence in instance.event.eventoccurrence_set.all():
             if instance.state == ParticipantEnrollment.State.APPROVED:
                 OneTimeEventParticipantAttendance(
-                    enrollment=instance, person=instance.person, occurrence=occurrence
+                    enrollment=instance,
+                    person=instance.person,
+                    occurrence=occurrence,
+                    state=OneTimeEventAttendance.PRESENT,
                 ).save()
             else:
                 attendance = OneTimeEventParticipantAttendance.objects.filter(
@@ -375,6 +379,7 @@ class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
     def save(self, commit=True):
         instance = super().save(False)
         instance.occurrence = self.occurrence
+        instance.state = OneTimeEventAttendance.PRESENT
         if instance.id is not None:
             instance.person = self.person
         if commit:
@@ -433,19 +438,21 @@ class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
             return self.cleaned_data["occurrences_ids"]
         return self.event.eventoccurrence_set.all().values_list("id", flat=True)
 
-
-class OneTimeEventOrganizerEnrollMyselfForm(OrganizerEnrollMyselfForm):
-    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
-
-    class Meta(OrganizerEnrollMyselfForm.Meta):
-        model = OrganizerOccurrenceAssignment
+    def save(self, commit):
+        instance = super().save(False)
+        instance.state = OneTimeEventAttendance.PRESENT
+        if commit:
+            instance.save()
+        return instance
 
 
 class BulkAddOrganizerToOneTimeEventForm(
-    BulkAddOrganizerToOneTimeEventMixin, OneTimeEventOrganizerEnrollMyselfForm
+    BulkAddOrganizerToOneTimeEventMixin, OrganizerAssignmentForm
 ):
-    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
-        pass
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = OrganizerOccurrenceAssignment
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -535,6 +542,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(ActivePersonFormMixin, Mod
         instance = super().save(False)
         instance.position_assignment = self.position_assignment
         instance.person = self.person
+        instance.state = OneTimeEventAttendance.PRESENT
         instance.occurrence = self.occurrence
         if commit:
             instance.save()
@@ -581,10 +589,12 @@ class OneTimeEventUnenrollMyselfOrganizerForm(
 class OneTimeEventEnrollMyselfOrganizerForm(
     ActivePersonFormMixin,
     BulkAddOrganizerToOneTimeEventMixin,
-    OneTimeEventOrganizerEnrollMyselfForm,
+    OrganizerEnrollMyselfForm,
 ):
-    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
-        pass
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    class Meta(OrganizerEnrollMyselfForm.Meta):
+        model = OrganizerOccurrenceAssignment
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

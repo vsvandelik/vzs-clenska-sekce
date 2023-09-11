@@ -34,6 +34,7 @@ from .models import (
     CoachPositionAssignment,
     CoachOccurrenceAssignment,
     TrainingParticipantAttendance,
+    TrainingAttendance,
 )
 
 
@@ -397,7 +398,10 @@ class TrainingParticipantEnrollmentUpdateAttendanceProvider:
                 and instance.attends_on_weekday(occurrence.weekday())
             ):
                 TrainingParticipantAttendance(
-                    enrollment=instance, person=instance.person, occurrence=occurrence
+                    enrollment=instance,
+                    person=instance.person,
+                    occurrence=occurrence,
+                    state=TrainingAttendance.PRESENT,
                 ).save()
             else:
                 attendance = TrainingParticipantAttendance.objects.filter(
@@ -535,6 +539,7 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
                     "position_assignment": instance.position_assignment,
                     "person": instance.person,
                     "occurrence": occurrence,
+                    "state": TrainingAttendance.PRESENT,
                 },
             )
             if commit:

@@ -17,9 +17,9 @@ from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_sh
 
 
 class TrainingAttendance(models.TextChoices):
-    UNSET = "nenastaveno", _("nenastaveno")
     PRESENT = "prezence", _("prezence")
-    MISSING = "absence", _("absence")
+    EXCUSED = "omluven", _("omluven")
+    UNEXCUSED = "neomluven", _("neomluven")
 
 
 class Training(Event):
@@ -294,6 +294,7 @@ class CoachOccurrenceAssignment(OrganizerAssignment):
     occurrence = models.ForeignKey(
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -309,11 +310,16 @@ class TrainingOccurrence(EventOccurrence):
         related_name="coaches_occurrence_assignment_set",
     )
 
-    attending_participants = models.ManyToManyField(
+    participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantAttendance",
         related_name="training_participants_attendance_set",
     )
+
+    def attending_participants_attendance(self):
+        return self.trainingparticipantattendance_set.filter(
+            state=TrainingAttendance.PRESENT
+        )
 
     def weekday(self):
         return self.datetime_start.weekday()
@@ -327,6 +333,7 @@ class TrainingParticipantAttendance(models.Model):
     occurrence = models.ForeignKey(
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]

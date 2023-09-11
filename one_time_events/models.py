@@ -17,6 +17,11 @@ from transactions.models import Transaction
 from vzs import settings
 
 
+class OneTimeEventAttendance(models.TextChoices):
+    PRESENT = "prezence", _("prezence")
+    MISSING = "absence", _("absence")
+
+
 class OneTimeEvent(Event):
     class Category(models.TextChoices):
         COMMERCIAL = "komercni", _("komerční")
@@ -156,6 +161,7 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     occurrence = models.ForeignKey(
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -174,6 +180,7 @@ class OneTimeEventParticipantAttendance(models.Model):
     occurrence = models.ForeignKey(
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -185,7 +192,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         through="one_time_events.OrganizerOccurrenceAssignment",
         related_name="organizer_occurrence_assignment_set",
     )
-    attending_participants = models.ManyToManyField(
+    participants = models.ManyToManyField(
         "persons.Person", through="one_time_events.OneTimeEventParticipantAttendance"
     )
 
@@ -257,6 +264,10 @@ class OneTimeEventOccurrence(EventOccurrence):
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
+
+    def attending_participants_attendance(self):
+        # TODO: implement
+        raise NotImplementedError
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

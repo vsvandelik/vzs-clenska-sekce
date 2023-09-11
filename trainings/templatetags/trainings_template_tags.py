@@ -28,8 +28,8 @@ def weekday_pretty(value):
 
 
 @register.filter
-def date_get_weekday(date):
-    return date.weekday()
+def get_weekday(date_or_datetime):
+    return date_or_datetime.weekday()
 
 
 @register.filter

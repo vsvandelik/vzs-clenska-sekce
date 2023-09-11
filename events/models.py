@@ -237,6 +237,9 @@ class EventOccurrence(PolymorphicModel):
     def can_unenroll_position(self, person, position_assignment):
         return self.is_organizer_of_position(person, position_assignment)
 
+    def attending_participants_attendance(self):
+        raise NotImplementedError
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

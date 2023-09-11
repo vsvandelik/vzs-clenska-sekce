@@ -1,1 +1,2 @@
-function notifyCheckboxShouldDisable(checkbox) {}
+function notifyCheckboxDisable(checkbox) {}
+function notifyCheckboxEnable(checkbox) {}

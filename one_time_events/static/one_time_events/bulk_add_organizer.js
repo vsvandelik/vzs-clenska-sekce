@@ -26,12 +26,15 @@ function update(positionId) {
         $(`#occurrence-${oid}-capacity`).text(max)
         $(`#occurrence-${oid}-count`).text(actual)
         const card = $(`#occurrence-${oid}-card`)
+        const checkbox = $(`#occurrence-${oid}`)
         if(actual >= max) {
             card.addClass('bg-warning')
-            notifyCheckboxShouldDisable($(`#occurrence-${oid}`))
+            notifyCheckboxDisable(checkbox)
         }
-        else
+        else {
             card.removeClass('bg-warning')
+            notifyCheckboxEnable(checkbox)
+        }
     }
 }
 

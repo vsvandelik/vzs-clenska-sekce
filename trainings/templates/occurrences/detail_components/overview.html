@@ -1,4 +1,5 @@
 {% load vzs_filters %}
+{% load trainings_template_tags %}
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header border-0">
@@ -18,10 +19,7 @@
                     <tr>
                         <td class="text-nowrap text-bold align-middle">Kapacita:</td>
                         <td class="w-100">
-                            {% for weekday in event.weekdays_list %}
-                                {% include 'trainings/detail_components/capacity.html' %}
-                                {% if not forloop.last %} <br> {% endif %}
-                            {% endfor %}
+                            {{ occurrence.attending_participants_attendance|length }} / {{ event.get_capacity_display }}
                         </td>
                     </tr>
                 </tbody>
