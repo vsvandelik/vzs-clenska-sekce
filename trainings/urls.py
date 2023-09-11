@@ -78,4 +78,9 @@ urlpatterns = [
         views.TrainingOccurrenceDetailView.as_view(),
         name="occurrence-detail",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/zrusit-omluveni-trenera/<int:pk>/",
+        views.CancelCoachExcuse.as_view(),
+        name="cancel-coach-excuse",
+    ),
 ]

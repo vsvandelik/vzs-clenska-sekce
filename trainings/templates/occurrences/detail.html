@@ -21,7 +21,18 @@
     <div class="row">
         {% include 'occurrences/detail_components/overview.html' %}
     </div>
+    <div class="row">
+        {% include 'occurrences/detail_components/excused_coaches.html' %}
+    </div>
+    {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
 {% endblock %}
 {% block scripts %}
-
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("coaches-excused-table", [0, 1])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal("cancel-coach-excuse-modal")
+    </script>
 {% endblock %}

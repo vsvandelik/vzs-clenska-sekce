@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q
+from django.forms import ModelForm
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -568,4 +569,23 @@ class TrainingBulkApproveParticipantsForm(
                 super().update_attendance(enrollment)
 
         self.cleaned_data["count"] = len(enrollments_2_approve)
+        return instance
+
+
+class CancelCoachExcuseForm(ModelForm):
+    class Meta:
+        model = CoachOccurrenceAssignment
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.state != TrainingAttendance.EXCUSED:
+            self.add_error(None, f"Osoba {self.instance.person} není omluvena")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.PRESENT
+        if commit:
+            instance.save()
         return instance

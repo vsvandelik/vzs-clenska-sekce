@@ -20,6 +20,8 @@ from events.views import (
     BulkApproveParticipantsMixin,
     InsertEventIntoContextData,
     OccurrenceDetailViewMixin,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -29,6 +31,7 @@ from .forms import (
     TrainingEnrollMyselfParticipantForm,
     CoachAssignmentForm,
     TrainingBulkApproveParticipantsForm,
+    CancelCoachExcuseForm,
 )
 from .models import (
     Training,
@@ -36,6 +39,7 @@ from .models import (
     TrainingParticipantEnrollment,
     CoachPositionAssignment,
     TrainingOccurrence,
+    CoachOccurrenceAssignment,
 )
 
 
@@ -192,3 +196,17 @@ class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
 class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
     model = TrainingOccurrence
     template_name = "occurrences/detail.html"
+
+
+class CancelCoachExcuse(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    generic.UpdateView,
+):
+    form_class = CancelCoachExcuseForm
+    model = CoachOccurrenceAssignment
+    context_object_name = "assignment"
+    template_name = "occurrences/cancel_coach_excuse.html"
+    success_message = "Zrušení omluvenky proběhlo úspěšně"

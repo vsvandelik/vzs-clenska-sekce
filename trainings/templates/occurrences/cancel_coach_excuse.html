@@ -1,0 +1,15 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Zrušení omluvenky trenéra
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu zrušit omluvenku trenéra {{ assignment.person }}?</p>
+    </div>
+{% endblock %}
+
+{% block delete_action %}
+    {% url "trainings:cancel-coach-excuse" event.id occurrence.id assignment.id %}
+{% endblock %}

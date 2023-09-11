@@ -19,8 +19,8 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
 )
-from trainings.models import Training
-from one_time_events.models import OneTimeEvent
+from trainings.models import Training, TrainingOccurrence
+from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from events.models import ParticipantEnrollment
 
 
@@ -69,6 +69,34 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
         super().form_invalid(form)
         viewname, id = super().get_redirect_viewname_id()
         return redirect(viewname, pk=id)
+
+
+class RedirectToOccurrenceDetailMixin:
+    def get_redirect_viewname_id(self):
+        if "occurrence_id" in self.kwargs:
+            id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).id
+        elif hasattr(self, "object") and (
+            type(self.object) is OneTimeEventOccurrence
+            or type(self.object) is TrainingOccurrence
+        ):
+            id = self.object.id
+        else:
+            raise NotImplementedError
+
+        occurrence = EventOccurrence.objects.get(pk=id)
+        if isinstance(occurrence, OneTimeEventOccurrence):
+            viewname = "one_time_events:occurrence-detail"
+        elif isinstance(occurrence, TrainingOccurrence):
+            viewname = "trainings:occurrence-detail"
+        else:
+            raise NotImplementedError
+        return viewname, occurrence.event.id, id
+
+
+class RedirectToOccurrenceDetailOnSuccessMixin(RedirectToOccurrenceDetailMixin):
+    def get_success_url(self):
+        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
+        return reverse(viewname, args=[event_id, occurrence_id])
 
 
 class InsertEventIntoSelfObjectMixin:
