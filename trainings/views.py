@@ -19,6 +19,7 @@ from events.views import (
     RedirectToEventDetailOnFailureMixin,
     BulkApproveParticipantsMixin,
     InsertEventIntoContextData,
+    OccurrenceDetailViewMixin,
 )
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -34,6 +35,7 @@ from .models import (
     TrainingReplaceabilityForParticipants,
     TrainingParticipantEnrollment,
     CoachPositionAssignment,
+    TrainingOccurrence,
 )
 
 
@@ -185,3 +187,8 @@ class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
 
 class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
     form_class = TrainingBulkApproveParticipantsForm
+
+
+class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
+    model = TrainingOccurrence
+    template_name = "occurrences/detail.html"

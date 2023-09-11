@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load vzs_filters %}
+{% load static %}
+{% block title %}
+    Detail dne {{ occurrence.datetime_start|date }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                TODO: tlacitka
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'occurrences/detail_components/overview.html' %}
+    </div>
+{% endblock %}
+{% block scripts %}
+
+{% endblock %}

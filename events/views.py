@@ -329,3 +329,9 @@ class BulkApproveParticipantsMixin(
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.event
         return kwargs
+
+
+class OccurrenceDetailViewMixin(
+    InsertEventIntoContextData, InsertOccurrenceIntoContextData, generic.DetailView
+):
+    occurrence_id_key = "pk"

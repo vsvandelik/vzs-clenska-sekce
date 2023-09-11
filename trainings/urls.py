@@ -73,4 +73,9 @@ urlpatterns = [
         views.TrainingBulkApproveParticipantsView.as_view(),
         name="bulk-approve-participants",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/",
+        views.TrainingOccurrenceDetailView.as_view(),
+        name="occurrence-detail",
+    ),
 ]
