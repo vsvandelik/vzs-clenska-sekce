@@ -35,6 +35,12 @@ class EventFormMixin:
         super().__init__(*args, **kwargs)
 
 
+class OccurrenceFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.occurrence = kwargs.pop("occurrence")
+        super().__init__(*args, **kwargs)
+
+
 class EventForm(ModelForm):
     class Meta:
         fields = [

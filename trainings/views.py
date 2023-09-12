@@ -24,9 +24,13 @@ from events.views import (
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    EventOccurrenceIdCheckMixin,
 )
-from one_time_events.views import BulkCreateDeleteOrganizerMixin
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixin_extensions import (
+    MessagesMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+)
 from .forms import (
     TrainingForm,
     TrainingReplaceableForm,
@@ -38,6 +42,7 @@ from .forms import (
     ExcuseMyselfCoachForm,
     CoachAssignmentDeleteForm,
     CoachExcuseForm,
+    TrainingEnrollMyselfOrganizerOccurrenceForm,
 )
 from .models import (
     Training,
@@ -215,6 +220,7 @@ class CancelCoachExcuseView(
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
     generic.UpdateView,
 ):
     form_class = CancelCoachExcuseForm
@@ -230,6 +236,7 @@ class ExcuseMyselfCoachView(
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfCoachForm
@@ -255,6 +262,7 @@ class CoachExcuseView(
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
     generic.UpdateView,
 ):
     form_class = CoachExcuseForm
@@ -262,3 +270,19 @@ class CoachExcuseView(
     context_object_name = "assignment"
     template_name = "occurrences/modals/coach_excuse.html"
     success_message = "Omluvení trenéra proběhlo úspěšně"
+
+
+class EnrollMyselfOrganizerForOccurrence(
+    MessagesMixin,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.CreateView,
+):
+    form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
+    success_message = "Přihlášení jako jednorázový trenér proběhlo úspěšně"
+    template_name = "occurrences/enroll_myself_organizer_occurrence.html"

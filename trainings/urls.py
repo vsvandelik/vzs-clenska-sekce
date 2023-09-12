@@ -93,4 +93,9 @@ urlpatterns = [
         views.CoachExcuseView.as_view(),
         name="excuse-coach",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/prihlasit-se-jednorazove-trener/",
+        views.EnrollMyselfOrganizerForOccurrence.as_view(),
+        name="enroll-myself-organizer-occurrence",
+    ),
 ]

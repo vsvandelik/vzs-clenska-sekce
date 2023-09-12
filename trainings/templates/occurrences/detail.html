@@ -20,6 +20,8 @@
                        data-action="{% url 'trainings:excuse-myself-coach' event.id occurrence.id %}"
                        class="btn btn-secondary">Nahlásit trenérskou neúčast</a>
                 {% endif %}
+                <a href="{% url 'trainings:enroll-myself-organizer-occurrence' event.id occurrence.id %}"
+                   class="btn btn-info">Přihlásit se jednorázově na trenérskou pozici</a>
             </div>
         </div>
     </div>

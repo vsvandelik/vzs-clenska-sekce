@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.urls import reverse_lazy
 from .models import (
     Event,
@@ -323,17 +324,13 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
         return f"Přihláška osoby {self.object.person} smazána"
 
 
-class EnrollMyselfMixin(
+class EnrollMyselfParticipantMixin(
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     generic.CreateView,
-):
-    pass
-
-
-class EnrollMyselfParticipantMixin(
-    InsertEventIntoModelFormKwargsMixin, InsertEventIntoContextData, EnrollMyselfMixin
 ):
     pass
 
@@ -366,7 +363,25 @@ class BulkApproveParticipantsMixin(
         return kwargs
 
 
+class EventOccurrenceIdCheckMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if "occurrence_id" in kwargs:
+            pk = kwargs["occurrence_id"]
+        elif "pk" in kwargs:
+            pk = kwargs["pk"]
+        else:
+            raise NotImplementedError
+
+        occurrence = get_object_or_404(EventOccurrence, pk=pk)
+        if occurrence.event.id != kwargs["event_id"]:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class OccurrenceDetailViewMixin(
-    InsertEventIntoContextData, InsertOccurrenceIntoContextData, generic.DetailView
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    EventOccurrenceIdCheckMixin,
+    generic.DetailView,
 ):
     occurrence_id_key = "pk"
