@@ -37,6 +37,7 @@ from .forms import (
     CancelCoachExcuseForm,
     ExcuseMyselfCoachForm,
     CoachAssignmentDeleteForm,
+    CoachExcuseForm,
 )
 from .models import (
     Training,
@@ -247,3 +248,17 @@ class ExcuseMyselfCoachView(
         return CoachOccurrenceAssignment.objects.get(
             person=active_person, occurrence=occurrence
         )
+
+
+class CoachExcuseView(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    generic.UpdateView,
+):
+    form_class = CoachExcuseForm
+    model = CoachOccurrenceAssignment
+    context_object_name = "assignment"
+    template_name = "occurrences/modals/coach_excuse.html"
+    success_message = "Omluvení trenéra proběhlo úspěšně"

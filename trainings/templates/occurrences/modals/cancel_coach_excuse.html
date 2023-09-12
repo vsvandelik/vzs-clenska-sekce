@@ -1,4 +1,4 @@
-{% extends "modal_delete.html" %}
+{% extends "modal.html" %}
 
 {% block modal_title %}
     Zrušení omluvenky trenéra
@@ -9,7 +9,10 @@
         <p class="px-4">Chcete opravdu zrušit omluvenku trenéra {{ assignment.person }}?</p>
     </div>
 {% endblock %}
-
-{% block delete_action %}
-    {% url "trainings:cancel-coach-excuse" event.id occurrence.id assignment.id %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url "trainings:cancel-coach-excuse" event.id occurrence.id assignment.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Zrušit omluvení</button>
+    </form>
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends "modal.html" %}
+
+{% block modal_title %}
+    Omluvit trenéra
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu omluvit trenérskou účast osoby {{ assignment.person }}?</p>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'trainings:excuse-coach' event.id occurrence.id assignment.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Omluvit trenéra</button>
+    </form>
+{% endblock %}

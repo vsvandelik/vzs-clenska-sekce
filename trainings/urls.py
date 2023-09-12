@@ -88,4 +88,9 @@ urlpatterns = [
         views.ExcuseMyselfCoachView.as_view(),
         name="excuse-myself-coach",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/omluvit-trenera/<int:pk>/",
+        views.CoachExcuseView.as_view(),
+        name="excuse-coach",
+    ),
 ]

@@ -624,3 +624,20 @@ class ExcuseMyselfCoachForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class CoachExcuseForm(ModelForm):
+    class Meta:
+        model = CoachOccurrenceAssignment
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.EXCUSED
+        if commit:
+            instance.save()
+        return instance

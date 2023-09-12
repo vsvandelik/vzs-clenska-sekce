@@ -47,6 +47,7 @@
     </div>
     {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
     {% include 'modal_include.html' with id='excuse-myself-coach-modal' %}
+    {% include 'modal_include.html' with id='excuse-coach-modal' %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -60,5 +61,6 @@
     <script>
         registerModal("cancel-coach-excuse-modal")
         registerModal('excuse-myself-coach-modal')
+        registerModal('excuse-coach-modal')
     </script>
 {% endblock %}
