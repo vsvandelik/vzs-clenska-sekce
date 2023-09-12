@@ -14,7 +14,9 @@
                 </div>
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
-                TODO: tlacitka
+                {% if active_person_can_coach_excuse %}
+                    {% include 'occurrences/detail_components/excuse_coach_button.html' %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -22,7 +24,23 @@
         {% include 'occurrences/detail_components/overview.html' %}
     </div>
     <div class="row">
-        {% include 'occurrences/detail_components/excused_coaches.html' %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Trenéři
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'occurrences/detail_components/excused_coaches.html' %}
+                        {% include 'occurrences/detail_components/regular_coaches.html' %}
+                        {% include 'occurrences/detail_components/one_time_coaches.html' %}
+                        {% include 'occurrences/detail_components/positions_capacity.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
 {% endblock %}

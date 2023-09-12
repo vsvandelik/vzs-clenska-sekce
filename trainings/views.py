@@ -197,6 +197,14 @@ class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
     model = TrainingOccurrence
     template_name = "occurrences/detail.html"
 
+    def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
+        kwargs.setdefault(
+            "active_person_can_coach_excuse",
+            self.object.can_coach_excuse(active_person),
+        )
+        return super().get_context_data(**kwargs)
+
 
 class CancelCoachExcuse(
     MessagesMixin,

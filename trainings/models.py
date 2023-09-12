@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import timedelta, datetime
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -14,6 +15,7 @@ from events.models import (
 )
 from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
+from vzs import settings
 
 
 class TrainingAttendance(models.TextChoices):
@@ -323,6 +325,18 @@ class TrainingOccurrence(EventOccurrence):
 
     def weekday(self):
         return self.datetime_start.weekday()
+
+    def can_coach_excuse(self, person):
+        assignment = self.coachoccurrenceassignment_set.filter(
+            occurrence=self, person=person
+        ).first()
+        if assignment is None:
+            return False
+        return (
+            assignment.state == TrainingAttendance.PRESENT
+            and datetime.now() + timedelta(days=settings.ORGANIZER_EXCUSE_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
 
 
 class TrainingParticipantAttendance(models.Model):
