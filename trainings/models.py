@@ -334,7 +334,8 @@ class TrainingOccurrence(EventOccurrence):
             return False
         return (
             assignment.state == TrainingAttendance.PRESENT
-            and datetime.now() + timedelta(days=settings.ORGANIZER_EXCUSE_DEADLINE_DAYS)
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_EXCUSE_DEADLINE_DAYS)
             <= self.datetime_start
         )
 

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -32,6 +33,7 @@ from .forms import (
     CoachAssignmentForm,
     TrainingBulkApproveParticipantsForm,
     CancelCoachExcuseForm,
+    ExcuseMyselfCoachForm,
 )
 from .models import (
     Training,
@@ -206,7 +208,7 @@ class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
         return super().get_context_data(**kwargs)
 
 
-class CancelCoachExcuse(
+class CancelCoachExcuseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
@@ -216,5 +218,30 @@ class CancelCoachExcuse(
     form_class = CancelCoachExcuseForm
     model = CoachOccurrenceAssignment
     context_object_name = "assignment"
-    template_name = "occurrences/cancel_coach_excuse.html"
+    template_name = "occurrences/modals/cancel_coach_excuse.html"
     success_message = "Zrušení omluvenky proběhlo úspěšně"
+
+
+class ExcuseMyselfCoachView(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    generic.UpdateView,
+):
+    form_class = ExcuseMyselfCoachForm
+    model = CoachOccurrenceAssignment
+    template_name = "occurrences/modals/excuse_myself_coach.html"
+    success_message = "Vaše neúčast byla úspěšně nahlášena"
+
+    def get_object(self, queryset=None):
+        active_person = self.request.active_person
+        if active_person is None:
+            raise Http404("Tato stránka není dostupná")
+
+        occurrence = get_object_or_404(
+            TrainingOccurrence, pk=self.kwargs["occurrence_id"]
+        )
+        return CoachOccurrenceAssignment.objects.get(
+            person=active_person, occurrence=occurrence
+        )

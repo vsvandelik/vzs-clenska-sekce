@@ -15,7 +15,10 @@
             </div>
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 {% if active_person_can_coach_excuse %}
-                    {% include 'occurrences/detail_components/excuse_coach_button.html' %}
+                    <a data-toggle="modal"
+                       data-target="#excuse-myself-coach-modal"
+                       data-action="{% url 'trainings:excuse-myself-coach' event.id occurrence.id %}"
+                       class="btn btn-secondary">Nahlásit trenérskou neúčast</a>
                 {% endif %}
             </div>
         </div>
@@ -43,14 +46,19 @@
         </div>
     </div>
     {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
+    {% include 'modal_include.html' with id='excuse-myself-coach-modal' %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
         simpleOrderableTableEnable("coaches-excused-table", [0, 1])
+        simpleOrderableTableEnable("coaches-regular-table", [0, 1])
+        simpleOrderableTableEnable("one-time-coaches-table", [0, 1])
+        simpleOrderableTableEnable("positions-capacity-table", [0, 1])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal("cancel-coach-excuse-modal")
+        registerModal('excuse-myself-coach-modal')
     </script>
 {% endblock %}

@@ -80,7 +80,12 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/detail-dne/<int:occurrence_id>/zrusit-omluveni-trenera/<int:pk>/",
-        views.CancelCoachExcuse.as_view(),
+        views.CancelCoachExcuseView.as_view(),
         name="cancel-coach-excuse",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/omluvit-moji-neucast-trener/",
+        views.ExcuseMyselfCoachView.as_view(),
+        name="excuse-myself-coach",
     ),
 ]
