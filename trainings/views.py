@@ -23,7 +23,9 @@ from events.views import (
     OccurrenceDetailViewMixin,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
 )
+from one_time_events.views import BulkCreateDeleteOrganizerMixin
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     TrainingForm,
@@ -34,6 +36,7 @@ from .forms import (
     TrainingBulkApproveParticipantsForm,
     CancelCoachExcuseForm,
     ExcuseMyselfCoachForm,
+    CoachAssignmentDeleteForm,
 )
 from .models import (
     Training,
@@ -183,12 +186,10 @@ class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.Update
         return kwargs
 
 
-class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.DeleteView):
-    success_message = "Odhlášení trenéra z události proběhlo úspěšně"
+class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.UpdateView):
+    success_message = "Odhlášení trenéra proběhlo úspěšně"
     template_name = "trainings/modals/delete_coach_assignment.html"
-
-    def get_success_message(self, cleaned_data):
-        return f"Trenér {self.object.person} odebrán"
+    form_class = CoachAssignmentDeleteForm
 
 
 class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
@@ -227,6 +228,7 @@ class ExcuseMyselfCoachView(
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfCoachForm

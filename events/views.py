@@ -29,7 +29,7 @@ class EventMixin:
     context_object_name = "event"
 
 
-class RedirectToEventDetail:
+class RedirectToEventDetailMixin:
     def get_redirect_viewname_id(self):
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
@@ -58,13 +58,13 @@ class RedirectToEventDetail:
         return viewname, id
 
 
-class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetail):
+class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetailMixin):
     def get_success_url(self):
         viewname, id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[id])
 
 
-class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
+class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
     def form_invalid(self, form):
         super().form_invalid(form)
         viewname, id = super().get_redirect_viewname_id()
@@ -97,6 +97,13 @@ class RedirectToOccurrenceDetailOnSuccessMixin(RedirectToOccurrenceDetailMixin):
     def get_success_url(self):
         viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[event_id, occurrence_id])
+
+
+class RedirectToOccurrenceDetailOnFailureMixin(RedirectToOccurrenceDetailMixin):
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
+        return redirect(viewname, event_id=event_id, pk=occurrence_id)
 
 
 class InsertEventIntoSelfObjectMixin:

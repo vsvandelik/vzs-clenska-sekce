@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q
-from django.forms import ModelForm
+from django.forms import ModelForm, Form
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -20,6 +20,7 @@ from events.models import (
 )
 from events.utils import parse_czech_date
 from persons.models import Person
+from persons.widgets import PersonSelectWidget
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
@@ -552,6 +553,21 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
         return instance
 
 
+class CoachAssignmentDeleteForm(ModelForm):
+    class Meta:
+        model = CoachPositionAssignment
+        fields = []
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            CoachOccurrenceAssignment.objects.filter(
+                person=instance.person, occurrence__event=instance.training
+            ).delete()
+            instance.delete()
+        return instance
+
+
 class TrainingBulkApproveParticipantsForm(
     TrainingParticipantEnrollmentUpdateAttendanceProvider, BulkApproveParticipantsForm
 ):
@@ -595,6 +611,12 @@ class ExcuseMyselfCoachForm(ModelForm):
     class Meta:
         model = CoachOccurrenceAssignment
         fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.can_coach_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)

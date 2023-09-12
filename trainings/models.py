@@ -339,6 +339,22 @@ class TrainingOccurrence(EventOccurrence):
             <= self.datetime_start
         )
 
+    def coaches_assignments_by_Q(self, q_condition):
+        return self.coachoccurrenceassignment_set.filter(q_condition)
+
+    def excused_coaches_assignments(self):
+        return self.coaches_assignments_by_Q(Q(state=TrainingAttendance.EXCUSED))
+
+    def regular_present_coaches_assignments(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT, person__in=self.event.coaches.all())
+        )
+
+    def position_present_coaches(self, position_assignment):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT, position_assignment=position_assignment)
+        )
+
 
 class TrainingParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(

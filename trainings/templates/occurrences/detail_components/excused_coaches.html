@@ -13,27 +13,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for coach_assignment in occurrence.coachoccurrenceassignment_set.all %}
-                        {% if coach_assignment.state == "omluven" %}
-                            <tr>
-                                <td>
-                                    <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
-                                </td>
-                                <td>
-                                    <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a class="btn btn-danger btn-sm"
-                                           data-toggle="modal"
-                                           data-target="#cancel-coach-excuse-modal"
-                                           data-action="{% url 'trainings:cancel-coach-excuse' event.id occurrence.id coach_assignment.id %}">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
+                    {% for coach_assignment in occurrence.excused_coaches_assignments %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#cancel-coach-excuse-modal"
+                                       data-action="{% url 'trainings:cancel-coach-excuse' event.id occurrence.id coach_assignment.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>

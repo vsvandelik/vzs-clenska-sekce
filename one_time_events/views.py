@@ -185,12 +185,9 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         person = form.cleaned_data["person"]
         event = self.event
 
-        organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+        OrganizerOccurrenceAssignment.objects.filter(
             person=person, occurrence__event=event
-        )
-        for organizer_assignment in organizer_assignments:
-            organizer_assignment.delete()
-
+        ).delete()
         return super().form_valid(form)
 
 
