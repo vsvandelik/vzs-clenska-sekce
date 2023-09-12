@@ -318,6 +318,44 @@ class TrainingOccurrence(EventOccurrence):
         related_name="training_participants_attendance_set",
     )
 
+    def position_organizers(self, position_assignment):
+        return self.coachoccurrenceassignment_set.filter(
+            position_assignment=position_assignment
+        )
+
+    def position_organizers_attending(self, position_assignment):
+        return self.coachoccurrenceassignment_set.filter(
+            position_assignment=position_assignment, state=TrainingAttendance.PRESENT
+        )
+
+    def has_position_free_spot(self, position_assignment):
+        return (
+            len(self.position_organizers_attending(position_assignment))
+            < position_assignment.count
+        )
+
+    def can_enroll_position(self, person, position_assignment):
+        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
+        if not can_possibly_enroll:
+            return False
+        return (
+            datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def can_unenroll_position(self, person, position_assignment):
+        can_possibly_unenroll = super().can_unenroll_position(
+            person, position_assignment
+        )
+        if not can_possibly_unenroll:
+            return False
+        return (
+            datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
     def attending_participants_attendance(self):
         return self.trainingparticipantattendance_set.filter(
             state=TrainingAttendance.PRESENT

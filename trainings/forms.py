@@ -16,6 +16,7 @@ from events.forms_bases import (
     OrganizerEnrollMyselfForm,
     OccurrenceFormMixin,
     ActivePersonFormMixin,
+    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -647,6 +648,11 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(
     EventFormMixin,
     ActivePersonFormMixin,
     OrganizerEnrollMyselfForm,
+    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
 ):
     class Meta(OrganizerEnrollMyselfForm.Meta):
         model = CoachOccurrenceAssignment
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        super().init_position_assignment_queryset()

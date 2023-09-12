@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
+from features.models import FeatureAssignment, Feature
 from persons.models import Person
 
 
@@ -218,10 +219,34 @@ class EventOccurrence(PolymorphicModel):
     def satisfies_position_requirements(self, person, position_assignment):
         if not Event.check_common_requirements(position_assignment.position, person):
             return False
+
+        features = position_assignment.position.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=self.event.date_start)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
+                ).first()
+                if assignment is None:
+                    return False
         return True
 
     def is_organizer_of_position(self, person, position_assignment):
-        raise NotImplementedError
+        assignment = self.get_organizer_assignment(person, position_assignment)
+        if assignment is None:
+            return False
+        return True
 
     def get_organizer_assignment(self, person, position_assignment):
         assignments = self.position_organizers(position_assignment)

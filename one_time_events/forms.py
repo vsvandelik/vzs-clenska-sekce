@@ -15,6 +15,7 @@ from events.forms_bases import (
     EventFormMixin,
     OrganizerAssignmentForm,
     OrganizerEnrollMyselfForm,
+    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -590,6 +591,7 @@ class OneTimeEventEnrollMyselfOrganizerForm(
     ActivePersonFormMixin,
     BulkAddOrganizerToOneTimeEventMixin,
     OrganizerEnrollMyselfForm,
+    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
 ):
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
@@ -598,19 +600,7 @@ class OneTimeEventEnrollMyselfOrganizerForm(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        positions = self.event.eventpositionassignment_set.all()
-        can_enroll_positions_ids = []
-        for position in positions:
-            for occurrence in self.event.eventoccurrence_set.all():
-                if occurrence.can_enroll_position(self.person, position):
-                    can_enroll_positions_ids.append(position.id)
-                    break
-        self.fields[
-            "position_assignment"
-        ].queryset = EventPositionAssignment.objects.filter(
-            id__in=can_enroll_positions_ids
-        )
+        super().init_position_assignment_queryset()
 
     def clean(self):
         cleaned_data = super().clean()

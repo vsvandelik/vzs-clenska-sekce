@@ -10,6 +10,7 @@ from events.models import (
     EventPersonTypeConstraint,
     ParticipantEnrollment,
     OrganizerAssignment,
+    EventPositionAssignment,
 )
 from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
@@ -197,3 +198,19 @@ class OrganizerAssignmentForm(OrganizerEnrollMyselfForm):
 class BulkApproveParticipantsForm(ModelForm):
     class Meta:
         fields = []
+
+
+class EnrollMyselfOrganizerSetPositionsQuerysetHookProvider:
+    def init_position_assignment_queryset(self):
+        positions = self.event.eventpositionassignment_set.all()
+        can_enroll_positions_ids = []
+        for position in positions:
+            for occurrence in self.event.eventoccurrence_set.all():
+                if occurrence.can_enroll_position(self.person, position):
+                    can_enroll_positions_ids.append(position.id)
+                    break
+        self.fields[
+            "position_assignment"
+        ].queryset = EventPositionAssignment.objects.filter(
+            id__in=can_enroll_positions_ids
+        )
