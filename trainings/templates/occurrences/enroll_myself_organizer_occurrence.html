@@ -1,38 +1,6 @@
-{% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% extends 'events/enroll_myself_organizer.html' %}
 {% load static %}
 {% block title %}
     Přihláška na jednorázového trenéra
 {% endblock %}
-{% block content %}
-    <div class="row">
-        <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5">
-                        <span style="line-height: 45px;font-size: 22.5px;">{{ event }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="card-header">
-                        <div class="card-title h5">Přihláška</div>
-                    </div>
-                    <div class="card-body">
-                        {{ form.position_assignment|as_crispy_field }}
-                    </div>
-                    <div class="card-footer text-center">
-                        <input type="submit" class="btn btn-primary"
-                               value="Odeslat přihlášku">
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+{% block card_title %}Přihláška{% endblock %}
