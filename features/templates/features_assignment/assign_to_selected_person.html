@@ -14,7 +14,7 @@
                 <form method="post" id="assign-form">
                     {% csrf_token %}
                     <div class="card-body">
-                        {{ form|crispy }}
+                        {% crispy form %}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" value="Uložit" class="btn btn-primary"/>

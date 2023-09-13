@@ -14,7 +14,7 @@
                         <div class="card-title h5">Úprava stránky</div>
                     </div>
                     <div class="card-body">
-                        {{ form|crispy }}
+                        {% crispy form %}
                     </div>
                     <div class="card-footer text-center">
                         <input type="submit" value="Uložit" class="btn btn-primary"/>

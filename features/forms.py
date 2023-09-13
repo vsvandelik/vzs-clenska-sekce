@@ -8,6 +8,7 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs import settings
+from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import DatePickerWithIcon
 from .models import FeatureAssignment, Feature
 
@@ -274,6 +275,8 @@ class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.helper = WithoutFormTagFormHelper()
+
         if feature_type == Feature.Type.PERMISSION:
             self.fields["feature"].queryset = Feature.objects.filter(
                 feature_type=feature_type, assignable=True
@@ -297,6 +300,8 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
         super().__init__(*args, **kwargs)
 
         self.instance.feature = feature
+
+        self.helper = WithoutFormTagFormHelper()
 
         self._remove_not_collected_field(self.instance.feature)
         self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
@@ -335,6 +340,8 @@ class FeatureForm(ModelForm):
         super().__init__(*args, **kwargs)
         if not feature_type:
             return
+
+        self.helper = WithoutFormTagFormHelper()
 
         features = Feature.objects.filter(feature_type=feature_type)
 

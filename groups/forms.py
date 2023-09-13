@@ -4,12 +4,17 @@ from django.utils.translation import gettext_lazy as _
 
 from google_integration import google_directory
 from groups.models import Group
+from vzs.forms import WithoutFormTagFormHelper
 
 
 class GroupForm(ModelForm):
     class Meta:
         model = Group
         exclude = ["members"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = WithoutFormTagFormHelper()
 
     def clean_google_email(self):
         if self.cleaned_data["google_email"]:

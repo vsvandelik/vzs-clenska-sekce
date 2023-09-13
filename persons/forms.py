@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from features.models import Feature
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
-from vzs.forms import VZSDefaultFormHelper
+from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import DatePickerWithIcon
 from .models import Person, PersonHourlyRate
 
@@ -26,8 +26,7 @@ class PersonForm(ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self.helper = VZSDefaultFormHelper()
-        self.helper.add_input(Submit("submit", "Uložit"))
+        self.helper = WithoutFormTagFormHelper()
 
         if "person_type" in self.fields:
             self.fields["person_type"].choices = [("", "---------")] + [
@@ -227,9 +226,7 @@ class PersonHourlyRateForm(forms.Form):
 
         self.initial = PersonHourlyRate.get_person_hourly_rates(self.person_instance)
 
-        self.helper = VZSDefaultFormHelper()
-        self.helper.form_tag = False
-        self.helper.disable_csrf = True
+        self.helper = WithoutFormTagFormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 "Jednorázové akce", *[key for key, _ in OneTimeEvent.Category.choices]
