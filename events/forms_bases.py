@@ -222,3 +222,20 @@ class EnrollMyselfOrganizerOccurrenceForm(
                 f"Nejsou splněny požadavky kladené na pozici {self.position_assignment.position}",
             )
         return cleaned_data
+
+
+class UnenrollMyselfOrganizerOccurrenceForm(ModelForm):
+    class Meta:
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.can_unenroll():
+            self.add_error(None, "Již se není možné odhlásit z události")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            instance.delete()
+        return instance

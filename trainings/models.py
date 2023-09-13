@@ -351,7 +351,8 @@ class TrainingOccurrence(EventOccurrence):
         if not can_possibly_unenroll:
             return False
         return (
-            datetime.now(tz=timezone.get_default_timezone())
+            not self.event.coaches.contains(person)
+            and datetime.now(tz=timezone.get_default_timezone())
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.datetime_start
         )
@@ -371,7 +372,8 @@ class TrainingOccurrence(EventOccurrence):
         if assignment is None:
             return False
         return (
-            assignment.state == TrainingAttendance.PRESENT
+            self.event.coaches.contains(person)
+            and assignment.state == TrainingAttendance.PRESENT
             and datetime.now(tz=timezone.get_default_timezone())
             + timedelta(days=settings.ORGANIZER_EXCUSE_DEADLINE_DAYS)
             <= self.datetime_start

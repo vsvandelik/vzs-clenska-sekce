@@ -1,7 +1,5 @@
-from django.shortcuts import get_object_or_404
 from django.views import generic
 
-from events.models import EventPositionAssignment
 from events.views import (
     EventCreateMixin,
     EventDetailViewMixin,
@@ -36,7 +34,7 @@ from .forms import (
     BulkAddOrganizerToOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
-    OneTimeEventDeleteOrganizerOccurrenceForm,
+    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerForm,
 )
@@ -231,7 +229,7 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     generic.UpdateView,
 ):
     model = OrganizerOccurrenceAssignment
-    form_class = OneTimeEventDeleteOrganizerOccurrenceForm
+    form_class = OneTimeEventUnenrollMyselfOrganizerOccurrenceForm
     context_object_name = "assignment"
     success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
     template_name = "one_time_events/modals/unenroll_myself_organizer_occurrence.html"

@@ -44,6 +44,7 @@ from .forms import (
     CoachAssignmentDeleteForm,
     CoachExcuseForm,
     TrainingEnrollMyselfOrganizerOccurrenceForm,
+    TrainingUnenrollMyselfOrganizerForOccurrenceForm,
 )
 from .models import (
     Training,
@@ -311,10 +312,11 @@ class UnenrollMyselfOrganizerForOccurrenceView(
     EventOccurrenceIdCheckMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
-    generic.DeleteView,
+    generic.UpdateView,
 ):
     context_object_name = "assignment"
     model = CoachOccurrenceAssignment
+    form_class = TrainingUnenrollMyselfOrganizerForOccurrenceForm
     template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
 
     def get_success_message(self, cleaned_data):

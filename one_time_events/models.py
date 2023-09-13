@@ -166,11 +166,6 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     class Meta:
         unique_together = ["person", "occurrence"]
 
-    def can_unenroll(self):
-        return self.occurrence.can_unenroll_position(
-            self.person, self.position_assignment
-        )
-
 
 class OneTimeEventParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(

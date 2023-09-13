@@ -18,6 +18,7 @@ from events.forms_bases import (
     OccurrenceFormMixin,
     PositionAssignmentFormMixin,
     EnrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOrganizerOccurrenceForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -536,22 +537,11 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
         return instance
 
 
-class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
-    class Meta:
+class OneTimeEventUnenrollMyselfOrganizerOccurrenceForm(
+    UnenrollMyselfOrganizerOccurrenceForm
+):
+    class Meta(UnenrollMyselfOrganizerOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
-        fields = []
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if not self.instance.can_unenroll():
-            self.add_error(None, "Již se není možné odhlásit z události")
-        return cleaned_data
-
-    def save(self, commit=True):
-        instance = super().save(False)
-        if commit:
-            instance.delete()
-        return instance
 
 
 class OneTimeEventUnenrollMyselfOrganizerForm(

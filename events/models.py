@@ -287,8 +287,10 @@ class OrganizerAssignment(PolymorphicModel):
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
 
-    def can_unenroll_position(self):
-        raise NotImplementedError
+    def can_unenroll(self):
+        return self.occurrence.can_unenroll_position(
+            self.person, self.position_assignment
+        )
 
 
 class EventPersonTypeConstraint(models.Model):

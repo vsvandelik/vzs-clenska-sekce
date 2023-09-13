@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q
-from django.forms import ModelForm, Form
+from django.forms import ModelForm
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -13,11 +13,8 @@ from events.forms_bases import (
     BulkApproveParticipantsForm,
     EventFormMixin,
     OrganizerAssignmentForm,
-    OrganizerEnrollMyselfForm,
-    OccurrenceFormMixin,
-    ActivePersonFormMixin,
-    PositionAssignmentFormMixin,
     EnrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOrganizerOccurrenceForm,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -25,7 +22,6 @@ from events.models import (
 )
 from events.utils import parse_czech_date
 from persons.models import Person
-from persons.widgets import PersonSelectWidget
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
@@ -661,3 +657,10 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
         if commit:
             instance.save()
         return instance
+
+
+class TrainingUnenrollMyselfOrganizerForOccurrenceForm(
+    UnenrollMyselfOrganizerOccurrenceForm
+):
+    class Meta(UnenrollMyselfOrganizerOccurrenceForm.Meta):
+        model = CoachOccurrenceAssignment
