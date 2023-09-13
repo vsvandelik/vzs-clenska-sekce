@@ -24,6 +24,7 @@ from trainings.utils import (
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
+from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import TimePickerWithIcon
 from .models import (
     Training,
@@ -86,6 +87,8 @@ class TrainingForm(EventForm):
             for attr, value in event.__dict__.items():
                 if attr[3:] == "from" or attr[3:] == "to":
                     self.initial[attr] = value
+
+        self.helper = WithoutFormTagFormHelper()
 
     po = forms.BooleanField(
         label="Po",
