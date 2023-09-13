@@ -388,6 +388,12 @@ class TrainingOccurrence(EventOccurrence):
             Q(state=TrainingAttendance.PRESENT, person__in=self.event.coaches.all())
         )
 
+    def one_time_present_coaches(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT)
+            & ~Q(person__in=self.event.coaches.all())
+        )
+
     def position_present_coaches(self, position_assignment):
         return self.coaches_assignments_by_Q(
             Q(state=TrainingAttendance.PRESENT, position_assignment=position_assignment)

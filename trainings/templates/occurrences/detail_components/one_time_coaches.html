@@ -13,7 +13,26 @@
                     </tr>
                 </thead>
                 <tbody>
-
+                    {% for coach_assignment in occurrence.one_time_present_coaches %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-one-time-coach-modal"
+                                       data-action="{% url 'trainings:delete-one-time-coach' event.id occurrence.id coach_assignment.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

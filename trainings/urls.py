@@ -94,8 +94,18 @@ urlpatterns = [
         name="excuse-coach",
     ),
     path(
-        "<int:event_id>/detail-dne/<int:occurrence_id>/prihlasit-se-jednorazove-trener/",
-        views.EnrollMyselfOrganizerForOccurrence.as_view(),
+        "<int:event_id>/detail-dne/<int:occurrence_id>/prihlasit-se-jednorazove-trener/<int:position_assignment_id>",
+        views.EnrollMyselfOrganizerForOccurrenceView.as_view(),
         name="enroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/odhlasit-se-jednorazove-trener/<int:pk>",
+        views.UnenrollMyselfOrganizerForOccurrenceView.as_view(),
+        name="unenroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/odebrat-jednorazoveho-trenera/<int:pk>/",
+        views.OneTimeCoachDeleteView.as_view(),
+        name="delete-one-time-coach",
     ),
 ]

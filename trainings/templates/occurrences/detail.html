@@ -20,8 +20,6 @@
                        data-action="{% url 'trainings:excuse-myself-coach' event.id occurrence.id %}"
                        class="btn btn-secondary">Nahlásit trenérskou neúčast</a>
                 {% endif %}
-                <a href="{% url 'trainings:enroll-myself-organizer-occurrence' event.id occurrence.id %}"
-                   class="btn btn-info">Přihlásit se jednorázově na trenérskou pozici</a>
             </div>
         </div>
     </div>
@@ -50,6 +48,8 @@
     {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
     {% include 'modal_include.html' with id='excuse-myself-coach-modal' %}
     {% include 'modal_include.html' with id='excuse-coach-modal' %}
+    {% include 'modal_include.html' with id='delete-one-time-coach-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -64,5 +64,7 @@
         registerModal("cancel-coach-excuse-modal")
         registerModal('excuse-myself-coach-modal')
         registerModal('excuse-coach-modal')
+        registerModal('delete-one-time-coach-modal')
+        registerModal('unenroll-myself-organizer-occurrence-modal')
     </script>
 {% endblock %}

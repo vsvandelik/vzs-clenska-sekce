@@ -152,6 +152,25 @@ class InsertOccurrenceIntoContextData(InsertOccurrenceIntoSelfObjectMixin):
         return super().get_context_data(**kwargs)
 
 
+class InsertPositionAssignmentIntoSelfObject:
+    position_assignment_id_key = "position_assignment_id"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.position_assignment = get_object_or_404(
+            EventPositionAssignment, pk=self.kwargs[self.position_assignment_id_key]
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+
+class InsertPositionAssignmentIntoModelFormKwargs(
+    InsertPositionAssignmentIntoSelfObject
+):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["position_assignment"] = self.position_assignment
+        return kwargs
+
+
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
 

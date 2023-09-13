@@ -26,6 +26,7 @@ from events.views import (
     RedirectToOccurrenceDetailOnFailureMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
 )
 from vzs.mixin_extensions import (
     MessagesMixin,
@@ -272,17 +273,49 @@ class CoachExcuseView(
     success_message = "Omluvení trenéra proběhlo úspěšně"
 
 
-class EnrollMyselfOrganizerForOccurrence(
+class EnrollMyselfOrganizerForOccurrenceView(
     MessagesMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
     EventOccurrenceIdCheckMixin,
     generic.CreateView,
 ):
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení jako jednorázový trenér proběhlo úspěšně"
-    template_name = "occurrences/enroll_myself_organizer_occurrence.html"
+
+
+class OneTimeCoachDeleteView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    generic.DeleteView,
+):
+    context_object_name = "assignment"
+    model = CoachOccurrenceAssignment
+    template_name = "occurrences/modals/delete_one_time_coach.html"
+
+    def get_success_message(self, cleaned_data):
+        return (
+            f"Osoba {self.object.person} byla úspěšně odebrána jako jednorázový trenér"
+        )
+
+
+class UnenrollMyselfOrganizerForOccurrenceView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    generic.DeleteView,
+):
+    context_object_name = "assignment"
+    model = CoachOccurrenceAssignment
+    template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Odhlášení z jednorázové trenérské pozice proběhlo úspěšně"

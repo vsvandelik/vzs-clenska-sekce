@@ -42,6 +42,12 @@ class OccurrenceFormMixin:
         super().__init__(*args, **kwargs)
 
 
+class PositionAssignmentFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.position_assignment = kwargs.pop("position_assignment")
+        super().__init__(*args, **kwargs)
+
+
 class EventForm(ModelForm):
     class Meta:
         fields = [
@@ -200,17 +206,19 @@ class BulkApproveParticipantsForm(ModelForm):
         fields = []
 
 
-class EnrollMyselfOrganizerSetPositionsQuerysetHookProvider:
-    def init_position_assignment_queryset(self):
-        positions = self.event.eventpositionassignment_set.all()
-        can_enroll_positions_ids = []
-        for position in positions:
-            for occurrence in self.event.eventoccurrence_set.all():
-                if occurrence.can_enroll_position(self.person, position):
-                    can_enroll_positions_ids.append(position.id)
-                    break
-        self.fields[
-            "position_assignment"
-        ].queryset = EventPositionAssignment.objects.filter(
-            id__in=can_enroll_positions_ids
-        )
+class EnrollMyselfOrganizerOccurrenceForm(
+    ActivePersonFormMixin, OccurrenceFormMixin, PositionAssignmentFormMixin, ModelForm
+):
+    class Meta:
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person is not None and not self.occurrence.can_enroll_position(
+            self.person, self.position_assignment
+        ):
+            self.add_error(
+                None,
+                f"Nejsou splněny požadavky kladené na pozici {self.position_assignment.position}",
+            )
+        return cleaned_data

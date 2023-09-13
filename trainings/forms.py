@@ -16,7 +16,8 @@ from events.forms_bases import (
     OrganizerEnrollMyselfForm,
     OccurrenceFormMixin,
     ActivePersonFormMixin,
-    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
+    PositionAssignmentFormMixin,
+    EnrollMyselfOrganizerOccurrenceForm,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -635,6 +636,10 @@ class CoachExcuseForm(ModelForm):
         model = CoachOccurrenceAssignment
         fields = []
 
+    def clean(self):
+        if not self.instance.occurrence.event.coaches.contains(self.instance.person):
+            self.add_error(None, "Omluvit neúčast je možné pouze u řádného trenéra")
+
     def save(self, commit=True):
         instance = super().save(False)
         instance.state = TrainingAttendance.EXCUSED
@@ -643,16 +648,16 @@ class CoachExcuseForm(ModelForm):
         return instance
 
 
-class TrainingEnrollMyselfOrganizerOccurrenceForm(
-    OccurrenceFormMixin,
-    EventFormMixin,
-    ActivePersonFormMixin,
-    OrganizerEnrollMyselfForm,
-    EnrollMyselfOrganizerSetPositionsQuerysetHookProvider,
-):
-    class Meta(OrganizerEnrollMyselfForm.Meta):
+class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenceForm):
+    class Meta(EnrollMyselfOrganizerOccurrenceForm.Meta):
         model = CoachOccurrenceAssignment
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        super().init_position_assignment_queryset()
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.position_assignment = self.position_assignment
+        instance.person = self.person
+        instance.state = TrainingAttendance.PRESENT
+        instance.occurrence = self.occurrence
+        if commit:
+            instance.save()
+        return instance

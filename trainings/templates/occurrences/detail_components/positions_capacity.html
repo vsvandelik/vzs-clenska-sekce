@@ -1,3 +1,5 @@
+{% load vzs_filters %}
+{% load events_template_tags %}
 {% load trainings_template_tags %}
 <div class="col-12 col-md-6">
     <div class="card">
@@ -23,7 +25,25 @@
                                 <td class="{% if coaches_count == position_assignment.count %}bg-success{% elif coaches_count > position_assignment.count %}bg-warning{% endif %}">{{ coaches_count }}
                                     / {{ position_assignment.count }}</td>
                             {% endwith %}
-                            <td></td>
+                            <td>
+                                {% if active_person is not None %}
+                                    {% if occurrence|tuple:active_person|can_enroll_position:position_assignment %}
+                                        <form method="POST" style="display: inline"
+                                              action="{% url 'trainings:enroll-myself-organizer-occurrence' event.id occurrence.id position_assignment.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-info" type="submit">Přihlásit se</button>
+                                        </form>
+                                    {% elif occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
+                                        {% with assignment=occurrence|tuple:active_person|get_organizer_assignment:position_assignment %}
+                                            <a class="btn btn-secondary"
+                                               data-toggle="modal"
+                                               data-target="#unenroll-myself-organizer-occurrence-modal"
+                                               data-action="{% url 'trainings:unenroll-myself-organizer-occurrence' event.id occurrence.id assignment.id %}"
+                                            >Odhlásit se</a>
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

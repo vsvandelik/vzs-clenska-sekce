@@ -19,6 +19,7 @@ from events.views import (
     BulkApproveParticipantsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
+    InsertPositionAssignmentIntoModelFormKwargs,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -215,22 +216,12 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
     generic.CreateView,
 ):
     model = OrganizerOccurrenceAssignment
     form_class = OneTimeEventEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení na organizátorskou pozici proběhlo úspěšně"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.position_assignment = get_object_or_404(
-            EventPositionAssignment, pk=self.kwargs["position_assignment_id"]
-        )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["position_assignment"] = self.position_assignment
-        return kwargs
 
 
 class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
