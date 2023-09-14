@@ -113,4 +113,9 @@ urlpatterns = [
         views.AddOneTimeCoachView.as_view(),
         name="add-one-time-coach",
     ),
+    path(
+        "<int:event_id>/detail-dne<int:occurrence_id>/upravit-jednorazoveho-trenera/<int:pk>/",
+        views.EditOneTimeCoachView.as_view(),
+        name="edit-one-time-coach",
+    ),
 ]

@@ -28,7 +28,8 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a class="btn btn-success btn-sm">
+                                    <a class="btn btn-success btn-sm"
+                                       href="{% url 'trainings:edit-one-time-coach' event.id occurrence.id coach_assignment.id %}">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                     <a class="btn btn-danger btn-sm"

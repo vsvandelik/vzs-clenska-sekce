@@ -339,3 +339,27 @@ class AddOneTimeCoachView(
     form_class = CoachOccurrenceAssignmentForm
     template_name = "occurrences/create_coach_occurrence_assignment.html"
     success_message = "Jednorázový trenér %(person)s přidán"
+
+
+class EditOneTimeCoachView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.UpdateView,
+):
+    model = CoachOccurrenceAssignment
+    form_class = CoachOccurrenceAssignmentForm
+    context_object_name = "assignment"
+    template_name = "occurrences/edit_coach_occurrence_assignment.html"
+    success_message = "Přihláska jednorázového trenéra %(person)s upravena"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["occurrence"] = self.object.occurrence
+        kwargs["person"] = self.object.person
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("occurrence", self.object.occurrence)
+        kwargs.setdefault("event", self.object.occurrence.event)
+        return super().get_context_data(**kwargs)
