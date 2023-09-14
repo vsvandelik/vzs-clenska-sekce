@@ -214,7 +214,7 @@ class EnrollMyselfOrganizerOccurrenceForm(
 
     def clean(self):
         cleaned_data = super().clean()
-        if self.person is not None and not self.occurrence.can_enroll_position(
+        if self.person is None or not self.occurrence.can_enroll_position(
             self.person, self.position_assignment
         ):
             self.add_error(

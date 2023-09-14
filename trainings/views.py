@@ -286,6 +286,7 @@ class EnrollMyselfOrganizerForOccurrenceView(
 ):
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení jako jednorázový trenér proběhlo úspěšně"
+    template_name = "occurrences/detail.html"
 
 
 class OneTimeCoachDeleteView(
@@ -309,6 +310,7 @@ class OneTimeCoachDeleteView(
 class UnenrollMyselfOrganizerForOccurrenceView(
     MessagesMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
