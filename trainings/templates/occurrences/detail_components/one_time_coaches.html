@@ -1,7 +1,12 @@
 <div class="col-12 col-md-6">
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex align-items-center">
             <div class="card-title h5">Jednorázoví</div>
+            <div class="card-tools ml-2">
+                <a href="{% url 'trainings:add-one-time-coach' event.id occurrence.id %}"
+                   class="btn btn-primary"
+                >Přidat</a>
+            </div>
         </div>
         <div class="card-body">
             <table class="table" id="one-time-coaches-table">
@@ -23,6 +28,9 @@
                             </td>
                             <td>
                                 <div class="btn-group">
+                                    <a class="btn btn-success btn-sm">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
                                     <a class="btn btn-danger btn-sm"
                                        data-toggle="modal"
                                        data-target="#delete-one-time-coach-modal"

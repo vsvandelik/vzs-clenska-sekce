@@ -31,6 +31,24 @@
             <div class="card">
                 <div class="card-header border-0">
                     <div class="card-title h5">
+                        Účastníci
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'occurrences/detail_components/excused_participants.html' %}
+                        {% include 'occurrences/detail_components/regular_participants.html' %}
+                        {% include 'occurrences/detail_components/one_time_participants.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
                         Trenéři
                     </div>
                 </div>
@@ -54,6 +72,10 @@
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
+        simpleOrderableTableEnable("participants-excused-table",[0])
+        simpleOrderableTableEnable("participants-regular-table", [0])
+        simpleOrderableTableEnable("one-time-participants-table", [0])
+
         simpleOrderableTableEnable("coaches-excused-table", [0, 1])
         simpleOrderableTableEnable("coaches-regular-table", [0, 1])
         simpleOrderableTableEnable("one-time-coaches-table", [0, 1])

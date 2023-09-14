@@ -16,7 +16,6 @@ from events.forms_bases import (
     OrganizerAssignmentForm,
     OrganizerEnrollMyselfForm,
     OccurrenceFormMixin,
-    PositionAssignmentFormMixin,
     EnrollMyselfOrganizerOccurrenceForm,
     UnenrollMyselfOrganizerOccurrenceForm,
 )

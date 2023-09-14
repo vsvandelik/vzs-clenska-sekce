@@ -1,0 +1,5 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% block title %}Úprava přihlášky jednorázového trenéra{% endblock %}
+{% block form_action %}{% url 'trainings:add-one-time-coach' event.id occurrence.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Upravit{% endblock %}

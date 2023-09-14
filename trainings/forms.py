@@ -15,6 +15,7 @@ from events.forms_bases import (
     OrganizerAssignmentForm,
     EnrollMyselfOrganizerOccurrenceForm,
     UnenrollMyselfOrganizerOccurrenceForm,
+    OccurrenceFormMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -664,3 +665,32 @@ class TrainingUnenrollMyselfOrganizerForOccurrenceForm(
 ):
     class Meta(UnenrollMyselfOrganizerOccurrenceForm.Meta):
         model = CoachOccurrenceAssignment
+
+
+class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = CoachOccurrenceAssignment
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+        else:
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(coachoccurrenceassignment__occurrence=self.occurrence)
+            )
+        self.fields[
+            "position_assignment"
+        ].queryset = self.occurrence.event.eventpositionassignment_set.all()
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
+        return instance

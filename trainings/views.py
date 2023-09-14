@@ -45,6 +45,7 @@ from .forms import (
     CoachExcuseForm,
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingUnenrollMyselfOrganizerForOccurrenceForm,
+    CoachOccurrenceAssignmentForm,
 )
 from .models import (
     Training,
@@ -323,3 +324,18 @@ class UnenrollMyselfOrganizerForOccurrenceView(
 
     def get_success_message(self, cleaned_data):
         return f"Odhlášení z jednorázové trenérské pozice proběhlo úspěšně"
+
+
+class AddOneTimeCoachView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    EventOccurrenceIdCheckMixin,
+    generic.CreateView,
+):
+    model = CoachOccurrenceAssignment
+    form_class = CoachOccurrenceAssignmentForm
+    template_name = "occurrences/create_coach_occurrence_assignment.html"
+    success_message = "Jednorázový trenér %(person)s přidán"

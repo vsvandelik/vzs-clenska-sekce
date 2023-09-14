@@ -1,0 +1,7 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% load vzs_filters %}
+{% block title %}Přihlášení jednorázového trenéra{% endblock %}
+{% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
+{% block form_action %}{% url 'trainings:add-one-time-coach' event.id occurrence.id %}{% endblock %}
+{% block card_title %}Přidání{% endblock %}
+{% block savebtn_value %}Přidat{% endblock %}

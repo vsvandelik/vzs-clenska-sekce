@@ -108,4 +108,9 @@ urlpatterns = [
         views.OneTimeCoachDeleteView.as_view(),
         name="delete-one-time-coach",
     ),
+    path(
+        "<int:event_id>/detail-dne<int:occurrence_id>/pridat-jednorazoveho-trenera/",
+        views.AddOneTimeCoachView.as_view(),
+        name="add-one-time-coach",
+    ),
 ]
