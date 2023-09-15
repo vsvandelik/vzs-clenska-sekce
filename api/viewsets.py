@@ -8,6 +8,7 @@ from .serializers import (
     TransactionSerializer,
     UserSerializer,
 )
+from .permissions import UserPermission, TokenPermission
 
 from persons.models import Person
 from features.models import Feature
@@ -19,43 +20,48 @@ from transactions.models import Transaction
 from users.models import User
 
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 
-class PersonViewSet(ModelViewSet):
+class APIPermissionMixin:
+    permission_classes = [(IsAuthenticated & UserPermission) | TokenPermission]
+
+
+class PersonViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
 
 
-class FeatureViewSet(ModelViewSet):
+class FeatureViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Feature.qualifications.all()
     serializer_class = FeatureSerializer
 
 
-class GroupViewSet(ModelViewSet):
+class GroupViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 
-class OneTimeEventViewSet(ModelViewSet):
+class OneTimeEventViewSet(APIPermissionMixin, ModelViewSet):
     queryset = OneTimeEvent.objects.all()
     serializer_class = OneTimeEventSerializer
 
 
-class TrainingViewSet(ModelViewSet):
+class TrainingViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Training.objects.all()
     serializer_class = TrainingSerializer
 
 
-class PositionViewSet(ModelViewSet):
+class PositionViewSet(APIPermissionMixin, ModelViewSet):
     queryset = EventPosition.objects.all()
     serializer_class = PositionSerializer
 
 
-class TransactionViewSet(ModelViewSet):
+class TransactionViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
 
 
-class UserViewSet(ReadOnlyModelViewSet):
+class UserViewSet(APIPermissionMixin, ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Generovat nový token{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <form method="post">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">Nový token</div>
+                    </div>
+                    <div class="card-body">
+                        {{ token_key }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="submit" class="btn btn-primary">Generovat</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

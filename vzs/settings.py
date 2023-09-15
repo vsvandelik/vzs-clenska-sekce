@@ -256,3 +256,11 @@ VALUE_MISSING_HTML = '<i class="fas fa-times"></i>'
 VALUE_PRESENT_HTML = '<i class="fas fa-check"></i>'
 ORGANIZER_UNENROLL_DEADLINE_DAYS = 21
 ORGANIZER_ENROLL_DEADLINE_DAYS = 1
+
+# REST
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "api.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}
