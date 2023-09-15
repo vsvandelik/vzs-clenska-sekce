@@ -25,6 +25,7 @@ from events.models import (
 from events.utils import parse_czech_date
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from vzs.forms import WithoutFormTagFormHelper
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -49,6 +50,8 @@ class OneTimeEventForm(EventForm):
     def __init__(self, *args, **kwargs):
         self.hours = kwargs.pop("request").POST.getlist("hours")
         super().__init__(*args, **kwargs)
+
+        self.helper = WithoutFormTagFormHelper()
 
     def _check_date_constraints(self):
         if self.cleaned_data["date_start"] > self.cleaned_data["date_end"]:

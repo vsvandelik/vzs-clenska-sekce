@@ -12,7 +12,7 @@
 {% block body %}
     <form method="post" id="form">
         {% csrf_token %}
-        {{ form|crispy }}
+        {% crispy form %}
     </form>
 {% endblock %}
 
