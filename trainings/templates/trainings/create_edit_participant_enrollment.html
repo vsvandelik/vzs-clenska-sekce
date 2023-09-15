@@ -1,0 +1,13 @@
+{% extends 'events/create_edit_participant_enrollment.html' %}
+{% load crispy_forms_tags %}
+{% load trainings_template_tags %}
+{% load vzs_filters %}
+{% load static %}
+{% block child2_scripts %}
+    <script src="{% static 'events/set_report_validity.js' %}"></script>
+    <script src="{% static 'trainings/weekday_selection.js' %}"></script>
+    <script src="{% static 'trainings/create_edit_participant_enrollment.js' %}"></script>
+{% endblock %}
+{% block body2 %}
+    {% include 'trainings/components/weekday_selection.html' %}
+{% endblock %}

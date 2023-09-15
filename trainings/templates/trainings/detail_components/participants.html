@@ -1,0 +1,24 @@
+<div class="col-12">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">
+                Účastníci
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_approved.html' enrollments=event.approved_enrollments %}
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_substitute.html' enrollments=event.substitute_enrollments %}
+                {% include 'trainings/detail_components/participants_by_state.html' with base_template='events/detail_bases/participants_rejected.html' enrollments=event.rejected_enrollments %}
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'trainings:create-participant-enrollment' event.id %}" class="btn-primary btn mr-2 ml-2">Přidat</a>
+            <form method="POST" style="display: inline"
+                  action="{% url 'trainings:bulk-approve-participants' event.id %}">
+                {% csrf_token %}
+                <button class="btn btn-info mr-2 ml-2" type="submit">Schválit náhradníky</button>
+            </form>
+        </div>
+    </div>
+</div>

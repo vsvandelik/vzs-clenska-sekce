@@ -1,0 +1,32 @@
+{% load vzs_filters %}
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Členství ve skupině</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Vyžadováno</td>
+                        <td>
+                            {{ object.group|display_presence }}
+                        </td>
+                    </tr>
+                    {% if object.group is not None %}
+                        <tr>
+                            <td class="text-nowrap text-bold">Skupina</td>
+                            <td>
+                                <a href="{% url 'groups:detail' object.group.id %}">{{ object.group }}</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% block edit_action %}{% endblock %}"
+               class="btn-primary btn">Upravit</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,5 @@
+{% extends 'trainings/create_edit_coach_assignment.html' %}
+{% block title %}Úprava přihlášky trénéra na trénink{% endblock %}
+{% block form_action %}{% url 'trainings:edit-coach-assignment' coach_assignment.training.id coach_assignment.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}

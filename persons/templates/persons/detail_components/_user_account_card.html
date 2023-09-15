@@ -1,0 +1,73 @@
+{% load vzs_filters %}
+
+{% perm_url "persons:user-remove-permission" person.pk as perm_remove_permission %}
+{% perm_url "persons:user-generate-new-password" person.pk as perm_generate_new_password %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Uživatelský účet</div>
+    </div>
+    <div class="card-body {% if person.user %}p-0{% endif %}">
+        {% if not person.user %}
+            <p class="text-center">Účet není zřízen.</p>
+        {% else %}
+            {% if perm_remove_permission %}
+                <form method="post" action="{{ perm_remove_permission.url }}" id="permission-delete-form">
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+            <table class="table table-striped">
+                <tbody>
+                    {% if not person.user.is_superuser %}
+                        {% for permission in person.user.user_permissions.all %}
+                            <tr>
+                                <td class="align-middle">{{ permission.name }}</td>
+                                <td class="text-center">
+                                    {% if perm_remove_permission %}
+                                        <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td>Tato osoba má všechna povolení, protože je administrátor.</td>
+                            <td></td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <div class="card-footer text-center">
+        {% if not person.user %}
+            {% ifperm "persons:user-add" person.pk %}
+                <a href="{{ perm.url }}" class="btn-primary btn">Založit uživatelský účet</a>
+            {% endifperm %}
+        {% else %}
+            {% if perm_generate_new_password %}
+                <form method="post" action="{{ perm_generate_new_password.url }}" id="generate-new-password-form">
+                    {% csrf_token %}
+                </form>
+            {% endif %}
+
+            {% ifperm "persons:user-assign-permission" person.pk %}
+                {% if not person.user.is_superuser %}
+                    <a href="{{ perm.url }}" class="btn btn-primary">Přidat povolení</a>
+                {% endif %}
+            {% endifperm %}
+
+            {% ifperm "persons:user-change-password-other" person.pk %}
+                <a href="{{ perm.url }}" class="btn btn-secondary">Změnit heslo</a>
+            {% endifperm %}
+
+            {% if perm_generate_new_password %}
+                <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
+            {% endif %}
+
+            {% ifperm "persons:user-delete" person.pk %}
+                <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
+            {% endifperm %}
+        {% endif %}
+    </div>
+</div>

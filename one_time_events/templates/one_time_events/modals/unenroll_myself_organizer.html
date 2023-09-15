@@ -1,0 +1,22 @@
+{% extends "modal.html" %}
+{% block modal_title %}
+    Odhlásit se jako organizátor z události ze všech dnů
+{% endblock %}
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete se opravdu odhlásit ze všech dnů události jako organizátor?</p>
+    </div>
+    <div class="row">
+        <ul>
+            <li><b>Událost:</b> {{ event }} </li>
+        </ul>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'one_time_events:unenroll-myself-organizer' event.id %}">
+        {% csrf_token %}
+        <button type="submit"
+                class="btn btn-secondary">Odhlásit se ze všech dnů</button>
+    </form>
+{% endblock %}

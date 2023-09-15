@@ -1,0 +1,5 @@
+{% extends 'positions/detail_bases/features.html' %}
+{% block title %}Vyžadované kvalifikace{% endblock %}
+{% block id %}added-qualifications-table{% endblock %}
+{% block feature_detail_action %}{% url 'qualifications:detail' feature.id %}{% endblock %}
+{% block onclick_event_func_name %}addQualificationClicked{% endblock %}

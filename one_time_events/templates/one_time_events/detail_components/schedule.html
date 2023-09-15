@@ -1,0 +1,31 @@
+<div class="col-12">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Rozpis konání události</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for occurrence in event.sorted_occurrences_list %}
+                    <div class="col-sm-5 col-md-3 col-lg-3 col-12">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="mb-1 table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="w-100 align-middle">{{ occurrence.date|date }}</td>
+                                            <td>
+                                                <a class="btn btn-info btn-sm" href="">
+                                                    <i class="fas fa-info"></i>TODO
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

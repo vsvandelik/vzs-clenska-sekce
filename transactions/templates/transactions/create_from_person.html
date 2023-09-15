@@ -1,0 +1,9 @@
+{% extends "persons/subview.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Přidat transakci{% endblock %}
+
+{% block subcontent %}
+    {% include "transactions/create_content.html" %}
+{% endblock %}

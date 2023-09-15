@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-md-center">
+            <div class="col col-lg-4 col-md-6 col-sm-10">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Přihlášení</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if next %}
+                            <p>Prosím, přihlašte se.</p>
+                        {% endif %}
+
+                        <form action="{% url "users:login" %}" method="post" id="form-password">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        </form>
+
+                        <form action="{% url "users:google-login" %}" method="post" id="form-google">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary" form="form-password">Přihlásit</button>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary float-right" form="form-google"><i class="fab fa-google" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

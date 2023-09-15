@@ -1,0 +1,5 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% block title %}Přihlášení organizátora na jeden den{% endblock %}
+{% block form_action %}{% url 'one_time_events:add-organizer-for-occurrence' occurrence.id %}{% endblock %}
+{% block card_title %}Přidání{% endblock %}
+{% block savebtn_value %}Přidat{% endblock %}

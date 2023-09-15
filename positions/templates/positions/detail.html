@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("add-feature-table",[0],[0])</script>
+    <script src="{% static 'positions/detail.js' %}"></script>
+{% endblock %}
+{% block title %}
+    Detail pozice
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ position.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'positions:edit' position.id %}"
+                   class="btn btn-success">Upravit</a>
+                {% include "delete_button_text.html" with id="delete-position-modal" %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'positions/detail_components/overview.html' %}
+    </div>
+    <div class="row">
+        {% include 'positions/detail_components/qualifications.html' with already_required_features=position.required_qualifications %}
+        {% include 'positions/detail_components/permissions.html' with already_required_features=position.required_permissions %}
+        {% include 'positions/detail_components/equipment.html' with already_required_features=position.required_equipment %}
+        {% include 'positions/detail_components/age_limit.html' %}
+        {% include 'positions/detail_components/group_membership.html' %}
+        {% include 'positions/detail_components/person_type.html' %}
+    </div>
+
+    {% include 'positions/modals/add_feature.html' %}
+
+    {% include "modal_include.html" with id="delete-position-modal" template="positions/modals/delete.html" %}
+{% endblock %}

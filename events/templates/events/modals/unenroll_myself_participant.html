@@ -1,0 +1,21 @@
+{% extends "modal.html" %}
+{% block modal_title %}
+    Odhlásit se z události
+{% endblock %}
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu odhlásit z události "{{ enrollment.event }}"?</p>
+    </div>
+    <div class="row">
+        <ul>
+            <li><b>Stav:</b> {{ enrollment.get_state_display }}</li>
+        </ul>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'events:unenroll-myself-participant' enrollment.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Odhlásit se</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "users/base.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{% load vzs_filters %}
+
+{% block header %}
+    Uživatel osoby {% render person "inline" %}
+{% endblock %}
+
+
+{% block body %}
+    <form method="post" id="form">
+        {% csrf_token %}
+        {{ form|crispy }}
+    </form>
+{% endblock %}
+
+{% block footer %}
+    <button type="submit" class="btn btn-primary" form="form">Vytvořit</button>
+{% endblock %}

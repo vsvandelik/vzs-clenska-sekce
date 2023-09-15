@@ -1,0 +1,5 @@
+{% extends 'trainings/create_edit_participant_enrollment.html' %}
+{% block title %}Úprava přihlášky účastníka na trénink{% endblock %}
+{% block form_action %}{% url 'trainings:edit-participant-enrollment' event.id enrollment.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}

@@ -1,0 +1,93 @@
+from django.urls import path
+from . import views
+
+app_name = "one_time_events"
+
+urlpatterns = [
+    path(
+        "<int:pk>/",
+        views.OneTimeEventDetailView.as_view(),
+        name="detail",
+    ),
+    path("pridat/", views.OneTimeEventCreateView.as_view(), name="add"),
+    path(
+        "<int:pk>/upravit/",
+        views.OneTimeEventUpdateView.as_view(),
+        name="edit",
+    ),
+    path(
+        "<int:pk>/upravit-dochazku-treninku",
+        views.EditTrainingCategoryView.as_view(),
+        name="edit-training-category",
+    ),
+    path(
+        "<int:event_id>/pridat-prihlasku/",
+        views.OneTimeEventParticipantEnrollmentCreateView.as_view(),
+        name="create-participant-enrollment",
+    ),
+    path(
+        "<int:event_id>/upravit-prihlasku/<int:pk>",
+        views.OneTimeEventParticipantEnrollmentUpdateView.as_view(),
+        name="edit-participant-enrollment",
+    ),
+    path(
+        "<int:event_id>/smazat-prihlasku/<int:pk>",
+        views.OneTimeEventParticipantEnrollmentDeleteView.as_view(),
+        name="delete-participant-enrollment",
+    ),
+    path(
+        "<int:event_id>/prihlasit-ucastnika/",
+        views.OneTimeEventEnrollMyselfParticipantView.as_view(),
+        name="enroll-myself-participant",
+    ),
+    path(
+        "<int:occurrence_id>/pridat-organizatora-na-den",
+        views.AddOrganizerForOccurrenceView.as_view(),
+        name="add-organizer-for-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/upravit-organizatora-na-den/<int:pk>",
+        views.EditOrganizerForOccurrenceView.as_view(),
+        name="edit-organizer-for-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/smazat-organizatora-na-den/<int:pk>",
+        views.DeleteOrganizerForOccurrenceView.as_view(),
+        name="delete-organizer-from-occurrence",
+    ),
+    path(
+        "<int:event_id>/hromadne-odebrani-organizatora/",
+        views.BulkDeleteOrganizerFromOneTimeEventView.as_view(),
+        name="bulk-delete-organizer",
+    ),
+    path(
+        "<int:event_id>/hromadne-pridani-organizatora/",
+        views.BulkAddOrganizerToOneTimeEventView.as_view(),
+        name="bulk-add-organizer",
+    ),
+    path(
+        "<int:pk>/hromadne-schvalit",
+        views.OneTimeEventBulkApproveParticipantsView.as_view(),
+        name="bulk-approve-participants",
+    ),
+    path(
+        "<int:occurrence_id>/prihlasit-organizatora-na-den/<int:position_assignment_id>",
+        views.OneTimeEventEnrollMyselfOrganizerOccurrenceView.as_view(),
+        name="enroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:occurrence_id>/odhlasit-organizatora-na-den/<int:pk>",
+        views.OneTimeEventUnenrollMyselfOrganizerOccurrenceView.as_view(),
+        name="unenroll-myself-organizer-occurrence",
+    ),
+    path(
+        "<int:event_id>/odhlasit-organizatora/",
+        views.OneTimeEventUnenrollMyselfOrganizerView.as_view(),
+        name="unenroll-myself-organizer",
+    ),
+    path(
+        "<int:event_id>/prihlasit-organizatora/",
+        views.OneTimeEventEnrollMyselfOrganizerView.as_view(),
+        name="enroll-myself-organizer",
+    ),
+]

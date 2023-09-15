@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Detail skupiny{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ object.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'groups:edit' object.pk %}" class="btn btn-success">Upravit skupinu</a>
+                {% include "delete_button_text.html" with id="delete-group-modal" additional_text="skupinu" %}
+                {% if object.google_email %}
+                    <a href="{% url 'groups:sync-group-members-google' object.pk %}" class="btn btn-info">Synchronizovat s Google</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Parametry skupiny</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">E-mailová adresa skupiny v Google Workspace:</td>
+                                <td class="w-100">
+                                    {% if object.google_email %}
+                                        <a href="mailto:{{ object.google_email }}">{{ object.google_email }}</a>
+                                    {% else %}
+                                        neuvedena
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if object.google_email %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Je Google autorita seznamu členů?</td>
+                                    <td class="w-100">{{ object.google_as_members_authority|display_presence }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Členové</div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover" id="members-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Osoba</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for person in object.members.all %}
+                                <tr>
+                                    <td>{% render person "inline" %}</td>
+                                    <td><a href="{% url "groups:remove-member" group=object.pk person=person.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přidat členy</div>
+                </div>
+                <form method="post">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        {{ form.members.errors }}
+                        <p><strong>Vybrané osoby:</strong></p>
+                        <ul id="selected-persons" style="list-style: none" class="p-0 d-inline-block"></ul>
+
+                        <table class="table table-hover" id="members-to-add-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Osoba</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="persons-list">
+                                {% for person in available_persons %}
+                                    <tr data-person-id="{{ person.pk }}">
+                                        <td>{% render person "inline" %}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-info btn-sm" value="{{ person.pk }}">Vybrat</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Přidat osoby" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-group-modal" template="groups/delete.html" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'groups/add_members.js' %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("members-to-add-table",[0],[0]);
+        datatableEnable("members-table",[0],[0]);
+    </script>
+{% endblock %}

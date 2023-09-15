@@ -1,0 +1,13 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Potvrzení smazání přiřazení {{ texts.name_2 }}
+{% endblock %}
+
+{% block modal_body %}
+    Opravdu chcete smazat {{ texts.name_4 }} <strong>{{ object.feature.name }}</strong> osoby {{ person.first_name }} {{ person.last_name }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "persons:"|add:feature_type|add:":delete" person.pk object.pk %}
+{% endblock %}

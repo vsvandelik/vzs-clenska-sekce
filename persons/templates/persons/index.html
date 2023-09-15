@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load vzs_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Seznam všech osob{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="card-title h5">Osoby</div>
+                    <div class="card-tools ml-auto">
+                        {% if filtered_get %}
+                            <a class="btn btn-primary" href="{% url "persons:add-bulk-transaction" %}?{{ filtered_get }}">Zadat vyfiltrovaným platbu</a>
+                            <a class="btn btn-primary" href="{% url "persons:send-mail" %}?{{ filtered_get }}">Poslat vyfiltrovaným e-mail</a>
+                            <a class="btn btn-primary" href="{% url "persons:export" %}?{{ filtered_get }}">Vyexportovat vyfiltrované</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{% url "persons:add-bulk-transaction" %}">Zadat všem platbu</a>
+                            <a class="btn btn-primary" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
+                            <a class="btn btn-primary" href="{% url "persons:export" %}">Vyexportovat všechny</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a class="text-bold text-body" id="filter-toggler" href="#">Filtrování&nbsp;<span><i class="fas fa-angle-right" data-status="closed"></i><i class="fas fa-angle-down" data-status="open"></i></span></a>
+                            {% crispy filter_form %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-hover table-striped" id="persons-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Jméno</th>
+                                        <th scope="col">E-mail</th>
+                                        <th scope="col" style="width: 40px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for person in persons %}
+                                        <tr>
+                                            <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                            <td><a href="mailto:{{ person.email }}">{{ person.email }}</a></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
+                                                    <a class="btn btn-success btn-sm" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
+                                                    {% include "delete_button_icon.html" with id="delete-person-modal" pattern="persons:delete" object=person %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'persons:add' %}" class="btn btn-primary">Přidat osobu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-person-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "persons/persons_filter.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        registerModal("delete-person-modal");
+        datatableEnable("persons-table", [0, 1], [0, 1]);
+    </script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load mptt_tags %}
+
+{% load crispy_forms_tags %}
+{% load vzs_filters %}
+
+{% block title %}Detail {{ texts.name_2 }}{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ object.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url feature_type|add:':edit' object.pk %}" class="btn btn-success">Upravit {{ texts.name_4 }}</a>
+                {% include "delete_button_text.html" with id="delete-feature-modal" additional_text=texts.name_4 %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">Parametry {{ texts.name_2 }}</div>
+                </div>
+                <div class="card-body p-0">
+                    <table class="mb-1 table">
+                        <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Přiřaditelné osobě:</td>
+                                <td class="w-100">{{ object.assignable|display_presence }}</td>
+                            </tr>
+                            {% if object.never_expires is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">{{ texts.form_labels.never_expires }}:</td>
+                                    <td class="w-100">{{ object.never_expires|display_presence }}</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.fee is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Poplatek:</td>
+                                    <td class="w-100">{{ object.fee }} Kč</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.tier is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Úroveň:</td>
+                                    <td class="w-100">{{ object.tier }}</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.collect_issuers is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">Evidovat vydavatele kvalifikace:</td>
+                                    <td class="w-100">{{ object.collect_issuers|display_presence }}</td>
+                                </tr>
+                            {% endif %}
+                            {% if object.collect_codes is not None %}
+                                <tr>
+                                    <td class="text-nowrap text-bold">{{ texts.form_labels.collect_codes }}:</td>
+                                    <td class="w-100">{{ object.collect_codes|display_presence }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Stromová struktura</div>
+                </div>
+                <div class="card-body">
+                    {% drilldown_tree_for_node object as tree_structure all_descendants %}
+                    <ul class="list-unstyled">
+                        {% for feature in tree_structure %}
+                            <li>{% indentation_by_level feature.level %}
+                                {% if feature == object %}{{ feature.name }}{% else %}
+                                    <a href="{% url feature_type|add:':detail' feature.id %}">{{ feature.name }}</a>
+                                {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Přiřazení {{ texts.name_2 }}</div>
+                </div>
+                <div class="card-body">
+                    {% if assignment_matrix.rows %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jméno</th>
+                                    {% for feature in assignment_matrix.columns %}
+                                        <th class="text-center">{{ feature.name }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in assignment_matrix.rows %}
+                                    <tr>
+                                        <th>{% render row.person "inline" %}</th>
+                                        {% for feature in row.features %}
+                                            <td class="text-center">{% if feature %}<i class="fas fa-check"></i>{% endif %}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-center">Neexistuje žádné přiřazení.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url "features:assign" object.pk %}" class=" btn btn-primary">Přidat přiřazení</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-feature-modal" template="features/delete.html" %}
+{% endblock %}

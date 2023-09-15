@@ -1,0 +1,43 @@
+{% load vzs_filters %}
+
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">{% block title %}{% endblock %}</div>
+        </div>
+        <div class="card-body">
+            <table id="{% block id %}{% endblock %}" class="table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Datum</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                        <tr>
+                            <td><a href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></td>
+                            <td>{{ enrollment.created_datetime|datetime_precise }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-success btn-sm"
+                                       href="{% block edit_enrollment_action %}{% endblock %}"
+                                    >
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-participant-enrollment-modal"
+                                       data-action="{% block delete_enrollment_action %}{% endblock %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+{% load trainings_template_tags %}
+<div class="col-12">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Rozpis tréninků</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for weekday in event.weekdays_list %}
+                    <div class="col-md-4 col-lg-3 col-12">
+                        <div class="card">
+                            <div class="card-header border-0">
+                                {% with day=weekday|weekday_pretty %}
+                                    <div class="card-title h5 text-bold">{{ day }}</div>
+                                {% endwith %}
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="mb-1 table">
+                                    <tbody>
+                                        {% for child in event.sorted_occurrences_list %}
+                                            {% if child.datetime_start.weekday == weekday %}
+                                                <tr>
+                                                    <td class="w-100 align-middle">{{ child.datetime_start|date }}</td>
+                                                    <td><a class="btn btn-info btn-sm" href="">
+                                                        <i class="fas fa-info"></i>TODO
+                                                    </a></td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>

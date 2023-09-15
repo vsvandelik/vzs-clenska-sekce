@@ -1,0 +1,12 @@
+{% for f in features %}
+    {% if f not in features_required %}
+        <tr>
+            <td>
+                <a href="{% url detail_name f.id %}" target="_blank">{{ f }}</a>
+            </td>
+            <td class="text-center">
+                <button class="btn btn-primary" type="submit" name="feature_id" value="{{ f.id }}">Přidat</button>
+            </td>
+        </tr>
+    {% endif %}
+{% endfor %}

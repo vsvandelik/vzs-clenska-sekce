@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events/show_hide_detail_link.js' %}"></script>
+    <script src="{% static 'events/create_edit_event_position_assignment.js' %}"></script>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{% block event_title %}{% endblock %}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="url" data-url="{% url 'positions:detail' 1 %}">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">{% block card_title %}{% endblock %}</div>
+                    </div>
+                    <div class="card-body">
+                        {{ form.position|as_crispy_field }}
+                        <div class="form-group">
+                            <a id="detail-link" style="display: none" target="_blank">
+                                Detail vybrané pozice
+                            </a>
+                        </div>
+                        {{ form.count|as_crispy_field }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary" onclick="beforeSubmit()"
+                               value="{% block savebtn_value %}{% endblock %}">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

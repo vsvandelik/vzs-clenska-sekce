@@ -1,0 +1,26 @@
+{% extends "persons/subview.html" %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Transakce{% endblock %}
+
+{% block subcontent %}
+    {% if perms.transactions.spravce_transakci %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
+        </div>
+    {% endif %}
+
+    {% include "transactions/list_parts/list.html" with edit=True%}
+
+    {% include "modal_include.html" with id="delete-transaction-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    {% include "transactions/list_parts/list_script.html" %}
+
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>registerModal("delete-transaction-modal")</script>
+{% endblock %}

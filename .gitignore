@@ -137,3 +137,11 @@ GitHub.sublime-settings
 !.vscode/launch.json
 !.vscode/extensions.json
 .history
+
+# Frontend
+node_modules
+package-lock.json
+
+# Credentials
+google_integration/service_account_file.json
+google_integration/secrets_file.json

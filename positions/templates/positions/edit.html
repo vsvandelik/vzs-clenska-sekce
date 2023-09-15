@@ -1,0 +1,5 @@
+{% extends 'positions/create_edit.html' %}
+{% block title %}Úprava pozice{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block form_action %}{% url 'positions:edit' position.id %}{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}

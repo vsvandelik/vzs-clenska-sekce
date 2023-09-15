@@ -1,0 +1,15 @@
+{% extends "persons/subview.html" %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Moje transakce{% endblock %}
+
+{% block subcontent %}
+    {% include "transactions/list_parts/list.html" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    {% include "transactions/list_parts/list_script.html" %}
+{% endblock %}

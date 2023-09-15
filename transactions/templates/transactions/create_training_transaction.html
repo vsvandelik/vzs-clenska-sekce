@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Přidání transakce za trénink{% endblock %}
+
+
+{% block content %}
+    <form method="post">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">Detaily transakce</div>
+                    </div>
+                    <div class="card-body">
+                        {% crispy form %}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" value="Zobrazit náhled transakce" class="btn btn-primary">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}

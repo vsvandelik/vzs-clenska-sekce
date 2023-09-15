@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Detail tréninku
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'trainings:edit' event.id %}" class="btn btn-success">Upravit</a>
+                {% include "delete_button_text.html" with id="delete-event-modal" %}
+            </div>
+            {% include 'trainings/detail_components/enroll_unenroll_button.html' %}
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'trainings:add-transaction' event.id %}?event_id={{ event.id }}" class="btn btn-info">Přidat transakci</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'trainings/detail_components/overview.html' %}
+        {% include 'events/detail_components/positions.html' %}
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Další omezení kladené na účastníky
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'events/detail_components/age_limit.html' %}
+                        {% include 'events/detail_components/group_membership.html' %}
+                        {% include 'events/detail_components/person_type.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-md-4">
+            {% include 'trainings/detail_components/replaceable_trainings.html' %}
+        </div>
+        <div class="col col-md-4">
+            {% include 'trainings/detail_components/transactions.html' %}
+        </div>
+    </div>
+    <div class="row">
+        {% include 'trainings/detail_components/participants.html' %}
+    </div>
+    <div class="row">
+        {% include 'trainings/detail_components/coaches.html' %}
+    </div>
+    <div class="row">
+        {% include 'trainings/detail_components/schedule.html' %}
+    </div>
+
+    {% include "modal_include.html" with id="choose-replaceable-training-modal" template="trainings/modals/replaceable_trainings_choose.html" classes="modal-lg" %}
+    {% include "modal_include.html" with id="delete-event-modal" template="events/modals/delete.html" %}
+    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
+    {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include "modal_include.html" with id="delete-coach-assignment-modal" %}
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("positions-table", [0, 1])
+        simpleOrderableTableEnable('participants-substitute-table', [0, 1])
+        simpleOrderableTableEnable('participants-rejected-table', [0, 1])
+        simpleOrderableTableEnable('participants-approved-table', [0, 1])
+        simpleOrderableTableEnable("coaches-table", [0, 1])
+        simpleOrderableTableEnable('coaches-positions-table', [0, 1])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal("delete-position-assignment-modal")
+        registerModal('delete-participant-enrollment-modal')
+        registerModal('unenroll-myself-participant')
+        registerModal('delete-coach-assignment-modal')
+    </script>
+{% endblock %}

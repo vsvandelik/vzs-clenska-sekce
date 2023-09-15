@@ -1,0 +1,5 @@
+{% extends 'positions/detail_bases/features.html' %}
+{% block title %}Vyžadované vybavení{% endblock %}
+{% block id %}added-equipment-table{% endblock %}
+{% block feature_detail_action %}{% url 'equipments:detail' feature.id %}{% endblock %}
+{% block onclick_event_func_name %}addEquipmentClicked{% endblock %}

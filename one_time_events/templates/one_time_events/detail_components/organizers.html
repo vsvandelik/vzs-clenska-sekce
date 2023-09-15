@@ -1,0 +1,34 @@
+<div class="col-12">
+    <div class="card">
+        <div class="card-header d-flex align-items-center border-0">
+            <div class="card-title h5">
+                Organizátoři
+            </div>
+            <div class="card-tools ml-2">
+                {% if active_person_can_unenroll_organizer %}
+                    <a class="btn btn-secondary"
+                       data-action="{% url 'one_time_events:unenroll-myself-organizer' event.id %}"
+                       data-toggle="modal"
+                       data-target="#unenroll-myself-organizer-modal">Odhlásit se ze všech dnů</a>
+                {% elif active_person_can_enroll_organizer %}
+                    <a class="btn btn-info" href="{% url 'one_time_events:enroll-myself-organizer' event.id %}">Přihlásit se na více dnů</a>
+
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for occurrence in event.sorted_occurrences_list %}
+                    {% include 'one_time_events/detail_components/organizers_occurrence.html' %}
+                {% endfor %}
+
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% url 'one_time_events:bulk-delete-organizer' event.id %}" class="btn-danger btn mr-3">Odebrat
+                organizátora</a>
+            <a href="{% url 'one_time_events:bulk-add-organizer' event.id %}" class="btn-primary btn mr-3">Přidat nového
+                organizátora</a>
+        </div>
+    </div>
+</div>

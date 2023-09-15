@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Seznam všech skupin{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Skupiny</div>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        {% for group in groups %}
+                            <li><a href="{% url 'groups:detail' group.id %}">{{ group.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'groups:add' %}" class="btn btn-primary">Přidat skupinu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

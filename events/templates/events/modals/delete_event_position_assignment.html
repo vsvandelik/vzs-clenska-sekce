@@ -1,0 +1,13 @@
+{% extends "modal_delete.html" %}
+{% block modal_title %}
+    Smazání organizátorské pozice
+{% endblock %}
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu smazat organizátorskou pozici "{{ position_assignment.position }}"?</p>
+    </div>
+{% endblock %}
+
+{% block delete_action %}
+    {% url 'events:delete-position-assignment' position_assignment.event.id position_assignment.id %}
+{% endblock %}

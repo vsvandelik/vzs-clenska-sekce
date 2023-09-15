@@ -1,0 +1,22 @@
+{% extends 'events/create_edit_participant_enrollment.html' %}
+{% load crispy_forms_tags %}
+{% load vzs_filters %}
+{% load static %}
+{% block child2_scripts %}
+    <script src="{% static 'one_time_events/create_edit_participant_enrollment.js' %}"></script>
+{% endblock %}
+{% block child2_notifications %}
+    {% if event.capacity is not None %}
+        {% with approved_participants_length=event.approved_participants|length %}
+            {% with free_spots=event.capacity|subtract:approved_participants_length %}
+                <div class="alert {% if free_spots > 0 %}alert-success{% else %}alert-warning{% endif %}" role="alert">
+                    Počet volných míst: {{ free_spots|math_max:0 }}
+                </div>
+            {% endwith %}
+        {% endwith %}
+    {% endif %}
+    {% include 'one_time_events/components/participant_enrollment_paid_alert.html' %}
+{% endblock %}
+{% block body2 %}
+    {{ form.agreed_participation_fee|as_crispy_field }}
+{% endblock %}

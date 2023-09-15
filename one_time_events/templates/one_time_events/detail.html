@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Detail jednorázové události
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a href="{% url 'one_time_events:edit' event.id %}"
+                   class="btn btn-success">Upravit</a>
+                {% include "delete_button_text.html" with id="delete-event-modal" %}
+            </div>
+            {% include 'one_time_events/detail_components/enroll_unenroll_button.html' %}
+        </div>
+    </div>
+    <div class="row">
+        {% include 'one_time_events/detail_components/overview.html' %}
+        {% include 'events/detail_components/positions.html' %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Další omezení kladené na účastníky
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'events/detail_components/age_limit.html' %}
+                        {% include 'events/detail_components/group_membership.html' %}
+                        {% include 'events/detail_components/person_type.html' %}
+                        {% include 'one_time_events/detail_components/training_category.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'one_time_events/detail_components/participants.html' %}
+    </div>
+    <div class="row">
+        {% include 'one_time_events/detail_components/organizers.html' %}
+    </div>
+    <div class="row">
+        {% include 'one_time_events/detail_components/schedule.html' %}
+    </div>
+
+
+    {% include "modal_include.html" with id="delete-event-modal" template="events/modals/delete.html" %}
+    {% include "modal_include.html" with id="delete-position-assignment-modal" %}
+    {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
+    {% include "modal_include.html" with id="enroll-myself-participant" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include 'modal_include.html' with id='delete-organizer-assignment-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-organizer-modal' %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("positions-table", [0, 1])
+        simpleOrderableTableEnable('participants-substitute-table', [0, 1])
+        simpleOrderableTableEnable('participants-rejected-table', [0, 1])
+        simpleOrderableTableEnable('participants-approved-table', [0, 1])
+        simpleOrderableTableEnable("organizers-table", [0, 1])
+        {% for occurrence in event.eventoccurrence_set.all %}
+            simpleOrderableTableEnable("organizers-{{ occurrence.id}}-table", [0, 1])
+            simpleOrderableTableEnable('positions-{{ occurrence.id }}-table', [0, 1])
+        {% endfor %}
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal("delete-position-assignment-modal")
+        registerModal('delete-participant-enrollment-modal')
+        registerModal('enroll-myself-participant')
+        registerModal('unenroll-myself-participant')
+        registerModal('delete-organizer-assignment-modal')
+        registerModal('unenroll-myself-organizer-occurrence-modal')
+        registerModal('unenroll-myself-organizer-modal')
+    </script>
+{% endblock %}

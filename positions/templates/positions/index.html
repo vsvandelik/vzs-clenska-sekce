@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+    Seznam pozic
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header d-flex align-items-center">
+            <div class="card-title h5">Pozice</div>
+            <div class="card-tools ml-2">
+                <a href="{% url 'positions:add' %}"><button class="btn btn-info">+</button></a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <table id="positions-table" class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Název</th>
+                                <th scope="col" style="width: 40px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for position in positions %}
+                                <tr>
+                                    <td><a href="{% url 'positions:detail' position.id %}">{{ position.name }}</a></td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-info btn-sm" href="{% url 'positions:detail' position.id %}">
+                                                <i class="fas fa-info"></i>
+                                            </a>
+                                            <a class="btn btn-success btn-sm" href="{% url 'positions:edit' position.id %}">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
+
+                                            {% include "delete_button_icon.html" with id="delete-position-modal" pattern="positions:delete" object=position %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-position-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("positions-table",[0],[0])</script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>registerModal("delete-position-modal")</script>
+{% endblock %}

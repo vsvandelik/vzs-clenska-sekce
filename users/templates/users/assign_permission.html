@@ -1,0 +1,42 @@
+{% extends "persons/subview.html" %}
+
+{% load static %}
+
+{% block title %}Přidat povolení{% endblock %}
+
+{% block subcontent %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Povolení</h3>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <table class="table" id="permissions-table">
+                    <thead>
+                        <tr>
+                            <th>Název</th>
+                            <th>Popis</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for permission in object_list %}
+                            <tr>
+                                <td>{{ permission.name }}</td>
+                                <td>{{ permission.description }}</td>
+                                <td><button type="submit" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}">Přidat</button></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>datatableEnable("permissions-table", [0, 1], [0, 1]);</script>
+{% endblock %}

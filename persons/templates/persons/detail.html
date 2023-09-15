@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Profil osoby{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            {% include "persons/detail_components/_buttons.html" %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-7">
+            {% include "persons/detail_components/_basic_info_card.html" %}
+        </div>
+        <div class="col-12 col-md-5">
+            {% include "persons/detail_components/_user_account_card.html" %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_groups_membership_card.html" %}
+        </div>
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_managed_persons_card.html" %}
+        </div>
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_hourly_rates_card.html" %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Kvalifikace" no_items_message="Žádná kvalifikace není přiřazena." texts=features_texts.qualifications items=qualifications edit_url='persons:qualifications:edit' delete_url="persons:qualifications:delete" add_url='persons:qualifications:add' %}
+        </div>
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
+        </div>
+        <div class="col-12 col-md-4">
+            {% include "persons/detail_components/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' return_url='persons:equipments-return' %}
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-person-modal" template="persons/delete.html" %}
+    {% include "modal_include.html" with id="delete-user-modal" template="users/delete.html" %}
+    {% include "modal_include.html" with id="remove-features-assignment-modal" %}
+    {% include "modal_include.html" with id="add-person-to-group-modal" template="persons/modals/add_to_group.html" classes="modal-lg" %}
+    {% include "modal_include.html" with id="add-manage-person-modal" template="persons/modals/add_manage_person.html" classes="modal-lg" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        registerModal("remove-features-assignment-modal");
+        datatableEnable("add-managed-person-table", [0], [0]);
+        datatableEnable("add-to-group-table", [0], [0]);
+    </script>
+{% endblock %}

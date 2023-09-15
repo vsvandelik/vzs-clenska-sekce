@@ -1,0 +1,64 @@
+{% load vzs_filters %}
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Přehled</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Kategorie:</td>
+                        <td class="w-100">{{ event.get_category_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Popis:</td>
+                        <td class="w-100">{{ event.description|handle_missing }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Garant</td>
+                        <td class="w-100">{{ event.main_coach_assignment.person|handle_missing }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Místo konání:</td>
+                        <td class="w-100">{{ event.location|handle_missing }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Noví účastníci jsou přidáni jako:</td>
+                        <td class="w-100">{{ event.get_participants_enroll_state_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Začíná:</td>
+                        <td class="w-100">{{ event.date_start }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Končí:</td>
+                        <td class="w-100">{{ event.date_end }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Koná se týdně:</td>
+                        <td class="w-100">{{ event.weekly_occurs_count }}x</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Čas konání:</td>
+                        <td class="w-100">
+                            {% for weekday in event.weekdays_list %}
+                                {% include 'trainings/components/weekday.html' %}
+                                {% if not forloop.last %} <br> {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Kapacita:</td>
+                        <td class="w-100">
+                            {% for weekday in event.weekdays_list %}
+                                {% include 'trainings/detail_components/capacity.html' %}
+                                {% if not forloop.last %} <br> {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

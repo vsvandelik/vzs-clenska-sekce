@@ -1,0 +1,8 @@
+{% extends 'events/person_selection.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block child1_scripts %}
+    <script src="{% static 'events/create_edit_participant_enrollment.js' %}"></script>
+{% endblock %}
+{% block body1 %}{{ form.state|as_crispy_field }}{% endblock %}
+{% block savebtn_class %}btn-primary{% endblock %}

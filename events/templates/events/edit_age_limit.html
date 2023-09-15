@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'events/set_report_validity.js' %}"></script>
+    <script src="{% static 'events/edit_age_limit.js' %}"></script>
+{% endblock %}
+{% block title %}
+    Úprava věkového omezení
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5">
+                        <span style="line-height: 45px;font-size: 22.5px;">{{ object }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="card-header">
+                        <div class="card-title h5">Úprava</div>
+                    </div>
+                    <div class="card-body">
+                        {{ form.min_age|as_crispy_field }}
+                        {{ form.max_age|as_crispy_field }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               onclick="beforeSubmit()"
+                               value="Uložit">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

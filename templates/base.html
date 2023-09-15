@@ -1,0 +1,91 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>VZS Členská sekce</title>
+
+    <!-- CSS from installed Django apps -->
+        {{ form.media.css }}
+    <!-- Google Font: Source Sans Pro -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="{% static "@fortawesome/fontawesome-free/css/all.min.css" %}">
+    <!-- Theme style -->
+        <link rel="stylesheet" href="{% static "admin-lte/dist/css/adminlte.min.css" %}">
+    <!-- DataTables -->
+        <link rel="stylesheet" href="{% static "datatables.net-bs4/css/dataTables.bootstrap4.min.css" %}">
+    <!-- Custom style -->
+        <link rel="stylesheet" href="{% static 'style.css' %}">
+        {% block styles %}{% endblock %}
+    </head>
+    <body class="hold-transition sidebar-mini">
+        <div class="wrapper">
+
+            {% include "base_parts/navbar.html" %}
+
+            {% include "base_parts/sidebar.html" %}
+
+    <!-- Content Wrapper. Contains page content -->
+            <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+                <div class="content-header">
+                    <div class="container-fluid">
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <h1 class="m-0">{% block title %}{% endblock %}</h1>
+                            </div><!-- /.col -->
+                        </div><!-- /.row -->
+                    </div><!-- /.container-fluid -->
+                </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+                <div class="content">
+                    <div class="container-fluid">
+
+                        {% block content %}{% endblock %}
+
+                    </div><!-- /.container-fluid -->
+                </div>
+        <!-- /.content -->
+            </div>
+    <!-- /.content-wrapper -->
+
+            {% include "base_parts/footer.html" %}
+
+        </div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+
+<!-- jQuery -->
+        <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
+<!-- Bootstrap 4 -->
+        <script src="{% static "bootstrap/dist/js/bootstrap.bundle.min.js" %}"></script>
+<!-- AdminLTE App -->
+        <script src="{% static "admin-lte/dist/js/adminlte.min.js" %}"></script>
+<!-- DataTables -->
+        <script src="{% static "datatables.net/js/jquery.dataTables.min.js" %}"></script>
+        <script src="{% static "datatables.net-bs4/js/dataTables.bootstrap4.min.js" %}"></script>
+
+<!-- CUSTOM SCRIPTS -->
+        {{ form.media.js }}
+        <script src="{% static "script.js" %}"></script>
+        {% block scripts %}{% endblock %}
+        <script>
+            {% for message in messages %}
+                $(document).Toasts('create', {
+                    title: 'Notifikace',
+                    body: '{{ message }}',
+                    class: 'bg-{{ message.tags }}'
+                })
+            {% endfor %}
+        </script>
+
+    </body>
+
+    {% include "users/logout_modal.html" %}
+</html>

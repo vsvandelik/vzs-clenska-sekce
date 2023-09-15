@@ -1,0 +1,304 @@
+from datetime import datetime, timedelta
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
+from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
+
+from events.models import (
+    Event,
+    EventOrOccurrenceState,
+    EventOccurrence,
+    ParticipantEnrollment,
+    OrganizerAssignment,
+)
+from features.models import Feature, FeatureAssignment
+from trainings.models import Training
+from transactions.models import Transaction
+from vzs import settings
+
+
+class OneTimeEvent(Event):
+    class Category(models.TextChoices):
+        COMMERCIAL = "komercni", _("komerční")
+        COURSE = "kurz", _("kurz")
+        PRESENTATION = "prezentacni", _("prezentační")
+
+    enrolled_participants = models.ManyToManyField(
+        "persons.Person",
+        through="one_time_events.OneTimeEventParticipantEnrollment",
+    )
+
+    default_participation_fee = models.PositiveIntegerField(
+        _("Standardní výše poplatku pro účastníky"), null=True, blank=True
+    )
+    category = models.CharField(
+        _("Druh události"), max_length=11, choices=Category.choices
+    )
+
+    # if NULL -> no effect
+    # else to enrollment in this event, you need to be approved participant of an arbitrary training of selected category
+    training_category = models.CharField(
+        "Kategorie tréninku",
+        null=True,
+        max_length=10,
+        choices=Training.Category.choices,
+    )
+
+    state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
+
+    def does_participant_satisfy_requirements(self, person):
+        if not super().does_participant_satisfy_requirements(person):
+            return False
+
+        if (
+            self.training_category is not None
+            and not Training.does_person_attends_training_of_category(
+                person, self.training_category
+            )
+        ):
+            return False
+
+        return True
+
+    def has_free_spot(self):
+        possibly_free = super().has_free_spot()
+        if not possibly_free:
+            if self.participants_enroll_state == ParticipantEnrollment.State.APPROVED:
+                return len(self.approved_participants()) < self.capacity
+            elif (
+                self.participants_enroll_state == ParticipantEnrollment.State.SUBSTITUTE
+            ):
+                return len(self.all_possible_participants()) < self.capacity
+            raise NotImplementedError
+        return True
+
+    def can_participant_unenroll(self, person):
+        if not super().can_participant_unenroll(person):
+            return False
+
+        enrollment = self.get_participant_enrollment(person)
+        if enrollment.transaction is None:
+            return True
+        return not enrollment.transaction.is_settled
+
+    def get_participant_enrollment(self, person):
+        if person is None:
+            return None
+        try:
+            return person.onetimeeventparticipantenrollment_set.get(one_time_event=self)
+        except OneTimeEventParticipantEnrollment.DoesNotExist:
+            return None
+
+    def _occurrences_list(self):
+        return OneTimeEventOccurrence.objects.filter(event=self)
+
+    def occurrences_list(self):
+        occurrences = self._occurrences_list()
+        return occurrences
+
+    def sorted_occurrences_list(self):
+        occurrences = self._occurrences_list().order_by("date")
+        return occurrences
+
+    def enrollments_by_Q(self, condition):
+        return self.onetimeeventparticipantenrollment_set.filter(condition)
+
+    def organizers_assignments(self):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            position__in=self.positions.all()
+        )
+
+    def __str__(self):
+        return self.name
+
+    def substitute_enrollments_2_capacity(self):
+        enrollments = self.substitute_enrollments().order_by("created_datetime")
+        take = len(enrollments)
+        if self.capacity is not None:
+            take = self.capacity - len(self.approved_participants())
+        return enrollments[:take]
+
+    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
+        if person is None:
+            return False
+
+        for occurrence in self.eventoccurrence_set.all():
+            for position_assignment in self.eventpositionassignment_set.all():
+                if enroll_unenroll_func(occurrence, person, position_assignment):
+                    return True
+        return False
+
+    def can_unenroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_unenroll_position
+        )
+
+    def can_enroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, OneTimeEventOccurrence.can_enroll_position
+        )
+
+
+class OrganizerOccurrenceAssignment(OrganizerAssignment):
+    position_assignment = models.ForeignKey(
+        "events.EventPositionAssignment",
+        verbose_name="Pozice události",
+        on_delete=models.CASCADE,
+    )
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+    def can_unenroll(self):
+        return self.occurrence.can_unenroll_position(
+            self.person, self.position_assignment
+        )
+
+
+class OneTimeEventParticipantAttendance(models.Model):
+    enrollment = models.ForeignKey(
+        "one_time_events.OneTimeEventParticipantEnrollment", on_delete=models.CASCADE
+    )
+    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    occurrence = models.ForeignKey(
+        "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ["person", "occurrence"]
+
+
+class OneTimeEventOccurrence(EventOccurrence):
+    organizers = models.ManyToManyField(
+        "persons.Person",
+        through="one_time_events.OrganizerOccurrenceAssignment",
+        related_name="organizer_occurrence_assignment_set",
+    )
+    attending_participants = models.ManyToManyField(
+        "persons.Person", through="one_time_events.OneTimeEventParticipantAttendance"
+    )
+
+    date = models.DateField(_("Den konání"))
+    hours = models.PositiveSmallIntegerField(
+        _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+
+    def position_organizers(self, position_assignment):
+        return self.organizeroccurrenceassignment_set.filter(
+            position_assignment=position_assignment
+        )
+
+    def has_position_free_spot(self, position_assignment):
+        return (
+            len(self.position_organizers(position_assignment))
+            < position_assignment.count
+        )
+
+    def is_organizer_of_position(self, person, position_assignment):
+        assignment = self.get_organizer_assignment(person, position_assignment)
+        if assignment is None:
+            return False
+        return True
+
+    def satisfies_position_requirements(self, person, position_assignment):
+        possibly_satisfies = super().satisfies_position_requirements(
+            person, position_assignment
+        )
+        if not possibly_satisfies:
+            return False
+
+        features = position_assignment.position.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=self.event.date_start)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
+                ).first()
+                if assignment is None:
+                    return False
+        return True
+
+    def can_enroll_position(self, person, position_assignment):
+        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
+        if not can_possibly_enroll:
+            return False
+        return datetime.now().date() < self.event.date_start
+
+    def can_unenroll_position(self, person, position_assignment):
+        can_possibly_unenroll = super().can_unenroll_position(
+            person, position_assignment
+        )
+        if not can_possibly_unenroll:
+            return False
+        return (
+            datetime.now().date()
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.event.date_start
+        )
+
+
+class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
+    one_time_event = models.ForeignKey(
+        "one_time_events.OneTimeEvent", on_delete=models.CASCADE
+    )
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
+    agreed_participation_fee = models.PositiveIntegerField(
+        _("Poplatek za účast*"), null=True, blank=True
+    )
+    transaction = models.ForeignKey(
+        "transactions.Transaction", null=True, on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        unique_together = ["one_time_event", "person"]
+
+    def delete(self):
+        transaction = OneTimeEventParticipantEnrollment.objects.get(
+            pk=self.pk
+        ).transaction
+
+        super().delete()
+        if transaction is not None and not transaction.is_settled:
+            transaction.delete()
+
+    @staticmethod
+    def create_attached_transaction(enrollment, event):
+        fee = (
+            -enrollment.agreed_participation_fee
+            if enrollment.agreed_participation_fee is not None
+            else -event.default_participation_fee
+        )
+        return Transaction(
+            amount=fee,
+            reason=f"Schválená přihláška na jednorázovou událost {event}",
+            date_due=event.date_start,
+            person=enrollment.person,
+            event=event,
+        )
+
+    @property
+    def event(self):
+        return self.one_time_event
+
+    @event.setter
+    def event(self, value):
+        self.one_time_event = value

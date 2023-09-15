@@ -1,0 +1,29 @@
+{% load vzs_filters %}
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Věkové omezení</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Min</td>
+                        <td>
+                            {{ object.min_age|handle_missing }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Max</td>
+                        <td>
+                            {{ object.max_age|handle_missing }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{% block edit_action %}{% endblock %}" class="btn-primary btn">Upravit</a>
+        </div>
+    </div>
+</div>
