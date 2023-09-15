@@ -18,7 +18,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for coach_assignment in occurrence.one_time_present_coaches %}
+                    {% for coach_assignment in occurrence.one_time_present_coaches_assignments %}
                         <tr>
                             <td>
                                 <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>

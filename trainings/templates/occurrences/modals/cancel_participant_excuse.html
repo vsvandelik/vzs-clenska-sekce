@@ -1,0 +1,18 @@
+{% extends "modal.html" %}
+
+{% block modal_title %}
+    Zrušení omluvenky účastníka
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu zrušit omluvenku účastníka {{ participant_attendance.person }}?</p>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url "trainings:cancel-participant-excuse" event.id occurrence.id participant_attendance.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Zrušit omluvení</button>
+    </form>
+{% endblock %}

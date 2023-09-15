@@ -46,6 +46,9 @@ from .forms import (
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingUnenrollMyselfOrganizerForOccurrenceForm,
     CoachOccurrenceAssignmentForm,
+    ParticipantExcuseForm,
+    CancelParticipantExcuseForm,
+    ExcuseMyselfParticipantForm,
 )
 from .models import (
     Training,
@@ -54,6 +57,7 @@ from .models import (
     CoachPositionAssignment,
     TrainingOccurrence,
     CoachOccurrenceAssignment,
+    TrainingParticipantAttendance,
 )
 
 
@@ -215,6 +219,10 @@ class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
             "active_person_can_coach_excuse",
             self.object.can_coach_excuse(active_person),
         )
+        kwargs.setdefault(
+            "active_person_can_participant_excuse",
+            self.object.can_participant_excuse(active_person),
+        )
         return super().get_context_data(**kwargs)
 
 
@@ -230,7 +238,7 @@ class CancelCoachExcuseView(
     model = CoachOccurrenceAssignment
     context_object_name = "assignment"
     template_name = "occurrences/modals/cancel_coach_excuse.html"
-    success_message = "Zrušení omluvenky proběhlo úspěšně"
+    success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
 
 
 class ExcuseMyselfCoachView(
@@ -245,7 +253,7 @@ class ExcuseMyselfCoachView(
     form_class = ExcuseMyselfCoachForm
     model = CoachOccurrenceAssignment
     template_name = "occurrences/modals/excuse_myself_coach.html"
-    success_message = "Vaše neúčast byla úspěšně nahlášena"
+    success_message = "Vaše trenérská neúčast byla úspěšně nahlášena"
 
     def get_object(self, queryset=None):
         active_person = self.request.active_person
@@ -363,3 +371,60 @@ class EditOneTimeCoachView(
         kwargs.setdefault("occurrence", self.object.occurrence)
         kwargs.setdefault("event", self.object.occurrence.event)
         return super().get_context_data(**kwargs)
+
+
+class ExcuseParticipantView(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.UpdateView,
+):
+    form_class = ParticipantExcuseForm
+    model = TrainingParticipantAttendance
+    context_object_name = "participant_attendance"
+    template_name = "occurrences/modals/participant_excuse.html"
+    success_message = "Omluvení účastníka proběhlo úspěšně"
+
+
+class CancelParticipantExcuseView(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.UpdateView,
+):
+    form_class = CancelParticipantExcuseForm
+    model = TrainingParticipantAttendance
+    context_object_name = "participant_attendance"
+    template_name = "occurrences/modals/cancel_participant_excuse.html"
+    success_message = "Zrušení omluvenky účastníka proběhlo úspěšně"
+
+
+class ExcuseMyselfParticipantView(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.UpdateView,
+):
+    form_class = ExcuseMyselfParticipantForm
+    model = TrainingParticipantAttendance
+    template_name = "occurrences/modals/excuse_myself_participant.html"
+    success_message = "Vaše neúčast jako účastník byla úspěšně nahlášena"
+
+    def get_object(self, queryset=None):
+        active_person = self.request.active_person
+        if active_person is None:
+            raise Http404("Tato stránka není dostupná")
+
+        occurrence = get_object_or_404(
+            TrainingOccurrence, pk=self.kwargs["occurrence_id"]
+        )
+        return TrainingParticipantAttendance.objects.get(
+            person=active_person, occurrence=occurrence
+        )

@@ -590,9 +590,8 @@ class TrainingBulkApproveParticipantsForm(
         return instance
 
 
-class CancelCoachExcuseForm(ModelForm):
+class CancelExcuseForm(ModelForm):
     class Meta:
-        model = CoachOccurrenceAssignment
         fields = []
 
     def clean(self):
@@ -609,15 +608,34 @@ class CancelCoachExcuseForm(ModelForm):
         return instance
 
 
-class ExcuseMyselfCoachForm(ModelForm):
+class CancelCoachExcuseForm(CancelExcuseForm):
+    class Meta(CancelExcuseForm.Meta):
+        model = CoachOccurrenceAssignment
+
+
+class ExcuseFormMixin:
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.EXCUSED
+        if commit:
+            instance.save()
+        return instance
+
+
+class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
     class Meta:
         model = CoachOccurrenceAssignment
         fields = []
 
     def clean(self):
         cleaned_data = super().clean()
+
         if not self.instance.occurrence.can_coach_excuse(self.instance.person):
             self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
+
+        if not self.instance.occurrence.event.coaches.contains(self.instance.person):
+            self.add_error(None, "Omluvit neúčast je možné pouze u řádného trenéra")
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -628,21 +646,14 @@ class ExcuseMyselfCoachForm(ModelForm):
         return instance
 
 
-class CoachExcuseForm(ModelForm):
-    class Meta:
-        model = CoachOccurrenceAssignment
-        fields = []
+class ExcuseMyselfCoachForm(ExcuseCoachForm):
+    class Meta(ExcuseCoachForm.Meta):
+        pass
 
-    def clean(self):
-        if not self.instance.occurrence.event.coaches.contains(self.instance.person):
-            self.add_error(None, "Omluvit neúčast je možné pouze u řádného trenéra")
 
-    def save(self, commit=True):
-        instance = super().save(False)
-        instance.state = TrainingAttendance.EXCUSED
-        if commit:
-            instance.save()
-        return instance
+class CoachExcuseForm(ExcuseCoachForm):
+    class Meta(ExcuseCoachForm.Meta):
+        pass
 
 
 class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenceForm):
@@ -694,3 +705,37 @@ class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm
         if commit:
             instance.save()
         return instance
+
+
+class ExcuseParticipantForm(ExcuseFormMixin, ModelForm):
+    class Meta:
+        model = TrainingParticipantAttendance
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if not self.instance.occurrence.can_participant_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit jako účastník")
+
+        if not self.instance.occurrence.event.enrolled_participants.contains(
+            self.instance.person
+        ):
+            self.add_error(None, "Omluvit neúčast je možné pouze u řádného účastníka")
+
+        return cleaned_data
+
+
+class ParticipantExcuseForm(ExcuseParticipantForm):
+    class Meta(ExcuseParticipantForm.Meta):
+        pass
+
+
+class CancelParticipantExcuseForm(CancelExcuseForm):
+    class Meta(CancelExcuseForm.Meta):
+        model = TrainingParticipantAttendance
+
+
+class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
+    class Meta(ExcuseParticipantForm.Meta):
+        pass

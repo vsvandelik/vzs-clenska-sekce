@@ -390,15 +390,43 @@ class TrainingOccurrence(EventOccurrence):
             Q(state=TrainingAttendance.PRESENT, person__in=self.event.coaches.all())
         )
 
-    def one_time_present_coaches(self):
+    def one_time_present_coaches_assignments(self):
         return self.coaches_assignments_by_Q(
             Q(state=TrainingAttendance.PRESENT)
             & ~Q(person__in=self.event.coaches.all())
         )
 
-    def position_present_coaches(self, position_assignment):
+    def position_present_coaches_assignments(self, position_assignment):
         return self.coaches_assignments_by_Q(
             Q(state=TrainingAttendance.PRESENT, position_assignment=position_assignment)
+        )
+
+    def participants_assignment_by_Q(self, q_condition):
+        return self.trainingparticipantattendance_set.filter(q_condition)
+
+    def regular_present_participants_assignments(self):
+        return self.participants_assignment_by_Q(
+            Q(
+                state=TrainingAttendance.PRESENT,
+                person__in=self.event.enrolled_participants.all(),
+            )
+        )
+
+    def excused_participants_assignments(self):
+        return self.participants_assignment_by_Q(Q(state=TrainingAttendance.EXCUSED))
+
+    def can_participant_excuse(self, person):
+        participant_attendance = self.trainingparticipantattendance_set.filter(
+            occurrence=self, person=person
+        ).first()
+        if participant_attendance is None:
+            return False
+        return (
+            self.event.enrolled_participants.contains(person)
+            and participant_attendance.state == TrainingAttendance.PRESENT
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.PARTICIPANT_EXCUSE_DEADLINE_DAYS)
+            <= self.datetime_start
         )
 
 

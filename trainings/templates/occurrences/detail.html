@@ -20,6 +20,12 @@
                        data-action="{% url 'trainings:excuse-myself-coach' event.id occurrence.id %}"
                        class="btn btn-secondary">Nahlásit trenérskou neúčast</a>
                 {% endif %}
+                {% if active_person_can_participant_excuse %}
+                    <a data-toggle="modal"
+                       data-target="#excuse-myself-participant-modal"
+                       data-action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}"
+                       class="btn btn-secondary">Nahlásit neúčast účastníka</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -68,6 +74,11 @@
     {% include 'modal_include.html' with id='excuse-coach-modal' %}
     {% include 'modal_include.html' with id='delete-one-time-coach-modal' %}
     {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
+
+    {% include 'modal_include.html' with id='excuse-participant-modal' %}
+    {% include 'modal_include.html' with id='cancel-participant-excuse-modal' %}
+    {% include 'modal_include.html' with id='excuse-myself-participant-modal' %}
+
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -88,5 +99,9 @@
         registerModal('excuse-coach-modal')
         registerModal('delete-one-time-coach-modal')
         registerModal('unenroll-myself-organizer-occurrence-modal')
+
+        registerModal('excuse-participant-modal')
+        registerModal("cancel-participant-excuse-modal")
+        registerModal('excuse-myself-participant-modal')
     </script>
 {% endblock %}

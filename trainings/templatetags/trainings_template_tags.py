@@ -49,4 +49,4 @@ def coach_position_assignment_coaches(training, position_assignment):
 
 @register.filter
 def occurrence_position_assignment_present_coaches(occurrence, position_assignment):
-    return occurrence.position_present_coaches(position_assignment)
+    return occurrence.position_present_coaches_assignments(position_assignment)

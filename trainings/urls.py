@@ -118,4 +118,19 @@ urlpatterns = [
         views.EditOneTimeCoachView.as_view(),
         name="edit-one-time-coach",
     ),
+    path(
+        "<int:event_id>/detail-dne<int:occurrence_id>/omluvit-ucastnika/<int:pk>/",
+        views.ExcuseParticipantView.as_view(),
+        name="excuse-participant",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/zrusit-omluveni-ucastnika/<int:pk>/",
+        views.CancelParticipantExcuseView.as_view(),
+        name="cancel-participant-excuse",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/omluvit-moji-neucast-ucastnik/",
+        views.ExcuseMyselfParticipantView.as_view(),
+        name="excuse-myself-participant",
+    ),
 ]
