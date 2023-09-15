@@ -14,8 +14,9 @@ from events.forms_bases import (
     EventFormMixin,
     OrganizerAssignmentForm,
     EnrollMyselfOrganizerOccurrenceForm,
-    UnenrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOccurrenceForm,
     OccurrenceFormMixin,
+    PersonMetaMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -671,10 +672,8 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
         return instance
 
 
-class TrainingUnenrollMyselfOrganizerForOccurrenceForm(
-    UnenrollMyselfOrganizerOccurrenceForm
-):
-    class Meta(UnenrollMyselfOrganizerOccurrenceForm.Meta):
+class TrainingUnenrollMyselfOrganizerFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = CoachOccurrenceAssignment
 
 
@@ -739,3 +738,35 @@ class CancelParticipantExcuseForm(CancelExcuseForm):
 class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
     class Meta(ExcuseParticipantForm.Meta):
         pass
+
+
+class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
+        model = TrainingParticipantAttendance
+
+
+class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
+    class Meta(PersonMetaMixin):
+        model = TrainingParticipantAttendance
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+        else:
+            pass
+            # self.fields["person"].queryset = Person.objects.filter(
+            #     ~Q(coachoccurrenceassignment__occurrence=self.occurrence)
+            # )
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
+        return instance

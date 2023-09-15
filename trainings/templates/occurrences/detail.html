@@ -18,13 +18,19 @@
                     <a data-toggle="modal"
                        data-target="#excuse-myself-coach-modal"
                        data-action="{% url 'trainings:excuse-myself-coach' event.id occurrence.id %}"
-                       class="btn btn-secondary">Nahlásit trenérskou neúčast</a>
+                       class="btn btn-secondary">Nahlásit neúčast jako trenér</a>
                 {% endif %}
                 {% if active_person_can_participant_excuse %}
                     <a data-toggle="modal"
                        data-target="#excuse-myself-participant-modal"
                        data-action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}"
-                       class="btn btn-secondary">Nahlásit neúčast účastníka</a>
+                       class="btn btn-secondary">Nahlásit neúčast jako účastník</a>
+                {% endif %}
+                {% if active_person_can_unenroll %}
+                    <a data-toggle="modal"
+                       data-target="#unenroll-myself-participant-occurrence-modal"
+                       data-action="{% url 'trainings:unenroll-myself-participant-occurrence' event.id occurrence.id %}"
+                       class="btn btn-secondary">Odhlásit se jako jednorázový účastník</a>
                 {% endif %}
             </div>
         </div>
@@ -78,6 +84,7 @@
     {% include 'modal_include.html' with id='excuse-participant-modal' %}
     {% include 'modal_include.html' with id='cancel-participant-excuse-modal' %}
     {% include 'modal_include.html' with id='excuse-myself-participant-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-participant-occurrence-modal' %}
 
 {% endblock %}
 {% block scripts %}
@@ -103,5 +110,6 @@
         registerModal('excuse-participant-modal')
         registerModal("cancel-participant-excuse-modal")
         registerModal('excuse-myself-participant-modal')
+        registerModal('unenroll-myself-participant-occurrence-modal')
     </script>
 {% endblock %}

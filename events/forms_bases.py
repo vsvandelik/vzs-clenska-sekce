@@ -193,12 +193,17 @@ class OrganizerEnrollMyselfForm(ModelForm):
         }
 
 
+class PersonMetaMixin:
+    fields = ["person"]
+    widgets = {
+        "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+    }
+
+
 class OrganizerAssignmentForm(OrganizerEnrollMyselfForm):
-    class Meta(OrganizerEnrollMyselfForm.Meta):
-        fields = ["person"] + OrganizerEnrollMyselfForm.Meta.fields
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-        } | OrganizerEnrollMyselfForm.Meta.widgets
+    class Meta(PersonMetaMixin, OrganizerEnrollMyselfForm.Meta):
+        fields = PersonMetaMixin.fields + OrganizerEnrollMyselfForm.Meta.fields
+        widgets = PersonMetaMixin.widgets | OrganizerEnrollMyselfForm.Meta.widgets
 
 
 class BulkApproveParticipantsForm(ModelForm):
@@ -224,7 +229,7 @@ class EnrollMyselfOrganizerOccurrenceForm(
         return cleaned_data
 
 
-class UnenrollMyselfOrganizerOccurrenceForm(ModelForm):
+class UnenrollMyselfOccurrenceForm(ModelForm):
     class Meta:
         fields = []
 

@@ -1,0 +1,3 @@
+{% extends 'events/create_edit_organizer_assignment.html' %}
+{% load vzs_filters %}
+{% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}

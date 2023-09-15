@@ -17,7 +17,7 @@ from events.forms_bases import (
     OrganizerEnrollMyselfForm,
     OccurrenceFormMixin,
     EnrollMyselfOrganizerOccurrenceForm,
-    UnenrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOccurrenceForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -536,10 +536,8 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
         return instance
 
 
-class OneTimeEventUnenrollMyselfOrganizerOccurrenceForm(
-    UnenrollMyselfOrganizerOccurrenceForm
-):
-    class Meta(UnenrollMyselfOrganizerOccurrenceForm.Meta):
+class OneTimeEventUnenrollMyselfOrganizerOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
 
 

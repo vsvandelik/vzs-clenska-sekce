@@ -100,7 +100,7 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/detail-dne/<int:occurrence_id>/odhlasit-se-jednorazove-trener/<int:pk>",
-        views.UnenrollMyselfOrganizerForOccurrenceView.as_view(),
+        views.UnenrollMyselfOrganizerFromOccurrenceView.as_view(),
         name="unenroll-myself-organizer-occurrence",
     ),
     path(
@@ -132,5 +132,20 @@ urlpatterns = [
         "<int:event_id>/detail-dne/<int:occurrence_id>/omluvit-moji-neucast-ucastnik/",
         views.ExcuseMyselfParticipantView.as_view(),
         name="excuse-myself-participant",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/odhlasit-se-jednorazove-ucastnik/<int:pk>",
+        views.UnenrollMyselfParticipantFromOccurrenceView.as_view(),
+        name="unenroll-myself-participant-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne<int:occurrence_id>/pridat-jednorazoveho-ucastnika/",
+        views.AddOneTimeParticipantView.as_view(),
+        name="add-one-time-participant",
+    ),
+    path(
+        "<int:event_id>/detail-dne<int:occurrence_id>/upravit-jednorazoveho-ucastnika/<int:pk>/",
+        views.EditOneTimeParticipantView.as_view(),
+        name="edit-one-time-participant",
     ),
 ]

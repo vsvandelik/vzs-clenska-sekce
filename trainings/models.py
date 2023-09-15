@@ -415,10 +415,13 @@ class TrainingOccurrence(EventOccurrence):
     def excused_participants_assignments(self):
         return self.participants_assignment_by_Q(Q(state=TrainingAttendance.EXCUSED))
 
-    def can_participant_excuse(self, person):
-        participant_attendance = self.trainingparticipantattendance_set.filter(
+    def get_participant_attendance(self, person):
+        return self.trainingparticipantattendance_set.filter(
             occurrence=self, person=person
         ).first()
+
+    def can_participant_excuse(self, person):
+        participant_attendance = self.get_participant_attendance(person)
         if participant_attendance is None:
             return False
         return (
@@ -429,16 +432,33 @@ class TrainingOccurrence(EventOccurrence):
             <= self.datetime_start
         )
 
+    def can_participant_unenroll(self, person):
+        participant_attendance = self.get_participant_attendance(person)
+        if participant_attendance is None:
+            return False
+        return (
+            not self.event.enrolled_participants.contains(person)
+            and participant_attendance.state == TrainingAttendance.PRESENT
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.PARTICIPANT_UNENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
 
 class TrainingParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(
         "trainings.TrainingParticipantEnrollment", null=True, on_delete=models.CASCADE
     )
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
     occurrence = models.ForeignKey(
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
     state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
+
+    def can_unenroll(self):
+        return self.occurrence.can_participant_unenroll(self.person)
 
     class Meta:
         unique_together = ["person", "occurrence"]

@@ -44,11 +44,13 @@ from .forms import (
     CoachAssignmentDeleteForm,
     CoachExcuseForm,
     TrainingEnrollMyselfOrganizerOccurrenceForm,
-    TrainingUnenrollMyselfOrganizerForOccurrenceForm,
+    TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
     CoachOccurrenceAssignmentForm,
     ParticipantExcuseForm,
     CancelParticipantExcuseForm,
     ExcuseMyselfParticipantForm,
+    TrainingUnenrollMyselfParticipantFromOccurrenceForm,
+    TrainingParticipantAttendanceForm,
 )
 from .models import (
     Training,
@@ -223,6 +225,10 @@ class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
             "active_person_can_participant_excuse",
             self.object.can_participant_excuse(active_person),
         )
+        kwargs.setdefault(
+            "active_person_can_participant_unenroll",
+            self.object.can_participant_unenroll(active_person),
+        )
         return super().get_context_data(**kwargs)
 
 
@@ -316,7 +322,7 @@ class OneTimeCoachDeleteView(
         )
 
 
-class UnenrollMyselfOrganizerForOccurrenceView(
+class UnenrollMyselfOrganizerFromOccurrenceView(
     MessagesMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
@@ -327,7 +333,7 @@ class UnenrollMyselfOrganizerForOccurrenceView(
 ):
     context_object_name = "assignment"
     model = CoachOccurrenceAssignment
-    form_class = TrainingUnenrollMyselfOrganizerForOccurrenceForm
+    form_class = TrainingUnenrollMyselfOrganizerFromOccurrenceForm
     template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
 
     def get_success_message(self, cleaned_data):
@@ -428,3 +434,59 @@ class ExcuseMyselfParticipantView(
         return TrainingParticipantAttendance.objects.get(
             person=active_person, occurrence=occurrence
         )
+
+
+class UnenrollMyselfParticipantFromOccurrenceView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    generic.UpdateView,
+):
+    context_object_name = "participant_attendance"
+    model = TrainingParticipantAttendance
+    form_class = TrainingUnenrollMyselfParticipantFromOccurrenceForm
+    template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
+
+    def get_success_message(self, cleaned_data):
+        return f"Odhlášení jako jednorázový účastník proběhlo úspěšně"
+
+
+class AddOneTimeParticipantView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    EventOccurrenceIdCheckMixin,
+    generic.CreateView,
+):
+    model = TrainingParticipantAttendance
+    form_class = TrainingParticipantAttendanceForm
+    template_name = "occurrences/create_one_time_participant.html"
+    success_message = "Jednorázový účastník %(person)s přidán"
+
+
+class EditOneTimeParticipantView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.UpdateView,
+):
+    model = TrainingParticipantAttendance
+    form_class = TrainingParticipantAttendanceForm
+    template_name = "occurrences/edit_one_time_participant.html"
+    success_message = "Přihláska jednorázového účastníka %(person)s upravena"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["occurrence"] = self.object.occurrence
+        kwargs["person"] = self.object.person
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("occurrence", self.object.occurrence)
+        kwargs.setdefault("event", self.object.occurrence.event)
+        return super().get_context_data(**kwargs)

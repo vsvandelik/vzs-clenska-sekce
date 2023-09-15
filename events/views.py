@@ -1,28 +1,27 @@
 from django.http import Http404
+from django.shortcuts import get_object_or_404, reverse, redirect
 from django.urls import reverse_lazy
-from .models import (
-    Event,
-    EventPositionAssignment,
-    EventOccurrence,
-)
-from persons.models import Person
 from django.views import generic
 
+from events.models import ParticipantEnrollment
+from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
+from persons.models import Person
+from trainings.models import Training, TrainingOccurrence
+from vzs.mixin_extensions import (
+    MessagesMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+)
 from .forms import (
     EventAgeLimitForm,
     EventPositionAssignmentForm,
     EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
 )
-from django.shortcuts import get_object_or_404, reverse, redirect
-from vzs.mixin_extensions import (
-    MessagesMixin,
-    InsertRequestIntoModelFormKwargsMixin,
-    InsertActivePersonIntoModelFormKwargsMixin,
+from .models import (
+    Event,
+    EventPositionAssignment,
+    EventOccurrence,
 )
-from trainings.models import Training, TrainingOccurrence
-from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
-from events.models import ParticipantEnrollment
 
 
 class EventMixin:
