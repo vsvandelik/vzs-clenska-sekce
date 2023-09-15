@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django_select2",
     "mptt",
     "tempus_dominus",
+    "rest_framework",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",
     "features.apps.FeaturesConfig",
     "groups.apps.GroupsConfig",
+    "api.apps.APIConfig",
     # Template tags
     "vzs",
 ]
