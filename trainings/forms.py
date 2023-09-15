@@ -513,6 +513,8 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
             "position_assignment"
         ].queryset = self.event.eventpositionassignment_set.all()
 
+        self.helper = WithoutFormTagFormHelper()
+
     def save(self, commit=True):
         instance = super().save(False)
         instance.training = self.event
