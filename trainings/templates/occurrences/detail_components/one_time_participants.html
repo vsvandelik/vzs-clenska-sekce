@@ -17,7 +17,23 @@
                     </tr>
                 </thead>
                 <tbody>
-
+                    {% for participant_assignment in occurrence.one_time_participants_assignments %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-danger btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#delete-one-time-participant-modal"
+                                       data-action="{% url 'trainings:delete-one-time-participant' event.id occurrence.id participant_assignment.id %}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -17,6 +17,7 @@ from events.forms_bases import (
     UnenrollMyselfOccurrenceForm,
     OccurrenceFormMixin,
     PersonMetaMixin,
+    ActivePersonFormMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -714,9 +715,6 @@ class ExcuseParticipantForm(ExcuseFormMixin, ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        if not self.instance.occurrence.can_participant_excuse(self.instance.person):
-            self.add_error(None, "Již se není možné odhlásit jako účastník")
-
         if not self.instance.occurrence.event.enrolled_participants.contains(
             self.instance.person
         ):
@@ -738,6 +736,12 @@ class CancelParticipantExcuseForm(CancelExcuseForm):
 class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
     class Meta(ExcuseParticipantForm.Meta):
         pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.can_participant_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit jako účastník")
+        return cleaned_data
 
 
 class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
@@ -767,6 +771,31 @@ class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
         instance.state = TrainingAttendance.PRESENT
         if instance.id is not None:
             instance.person = self.person
+        if commit:
+            instance.save()
+        return instance
+
+
+class TrainingEnrollMyselfParticipantOccurrenceForm(
+    OccurrenceFormMixin, ActivePersonFormMixin, ModelForm
+):
+    class Meta:
+        model = TrainingParticipantAttendance
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.occurrence.can_participant_enroll(self.person):
+            self.add_error(
+                None, "Nemáte oprávnění k jednorázovému přihlášení na tento trénink"
+            )
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.person = self.person
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
         if commit:
             instance.save()
         return instance

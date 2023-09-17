@@ -1,4 +1,6 @@
-{% extends 'occurrences/create_edit_one_time_participant.html' %}
+{% extends 'events/person_selection.html' %}
+{% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
+{% block savebtn_class %}btn-primary{% endblock %}
 {% block title %}Přihlášení jednorázového účastníka{% endblock %}
 {% block form_action %}{% url 'trainings:add-one-time-participant' event.id occurrence.id %}{% endblock %}
 {% block card_title %}Přidání{% endblock %}

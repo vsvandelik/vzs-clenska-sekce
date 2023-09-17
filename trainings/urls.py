@@ -144,8 +144,13 @@ urlpatterns = [
         name="add-one-time-participant",
     ),
     path(
-        "<int:event_id>/detail-dne<int:occurrence_id>/upravit-jednorazoveho-ucastnika/<int:pk>/",
-        views.EditOneTimeParticipantView.as_view(),
-        name="edit-one-time-participant",
+        "<int:event_id>/detail-dne/<int:occurrence_id>/odebrat-jednorazoveho-ucastnika/<int:pk>/",
+        views.OneTimeParticipantDeleteView.as_view(),
+        name="delete-one-time-participant",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:occurrence_id>/prihlasit-se-jednorazove-ucastnik/",
+        views.EnrollMyselfParticipantFromOccurrenceView.as_view(),
+        name="enroll-myself-participant-occurrence",
     ),
 ]

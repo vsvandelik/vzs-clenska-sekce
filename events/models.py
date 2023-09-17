@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q
@@ -7,6 +9,7 @@ from polymorphic.models import PolymorphicModel
 
 from features.models import FeatureAssignment, Feature
 from persons.models import Person
+from vzs import settings
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -138,7 +141,13 @@ class Event(PolymorphicModel):
         return self.capacity is None
 
     def can_person_enroll_as_participant(self, person):
-        return self.can_person_enroll_as_waiting(person) and self.has_free_spot()
+        return (
+            self.can_person_enroll_as_waiting(person)
+            and self.has_free_spot()
+            and datetime.now().date()
+            + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
+            <= self.date_start
+        )
 
     def can_person_enroll_as_waiting(self, person):
         if person is None:
