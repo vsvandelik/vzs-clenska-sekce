@@ -1,9 +1,15 @@
-from trainings.models import Training
+from .models import Training
 
-from rest_framework.serializers import ModelSerializer
+from events.models import EventPersonTypeConstraint
+
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 
 class TrainingSerializer(ModelSerializer):
     class Meta:
         model = Training
-        fields = "__all__"
+        exclude = ["polymorphic_ctype"]
+
+    allowed_person_types = PrimaryKeyRelatedField(
+        queryset=EventPersonTypeConstraint.objects.all(), many=True
+    )
