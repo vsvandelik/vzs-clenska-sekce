@@ -1,9 +1,15 @@
-from one_time_events.models import OneTimeEvent
+from .models import OneTimeEvent
 
-from rest_framework.serializers import ModelSerializer
+from events.models import EventPersonTypeConstraint
+
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 
 class OneTimeEventSerializer(ModelSerializer):
     class Meta:
         model = OneTimeEvent
-        fields = "__all__"
+        exclude = ["polymorphic_ctype"]
+
+    allowed_person_types = PrimaryKeyRelatedField(
+        queryset=EventPersonTypeConstraint.objects.all(), many=True
+    )
