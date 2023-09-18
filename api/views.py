@@ -27,9 +27,4 @@ class TokenDeleteView(APIPermissionRequiredMixin, DeleteView):
 class TokenGenerateView(APIPermissionRequiredMixin, CreateView):
     template_name = "api/token/generate.html"
     form_class = TokenGenerateForm
-
-    def form_valid(self, form):
-        form.save()
-        return self.render_to_response(
-            self.get_context_data(token_key=form.instance.key)
-        )
+    success_url = reverse_lazy("api:token:index")

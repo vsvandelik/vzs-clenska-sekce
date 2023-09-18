@@ -12,14 +12,18 @@
             <table class="table" id="tokens-table">
                 <thead>
                     <tr>
+                        <th>Název</th>
                         <th>Token</th>
+                        <th>Čas vytvoření</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for token in tokens %}
                         <tr>
+                            <td>{{ token.name }}</td>
                             <td>{{ token.key }}</td>
+                            <td>{{ token.created }}</td>
                             <td>
                                 <div class="btn-group">
                                     {% include "delete_button_icon.html" with id="delete-token-modal" pattern="api:token:delete" object=token %}
@@ -37,7 +41,7 @@
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    <script>datatableEnable("tokens-table", [0], [0]);</script>
+    <script>datatableEnable("tokens-table", [0, 1], [0, 1, 2]);</script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>registerModal("delete-token-modal")</script>
 {% endblock %}

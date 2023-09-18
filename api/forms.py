@@ -6,4 +6,4 @@ from django.forms import ModelForm
 class TokenGenerateForm(ModelForm):
     class Meta:
         model = Token
-        fields = []
+        fields = ["name"]
