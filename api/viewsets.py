@@ -1,14 +1,13 @@
-from .serializers import (
-    PersonSerializer,
-    FeatureSerializer,
-    GroupSerializer,
-    OneTimeEventSerializer,
-    TrainingSerializer,
-    PositionSerializer,
-    TransactionSerializer,
-    UserSerializer,
-)
 from .permissions import UserPermission, TokenPermission
+
+from persons.serializers import PersonSerializer
+from features.serializers import FeatureSerializer
+from groups.serializers import GroupSerializer
+from one_time_events.serializers import OneTimeEventSerializer
+from trainings.serializers import TrainingSerializer
+from positions.serializers import PositionSerializer
+from transactions.serializers import TransactionSerializer
+from users.serializers import UserSerializer
 
 from persons.models import Person
 from features.models import Feature
