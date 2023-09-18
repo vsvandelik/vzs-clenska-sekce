@@ -237,21 +237,6 @@ class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
         return super().get_context_data(**kwargs)
 
 
-class CancelCoachExcuseView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
-    generic.UpdateView,
-):
-    form_class = CancelCoachExcuseForm
-    model = CoachOccurrenceAssignment
-    context_object_name = "assignment"
-    template_name = "occurrences/modals/cancel_coach_excuse.html"
-    success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
-
-
 class CoachOccurrenceViewMixin(
     MessagesMixin,
     InsertEventIntoContextData,
@@ -261,19 +246,24 @@ class CoachOccurrenceViewMixin(
     generic.FormView,
 ):
     model = CoachOccurrenceAssignment
+    context_object_name = "assignment"
+
+
+class CancelCoachExcuseView(
+    CoachOccurrenceViewMixin,
+    generic.UpdateView,
+):
+    form_class = CancelCoachExcuseForm
+    template_name = "occurrences/modals/cancel_coach_excuse.html"
+    success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
 
 
 class ExcuseMyselfCoachView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfCoachForm
-    model = CoachOccurrenceAssignment
     template_name = "occurrences/modals/excuse_myself_coach.html"
     success_message = "Vaše trenérská neúčast byla úspěšně nahlášena"
 
@@ -291,28 +281,20 @@ class ExcuseMyselfCoachView(
 
 
 class CoachExcuseView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.UpdateView,
 ):
     form_class = CoachExcuseForm
-    model = CoachOccurrenceAssignment
-    context_object_name = "assignment"
     template_name = "occurrences/modals/coach_excuse.html"
     success_message = "Omluvení trenéra proběhlo úspěšně"
 
 
 class EnrollMyselfOrganizerForOccurrenceView(
-    MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.CreateView,
 ):
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
@@ -321,15 +303,9 @@ class EnrollMyselfOrganizerForOccurrenceView(
 
 
 class OneTimeCoachDeleteView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.DeleteView,
 ):
-    context_object_name = "assignment"
-    model = CoachOccurrenceAssignment
     template_name = "occurrences/modals/delete_one_time_coach.html"
 
     def get_success_message(self, cleaned_data):
@@ -339,16 +315,10 @@ class OneTimeCoachDeleteView(
 
 
 class UnenrollMyselfOrganizerFromOccurrenceView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.UpdateView,
 ):
-    context_object_name = "assignment"
-    model = CoachOccurrenceAssignment
     form_class = TrainingUnenrollMyselfOrganizerFromOccurrenceForm
     template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
 
@@ -357,15 +327,10 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
 
 
 class AddOneTimeCoachView(
-    MessagesMixin,
-    InsertEventIntoContextData,
     InsertOccurrenceIntoModelFormKwargsMixin,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
+    CoachOccurrenceViewMixin,
     generic.CreateView,
 ):
-    model = CoachOccurrenceAssignment
     form_class = CoachOccurrenceAssignmentForm
     template_name = "occurrences/create_coach_occurrence_assignment.html"
     success_message = "Jednorázový trenér %(person)s přidán"
@@ -395,47 +360,42 @@ class EditOneTimeCoachView(
         return super().get_context_data(**kwargs)
 
 
-class ExcuseParticipantView(
+class ParticipantOccurrenceViewMixin(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
+    generic.FormView,
+):
+    model = TrainingParticipantAttendance
+    context_object_name = "participant_attendance"
+
+
+class ExcuseParticipantView(
+    ParticipantOccurrenceViewMixin,
     generic.UpdateView,
 ):
     form_class = ParticipantExcuseForm
-    model = TrainingParticipantAttendance
-    context_object_name = "participant_attendance"
     template_name = "occurrences/modals/participant_excuse.html"
     success_message = "Omluvení účastníka proběhlo úspěšně"
 
 
 class CancelParticipantExcuseView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
+    ParticipantOccurrenceViewMixin,
     generic.UpdateView,
 ):
     form_class = CancelParticipantExcuseForm
-    model = TrainingParticipantAttendance
-    context_object_name = "participant_attendance"
     template_name = "occurrences/modals/cancel_participant_excuse.html"
     success_message = "Zrušení omluvenky účastníka proběhlo úspěšně"
 
 
 class ExcuseMyselfParticipantView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    EventOccurrenceIdCheckMixin,
+    ParticipantOccurrenceViewMixin,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfParticipantForm
-    model = TrainingParticipantAttendance
     template_name = "occurrences/modals/excuse_myself_participant.html"
     success_message = "Vaše neúčast jako účastník byla úspěšně nahlášena"
 
@@ -453,46 +413,29 @@ class ExcuseMyselfParticipantView(
 
 
 class UnenrollMyselfParticipantFromOccurrenceView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    EventOccurrenceIdCheckMixin,
+    ParticipantOccurrenceViewMixin,
     generic.UpdateView,
 ):
-    context_object_name = "participant_attendance"
-    model = TrainingParticipantAttendance
     form_class = TrainingUnenrollMyselfParticipantFromOccurrenceForm
     template_name = "occurrences/modals/unenroll_myself_participant_occurrence.html"
     success_message = "Odhlášení jako jednorázový účastník proběhlo úspěšně"
 
 
 class AddOneTimeParticipantView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
-    EventOccurrenceIdCheckMixin,
+    ParticipantOccurrenceViewMixin,
     generic.CreateView,
 ):
-    model = TrainingParticipantAttendance
     form_class = TrainingParticipantAttendanceForm
     template_name = "occurrences/create_one_time_participant.html"
     success_message = "Jednorázový účastník %(person)s přidán"
 
 
 class OneTimeParticipantDeleteView(
-    MessagesMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
+    ParticipantOccurrenceViewMixin,
     generic.DeleteView,
 ):
-    context_object_name = "participant_attendance"
-    model = TrainingParticipantAttendance
     template_name = "occurrences/modals/delete_one_time_participant.html"
 
     def get_success_message(self, cleaned_data):

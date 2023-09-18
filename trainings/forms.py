@@ -548,6 +548,7 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
                     "state": TrainingAttendance.PRESENT,
                 },
             )
+            organizer_assignment.position_assignment = instance.position_assignment
             if commit:
                 organizer_assignment.save()
 

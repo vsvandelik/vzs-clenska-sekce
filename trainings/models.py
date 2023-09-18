@@ -483,7 +483,6 @@ class TrainingOccurrence(EventOccurrence):
         if self.event.enrolled_participants.contains(person):
             return False
 
-        # cas
         if (
             datetime.now(tz=timezone.get_default_timezone())
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
@@ -493,7 +492,7 @@ class TrainingOccurrence(EventOccurrence):
 
         observed = TrainingParticipantAttendance.objects.filter(
             person=person,
-            # occurrence__state=EventOrOccurrenceState.COMPLETED,
+            # occurrence__state=EventOrOccurrenceState.COMPLETED,       TODO uncomment when ready
             occurrence__datetime_start__lt=self.datetime_start,
         )
 
