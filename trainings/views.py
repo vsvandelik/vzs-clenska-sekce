@@ -252,6 +252,17 @@ class CancelCoachExcuseView(
     success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
 
 
+class CoachOccurrenceViewMixin(
+    MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    generic.FormView,
+):
+    model = CoachOccurrenceAssignment
+
+
 class ExcuseMyselfCoachView(
     MessagesMixin,
     InsertEventIntoContextData,
@@ -311,10 +322,10 @@ class EnrollMyselfOrganizerForOccurrenceView(
 
 class OneTimeCoachDeleteView(
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
     generic.DeleteView,
 ):
     context_object_name = "assignment"
@@ -329,11 +340,11 @@ class OneTimeCoachDeleteView(
 
 class UnenrollMyselfOrganizerFromOccurrenceView(
     MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
     generic.UpdateView,
 ):
     context_object_name = "assignment"
@@ -347,10 +358,10 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
 
 class AddOneTimeCoachView(
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    InsertOccurrenceIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
+    InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     generic.CreateView,
 ):
@@ -443,11 +454,11 @@ class ExcuseMyselfParticipantView(
 
 class UnenrollMyselfParticipantFromOccurrenceView(
     MessagesMixin,
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
-    InsertEventIntoContextData,
-    InsertOccurrenceIntoContextData,
     generic.UpdateView,
 ):
     context_object_name = "participant_attendance"
@@ -459,10 +470,10 @@ class UnenrollMyselfParticipantFromOccurrenceView(
 
 class AddOneTimeParticipantView(
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    InsertOccurrenceIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
     generic.CreateView,
 ):
@@ -474,10 +485,10 @@ class AddOneTimeParticipantView(
 
 class OneTimeParticipantDeleteView(
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
     generic.DeleteView,
 ):
     context_object_name = "participant_attendance"

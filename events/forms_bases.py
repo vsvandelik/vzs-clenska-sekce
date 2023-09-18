@@ -228,6 +228,15 @@ class EnrollMyselfOrganizerOccurrenceForm(
             )
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.position_assignment = self.position_assignment
+        instance.person = self.person
+        instance.occurrence = self.occurrence
+        if commit:
+            instance.save()
+        return instance
+
 
 class UnenrollMyselfOccurrenceForm(ModelForm):
     class Meta:

@@ -527,10 +527,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.position_assignment = self.position_assignment
-        instance.person = self.person
         instance.state = OneTimeEventAttendance.PRESENT
-        instance.occurrence = self.occurrence
         if commit:
             instance.save()
         return instance

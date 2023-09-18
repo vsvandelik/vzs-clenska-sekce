@@ -664,10 +664,7 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.position_assignment = self.position_assignment
-        instance.person = self.person
         instance.state = TrainingAttendance.PRESENT
-        instance.occurrence = self.occurrence
         if commit:
             instance.save()
         return instance
@@ -756,14 +753,12 @@ class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
     def __init__(self, *args, **kwargs):
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
-
         if self.instance.id is not None:
             self.fields["person"].widget.attrs["disabled"] = True
         else:
-            pass
-            # self.fields["person"].queryset = Person.objects.filter(
-            #     ~Q(coachoccurrenceassignment__occurrence=self.occurrence)
-            # )
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(trainingparticipantattendance__occurrence=self.occurrence)
+            )
 
     def save(self, commit=True):
         instance = super().save(False)
