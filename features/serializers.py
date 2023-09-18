@@ -6,4 +6,4 @@ from rest_framework.serializers import ModelSerializer
 class FeatureSerializer(ModelSerializer):
     class Meta:
         model = Feature
-        fields = "__all__"
+        exclude = ["lft", "rght", "tree_id", "level"]
