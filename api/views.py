@@ -21,7 +21,7 @@ class TokenIndexView(APIPermissionRequiredMixin, ListView):
 class TokenDeleteView(APIPermissionRequiredMixin, DeleteView):
     model = Token
     template_name = "api/token/delete.html"
-    success_url = reverse_lazy("api:token-index")
+    success_url = reverse_lazy("api:token:index")
 
 
 class TokenGenerateView(APIPermissionRequiredMixin, CreateView):

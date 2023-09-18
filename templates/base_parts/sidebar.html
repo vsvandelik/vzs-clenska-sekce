@@ -2,8 +2,8 @@
 {% load active_link_tags %}
 {% load vzs_filters %}
 
-{% perm_url "api:token-index" as perm_token_index %}
-{% perm_url "api:token-generate" as perm_token_generate %}
+{% perm_url "api:token:index" as perm_token_index %}
+{% perm_url "api:token:generate" as perm_token_generate %}
 
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -127,8 +127,8 @@
                     </ul>
                 </li>
                 {% if perm_token_index or perm_token_generate %}
-                    <li class="nav-item {% active_link "api:token-index || api:token-delete || api:token-generate" "menu-open" strict=False %}">
-                        <a href="#" class="nav-link {% active_link "api:token-index || api:token-delete || api:token-generate" %}">
+                    <li class="nav-item {% active_link "api:token:index || api:token:delete || api:token:generate" "menu-open" strict=False %}">
+                        <a href="#" class="nav-link {% active_link "api:token:index || api:token:delete || api:token:generate" %}">
                             <i class="nav-icon fas fa-cogs"></i>
                             <p>
                                 API
@@ -138,7 +138,7 @@
                         <ul class="nav nav-treeview">
                             {% if perm_token_index %}
                                 <li class="nav-item">
-                                    <a href="{{ perm_token_index.url }}" class="nav-link {% active_link "api:token-index" %}">
+                                    <a href="{{ perm_token_index.url }}" class="nav-link {% active_link "api:token:index" %}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Seznam tokenů</p>
                                     </a>
@@ -146,7 +146,7 @@
                             {% endif %}
                             {% if perm_token_generate %}
                                 <li class="nav-item">
-                                    <a href="{{ perm_token_generate.url }}" class="nav-link {% active_link "api:token-generate" %}">
+                                    <a href="{{ perm_token_generate.url }}" class="nav-link {% active_link "api:token:generate" %}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Generovat token</p>
                                     </a>

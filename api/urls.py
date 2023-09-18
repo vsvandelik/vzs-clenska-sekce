@@ -31,21 +31,21 @@ token_urlpatterns = [
     path(
         "",
         TokenIndexView.as_view(),
-        name="token-index",
+        name="index",
     ),
     path(
         "<str:pk>/smazat/",
         TokenDeleteView.as_view(),
-        name="token-delete",
+        name="delete",
     ),
     path(
         "generovat/",
         TokenGenerateView.as_view(),
-        name="token-generate",
+        name="generate",
     ),
 ]
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("tokeny/", include(token_urlpatterns)),
+    path("tokeny/", include((token_urlpatterns, "token"), namespace="token")),
 ]
