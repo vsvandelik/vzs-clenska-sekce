@@ -1,5 +1,7 @@
 from .models import Person
 
+from features.models import Feature
+
 from rest_framework.serializers import (
     HyperlinkedModelSerializer,
     HyperlinkedRelatedField,
@@ -18,4 +20,10 @@ class PersonSerializer(HyperlinkedModelSerializer):
         queryset=Person.objects.all(),
         many=True,
         view_name="api:person-detail",
+    )
+
+    features = HyperlinkedRelatedField(
+        queryset=Feature.objects.all(),
+        many=True,
+        view_name="api:feature-detail",
     )
