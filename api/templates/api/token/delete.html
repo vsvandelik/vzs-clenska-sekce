@@ -1,0 +1,13 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Potvrzení smazání tokenu
+{% endblock %}
+
+{% block modal_body %}
+    Opravdu chcete smazat token {{ token.name }}?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "api:token:delete" token.key %}
+{% endblock %}
