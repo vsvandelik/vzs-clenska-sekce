@@ -1,17 +1,14 @@
 from django import forms
-from django.db.models import Q
-from django.contrib import messages
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import (
     password_validation,
     authenticate,
-    update_session_auth_hash,
 )
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
+from vzs.forms import WithoutFormTagFormHelper
 from .models import User, Permission
 
 
@@ -46,9 +43,14 @@ class UserCreateForm(UserBaseForm):
         super().__init__(*args, **kwargs)
         self.instance.person = person
 
+        self.helper = WithoutFormTagFormHelper()
+
 
 class UserChangePasswordForm(UserBaseForm):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = WithoutFormTagFormHelper()
 
 
 class UserChangePasswordRepeatForm(UserChangePasswordForm):
@@ -105,6 +107,9 @@ class LoginForm(AuthenticationForm):
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
         self.user_cache = None
+
+        self.helper = WithoutFormTagFormHelper()
+
         forms.Form.__init__(self, *args, **kwargs)
 
     def clean(self):

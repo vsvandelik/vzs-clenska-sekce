@@ -49,6 +49,7 @@ urlpatterns = [
     ),
     path("tinymce/", include("tinymce.urls")),
     path("select2/", include("django_select2.urls")),
+    path("api/", include("api.urls")),
     path("", include("pages.urls")),
 ]
 

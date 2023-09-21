@@ -9,6 +9,7 @@ from django_select2.forms import Select2Widget
 
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
+from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import DatePickerWithIcon
 from .models import Transaction, BulkTransaction
 from .utils import parse_transactions_filter_queryset
@@ -50,6 +51,7 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.instance.person = person
+        self.helper = WithoutFormTagFormHelper()
 
 
 class TransactionCreateBulkForm(TransactionCreateEditMixin):
@@ -65,8 +67,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         for field_name, field in person_filter_form.fields.items():
             self.fields[field_name] = field
 
-        self.filter_helper = FormHelper()
-        self.filter_helper.form_tag = False
+        self.filter_helper = WithoutFormTagFormHelper()
 
         # Remove submit button and background from person filter form
         person_filter_form_layout_rows = person_filter_form.helper.layout.fields[
@@ -80,8 +81,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         )
 
     def _prepare_transaction_form(self):
-        self.transaction_helper = FormHelper()
-        self.transaction_helper.form_tag = False
+        self.transaction_helper = WithoutFormTagFormHelper()
         self.transaction_helper.layout = Layout(
             "amount", "reason", "date_due", "is_reward"
         )
@@ -163,8 +163,7 @@ class TransactionCreateBulkConfirmForm(forms.Form):
             )
 
     def _prepare_form_helper(self, layout_divs):
-        self.helper = FormHelper()
-        self.helper.form_tag = False
+        self.helper = WithoutFormTagFormHelper()
         self.helper.form_show_labels = False
         self.helper.layout = Layout(
             Row(
@@ -225,6 +224,12 @@ class TransactionCreateBulkConfirmForm(forms.Form):
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = WithoutFormTagFormHelper()
+        self.helper.include_media = False
+
     class Meta(TransactionCreateEditMixin.Meta):
         fields = ["person"] + TransactionCreateEditMixin.Meta.fields
         widgets = TransactionCreateEditMixin.Meta.widgets
