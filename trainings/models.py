@@ -480,7 +480,7 @@ class TrainingOccurrence(EventOccurrence):
         if self.get_participant_attendance(person) is not None:
             return False
 
-        if self.event.enrolled_participants.contains(person):
+        if person in self.event.enrolled_participants.all():
             return False
 
         if (
