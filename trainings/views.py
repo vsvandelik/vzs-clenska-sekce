@@ -9,7 +9,7 @@ from django.views import generic
 from events.views import (
     EventCreateMixin,
     EventUpdateMixin,
-    EventDetailViewMixin,
+    EventDetailBaseView,
     EventGeneratesDatesMixin,
     RedirectToEventDetailOnSuccessMixin,
     ParticipantEnrollmentCreateMixin,
@@ -64,7 +64,7 @@ from .models import (
 )
 
 
-class TrainingDetailView(EventDetailViewMixin):
+class TrainingDetailView(EventDetailBaseView):
     template_name = "trainings/detail.html"
 
     def get_context_data(self, **kwargs):
@@ -237,7 +237,7 @@ class TrainingOccurrenceDetailView(OccurrenceDetailBaseView):
         return super().get_context_data(**kwargs)
 
 
-class CoachOccurrenceViewMixin(
+class CoachOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
@@ -250,7 +250,7 @@ class CoachOccurrenceViewMixin(
 
 
 class CancelCoachExcuseView(
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = CancelCoachExcuseForm
@@ -260,7 +260,7 @@ class CancelCoachExcuseView(
 
 class ExcuseMyselfCoachView(
     RedirectToOccurrenceDetailOnFailureMixin,
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfCoachForm
@@ -281,7 +281,7 @@ class ExcuseMyselfCoachView(
 
 
 class CoachExcuseView(
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = CoachExcuseForm
@@ -294,7 +294,7 @@ class EnrollMyselfOrganizerForOccurrenceView(
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.CreateView,
 ):
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
@@ -303,7 +303,7 @@ class EnrollMyselfOrganizerForOccurrenceView(
 
 
 class OneTimeCoachDeleteView(
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.DeleteView,
 ):
     template_name = "occurrences/modals/delete_one_time_coach.html"
@@ -316,7 +316,7 @@ class OneTimeCoachDeleteView(
 
 class UnenrollMyselfOrganizerFromOccurrenceView(
     RedirectToOccurrenceDetailOnFailureMixin,
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = TrainingUnenrollMyselfOrganizerFromOccurrenceForm
@@ -328,7 +328,7 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
 
 class AddOneTimeCoachView(
     InsertOccurrenceIntoModelFormKwargsMixin,
-    CoachOccurrenceViewMixin,
+    CoachOccurrenceBaseView,
     generic.CreateView,
 ):
     form_class = CoachOccurrenceAssignmentForm
@@ -360,7 +360,7 @@ class EditOneTimeCoachView(
         return super().get_context_data(**kwargs)
 
 
-class ParticipantOccurrenceViewMixin(
+class ParticipantOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
@@ -373,7 +373,7 @@ class ParticipantOccurrenceViewMixin(
 
 
 class ExcuseParticipantView(
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = ParticipantExcuseForm
@@ -382,7 +382,7 @@ class ExcuseParticipantView(
 
 
 class CancelParticipantExcuseView(
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = CancelParticipantExcuseForm
@@ -392,7 +392,7 @@ class CancelParticipantExcuseView(
 
 class ExcuseMyselfParticipantView(
     RedirectToOccurrenceDetailOnFailureMixin,
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfParticipantForm
@@ -414,7 +414,7 @@ class ExcuseMyselfParticipantView(
 
 class UnenrollMyselfParticipantFromOccurrenceView(
     RedirectToOccurrenceDetailOnFailureMixin,
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
     form_class = TrainingUnenrollMyselfParticipantFromOccurrenceForm
@@ -424,7 +424,7 @@ class UnenrollMyselfParticipantFromOccurrenceView(
 
 class AddOneTimeParticipantView(
     InsertOccurrenceIntoModelFormKwargsMixin,
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.CreateView,
 ):
     form_class = TrainingParticipantAttendanceForm
@@ -433,7 +433,7 @@ class AddOneTimeParticipantView(
 
 
 class OneTimeParticipantDeleteView(
-    ParticipantOccurrenceViewMixin,
+    ParticipantOccurrenceBaseView,
     generic.DeleteView,
 ):
     template_name = "occurrences/modals/delete_one_time_participant.html"

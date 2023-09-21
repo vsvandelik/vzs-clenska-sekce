@@ -194,7 +194,7 @@ class EventGeneratesDatesMixin:
         return super().get_context_data(**kwargs)
 
 
-class PersonTypeDetailViewMixin:
+class PersonTypeInsertIntoContextDataMixin:
     def get_context_data(self, **kwargs):
         kwargs.setdefault("available_person_types", Person.Type.choices)
         kwargs.setdefault(
@@ -204,7 +204,9 @@ class PersonTypeDetailViewMixin:
         return super().get_context_data(**kwargs)
 
 
-class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
+class EventDetailBaseView(
+    EventMixin, PersonTypeInsertIntoContextDataMixin, generic.DetailView
+):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         kwargs.setdefault(

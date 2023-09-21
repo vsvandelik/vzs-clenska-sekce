@@ -2,7 +2,7 @@ from django.views import generic
 
 from events.views import (
     EventCreateMixin,
-    EventDetailViewMixin,
+    EventDetailBaseView,
     EventUpdateMixin,
     EventGeneratesDatesMixin,
     EventRestrictionMixin,
@@ -44,7 +44,7 @@ from .models import (
 )
 
 
-class OneTimeEventDetailView(EventDetailViewMixin):
+class OneTimeEventDetailView(EventDetailBaseView):
     template_name = "one_time_events/detail.html"
 
     def get_context_data(self, **kwargs):
