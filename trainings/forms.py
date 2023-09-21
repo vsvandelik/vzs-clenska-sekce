@@ -632,10 +632,6 @@ class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-
-        if not self.instance.occurrence.can_coach_excuse(self.instance.person):
-            self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
-
         if not self.instance.occurrence.event.coaches.contains(self.instance.person):
             self.add_error(None, "Omluvit neúčast je možné pouze u řádného trenéra")
 
@@ -652,6 +648,12 @@ class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
 class ExcuseMyselfCoachForm(ExcuseCoachForm):
     class Meta(ExcuseCoachForm.Meta):
         pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.can_coach_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
+        return cleaned_data
 
 
 class CoachExcuseForm(ExcuseCoachForm):
