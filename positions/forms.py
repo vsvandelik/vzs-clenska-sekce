@@ -4,6 +4,7 @@ from django.forms import ModelForm
 from events.forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
 from features.models import Feature
 from positions.models import EventPosition
+from vzs.forms import WithoutFormTagFormHelper
 
 
 class PositionForm(ModelForm):
@@ -14,6 +15,8 @@ class PositionForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["wage_hour"].widget.attrs["min"] = 1
+
+        self.helper = WithoutFormTagFormHelper()
 
 
 class AddRemoveFeatureRequirementPositionForm(ModelForm):

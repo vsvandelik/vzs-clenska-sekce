@@ -16,3 +16,4 @@ django-tinymce
 python-dateutil
 django-mptt
 django-polymorphic
+djangorestframework

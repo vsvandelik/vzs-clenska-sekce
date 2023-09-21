@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django_select2",
     "mptt",
     "tempus_dominus",
+    "rest_framework",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     "transactions.apps.TransactionsConfig",
     "features.apps.FeaturesConfig",
     "groups.apps.GroupsConfig",
+    "api.apps.APIConfig",
     # Template tags
     "vzs",
 ]
@@ -258,3 +260,11 @@ ORGANIZER_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
+
+# REST
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "api.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}

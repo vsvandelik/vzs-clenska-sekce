@@ -30,6 +30,7 @@ from trainings.utils import (
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
+from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import TimePickerWithIcon
 from .models import (
     Training,
@@ -93,6 +94,8 @@ class TrainingForm(EventForm):
             for attr, value in event.__dict__.items():
                 if attr[3:] == "from" or attr[3:] == "to":
                     self.initial[attr] = value
+
+        self.helper = WithoutFormTagFormHelper()
 
     po = forms.BooleanField(
         label="Po",
@@ -519,6 +522,8 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
         self.fields[
             "position_assignment"
         ].queryset = self.event.eventpositionassignment_set.all()
+
+        self.helper = WithoutFormTagFormHelper()
 
     def save(self, commit=True):
         instance = super().save(False)
