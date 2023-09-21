@@ -252,10 +252,7 @@ class EventOccurrence(PolymorphicModel):
         return True
 
     def is_organizer_of_position(self, person, position_assignment):
-        assignment = self.get_organizer_assignment(person, position_assignment)
-        if assignment is None:
-            return False
-        return True
+        return self.get_organizer_assignment(person, position_assignment) is not None
 
     def get_organizer_assignment(self, person, position_assignment):
         assignments = self.position_organizers(position_assignment)
