@@ -20,7 +20,7 @@ from events.views import (
     RedirectToEventDetailOnFailureMixin,
     BulkApproveParticipantsMixin,
     InsertEventIntoContextData,
-    OccurrenceDetailViewMixin,
+    OccurrenceDetailBaseView,
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
@@ -212,7 +212,7 @@ class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
     form_class = TrainingBulkApproveParticipantsForm
 
 
-class TrainingOccurrenceDetailView(OccurrenceDetailViewMixin):
+class TrainingOccurrenceDetailView(OccurrenceDetailBaseView):
     model = TrainingOccurrence
     template_name = "occurrences/detail.html"
 

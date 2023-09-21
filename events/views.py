@@ -396,7 +396,7 @@ class EventOccurrenceIdCheckMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class OccurrenceDetailViewMixin(
+class OccurrenceDetailBaseView(
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,
