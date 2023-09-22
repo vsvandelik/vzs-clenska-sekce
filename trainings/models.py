@@ -474,25 +474,26 @@ class TrainingOccurrence(EventOccurrence):
         return True
 
     def can_participant_enroll(self, person):
-        if not self.has_free_participant_spot():
-            return False
-
-        if self.get_participant_attendance(person) is not None:
-            return False
-
-        if person in self.event.enrolled_participants.all():
-            return False
-
-        if (
+        no_free_spot_for_participant = not self.has_free_participant_spot()
+        is_attending_occurrence = self.get_participant_attendance(person) is not None
+        is_regular_participant = person in self.event.enrolled_participants.all()
+        is_past_deadline = (
             datetime.now(tz=timezone.get_default_timezone())
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             > self.datetime_start
+        )
+
+        if (
+            no_free_spot_for_participant
+            or is_attending_occurrence
+            or is_regular_participant
+            or is_past_deadline
         ):
             return False
 
         observed = TrainingParticipantAttendance.objects.filter(
             person=person,
-            # occurrence__state=EventOrOccurrenceState.COMPLETED,       TODO uncomment when ready
+            # occurrence__state=EventOrOccurrenceState.COMPLETED,
             occurrence__datetime_start__lt=self.datetime_start,
         )
 
