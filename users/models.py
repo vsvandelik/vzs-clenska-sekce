@@ -1,12 +1,12 @@
-from persons.models import Person
-
-from vzs.models import RenderableModelMixin
-
 from django.contrib.auth import models as auth_models
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from rest_framework.authtoken.models import Token as BaseToken
+
+from persons.models import Person
+from vzs.models import RenderableModelMixin
 
 
 class UserManager(auth_models.BaseUserManager):
@@ -82,3 +82,7 @@ class Permission(RenderableModelMixin, auth_models.Permission):
         permissions = [("spravce_povoleni", _("Správce povolení"))]
 
     description = models.CharField(max_length=255)
+
+
+class ResetPasswordToken(BaseToken):
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)

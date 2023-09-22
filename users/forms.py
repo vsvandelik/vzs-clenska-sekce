@@ -1,15 +1,13 @@
 from django import forms
-from django.contrib.auth import (
-    password_validation,
-    authenticate,
-)
+from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
 from vzs.forms import WithoutFormTagFormHelper
-from .models import User, Permission
+
+from .models import Permission, ResetPasswordToken, User
 
 
 class UserBaseForm(forms.ModelForm):
@@ -134,3 +132,24 @@ class UserAssignRemovePermissionForm(forms.Form):
 
 class ChangeActivePersonForm(forms.Form):
     person = forms.ModelChoiceField(queryset=Person.objects.all())
+
+
+class UserResetPasswordRequestForm(forms.ModelForm):
+    class Meta:
+        model = ResetPasswordToken
+        fields = []
+
+    email = forms.EmailField(label=_("E-mail"))
+
+    def save(self, commit=True):
+        token = super().save(commit=False)
+
+        email = self.cleaned_data["email"]
+
+        # We don't want to leak information about whether the email is valid or not.
+        token.user = User.objects.filter(person__email=email).first()
+
+        if commit and token.user is not None:
+            token.save()
+
+        return token

@@ -1,37 +1,38 @@
-from . import forms
-from .backends import GoogleBackend
-from .models import User, Permission
-from .utils import get_random_password
+from typing import Any
+
+from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import models as auth_models
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import (
+    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
+)
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import send_mail
+from django.db import models
+from django.http import (
+    Http404,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+)
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.views import generic
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-
 from vzs import settings
 
-from django.views import generic
-from django.urls import reverse, reverse_lazy
-from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
-from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.auth import (
-    views as auth_views,
-    models as auth_models,
-    login as auth_login,
-    authenticate,
-    update_session_auth_hash,
-)
-from django.contrib.auth.mixins import (
-    LoginRequiredMixin,
-    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-)
-from django.http import (
-    HttpResponseRedirect,
-    HttpResponseForbidden,
-    HttpResponseBadRequest,
-)
-from django.core.exceptions import ImproperlyConfigured
-from django.core.mail import send_mail
-from django.shortcuts import redirect
+from . import forms
+from .backends import GoogleBackend
+from .models import Permission, ResetPasswordToken, User
+from .utils import get_random_password
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
@@ -378,3 +379,53 @@ class UserRemovePermissionView(UserAssignRemovePermissionView):
 
     def _change_user_permission(self, user, permission):
         user.user_permissions.remove(permission)
+
+
+class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView):
+    template_name = "users/reset-password-request.html"
+    form_class = forms.UserResetPasswordRequestForm
+    success_url = reverse_lazy("users:login")
+    success_message = _("E-mail s odkazem pro změnu hesla byl odeslán.")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        token = self.object
+        user = token.user
+        if user is not None:
+            send_mail(
+                _("Zapomenuté heslo"),
+                _(
+                    f"Nasledujte následující odkaz pro změnu hesla: https://vzs.svandelik.cz{reverse('users:reset-password')}?token={token.key}"
+                ),
+                None,
+                [user.person.email],
+                fail_silently=False,
+            )
+
+        return response
+
+
+class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
+    template_name = "users/reset-password.html"
+    form_class = forms.UserChangePasswordRepeatForm
+    success_url = reverse_lazy("users:login")
+    success_message = _("Heslo změněno.")
+
+    def get_object(self, queryset=None):
+        token_key = self.request.GET.get("token")
+
+        if token_key is None:
+            raise Http404()
+
+        token = get_object_or_404(ResetPasswordToken, key=token_key)
+
+        return token.user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        token = self.object
+        token.delete()
+
+        return response

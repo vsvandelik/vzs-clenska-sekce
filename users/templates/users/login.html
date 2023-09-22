@@ -28,10 +28,13 @@
                     </div>
                     <div class="card-footer">
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-4">
                                 <button type="submit" class="btn btn-primary" form="form-password">Přihlásit</button>
                             </div>
-                            <div class="col-6">
+                            <div class="col-5">
+                                <a href="{% url "users:reset-password-request" %}" class="btn btn-primary">Resetovat heslo</a>
+                            </div>
+                            <div class="col-3">
                                 <button type="submit" class="btn btn-primary float-right" form="form-google"><i class="fab fa-google" aria-hidden="true"></i></button>
                             </div>
                         </div>
