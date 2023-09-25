@@ -9,12 +9,12 @@ urlpatterns = [
     path("prihlasit/", views.LoginView.as_view(), name="login"),
     path("odhlasit/", auth.views.LogoutView.as_view(), name="logout"),
     path(
-        "resetovat-heslo-zadost/",
+        "resetovat-heslo/",
         views.UserResetPasswordRequestView.as_view(),
         name="reset-password-request",
     ),
     path(
-        "resetovat-heslo/",
+        "obnova-zapomenuteho-hesla/",
         views.UserResetPasswordView.as_view(),
         name="reset-password",
     ),
