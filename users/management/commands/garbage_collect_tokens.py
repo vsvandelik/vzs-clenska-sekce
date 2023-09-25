@@ -9,10 +9,7 @@ class Command(BaseCommand):
     help = "Garbage collects old reset password tokens."
 
     def handle(self, *args, **options):
-        ResetPasswordToken.objects.filter(
-            created__lt=timezone.now()
-            - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
-        ).delete()
+        ResetPasswordToken.objects.filter(ResetPasswordToken.has_expired).delete()
 
         self.stdout.write(
             self.style.SUCCESS(f"Successfully deleted old reset password tokens.")

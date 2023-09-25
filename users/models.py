@@ -1,11 +1,15 @@
 from django.contrib.auth import models as auth_models
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.functional import classproperty
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token as BaseToken
 
 from persons.models import Person
+from vzs import settings
 from vzs.models import RenderableModelMixin
 
 
@@ -86,3 +90,10 @@ class Permission(RenderableModelMixin, auth_models.Permission):
 
 class ResetPasswordToken(BaseToken):
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+
+    @classproperty
+    def has_expired(cls):
+        return Q(
+            created__lt=timezone.now()
+            - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
+        )

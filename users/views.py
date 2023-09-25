@@ -418,7 +418,10 @@ class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
         if token_key is None:
             raise Http404()
 
-        token = get_object_or_404(ResetPasswordToken, key=token_key)
+        token = get_object_or_404(
+            ResetPasswordToken.objects.exclude(ResetPasswordToken.has_expired),
+            key=token_key,
+        )
 
         return token.user
 
