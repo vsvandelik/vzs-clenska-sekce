@@ -217,6 +217,9 @@ MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
 
+SERVER_DOMAIN = env.str("SERVER_DOMAIN", default="localhost:8000")
+SERVER_PROTOCOL = env.str("SERVER_PROTOCOL", default="http")
+
 # Emails
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

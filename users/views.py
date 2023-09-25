@@ -396,7 +396,7 @@ class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView)
             send_mail(
                 _("Zapomenuté heslo"),
                 _(
-                    f"Nasledujte následující odkaz pro změnu hesla: https://vzs.svandelik.cz{reverse('users:reset-password')}?token={token.key}"
+                    f"Nasledujte následující odkaz pro změnu hesla: {settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}{reverse('users:reset-password')}?token={token.key}"
                 ),
                 None,
                 [user.person.email],
