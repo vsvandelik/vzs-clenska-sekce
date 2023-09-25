@@ -423,12 +423,13 @@ class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
             key=token_key,
         )
 
+        self.token = token
+
         return token.user
 
     def form_valid(self, form):
         response = super().form_valid(form)
 
-        token = self.object
-        token.delete()
+        self.token.delete()
 
         return response
