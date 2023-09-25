@@ -17,6 +17,11 @@ from transactions.models import Transaction
 from vzs import settings
 
 
+class OneTimeEventAttendance(models.TextChoices):
+    PRESENT = "prezence", _("prezence")
+    MISSING = "absence", _("absence")
+
+
 class OneTimeEvent(Event):
     class Category(models.TextChoices):
         COMMERCIAL = "komercni", _("komerční")
@@ -138,6 +143,11 @@ class OneTimeEvent(Event):
             person, OneTimeEventOccurrence.can_enroll_position
         )
 
+    def is_organizer(self, person):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__event=self, person=person
+        ).exists()
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -151,14 +161,10 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     occurrence = models.ForeignKey(
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
-
-    def can_unenroll(self):
-        return self.occurrence.can_unenroll_position(
-            self.person, self.position_assignment
-        )
 
 
 class OneTimeEventParticipantAttendance(models.Model):
@@ -169,6 +175,7 @@ class OneTimeEventParticipantAttendance(models.Model):
     occurrence = models.ForeignKey(
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -180,7 +187,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         through="one_time_events.OrganizerOccurrenceAssignment",
         related_name="organizer_occurrence_assignment_set",
     )
-    attending_participants = models.ManyToManyField(
+    participants = models.ManyToManyField(
         "persons.Person", through="one_time_events.OneTimeEventParticipantAttendance"
     )
 
@@ -200,46 +207,15 @@ class OneTimeEventOccurrence(EventOccurrence):
             < position_assignment.count
         )
 
-    def is_organizer_of_position(self, person, position_assignment):
-        assignment = self.get_organizer_assignment(person, position_assignment)
-        if assignment is None:
-            return False
-        return True
-
-    def satisfies_position_requirements(self, person, position_assignment):
-        possibly_satisfies = super().satisfies_position_requirements(
-            person, position_assignment
-        )
-        if not possibly_satisfies:
-            return False
-
-        features = position_assignment.position.required_features
-
-        feature_type_conditions = [
-            Q(feature_type=Feature.Type.QUALIFICATION),
-            Q(feature_type=Feature.Type.PERMISSION),
-            Q(feature_type=Feature.Type.EQUIPMENT),
-        ]
-
-        for condition in feature_type_conditions:
-            observed_features = features.filter(condition)
-            if observed_features.exists():
-                assignment = FeatureAssignment.objects.filter(
-                    Q(feature__in=observed_features)
-                    & Q(person=person)
-                    & Q(date_assigned__lte=self.event.date_start)
-                    & Q(date_returned=None)
-                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
-                ).first()
-                if assignment is None:
-                    return False
-        return True
-
     def can_enroll_position(self, person, position_assignment):
         can_possibly_enroll = super().can_enroll_position(person, position_assignment)
         if not can_possibly_enroll:
             return False
-        return datetime.now().date() < self.event.date_start
+        return (
+            datetime.now().date()
+            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
+            <= self.event.date_start
+        )
 
     def can_unenroll_position(self, person, position_assignment):
         can_possibly_unenroll = super().can_unenroll_position(
@@ -252,6 +228,10 @@ class OneTimeEventOccurrence(EventOccurrence):
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
+
+    def attending_participants_attendance(self):
+        # TODO: implement
+        raise NotImplementedError
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

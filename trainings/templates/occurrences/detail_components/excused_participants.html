@@ -1,0 +1,36 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Omluvení</div>
+        </div>
+        <div class="card-body">
+            <table class="table" id="participants-excused-table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participant_assignment in occurrence.excused_participants_assignments %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a class="btn btn-secondary btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#cancel-participant-excuse-modal"
+                                       data-action="{% url 'trainings:cancel-participant-excuse' event.id occurrence.id participant_assignment.id %}">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

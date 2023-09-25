@@ -17,7 +17,7 @@
                     {% for position_assignment in event.eventpositionassignment_set.all %}
                         <tr>
                             {% with coaches_count=event|coach_position_assignment_coaches:position_assignment|length %}
-                                <td>{{ position_assignment.position }}</td>
+                                <td><a href="{% url 'positions:detail' position_assignment.position.id %}">{{ position_assignment.position }}</a></td>
                                 <td class="{% if coaches_count == position_assignment.count %}bg-success{% elif coaches_count > position_assignment.count %}bg-warning{% endif %}">{{ coaches_count }}
                                     / {{ position_assignment.count }}</td>
                             {% endwith %}

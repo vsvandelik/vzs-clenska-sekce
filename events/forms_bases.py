@@ -10,6 +10,7 @@ from events.models import (
     EventPersonTypeConstraint,
     ParticipantEnrollment,
     OrganizerAssignment,
+    EventPositionAssignment,
 )
 from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
@@ -19,7 +20,7 @@ from vzs.widgets import DatePickerWithIcon
 
 class ActivePersonFormMixin:
     def __init__(self, *args, **kwargs):
-        self.person = kwargs.pop("request").active_person
+        self.person = kwargs.pop("active_person")
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -32,6 +33,18 @@ class ActivePersonFormMixin:
 class EventFormMixin:
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event")
+        super().__init__(*args, **kwargs)
+
+
+class OccurrenceFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.occurrence = kwargs.pop("occurrence")
+        super().__init__(*args, **kwargs)
+
+
+class PositionAssignmentFormMixin:
+    def __init__(self, *args, **kwargs):
+        self.position_assignment = kwargs.pop("position_assignment")
         super().__init__(*args, **kwargs)
 
 
@@ -180,14 +193,63 @@ class OrganizerEnrollMyselfForm(ModelForm):
         }
 
 
+class PersonMetaMixin:
+    fields = ["person"]
+    widgets = {
+        "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
+    }
+
+
 class OrganizerAssignmentForm(OrganizerEnrollMyselfForm):
-    class Meta(OrganizerEnrollMyselfForm.Meta):
-        fields = ["person"] + OrganizerEnrollMyselfForm.Meta.fields
-        widgets = {
-            "person": PersonSelectWidget(attrs={"onchange": "personChanged(this)"}),
-        } | OrganizerEnrollMyselfForm.Meta.widgets
+    class Meta(PersonMetaMixin, OrganizerEnrollMyselfForm.Meta):
+        fields = PersonMetaMixin.fields + OrganizerEnrollMyselfForm.Meta.fields
+        widgets = PersonMetaMixin.widgets | OrganizerEnrollMyselfForm.Meta.widgets
 
 
 class BulkApproveParticipantsForm(ModelForm):
     class Meta:
         fields = []
+
+
+class EnrollMyselfOrganizerOccurrenceForm(
+    ActivePersonFormMixin, OccurrenceFormMixin, PositionAssignmentFormMixin, ModelForm
+):
+    class Meta:
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person is None or not self.occurrence.can_enroll_position(
+            self.person, self.position_assignment
+        ):
+            self.add_error(
+                None,
+                f"Nejsou splněny požadavky kladené na pozici {self.position_assignment.position}",
+            )
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.position_assignment = self.position_assignment
+        instance.person = self.person
+        instance.occurrence = self.occurrence
+        if commit:
+            instance.save()
+        return instance
+
+
+class UnenrollMyselfOccurrenceForm(ModelForm):
+    class Meta:
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.can_unenroll():
+            self.add_error(None, "Již se není možné odhlásit z události")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            instance.delete()
+        return instance

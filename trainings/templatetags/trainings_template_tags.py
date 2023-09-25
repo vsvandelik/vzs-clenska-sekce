@@ -1,4 +1,6 @@
 from django import template
+
+from ..models import TrainingParticipantAttendance
 from ..utils import day_shortcut_2_weekday as day_shortcut_2_weekday_impl
 from ..utils import weekday_pretty as weekday_pretty_impl
 from ..utils import weekday_2_day_shortcut as weekday_2_day_shortcut_impl
@@ -28,8 +30,8 @@ def weekday_pretty(value):
 
 
 @register.filter
-def date_get_weekday(date):
-    return date.weekday()
+def get_weekday(date_or_datetime):
+    return date_or_datetime.weekday()
 
 
 @register.filter
@@ -45,3 +47,15 @@ def substitute_enrollments_by_weekday(training, weekday):
 @register.filter
 def coach_position_assignment_coaches(training, position_assignment):
     return training.position_coaches(position_assignment)
+
+
+@register.filter
+def occurrence_position_assignment_present_coaches(occurrence, position_assignment):
+    return occurrence.position_present_coaches_assignments(position_assignment)
+
+
+@register.filter
+def get_participant_attendance(occurrence, person):
+    return TrainingParticipantAttendance.objects.get(
+        occurrence=occurrence, person=person
+    )

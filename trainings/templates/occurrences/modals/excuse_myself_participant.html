@@ -1,0 +1,19 @@
+{% extends "modal.html" %}
+
+{% block modal_title %}
+    Nahlášení neúčasti účastníka
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu zrušit svoji účast jako účastník a nabídnout vaše místo jiné osobě?</p>
+        <p class="px-4">Po provedení této akce bude vaše pozice ihned nabídnuta dalším osobám, tuto akci nelze vzít zpět.</p>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Nahlásit neúčast jako účastník</button>
+    </form>
+{% endblock %}

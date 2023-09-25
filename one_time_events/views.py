@@ -1,10 +1,8 @@
-from django.shortcuts import get_object_or_404
 from django.views import generic
 
-from events.models import EventPositionAssignment
 from events.views import (
     EventCreateMixin,
-    EventDetailViewMixin,
+    EventDetailBaseView,
     EventUpdateMixin,
     EventGeneratesDatesMixin,
     EventRestrictionMixin,
@@ -19,9 +17,12 @@ from events.views import (
     BulkApproveParticipantsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
-    EnrollMyselfMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
 )
-from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
+from vzs.mixin_extensions import (
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+)
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
     OneTimeEventForm,
@@ -33,7 +34,7 @@ from .forms import (
     BulkAddOrganizerToOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
-    OneTimeEventDeleteOrganizerOccurrenceForm,
+    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerForm,
 )
@@ -43,17 +44,21 @@ from .models import (
 )
 
 
-class OneTimeEventDetailView(EventDetailViewMixin):
+class OneTimeEventDetailView(EventDetailBaseView):
     template_name = "one_time_events/detail.html"
 
     def get_context_data(self, **kwargs):
-        p = self.request.active_person
+        active_person = self.request.active_person
         kwargs.setdefault(
-            "active_person_can_enroll_organizer", self.object.can_enroll_organizer(p)
+            "active_person_can_enroll_organizer",
+            self.object.can_enroll_organizer(active_person),
         )
         kwargs.setdefault(
             "active_person_can_unenroll_organizer",
-            self.object.can_unenroll_organizer(p),
+            self.object.can_unenroll_organizer(active_person),
+        )
+        kwargs.setdefault(
+            "active_person_is_organizer", self.object.is_organizer(active_person)
         )
         return super().get_context_data(**kwargs)
 
@@ -181,12 +186,9 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         person = form.cleaned_data["person"]
         event = self.event
 
-        organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+        OrganizerOccurrenceAssignment.objects.filter(
             person=person, occurrence__event=event
-        )
-        for organizer_assignment in organizer_assignments:
-            organizer_assignment.delete()
-
+        ).delete()
         return super().form_valid(form)
 
 
@@ -209,22 +211,15 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
     RedirectToEventDetailOnFailureMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
-    EnrollMyselfMixin,
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
+    generic.CreateView,
 ):
     model = OrganizerOccurrenceAssignment
     form_class = OneTimeEventEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení na organizátorskou pozici proběhlo úspěšně"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.position_assignment = get_object_or_404(
-            EventPositionAssignment, pk=self.kwargs["position_assignment_id"]
-        )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["position_assignment"] = self.position_assignment
-        return kwargs
 
 
 class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
@@ -234,7 +229,7 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     generic.UpdateView,
 ):
     model = OrganizerOccurrenceAssignment
-    form_class = OneTimeEventDeleteOrganizerOccurrenceForm
+    form_class = OneTimeEventUnenrollMyselfOrganizerOccurrenceForm
     context_object_name = "assignment"
     success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
     template_name = "one_time_events/modals/unenroll_myself_organizer_occurrence.html"
@@ -258,10 +253,13 @@ class OneTimeEventUnenrollMyselfOrganizerView(
 
 
 class OneTimeEventEnrollMyselfOrganizerView(
+    MessagesMixin,
+    RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
     OrganizerSelectOccurrencesMixin,
-    EnrollMyselfMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+    generic.CreateView,
 ):
     form_class = OneTimeEventEnrollMyselfOrganizerForm
     success_message = "Přihlášení jako organizátor proběhlo úspěšně"

@@ -21,8 +21,8 @@
                                             {% if child.datetime_start.weekday == weekday %}
                                                 <tr>
                                                     <td class="w-100 align-middle">{{ child.datetime_start|date }}</td>
-                                                    <td><a class="btn btn-info btn-sm" href="">
-                                                        <i class="fas fa-info"></i>TODO
+                                                    <td><a class="btn btn-info btn-sm" href="{% url 'trainings:occurrence-detail' event.id child.id %}">
+                                                        <i class="fas fa-info"></i>
                                                     </a></td>
                                                 </tr>
                                             {% endif %}
@@ -33,7 +33,6 @@
                         </div>
                     </div>
                 {% endfor %}
-
             </div>
         </div>
     </div>

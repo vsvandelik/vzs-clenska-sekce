@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import timedelta, datetime
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -14,12 +15,29 @@ from events.models import (
 )
 from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
+from vzs import settings
 
 
 class TrainingAttendance(models.TextChoices):
-    UNSET = "nenastaveno", _("nenastaveno")
     PRESENT = "prezence", _("prezence")
-    MISSING = "absence", _("absence")
+    EXCUSED = "omluven", _("omluven")
+    UNEXCUSED = "neomluven", _("neomluven")
+
+
+class TrainingReplaceabilityForParticipants(models.Model):
+    training_1 = models.ForeignKey(
+        "trainings.Training",
+        on_delete=models.CASCADE,
+        related_name="replaceable_training_1",
+    )
+    training_2 = models.ForeignKey(
+        "trainings.Training",
+        on_delete=models.CASCADE,
+        related_name="replaceable_training_2",
+    )
+
+    class Meta:
+        unique_together = ["training_1", "training_2"]
 
 
 class Training(Event):
@@ -97,10 +115,21 @@ class Training(Event):
         return map(weekday_pretty, self.weekdays_list())
 
     def can_be_replaced_by(self, training):
-        pass  # TODO
+        replaceability = TrainingReplaceabilityForParticipants.objects.filter(
+            training_1=self, training_2=training
+        ).first()
+        if replaceability is None:
+            return False
+        return True
 
     def replaces_training_list(self):
-        pass  # TODO
+        replaceability = TrainingReplaceabilityForParticipants.objects.filter(
+            training_1=self
+        ).all()
+        trainings_list = []
+        for obj in replaceability:
+            trainings_list.append(obj.training_2)
+        return trainings_list
 
     def has_free_spot(self):
         if not any(map(self.has_weekday_free_spot, self.weekdays_list())):
@@ -266,22 +295,6 @@ class CoachPositionAssignment(models.Model):
         unique_together = ["person", "training"]
 
 
-class TrainingReplaceabilityForParticipants(models.Model):
-    training_1 = models.ForeignKey(
-        "trainings.Training",
-        on_delete=models.CASCADE,
-        related_name="replaceable_training_1",
-    )
-    training_2 = models.ForeignKey(
-        "trainings.Training",
-        on_delete=models.CASCADE,
-        related_name="replaceable_training_2",
-    )
-
-    class Meta:
-        unique_together = ["training_1", "training_2"]
-
-
 class CoachOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
         "events.EventPositionAssignment",
@@ -294,6 +307,7 @@ class CoachOccurrenceAssignment(OrganizerAssignment):
     occurrence = models.ForeignKey(
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -309,24 +323,205 @@ class TrainingOccurrence(EventOccurrence):
         related_name="coaches_occurrence_assignment_set",
     )
 
-    attending_participants = models.ManyToManyField(
+    participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantAttendance",
         related_name="training_participants_attendance_set",
     )
 
+    def position_organizers(self, position_assignment):
+        return self.coachoccurrenceassignment_set.filter(
+            position_assignment=position_assignment
+        )
+
+    def position_organizers_attending(self, position_assignment):
+        return self.coachoccurrenceassignment_set.filter(
+            position_assignment=position_assignment, state=TrainingAttendance.PRESENT
+        )
+
+    def has_position_free_spot(self, position_assignment):
+        return (
+            len(self.position_organizers_attending(position_assignment))
+            < position_assignment.count
+        )
+
+    def can_enroll_position(self, person, position_assignment):
+        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
+        if not can_possibly_enroll:
+            return False
+        return (
+            datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def can_unenroll_position(self, person, position_assignment):
+        can_possibly_unenroll = super().can_unenroll_position(
+            person, position_assignment
+        )
+        if not can_possibly_unenroll:
+            return False
+        return (
+            not self.event.coaches.contains(person)
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def attending_participants_attendance(self):
+        return self.trainingparticipantattendance_set.filter(
+            state=TrainingAttendance.PRESENT
+        )
+
+    def has_free_participant_spot(self):
+        if self.event.capacity is None:
+            return True
+        return len(self.attending_participants_attendance()) < self.event.capacity
+
     def weekday(self):
         return self.datetime_start.weekday()
+
+    def can_coach_excuse(self, person):
+        assignment = self.coachoccurrenceassignment_set.filter(
+            occurrence=self, person=person
+        ).first()
+        if assignment is None:
+            return False
+        return (
+            self.event.coaches.contains(person)
+            and assignment.state == TrainingAttendance.PRESENT
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.ORGANIZER_EXCUSE_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def coaches_assignments_by_Q(self, q_condition):
+        return self.coachoccurrenceassignment_set.filter(q_condition)
+
+    def excused_coaches_assignments(self):
+        return self.coaches_assignments_by_Q(Q(state=TrainingAttendance.EXCUSED))
+
+    def regular_present_coaches_assignments(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT, person__in=self.event.coaches.all())
+        )
+
+    def one_time_present_coaches_assignments(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT)
+            & ~Q(person__in=self.event.coaches.all())
+        )
+
+    def position_present_coaches_assignments(self, position_assignment):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.PRESENT, position_assignment=position_assignment)
+        )
+
+    def participants_assignment_by_Q(self, q_condition):
+        return self.trainingparticipantattendance_set.filter(q_condition)
+
+    def regular_present_participants_assignments(self):
+        return self.participants_assignment_by_Q(
+            Q(
+                state=TrainingAttendance.PRESENT,
+                person__in=self.event.enrolled_participants.all(),
+            )
+        )
+
+    def one_time_participants_assignments(self):
+        return self.participants_assignment_by_Q(
+            Q(state=TrainingAttendance.PRESENT)
+            & ~Q(person__in=self.event.enrolled_participants.all())
+        )
+
+    def excused_participants_assignments(self):
+        return self.participants_assignment_by_Q(Q(state=TrainingAttendance.EXCUSED))
+
+    def get_participant_attendance(self, person):
+        return self.trainingparticipantattendance_set.filter(
+            occurrence=self, person=person
+        ).first()
+
+    def can_participant_excuse(self, person):
+        participant_attendance = self.get_participant_attendance(person)
+        if participant_attendance is None:
+            return False
+        return (
+            self.event.enrolled_participants.contains(person)
+            and participant_attendance.state == TrainingAttendance.PRESENT
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.PARTICIPANT_EXCUSE_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def can_participant_unenroll(self, person):
+        participant_attendance = self.get_participant_attendance(person)
+        if participant_attendance is None:
+            return False
+        return (
+            not self.event.enrolled_participants.contains(person)
+            and participant_attendance.state == TrainingAttendance.PRESENT
+            and datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.PARTICIPANT_UNENROLL_DEADLINE_DAYS)
+            <= self.datetime_start
+        )
+
+    def can_attendance_by_replaced_by(self, occurrence):
+        if not self.event.can_be_replaced_by(occurrence.event):
+            return False
+        if self.datetime_start > occurrence.datetime_start:
+            return False
+        return True
+
+    def can_participant_enroll(self, person):
+        no_free_spot_for_participant = not self.has_free_participant_spot()
+        is_attending_occurrence = self.get_participant_attendance(person) is not None
+        is_regular_participant = person in self.event.enrolled_participants.all()
+        is_past_deadline = (
+            datetime.now(tz=timezone.get_default_timezone())
+            + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
+            > self.datetime_start
+        )
+
+        if (
+            no_free_spot_for_participant
+            or is_attending_occurrence
+            or is_regular_participant
+            or is_past_deadline
+        ):
+            return False
+
+        observed = TrainingParticipantAttendance.objects.filter(
+            person=person,
+            # occurrence__state=EventOrOccurrenceState.COMPLETED,
+            occurrence__datetime_start__lt=self.datetime_start,
+        )
+
+        excused = observed.filter(state=TrainingAttendance.EXCUSED)
+        one_time_attendances = observed.filter(enrollment=None)
+        if excused.count() <= one_time_attendances.count():
+            return False
+
+        for i in range(one_time_attendances.count(), excused.count()):
+            if excused[i].occurrence.can_attendance_by_replaced_by(self):
+                return True
+        return False
 
 
 class TrainingParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(
         "trainings.TrainingParticipantEnrollment", null=True, on_delete=models.CASCADE
     )
-    person = models.ForeignKey("persons.Person", on_delete=models.CASCADE)
+    person = models.ForeignKey(
+        "persons.Person", verbose_name="Osoba", on_delete=models.CASCADE
+    )
     occurrence = models.ForeignKey(
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
+    state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
+
+    def can_unenroll(self):
+        return self.occurrence.can_participant_unenroll(self.person)
 
     class Meta:
         unique_together = ["person", "occurrence"]

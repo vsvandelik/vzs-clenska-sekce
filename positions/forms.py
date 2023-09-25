@@ -41,7 +41,7 @@ class AddRemoveFeatureRequirementPositionForm(ModelForm):
     def save(self, commit=True):
         instance = super().save(False)
         feature = self.cleaned_data["feature"]
-        if instance.required_features.contains(feature):
+        if feature in instance.required_features.all():
             instance.required_features.remove(feature)
         else:
             instance.required_features.add(feature)

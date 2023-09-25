@@ -2,7 +2,7 @@ from django.shortcuts import reverse
 from django.urls import reverse_lazy
 from django.views import generic
 
-from events.views import PersonTypeDetailViewMixin
+from events.views import PersonTypeInsertIntoContextDataMixin
 from features.models import Feature
 from vzs.mixin_extensions import MessagesMixin
 from .forms import (
@@ -61,7 +61,9 @@ class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
         return f"Pozice {self.object.name} úspěšně smazána"
 
 
-class PositionDetailView(PositionMixin, PersonTypeDetailViewMixin, generic.DetailView):
+class PositionDetailView(
+    PositionMixin, PersonTypeInsertIntoContextDataMixin, generic.DetailView
+):
     template_name = "positions/detail.html"
 
     def get_context_data(self, **kwargs):

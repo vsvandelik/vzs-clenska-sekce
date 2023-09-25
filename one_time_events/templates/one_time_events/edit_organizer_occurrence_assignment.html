@@ -1,5 +1,6 @@
 {% extends 'events/create_edit_organizer_assignment.html' %}
 {% block title %}Úprava přihlášky organizátora na jeden den{% endblock %}
+{% block location_text %}{{ event }} – {{ occurrence.date|date }}{% endblock %}
 {% block form_action %}{% url 'one_time_events:edit-organizer-for-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}{% endblock %}
 {% block card_title %}Úprava{% endblock %}
 {% block savebtn_value %}Upravit{% endblock %}

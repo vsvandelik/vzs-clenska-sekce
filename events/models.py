@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Q
@@ -5,7 +7,9 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
+from features.models import FeatureAssignment, Feature
 from persons.models import Person
+from vzs import settings
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -108,23 +112,31 @@ class Event(PolymorphicModel):
     def check_common_requirements(req_obj, person):
         person_with_age = Person.objects.with_age().get(id=person.id)
 
-        if person_with_age.age is None and (
+        missing_age = person_with_age.age is None and (
             req_obj.min_age is not None or req_obj.max_age is not None
-        ):
-            return False
-
-        if req_obj.min_age is not None and req_obj.min_age > person_with_age.age:
-            return False
-        if req_obj.max_age is not None and req_obj.max_age < person_with_age.age:
-            return False
-
-        if req_obj.group is not None and not person.groups.contains(req_obj.group):
-            return False
-        if (
+        )
+        min_age_out = (
+            req_obj.min_age is not None and req_obj.min_age > person_with_age.age
+        )
+        max_age_out = (
+            req_obj.max_age is not None and req_obj.max_age < person_with_age.age
+        )
+        group_unsatisfied = (
+            req_obj.group is not None and req_obj.group not in person.groups.all()
+        )
+        allowed_person_types_unsatisfied = (
             req_obj.allowed_person_types.exists()
             and not req_obj.allowed_person_types.contains(
                 EventPersonTypeConstraint.get_or_create(person.person_type)
             )
+        )
+
+        if (
+            missing_age
+            or min_age_out
+            or max_age_out
+            or group_unsatisfied
+            or allowed_person_types_unsatisfied
         ):
             return False
 
@@ -137,22 +149,23 @@ class Event(PolymorphicModel):
         return self.capacity is None
 
     def can_person_enroll_as_participant(self, person):
-        return self.can_person_enroll_as_waiting(person) and self.has_free_spot()
+        return (
+            self.can_person_enroll_as_waiting(person)
+            and self.has_free_spot()
+            and datetime.now().date()
+            + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
+            <= self.date_start
+        )
 
     def can_person_enroll_as_waiting(self, person):
-        if person is None:
-            return False
-
-        if self.enrolled_participants.contains(person):
+        if person is None or person in self.enrolled_participants.all():
             return False
 
         return self.does_participant_satisfy_requirements(person)
 
     def can_participant_unenroll(self, person):
         enrollment = self.get_participant_enrollment(person)
-        if enrollment is None:
-            return False
-        if enrollment.state in [
+        if enrollment is None or enrollment.state in [
             ParticipantEnrollment.State.APPROVED,
             ParticipantEnrollment.State.REJECTED,
         ]:
@@ -218,24 +231,52 @@ class EventOccurrence(PolymorphicModel):
     def satisfies_position_requirements(self, person, position_assignment):
         if not Event.check_common_requirements(position_assignment.position, person):
             return False
+
+        features = position_assignment.position.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=self.event.date_start)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
+                ).first()
+                if assignment is None:
+                    return False
         return True
 
     def is_organizer_of_position(self, person, position_assignment):
-        raise NotImplementedError
+        return self.get_organizer_assignment(person, position_assignment) is not None
 
     def get_organizer_assignment(self, person, position_assignment):
         assignments = self.position_organizers(position_assignment)
         return assignments.filter(person=person).first()
 
     def can_enroll_position(self, person, position_assignment):
-        if not self.has_position_free_spot(position_assignment):
+        no_free_spot = not self.has_position_free_spot(position_assignment)
+        organizer_of_position = self.is_organizer_of_position(
+            person, position_assignment
+        )
+
+        if no_free_spot or organizer_of_position:
             return False
-        if self.is_organizer_of_position(person, position_assignment):
-            return False
+
         return self.satisfies_position_requirements(person, position_assignment)
 
     def can_unenroll_position(self, person, position_assignment):
         return self.is_organizer_of_position(person, position_assignment)
+
+    def attending_participants_attendance(self):
+        raise NotImplementedError
 
 
 class EventPositionAssignment(models.Model):
@@ -259,8 +300,10 @@ class OrganizerAssignment(PolymorphicModel):
         "transactions.Transaction", null=True, on_delete=models.SET_NULL
     )
 
-    def can_unenroll_position(self):
-        raise NotImplementedError
+    def can_unenroll(self):
+        return self.occurrence.can_unenroll_position(
+            self.person, self.position_assignment
+        )
 
 
 class EventPersonTypeConstraint(models.Model):

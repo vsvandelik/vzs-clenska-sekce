@@ -15,6 +15,9 @@ from events.forms_bases import (
     EventFormMixin,
     OrganizerAssignmentForm,
     OrganizerEnrollMyselfForm,
+    OccurrenceFormMixin,
+    EnrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOccurrenceForm,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -32,6 +35,7 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
     OneTimeEventParticipantAttendance,
+    OneTimeEventAttendance,
 )
 
 
@@ -236,7 +240,10 @@ class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
         for occurrence in instance.event.eventoccurrence_set.all():
             if instance.state == ParticipantEnrollment.State.APPROVED:
                 OneTimeEventParticipantAttendance(
-                    enrollment=instance, person=instance.person, occurrence=occurrence
+                    enrollment=instance,
+                    person=instance.person,
+                    occurrence=occurrence,
+                    state=OneTimeEventAttendance.PRESENT,
                 ).save()
             else:
                 attendance = OneTimeEventParticipantAttendance.objects.filter(
@@ -356,12 +363,11 @@ class OneTimeEventEnrollMyselfParticipantForm(
         return instance
 
 
-class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
+class OrganizerOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm):
     class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
 
     def __init__(self, *args, **kwargs):
-        self.occurrence = kwargs.pop("occurrence")
         self.person = kwargs.pop("person", None)
         super().__init__(*args, **kwargs)
 
@@ -378,6 +384,7 @@ class OrganizerOccurrenceAssignmentForm(OrganizerAssignmentForm):
     def save(self, commit=True):
         instance = super().save(False)
         instance.occurrence = self.occurrence
+        instance.state = OneTimeEventAttendance.PRESENT
         if instance.id is not None:
             instance.person = self.person
         if commit:
@@ -436,19 +443,21 @@ class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
             return self.cleaned_data["occurrences_ids"]
         return self.event.eventoccurrence_set.all().values_list("id", flat=True)
 
-
-class OneTimeEventOrganizerEnrollMyselfForm(OrganizerEnrollMyselfForm):
-    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
-
-    class Meta(OrganizerEnrollMyselfForm.Meta):
-        model = OrganizerOccurrenceAssignment
+    def save(self, commit):
+        instance = super().save(False)
+        instance.state = OneTimeEventAttendance.PRESENT
+        if commit:
+            instance.save()
+        return instance
 
 
 class BulkAddOrganizerToOneTimeEventForm(
-    BulkAddOrganizerToOneTimeEventMixin, OneTimeEventOrganizerEnrollMyselfForm
+    BulkAddOrganizerToOneTimeEventMixin, OrganizerAssignmentForm
 ):
-    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
-        pass
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = OrganizerOccurrenceAssignment
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -513,53 +522,23 @@ class OneTimeEventBulkApproveParticipantsForm(
         return instance
 
 
-class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(ActivePersonFormMixin, ModelForm):
-    class Meta:
+class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
+    EnrollMyselfOrganizerOccurrenceForm
+):
+    class Meta(EnrollMyselfOrganizerOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
-        fields = []
-
-    def __init__(self, *args, **kwargs):
-        self.occurrence = kwargs.pop("occurrence")
-        self.position_assignment = kwargs.pop("position_assignment")
-        super().__init__(*args, **kwargs)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if self.person is not None and not self.occurrence.can_enroll_position(
-            self.person, self.position_assignment
-        ):
-            self.add_error(
-                None,
-                f"Nejsou splněny požadavky kladené na organizátora pozice {self.position_assignment.position}",
-            )
-        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.position_assignment = self.position_assignment
-        instance.person = self.person
-        instance.occurrence = self.occurrence
+        instance.state = OneTimeEventAttendance.PRESENT
         if commit:
             instance.save()
         return instance
 
 
-class OneTimeEventDeleteOrganizerOccurrenceForm(ModelForm):
-    class Meta:
+class OneTimeEventUnenrollMyselfOrganizerOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
-        fields = []
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if not self.instance.can_unenroll():
-            self.add_error(None, "Již se není možné odhlásit z události")
-        return cleaned_data
-
-    def save(self, commit=True):
-        instance = super().save(False)
-        if commit:
-            instance.delete()
-        return instance
 
 
 class OneTimeEventUnenrollMyselfOrganizerForm(
@@ -584,10 +563,12 @@ class OneTimeEventUnenrollMyselfOrganizerForm(
 class OneTimeEventEnrollMyselfOrganizerForm(
     ActivePersonFormMixin,
     BulkAddOrganizerToOneTimeEventMixin,
-    OneTimeEventOrganizerEnrollMyselfForm,
+    OrganizerEnrollMyselfForm,
 ):
-    class Meta(OneTimeEventOrganizerEnrollMyselfForm.Meta):
-        pass
+    occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
+
+    class Meta(OrganizerEnrollMyselfForm.Meta):
+        model = OrganizerOccurrenceAssignment
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

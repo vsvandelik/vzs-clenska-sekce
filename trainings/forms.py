@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django import forms
 from django.db.models import Q
+from django.forms import ModelForm
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -12,6 +13,11 @@ from events.forms_bases import (
     BulkApproveParticipantsForm,
     EventFormMixin,
     OrganizerAssignmentForm,
+    EnrollMyselfOrganizerOccurrenceForm,
+    UnenrollMyselfOccurrenceForm,
+    OccurrenceFormMixin,
+    PersonMetaMixin,
+    ActivePersonFormMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -35,6 +41,7 @@ from .models import (
     CoachPositionAssignment,
     CoachOccurrenceAssignment,
     TrainingParticipantAttendance,
+    TrainingAttendance,
 )
 
 
@@ -400,7 +407,10 @@ class TrainingParticipantEnrollmentUpdateAttendanceProvider:
                 and instance.attends_on_weekday(occurrence.weekday())
             ):
                 TrainingParticipantAttendance(
-                    enrollment=instance, person=instance.person, occurrence=occurrence
+                    enrollment=instance,
+                    person=instance.person,
+                    occurrence=occurrence,
+                    state=TrainingAttendance.PRESENT,
                 ).save()
             else:
                 attendance = TrainingParticipantAttendance.objects.filter(
@@ -540,14 +550,31 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
                     "position_assignment": instance.position_assignment,
                     "person": instance.person,
                     "occurrence": occurrence,
+                    "state": TrainingAttendance.PRESENT,
                 },
             )
+            organizer_assignment.position_assignment = instance.position_assignment
             if commit:
                 organizer_assignment.save()
 
         if commit:
             instance.save()
             self.event.save()
+        return instance
+
+
+class CoachAssignmentDeleteForm(ModelForm):
+    class Meta:
+        model = CoachPositionAssignment
+        fields = []
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            CoachOccurrenceAssignment.objects.filter(
+                person=instance.person, occurrence__event=instance.training
+            ).delete()
+            instance.delete()
         return instance
 
 
@@ -568,4 +595,210 @@ class TrainingBulkApproveParticipantsForm(
                 super().update_attendance(enrollment)
 
         self.cleaned_data["count"] = len(enrollments_2_approve)
+        return instance
+
+
+class CancelExcuseForm(ModelForm):
+    class Meta:
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.state != TrainingAttendance.EXCUSED:
+            self.add_error(None, f"Osoba {self.instance.person} není omluvena")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.PRESENT
+        if commit:
+            instance.save()
+        return instance
+
+
+class CancelCoachExcuseForm(CancelExcuseForm):
+    class Meta(CancelExcuseForm.Meta):
+        model = CoachOccurrenceAssignment
+
+
+class ExcuseFormMixin:
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.EXCUSED
+        if commit:
+            instance.save()
+        return instance
+
+
+class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
+    class Meta:
+        model = CoachOccurrenceAssignment
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.event.coaches.contains(self.instance.person):
+            self.add_error(None, "Omluvit neúčast je možné pouze u řádného trenéra")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.EXCUSED
+        if commit:
+            instance.save()
+        return instance
+
+
+class ExcuseMyselfCoachForm(ExcuseCoachForm):
+    class Meta(ExcuseCoachForm.Meta):
+        pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.can_coach_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
+        return cleaned_data
+
+
+class CoachExcuseForm(ExcuseCoachForm):
+    class Meta(ExcuseCoachForm.Meta):
+        pass
+
+
+class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenceForm):
+    class Meta(EnrollMyselfOrganizerOccurrenceForm.Meta):
+        model = CoachOccurrenceAssignment
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = TrainingAttendance.PRESENT
+        if commit:
+            instance.save()
+        return instance
+
+
+class TrainingUnenrollMyselfOrganizerFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
+        model = CoachOccurrenceAssignment
+
+
+class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm):
+    class Meta(OrganizerAssignmentForm.Meta):
+        model = CoachOccurrenceAssignment
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+        else:
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(coachoccurrenceassignment__occurrence=self.occurrence)
+            )
+        self.fields[
+            "position_assignment"
+        ].queryset = self.occurrence.event.eventpositionassignment_set.all()
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
+        return instance
+
+
+class ExcuseParticipantForm(ExcuseFormMixin, ModelForm):
+    class Meta:
+        model = TrainingParticipantAttendance
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if not self.instance.occurrence.event.enrolled_participants.contains(
+            self.instance.person
+        ):
+            self.add_error(None, "Omluvit neúčast je možné pouze u řádného účastníka")
+
+        return cleaned_data
+
+
+class ParticipantExcuseForm(ExcuseParticipantForm):
+    class Meta(ExcuseParticipantForm.Meta):
+        pass
+
+
+class CancelParticipantExcuseForm(CancelExcuseForm):
+    class Meta(CancelExcuseForm.Meta):
+        model = TrainingParticipantAttendance
+
+
+class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
+    class Meta(ExcuseParticipantForm.Meta):
+        pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.occurrence.can_participant_excuse(self.instance.person):
+            self.add_error(None, "Již se není možné odhlásit jako účastník")
+        return cleaned_data
+
+
+class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
+    class Meta(UnenrollMyselfOccurrenceForm.Meta):
+        model = TrainingParticipantAttendance
+
+
+class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
+    class Meta(PersonMetaMixin):
+        model = TrainingParticipantAttendance
+
+    def __init__(self, *args, **kwargs):
+        self.person = kwargs.pop("person", None)
+        super().__init__(*args, **kwargs)
+        if self.instance.id is not None:
+            self.fields["person"].widget.attrs["disabled"] = True
+        else:
+            self.fields["person"].queryset = Person.objects.filter(
+                ~Q(trainingparticipantattendance__occurrence=self.occurrence)
+            )
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
+        if instance.id is not None:
+            instance.person = self.person
+        if commit:
+            instance.save()
+        return instance
+
+
+class TrainingEnrollMyselfParticipantOccurrenceForm(
+    OccurrenceFormMixin, ActivePersonFormMixin, ModelForm
+):
+    class Meta:
+        model = TrainingParticipantAttendance
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.occurrence.can_participant_enroll(self.person):
+            self.add_error(
+                None, "Nemáte oprávnění k jednorázovému přihlášení na tento trénink"
+            )
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.person = self.person
+        instance.occurrence = self.occurrence
+        instance.state = TrainingAttendance.PRESENT
+        if commit:
+            instance.save()
         return instance

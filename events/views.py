@@ -1,23 +1,27 @@
+from django.http import Http404
+from django.shortcuts import get_object_or_404, reverse, redirect
 from django.urls import reverse_lazy
-from .models import (
-    Event,
-    EventPositionAssignment,
-    EventOccurrence,
-)
-from persons.models import Person
 from django.views import generic
 
+from events.models import ParticipantEnrollment
+from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
+from persons.models import Person
+from trainings.models import Training, TrainingOccurrence
+from vzs.mixin_extensions import (
+    MessagesMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
+)
 from .forms import (
     EventAgeLimitForm,
     EventPositionAssignmentForm,
     EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
 )
-from django.shortcuts import get_object_or_404, reverse, redirect
-from vzs.mixin_extensions import MessagesMixin, InsertRequestIntoModelFormKwargsMixin
-from trainings.models import Training
-from one_time_events.models import OneTimeEvent
-from events.models import ParticipantEnrollment
+from .models import (
+    Event,
+    EventPositionAssignment,
+    EventOccurrence,
+)
 
 
 class EventMixin:
@@ -25,7 +29,7 @@ class EventMixin:
     context_object_name = "event"
 
 
-class RedirectToEventDetail:
+class RedirectToEventDetailMixin:
     def get_redirect_viewname_id(self):
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
@@ -54,17 +58,52 @@ class RedirectToEventDetail:
         return viewname, id
 
 
-class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetail):
+class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetailMixin):
     def get_success_url(self):
         viewname, id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[id])
 
 
-class RedirectToEventDetailOnFailureMixin(RedirectToEventDetail):
+class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
     def form_invalid(self, form):
         super().form_invalid(form)
         viewname, id = super().get_redirect_viewname_id()
         return redirect(viewname, pk=id)
+
+
+class RedirectToOccurrenceDetailMixin:
+    def get_redirect_viewname_id(self):
+        if "occurrence_id" in self.kwargs:
+            id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).id
+        elif hasattr(self, "object") and (
+            type(self.object) is OneTimeEventOccurrence
+            or type(self.object) is TrainingOccurrence
+        ):
+            id = self.object.id
+        else:
+            raise NotImplementedError
+
+        occurrence = EventOccurrence.objects.get(pk=id)
+        if isinstance(occurrence, OneTimeEventOccurrence):
+            viewname = "one_time_events:occurrence-detail"
+        elif isinstance(occurrence, TrainingOccurrence):
+            viewname = "trainings:occurrence-detail"
+        else:
+            raise NotImplementedError
+        return viewname, occurrence.event.id, id
+
+
+class RedirectToOccurrenceDetailOnSuccessMixin(RedirectToOccurrenceDetailMixin):
+    def get_success_url(self):
+        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
+        return reverse(viewname, args=[event_id, occurrence_id])
+
+
+class RedirectToOccurrenceDetailOnFailureMixin(RedirectToOccurrenceDetailMixin):
+    def form_invalid(self, form):
+        super().form_invalid(form)
+        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
+        return redirect(viewname, event_id=event_id, pk=occurrence_id)
 
 
 class InsertEventIntoSelfObjectMixin:
@@ -112,6 +151,25 @@ class InsertOccurrenceIntoContextData(InsertOccurrenceIntoSelfObjectMixin):
         return super().get_context_data(**kwargs)
 
 
+class InsertPositionAssignmentIntoSelfObject:
+    position_assignment_id_key = "position_assignment_id"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.position_assignment = get_object_or_404(
+            EventPositionAssignment, pk=self.kwargs[self.position_assignment_id_key]
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+
+class InsertPositionAssignmentIntoModelFormKwargs(
+    InsertPositionAssignmentIntoSelfObject
+):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["position_assignment"] = self.position_assignment
+        return kwargs
+
+
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
 
@@ -136,7 +194,7 @@ class EventGeneratesDatesMixin:
         return super().get_context_data(**kwargs)
 
 
-class PersonTypeDetailViewMixin:
+class PersonTypeInsertIntoContextDataMixin:
     def get_context_data(self, **kwargs):
         kwargs.setdefault("available_person_types", Person.Type.choices)
         kwargs.setdefault(
@@ -146,23 +204,26 @@ class PersonTypeDetailViewMixin:
         return super().get_context_data(**kwargs)
 
 
-class EventDetailViewMixin(EventMixin, PersonTypeDetailViewMixin, generic.DetailView):
+class EventDetailBaseView(
+    EventMixin, PersonTypeInsertIntoContextDataMixin, generic.DetailView
+):
     def get_context_data(self, **kwargs):
-        p = self.request.active_person
+        active_person = self.request.active_person
         kwargs.setdefault(
             "active_person_can_enroll",
-            self.object.can_person_enroll_as_participant(p),
+            self.object.can_person_enroll_as_participant(active_person),
         )
         kwargs.setdefault(
             "active_person_can_enroll_as_waiting",
-            self.object.can_person_enroll_as_waiting(p),
+            self.object.can_person_enroll_as_waiting(active_person),
         )
         kwargs.setdefault(
             "active_person_can_unenroll",
-            self.object.can_participant_unenroll(p),
+            self.object.can_participant_unenroll(active_person),
         )
         kwargs.setdefault(
-            "active_person_enrollment", self.object.get_participant_enrollment(p)
+            "active_person_enrollment",
+            self.object.get_participant_enrollment(active_person),
         )
         return super().get_context_data(**kwargs)
 
@@ -283,17 +344,13 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
         return f"Přihláška osoby {self.object.person} smazána"
 
 
-class EnrollMyselfMixin(
+class EnrollMyselfParticipantMixin(
+    InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    InsertRequestIntoModelFormKwargsMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
     generic.CreateView,
-):
-    pass
-
-
-class EnrollMyselfParticipantMixin(
-    InsertEventIntoModelFormKwargsMixin, InsertEventIntoContextData, EnrollMyselfMixin
 ):
     pass
 
@@ -324,3 +381,27 @@ class BulkApproveParticipantsMixin(
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.event
         return kwargs
+
+
+class EventOccurrenceIdCheckMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if "occurrence_id" in kwargs:
+            pk = kwargs["occurrence_id"]
+        elif "pk" in kwargs:
+            pk = kwargs["pk"]
+        else:
+            raise NotImplementedError
+
+        occurrence = get_object_or_404(EventOccurrence, pk=pk)
+        if occurrence.event.id != kwargs["event_id"]:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OccurrenceDetailBaseView(
+    InsertEventIntoContextData,
+    InsertOccurrenceIntoContextData,
+    EventOccurrenceIdCheckMixin,
+    generic.DetailView,
+):
+    occurrence_id_key = "pk"

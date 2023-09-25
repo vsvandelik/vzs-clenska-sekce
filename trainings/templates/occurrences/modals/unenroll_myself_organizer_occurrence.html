@@ -1,0 +1,18 @@
+{% extends "modal.html" %}
+
+{% block modal_title %}
+    Odhlásit ze z jednorázové trenérské pozice
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu zrušit svoji jednorázovou trenérskou účast?</p>
+    </div>
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'trainings:unenroll-myself-organizer-occurrence' event.id occurrence.id assignment.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Zrušit svoji účast</button>
+    </form>
+{% endblock %}

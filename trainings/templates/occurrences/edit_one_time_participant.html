@@ -1,0 +1,5 @@
+{% extends 'occurrences/create_edit_one_time_participant.html' %}
+{% block title %}Úprava přihlášky jednorázového účastníka{% endblock %}
+{% block form_action %}{% url 'trainings:edit-one-time-participant' event.id occurrence.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Upravit{% endblock %}
