@@ -390,16 +390,16 @@ class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView)
     def form_valid(self, form):
         response = super().form_valid(form)
 
-        token = self.object
-        user = token.user
-        if user is not None:
+        if form.user_found:
+            token = self.object
+
             send_mail(
                 _("Zapomenuté heslo"),
                 _(
                     f"Nasledujte následující odkaz pro změnu hesla: {settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}{reverse('users:reset-password')}?token={token.key}"
                 ),
                 None,
-                [user.person.email],
+                [token.user.person.email],
                 fail_silently=False,
             )
 

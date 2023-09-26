@@ -141,15 +141,24 @@ class UserResetPasswordRequestForm(forms.ModelForm):
 
     email = forms.EmailField(label=_("E-mail"))
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.user_found = False
+
     def save(self, commit=True):
         token = super().save(commit=False)
 
         email = self.cleaned_data["email"]
 
         # We don't want to leak information about whether the email is valid or not.
-        token.user = User.objects.filter(person__email=email).first()
+        user = User.objects.filter(person__email=email).first()
 
-        if commit and token.user is not None:
-            token.save()
+        if user is not None:
+            self.user_found = True
+            token.user = user
+
+            if commit:
+                token.save()
 
         return token
