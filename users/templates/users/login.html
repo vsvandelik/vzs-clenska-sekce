@@ -25,6 +25,8 @@
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ next }}">
                         </form>
+
+                        <a href="{% url "users:reset-password-request" %}">Resetovat heslo</a>
                     </div>
                     <div class="card-footer">
                         <div class="row">

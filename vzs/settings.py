@@ -193,11 +193,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ACTIVE_LINK_STRICT = True
 
-# Settings for Django authenticator
+# Settings for authentication
 
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "pages:home"
 LOGOUT_REDIRECT_URL = "users:login"
+RESET_PASSWORD_TOKEN_TTL_HOURS = 24
 
 # Settings for CrispyForms
 
@@ -215,6 +216,9 @@ MESSAGE_TAGS = {
     message_constants.WARNING: "warning",
     message_constants.ERROR: "danger",
 }
+
+SERVER_DOMAIN = env.str("SERVER_DOMAIN", default="localhost:8000")
+SERVER_PROTOCOL = env.str("SERVER_PROTOCOL", default="http")
 
 # Emails
 
