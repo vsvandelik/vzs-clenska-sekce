@@ -27,6 +27,7 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
+    InsertOccurrenceIntoSelfObjectMixin,
 )
 from vzs.mixin_extensions import (
     MessagesMixin,
@@ -52,6 +53,7 @@ from .forms import (
     TrainingUnenrollMyselfParticipantFromOccurrenceForm,
     TrainingParticipantAttendanceForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
+    FillAttendanceForm,
 )
 from .models import (
     Training,
@@ -454,3 +456,30 @@ class EnrollMyselfParticipantFromOccurrenceView(
     form_class = TrainingEnrollMyselfParticipantOccurrenceForm
     success_message = "Přihlášení jako jednorázový účastník proběhlo úspěšně"
     template_name = "occurrences/detail.html"
+
+
+class FillAttendanceView(
+    MessagesMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    InsertEventIntoContextData,
+    generic.UpdateView,
+):
+    form_class = FillAttendanceForm
+    model = TrainingOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Zapsání docházky proběhlo úspěšně"
+    template_name = "occurrences/fill_attendance.html"
+
+
+# class EditAttendanceView(
+#     MessagesMixin,
+#     RedirectToOccurrenceDetailOnSuccessMixin,
+#     InsertOccurrenceIntoModelFormKwargsMixin,
+#     EventOccurrenceIdCheckMixin,
+#     generic.UpdateView
+# ):
+#     form_class = EditAttendanceForm
+#     success_message = "Úprava docházky proběhla úspěšně"
+#     template_name = "occurrences/edit_attendance.html"

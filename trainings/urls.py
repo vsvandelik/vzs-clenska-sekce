@@ -153,4 +153,9 @@ urlpatterns = [
         views.EnrollMyselfParticipantFromOccurrenceView.as_view(),
         name="enroll-myself-participant-occurrence",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/vyplnit-dochazku/",
+        views.FillAttendanceView.as_view(),
+        name="fill-attendance",
+    ),
 ]

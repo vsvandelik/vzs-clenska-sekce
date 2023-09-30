@@ -802,3 +802,9 @@ class TrainingEnrollMyselfParticipantOccurrenceForm(
         if commit:
             instance.save()
         return instance
+
+
+class FillAttendanceForm(ModelForm):
+    class Meta:
+        model = TrainingOccurrence
+        fields = []

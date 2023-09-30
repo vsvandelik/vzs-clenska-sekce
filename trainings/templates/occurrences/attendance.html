@@ -1,0 +1,115 @@
+{% extends 'events/attendance.html' %}
+{% load static %}
+{% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
+
+{% block organizers_pretty_name %}Trenéři{% endblock %}
+{% block participants_body %}
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Řádní
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="regular-participants-attendance-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Jméno</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Jednorázoví
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="one-time-participants-attendance-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Jméno</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block organizers_body %}
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Řádní
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="regular-coaches-attendance-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Jméno</th>
+                                <th>Pozice</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Jednorázoví
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="one-time-coaches-attendance-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Jméno</th>
+                                <th>Pozice</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("regular-participants-attendance-table", [0])
+        simpleOrderableTableEnable("one-time-participants-attendance-table", [0])
+
+        simpleOrderableTableEnable("regular-coaches-attendance-table", [0, 1])
+        simpleOrderableTableEnable("one-time-coaches-attendance-table", [0, 1])
+
+    </script>
+{% endblock %}

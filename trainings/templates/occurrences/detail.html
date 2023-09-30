@@ -53,6 +53,9 @@
                     </form>
                 </div>
             {% endif %}
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                <a class="btn btn-info" href="{% url 'trainings:fill-attendance' event.id occurrence.id %}">Zapsat docházku</a>
+            </div>
         </div>
     </div>
     <div class="row">
