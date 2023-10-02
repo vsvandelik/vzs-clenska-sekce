@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
-from django.core.validators import MinValueValidator, MaxValueValidator
+
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
     Event,
-    EventOrOccurrenceState,
     EventOccurrence,
-    ParticipantEnrollment,
+    EventOrOccurrenceState,
     OrganizerAssignment,
+    ParticipantEnrollment,
 )
 from features.models import Feature, FeatureAssignment
 from trainings.models import Training
@@ -27,6 +28,13 @@ class OneTimeEvent(Event):
         COMMERCIAL = "komercni", _("komerční")
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
+
+    class Meta:
+        permissions = [
+            ("komercni", _("Správce komerčních akcí")),
+            ("kurz", _("Správce kurzů")),
+            ("prezentacni", _("Správce prezentačních akcí")),
+        ]
 
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
@@ -147,6 +155,13 @@ class OneTimeEvent(Event):
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence__event=self, person=person
         ).exists()
+
+    def can_person_interact_with(self, person):
+        return (
+            self.can_enroll_organizer(person)
+            or self.can_unenroll_organizer(person)
+            or super().can_person_interact_with(person)
+        )
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):

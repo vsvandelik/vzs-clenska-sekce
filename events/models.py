@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
-from features.models import FeatureAssignment, Feature
+from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
 
@@ -216,6 +216,16 @@ class Event(PolymorphicModel):
 
     def substitute_enrollments_2_capacity(self):
         raise NotImplementedError
+
+    def can_person_interact_with(self, person):
+        return (
+            self.can_person_enroll_as_waiting(person)
+            or self.can_person_enroll_as_participant(person)
+            or self.can_participant_unenroll(person)
+        )
+
+    def can_user_manage(self, user):
+        return user.has_perm(f"{type(self)._meta.app_label}.{self.category}")
 
 
 class EventOccurrence(PolymorphicModel):

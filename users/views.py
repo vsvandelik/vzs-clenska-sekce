@@ -35,7 +35,7 @@ from .models import Permission, ResetPasswordToken, User
 from .utils import get_random_password
 
 
-class PermissionRequiredMixin:
+class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
     permissions_required = None
 
     @classmethod
