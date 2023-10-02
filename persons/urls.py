@@ -1,9 +1,10 @@
-from django.urls import path, include
+from django.urls import include, path
 
 from features import views as features_views
 from groups import views as groups_views
 from transactions import views as transactions_views
 from users import views as user_views
+
 from . import views
 
 app_name = "persons"
@@ -46,9 +47,15 @@ urlpatterns = [
     path("<int:pk>/", views.PersonDetailView.as_view(), name="detail"),
     path("<int:pk>/upravit/", views.PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat/", views.PersonDeleteView.as_view(), name="delete"),
-    path("<int:pk>/ucet/pridat/", user_views.UserCreateView.as_view(), name="user-add"),
     path(
-        "<int:pk>/ucet/smazat/", user_views.UserDeleteView.as_view(), name="user-delete"
+        "<int:person_pk>/ucet/pridat/",
+        user_views.UserCreateView.as_view(),
+        name="user-add",
+    ),
+    path(
+        "<int:person_pk>/ucet/smazat/",
+        user_views.UserDeleteView.as_view(),
+        name="user-delete",
     ),
     path(
         "<int:pk>/ucet/zmenit-heslo/",
@@ -56,7 +63,7 @@ urlpatterns = [
         name="user-change-password-other",
     ),
     path(
-        "<int:pk>/ucet/generovat-nove-heslo/",
+        "<int:person_pk>/ucet/generovat-nove-heslo/",
         user_views.UserGenerateNewPasswordView.as_view(),
         name="user-generate-new-password",
     ),
