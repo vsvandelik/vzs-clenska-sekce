@@ -2,8 +2,7 @@ import re
 
 from django import template
 from django.template.base import Node
-from django.template.defaulttags import url
-from django.template.defaulttags import url, URLNode
+from django.template.defaulttags import URLNode, url
 from django.urls import resolve
 from django.utils import formats
 from django.utils.safestring import mark_safe
@@ -219,7 +218,7 @@ class _PermURLNode(URLNode):
         match = resolve(url)
 
         permitted = match.func.view_class.view_has_permission(
-            context["user"], **match.kwargs
+            context["user"], context["active_person"], **match.kwargs
         )
 
         context[self.asvar] = _PermURLContextVariable(url, permitted)

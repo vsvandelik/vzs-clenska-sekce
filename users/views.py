@@ -39,7 +39,7 @@ class PermissionRequiredMixin:
     permissions_required = None
 
     @classmethod
-    def view_has_permission(cls, logged_in_user, **kwargs):
+    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
         if cls.permissions_required is None:
             raise ImproperlyConfigured(
                 f"{cls.__name__} is missing a permissions_required attribute."
@@ -48,7 +48,9 @@ class PermissionRequiredMixin:
         return logged_in_user.has_perms(cls.permissions_required)
 
     def has_permission(self):
-        return self.view_has_permission(self.request.user, **self.kwargs)
+        return self.view_has_permission(
+            self.request.user, self.request.active_person, **self.kwargs
+        )
 
 
 def _user_can_manage_person(user, person_pk):
@@ -61,13 +63,13 @@ def _user_can_manage_person(user, person_pk):
 
 class _UserCreateDeletePermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, person_pk):
+    def view_has_permission(cls, logged_in_user, active_person, person_pk):
         return _user_can_manage_person(logged_in_user, person_pk)
 
 
 class _UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, person_pk):
+    def view_has_permission(cls, logged_in_user, active_person, person_pk):
         # a user shouldn't be allowed to regenerate their own password
         is_different_person = logged_in_user.person.pk != person_pk
 
