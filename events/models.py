@@ -278,6 +278,10 @@ class EventOccurrence(PolymorphicModel):
     def attending_participants_attendance(self):
         raise NotImplementedError
 
+    @property
+    def is_opened(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

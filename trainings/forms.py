@@ -24,12 +24,13 @@ from events.models import (
     ParticipantEnrollment,
 )
 from events.utils import parse_czech_date
-from persons.models import Person
+from persons.models import Person, PersonHourlyRate
 from trainings.utils import (
     weekday_2_day_shortcut,
     days_shortcut_list,
     day_shortcut_2_weekday,
 )
+from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import TimePickerWithIcon
 from .models import (
@@ -808,3 +809,165 @@ class FillAttendanceForm(ModelForm):
     class Meta:
         model = TrainingOccurrence
         fields = []
+
+    def __init__(self, *args, **kwargs):
+        post = kwargs.pop("request").POST
+        self.coaches = post.getlist("coaches")
+        self.participants = post.getlist("participants")
+        super().__init__(*args, **kwargs)
+
+    def _clean_parse_coaches(self):
+        coach_assignments = []
+        for coach_assignment_id_str in self.coaches:
+            try:
+                coach_assignment_id = int(coach_assignment_id_str)
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota přiřazení trenéra")
+                continue
+            coach_assignment = CoachOccurrenceAssignment.objects.filter(
+                id=coach_assignment_id
+            ).first()
+            if (
+                coach_assignment is None
+                or coach_assignment.state == TrainingAttendance.EXCUSED
+            ):
+                self.add_error(None, "Neplatná hodnota přiřazení trenéra")
+                continue
+            coach_assignments.append(coach_assignment)
+        self.cleaned_data["coaches"] = coach_assignments
+
+    def _clean_parse_participants(self):
+        participant_assignments = []
+        for participant_assignment_id_str in self.participants:
+            try:
+                participant_assignment_id = int(participant_assignment_id_str)
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota přiřazení účastníka")
+                continue
+            participant_assignment = TrainingParticipantAttendance.objects.filter(
+                id=participant_assignment_id
+            ).first()
+            if (
+                participant_assignment is None
+                or participant_assignment.state == TrainingAttendance.EXCUSED
+            ):
+                self.add_error(None, "Neplatná hodnota přiřazení účastníka")
+                continue
+            participant_assignments.append(participant_assignment)
+        self.cleaned_data["participants"] = participant_assignments
+
+    def checked_participant_assignments(self):
+        if hasattr(self, "cleaned_data") and "participants" in self.cleaned_data:
+            return self.cleaned_data["participants"]
+        if self.instance.is_opened:
+            return TrainingParticipantAttendance.objects.filter(
+                Q(occurrence=self.instance) & ~Q(state=TrainingAttendance.EXCUSED)
+            )
+        return TrainingParticipantAttendance.objects.filter(
+            occurrence=self.instance, state=TrainingAttendance.PRESENT
+        )
+
+    def checked_coach_assignments(self):
+        if hasattr(self, "cleaned_data") and "coaches" in self.cleaned_data:
+            return self.cleaned_data["coaches"]
+        if self.instance.is_opened:
+            return CoachOccurrenceAssignment.objects.filter(
+                Q(occurrence=self.instance) & ~Q(state=TrainingAttendance.EXCUSED)
+            )
+        return CoachOccurrenceAssignment.objects.filter(
+            occurrence=self.instance, state=TrainingAttendance.PRESENT
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self._clean_parse_coaches()
+        self._clean_parse_participants()
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = EventOrOccurrenceState.CLOSED
+
+        observed_assignments = [
+            TrainingParticipantAttendance.objects.filter(
+                ~Q(state=TrainingAttendance.EXCUSED) & Q(occurrence=instance)
+            ),
+            CoachOccurrenceAssignment.objects.filter(
+                ~Q(state=TrainingAttendance.EXCUSED) & Q(occurrence=instance)
+            ),
+        ]
+
+        assignments = [self.cleaned_data["participants"], self.cleaned_data["coaches"]]
+
+        for i in range(0, 2):
+            entity_assignments = observed_assignments[i]
+            for entity_assignment in entity_assignments:
+                if entity_assignment in assignments[i]:
+                    entity_assignment.state = TrainingAttendance.PRESENT
+                    if type(entity_assignment) is CoachOccurrenceAssignment:
+                        occurrence_date = instance.datetime_start.date()
+                        rate = PersonHourlyRate.objects.filter(
+                            person=entity_assignment.person,
+                            event_type=instance.event.category,
+                        ).first()
+                        if rate is not None:
+                            hourly_rate = rate.hourly_rate
+                            if entity_assignment.transaction is None:
+                                entity_assignment.transaction = Transaction(
+                                    amount=hourly_rate * instance.hours,
+                                    reason=f"Trénování {instance.event} dne {occurrence_date}",
+                                    date_due=occurrence_date + timedelta(days=14),
+                                    person=entity_assignment.person,
+                                    event=instance.event,
+                                )
+                            elif not entity_assignment.transaction.is_settled:
+                                entity_assignment.transaction.amount = (
+                                    hourly_rate * instance.hours
+                                )
+
+                            if commit:
+                                entity_assignment.transaction.save()
+
+                else:
+                    entity_assignment.state = TrainingAttendance.UNEXCUSED
+                    if (
+                        type(entity_assignment) is CoachOccurrenceAssignment
+                        and entity_assignment.transaction is not None
+                        and not entity_assignment.transaction.is_settled
+                    ):
+                        entity_assignment.transaction.delete()
+                        entity_assignment.transaction = None
+                if commit:
+                    entity_assignment.save()
+
+        if commit:
+            instance.save()
+        return instance
+
+
+class ReopenTrainingOccurrenceForm(ModelForm):
+    class Meta:
+        model = TrainingOccurrence
+        fields = []
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.can_be_reopened:
+            self.add_error(None, "Tato událost nemůže být znovu otevřena")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = EventOrOccurrenceState.OPEN
+
+        observed_participant_assignments = TrainingParticipantAttendance.objects.filter(
+            occurrence=instance, state=TrainingAttendance.UNEXCUSED
+        )
+        for participant_assignment in observed_participant_assignments:
+            participant_assignment.state = TrainingAttendance.PRESENT
+            if commit:
+                participant_assignment.save()
+
+        if commit:
+            instance.save()
+        return instance

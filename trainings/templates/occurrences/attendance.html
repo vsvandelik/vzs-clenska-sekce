@@ -1,6 +1,11 @@
 {% extends 'events/attendance.html' %}
 {% load static %}
 {% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
+{% block form_action %}{% url 'trainings:fill-attendance' event.id occurrence.id %}{% endblock %}
+
+{% block title %}{% if occurrence.is_opened %}Vyplnění docházky{% else %}Úprava docházky{% endif %}{% endblock %}
+
+{% block savebtn_value %}{% if occurrence.is_opened %}Zapsat docházku{% else %}Upravit docházku{% endif %}{% endblock %}
 
 {% block organizers_pretty_name %}Trenéři{% endblock %}
 {% block participants_body %}
@@ -17,11 +22,25 @@
                         <thead>
                             <tr>
                                 <th>Jméno</th>
-                                <th></th>
+                                <th>Přítomen</th>
                             </tr>
                         </thead>
                         <tbody>
-
+                            {% for participant_assignment in occurrence.regular_not_excused_participants_assignments_sorted %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox" {% if participant_assignment in participant_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="participants" value="{{ participant_assignment.id }}">
+                                            <label for="{{ participant_assignment.id }}_participant_checkbox"
+                                                   class="custom-control-label"></label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -39,11 +58,25 @@
                         <thead>
                             <tr>
                                 <th>Jméno</th>
-                                <th></th>
+                                <th>Přítomen</th>
                             </tr>
                         </thead>
                         <tbody>
-
+                            {% for participant_assignment in occurrence.one_time_not_excused_participants_assignments_sorted %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox" {% if participant_assignment in participant_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="participants" value="{{ participant_assignment.id }}">
+                                            <label for="{{ participant_assignment.id }}_participant_checkbox"
+                                                   class="custom-control-label"></label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -66,11 +99,28 @@
                             <tr>
                                 <th>Jméno</th>
                                 <th>Pozice</th>
-                                <th></th>
+                                <th>Přítomen</th>
                             </tr>
                         </thead>
                         <tbody>
-
+                            {% for coach_assignment in occurrence.regular_not_excused_coaches_assignments_sorted %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox" {% if coach_assignment in coach_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="coaches" value="{{ coach_assignment.id }}">
+                                            <label for="{{ coach_assignment.id }}_coach_checkbox"
+                                                   class="custom-control-label"></label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -89,11 +139,28 @@
                             <tr>
                                 <th>Jméno</th>
                                 <th>Pozice</th>
-                                <th></th>
+                                <th>Přítomen</th>
                             </tr>
                         </thead>
                         <tbody>
-
+                            {% for coach_assignment in occurrence.one_time_not_excused_coaches_assignments_sorted %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox" {% if coach_assignment in coach_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="coaches" value="{{ coach_assignment.id }}">
+                                            <label for="{{ coach_assignment.id }}_coach_checkbox"
+                                                   class="custom-control-label"></label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

@@ -398,19 +398,38 @@ class TrainingOccurrence(EventOccurrence):
     def coaches_assignments_by_Q(self, q_condition):
         return self.coachoccurrenceassignment_set.filter(q_condition)
 
-    def excused_coaches_assignments(self):
-        return self.coaches_assignments_by_Q(Q(state=TrainingAttendance.EXCUSED))
+    def excused_coaches_assignments_sorted(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.EXCUSED)
+        ).order_by("person")
 
-    def regular_present_coaches_assignments(self):
+    def regular_present_coaches_assignments_sorted(self):
         return self.coaches_assignments_by_Q(
             Q(state=TrainingAttendance.PRESENT, person__in=self.event.coaches.all())
-        )
+        ).order_by("person")
 
-    def one_time_present_coaches_assignments(self):
+    def regular_not_excused_coaches_assignments_sorted(self):
+        return self.coaches_assignments_by_Q(
+            Q(person__in=self.event.coaches.all())
+            & ~Q(state=TrainingAttendance.EXCUSED)
+        ).order_by("person")
+
+    def one_time_present_coaches_assignments_sorted(self):
         return self.coaches_assignments_by_Q(
             Q(state=TrainingAttendance.PRESENT)
             & ~Q(person__in=self.event.coaches.all())
-        )
+        ).order_by("person")
+
+    def one_time_not_excused_coaches_assignments_sorted(self):
+        return self.coaches_assignments_by_Q(
+            ~Q(state=TrainingAttendance.EXCUSED)
+            & ~Q(person__in=self.event.coaches.all())
+        ).order_by("person")
+
+    def unexcused_coaches_assignments_sorted(self):
+        return self.coaches_assignments_by_Q(
+            Q(state=TrainingAttendance.UNEXCUSED)
+        ).order_by("person")
 
     def position_present_coaches_assignments(self, position_assignment):
         return self.coaches_assignments_by_Q(
@@ -420,22 +439,41 @@ class TrainingOccurrence(EventOccurrence):
     def participants_assignment_by_Q(self, q_condition):
         return self.trainingparticipantattendance_set.filter(q_condition)
 
-    def regular_present_participants_assignments(self):
+    def regular_present_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(
                 state=TrainingAttendance.PRESENT,
                 person__in=self.event.enrolled_participants.all(),
             )
-        )
+        ).order_by("person")
 
-    def one_time_participants_assignments(self):
+    def regular_not_excused_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            Q(person__in=self.event.enrolled_participants.all())
+            & ~Q(state=TrainingAttendance.EXCUSED)
+        ).order_by("person")
+
+    def one_time_present_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(state=TrainingAttendance.PRESENT)
             & ~Q(person__in=self.event.enrolled_participants.all())
-        )
+        ).order_by("person")
 
-    def excused_participants_assignments(self):
-        return self.participants_assignment_by_Q(Q(state=TrainingAttendance.EXCUSED))
+    def one_time_not_excused_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            ~Q(state=TrainingAttendance.EXCUSED)
+            & ~Q(person__in=self.event.enrolled_participants.all())
+        ).order_by("person")
+
+    def excused_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            Q(state=TrainingAttendance.EXCUSED)
+        ).order_by("person")
+
+    def unexcused_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            Q(state=TrainingAttendance.UNEXCUSED)
+        ).order_by("person")
 
     def get_participant_attendance(self, person):
         return self.trainingparticipantattendance_set.filter(
@@ -506,6 +544,24 @@ class TrainingOccurrence(EventOccurrence):
             if excused[i].occurrence.can_attendance_by_replaced_by(self):
                 return True
         return False
+
+    def can_attendance_be_filled(self):
+        return datetime.now(tz=timezone.get_default_timezone()) > self.datetime_start
+
+    def coach_assignments_settled(self):
+        return CoachOccurrenceAssignment.objects.filter(
+            Q(occurrence=self)
+            & ~Q(transaction=None)
+            & ~Q(transaction__fio_transaction=None)
+        )
+
+    def can_be_reopened(self):
+        return len(self.coach_assignments_settled()) == 0
+
+    @property
+    def hours(self):
+        td = self.datetime_end - self.datetime_start
+        return td.seconds / 3600
 
 
 class TrainingParticipantAttendance(models.Model):

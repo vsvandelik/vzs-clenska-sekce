@@ -22,6 +22,12 @@
                             {{ occurrence.attending_participants_attendance|length }} / {{ event.get_capacity_display }}
                         </td>
                     </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Stav:</td>
+                        <td class="w-100">
+                            {{ occurrence.get_state_display }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

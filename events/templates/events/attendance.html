@@ -2,53 +2,57 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block content %}
-    <div class="row">
-        <div class="col-12">
-            <div class="elevation-2 card">
-                <div class="card-header">
-                    <div class="card-title h5">
-                        <span style="line-height: 45px;font-size: 22.5px;">{% block location_text %}{% endblock %}</span>
+    <form method="post" action="{% block form_action %}{% endblock %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="elevation-2 card">
+                    <div class="card-header">
+                        <div class="card-title h5">
+                            <span style="line-height: 45px;font-size: 22.5px;">{% block location_text %}{% endblock %}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">Účastníci</div>
-                </div>
-                <div class="card-body">
-                    {% block participants_body %}{% endblock %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title h5">{% block organizers_pretty_name %}{% endblock %}</div>
-                </div>
-                <div class="card-body">
-                    {% block organizers_body %}{% endblock %}
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-center">
-                    <div class="card-title h5">
-                        <span style="line-height: 45px;font-size: 22.5px;">
-                            <input type="submit" class="btn btn-primary"
-                                   value="{% block savebtn_value %}{% endblock %}">
-                        </span>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">Účastníci</div>
+                    </div>
+                    <div class="card-body">
+                        {% block participants_body %}{% endblock %}
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title h5">{% block organizers_pretty_name %}{% endblock %}</div>
+                    </div>
+                    <div class="card-body">
+                        {% block organizers_body %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-center">
+                        <div class="card-title h5">
+                            <span style="line-height: 45px;font-size: 22.5px;">
+                                <input type="submit" class="btn btn-primary"
+                                       value="{% block savebtn_value %}{% endblock %}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 {% endblock %}
