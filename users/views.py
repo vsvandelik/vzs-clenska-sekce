@@ -63,13 +63,16 @@ def _user_can_manage_person(user, person_pk):
 
 class _UserCreateDeletePermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, person_pk):
+    def view_has_permission(cls, logged_in_user, active_person, pk):
+        person_pk = pk
         return _user_can_manage_person(logged_in_user, person_pk)
 
 
 class _UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, person_pk):
+    def view_has_permission(cls, logged_in_user, active_person, pk):
+        person_pk = pk
+
         # a user shouldn't be allowed to regenerate their own password
         is_different_person = logged_in_user.person.pk != person_pk
 

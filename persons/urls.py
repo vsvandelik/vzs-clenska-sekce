@@ -48,12 +48,12 @@ urlpatterns = [
     path("<int:pk>/upravit/", views.PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat/", views.PersonDeleteView.as_view(), name="delete"),
     path(
-        "<int:person_pk>/ucet/pridat/",
+        "<int:pk>/ucet/pridat/",
         user_views.UserCreateView.as_view(),
         name="user-add",
     ),
     path(
-        "<int:person_pk>/ucet/smazat/",
+        "<int:pk>/ucet/smazat/",
         user_views.UserDeleteView.as_view(),
         name="user-delete",
     ),
@@ -63,7 +63,7 @@ urlpatterns = [
         name="user-change-password-other",
     ),
     path(
-        "<int:person_pk>/ucet/generovat-nove-heslo/",
+        "<int:pk>/ucet/generovat-nove-heslo/",
         user_views.UserGenerateNewPasswordView.as_view(),
         name="user-generate-new-password",
     ),
