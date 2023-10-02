@@ -3,6 +3,7 @@ import re
 from django import template
 from django.template.base import Node
 from django.template.defaulttags import URLNode, url
+from django.template.exceptions import TemplateSyntaxError
 from django.urls import resolve
 from django.utils import formats
 from django.utils.safestring import mark_safe
@@ -203,15 +204,17 @@ class _PermURLContextVariable:
 
 class _PermURLNode(URLNode):
     def __init__(self, url_node):
+        if url_node.asvar is None:
+            raise TemplateSyntaxError(
+                "Permission template tags require an `as` variable name."
+            )
+
         super().__init__(
             url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar
         )
 
     def render(self, context):
         super().render(context)
-
-        if not self.asvar:
-            return ""
 
         url = context[self.asvar]
 
@@ -232,24 +235,19 @@ def perm_url(parser, token):
 
 
 class _IfPermNode(Node):
-    def __init__(self, nodelist, node):
+    def __init__(self, nodelist, perm_url_node):
         self.nodelist = nodelist
-        self.node = node
+        self.perm_url_node = perm_url_node
 
     def render(self, context):
-        asvar = self.node.asvar or "perm"
-
-        self.node.asvar = "var"
-        var = context.get(self.node.asvar)
-        self.node.render(context)
-        perm = context[self.node.asvar]
-        if var is not None:
-            context[self.node.asvar] = var
+        with context.push():
+            self.perm_url_node.render(context)
+            perm = context[self.perm_url_node.asvar]
 
         if not perm.permitted:
             return ""
 
-        with context.push(perm=perm):
+        with context.push(**{self.perm_url_node.asvar: perm}):
             return self.nodelist.render(context)
 
 

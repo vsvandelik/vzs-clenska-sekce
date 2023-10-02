@@ -41,7 +41,7 @@
     </div>
     <div class="card-footer text-center">
         {% if not person.user %}
-            {% ifperm "persons:user-add" person.pk %}
+            {% ifperm "persons:user-add" person.pk as perm %}
                 <a href="{{ perm.url }}" class="btn-primary btn">Založit uživatelský účet</a>
             {% endifperm %}
         {% else %}
@@ -51,13 +51,13 @@
                 </form>
             {% endif %}
 
-            {% ifperm "persons:user-assign-permission" person.pk %}
+            {% ifperm "persons:user-assign-permission" person.pk as perm %}
                 {% if not person.user.is_superuser %}
                     <a href="{{ perm.url }}" class="btn btn-primary">Přidat povolení</a>
                 {% endif %}
             {% endifperm %}
 
-            {% ifperm "persons:user-change-password-other" person.pk %}
+            {% ifperm "persons:user-change-password-other" person.pk as perm %}
                 <a href="{{ perm.url }}" class="btn btn-secondary">Změnit heslo</a>
             {% endifperm %}
 
@@ -65,7 +65,7 @@
                 <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
             {% endif %}
 
-            {% ifperm "persons:user-delete" person.pk %}
+            {% ifperm "persons:user-delete" person.pk as perm %}
                 <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
             {% endifperm %}
         {% endif %}
