@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
 from django.http import HttpResponseBadRequest, HttpResponseRedirect
@@ -403,7 +403,7 @@ class TransactionSendEmailView(generic.View):
         )
 
 
-class MyTransactionsView(TransactionListMixin):
+class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
     template_name = "transactions/my_transactions.html"
 
     def get_object(self, queryset=None):
