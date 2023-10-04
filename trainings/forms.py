@@ -46,7 +46,69 @@ from .models import (
 )
 
 
-class TrainingForm(EventForm):
+class CoachAssignmentUpdateAttendanceProvider:
+    def coach_assignment_update_attendance(
+        self, instance, event, occurrences_list=None
+    ):
+        if occurrences_list is None:
+            occurrences_list = event.eventoccurrence_set.filter(
+                state=EventOrOccurrenceState.OPEN
+            )
+
+        for occurrence in occurrences_list:
+            (
+                organizer_assignment,
+                _,
+            ) = CoachOccurrenceAssignment.objects.update_or_create(
+                occurrence=occurrence,
+                person=instance.person,
+                defaults={
+                    "position_assignment": instance.position_assignment,
+                    "person": instance.person,
+                    "occurrence": occurrence,
+                    "state": TrainingAttendance.PRESENT,
+                },
+            )
+            organizer_assignment.position_assignment = instance.position_assignment
+            organizer_assignment.save()
+
+
+class TrainingParticipantEnrollmentUpdateAttendanceProvider:
+    def participant_enrollment_update_attendance(self, instance, occurrences_list=None):
+        if occurrences_list is None:
+            occurrences_list = instance.event.eventoccurrence_set.filter(
+                state=EventOrOccurrenceState.OPEN
+            )
+
+        for occurrence in occurrences_list:
+            if (
+                instance.state == ParticipantEnrollment.State.APPROVED
+                and instance.attends_on_weekday(occurrence.weekday())
+            ):
+                TrainingParticipantAttendance.objects.update_or_create(
+                    occurrence=occurrence,
+                    person=instance.person,
+                    defaults={
+                        "enrollment": instance,
+                        "person": instance.person,
+                        "occurrence": occurrence,
+                        "state": TrainingAttendance.PRESENT,
+                    },
+                )
+
+            else:
+                attendance = TrainingParticipantAttendance.objects.filter(
+                    occurrence=occurrence, person=instance.person
+                ).first()
+                if attendance is not None:
+                    attendance.delete()
+
+
+class TrainingForm(
+    CoachAssignmentUpdateAttendanceProvider,
+    TrainingParticipantEnrollmentUpdateAttendanceProvider,
+    EventForm,
+):
     class Meta(EventForm.Meta):
         model = Training
         fields = [
@@ -165,8 +227,10 @@ class TrainingForm(EventForm):
             training_dates = [
                 parse_czech_date(x).date() for x in self.cleaned_data["day"]
             ]
-            weekdays = {x.weekday() for x in training_dates}
-            weekdays_shortcut = {weekday_2_day_shortcut(x) for x in weekdays}
+            self.cleaned_data["weekdays"] = {x.weekday() for x in training_dates}
+            weekdays_shortcut = {
+                weekday_2_day_shortcut(x) for x in self.cleaned_data["weekdays"]
+            }
             if days != weekdays_shortcut:
                 self.add_error(
                     None,
@@ -220,6 +284,15 @@ class TrainingForm(EventForm):
                 TrainingOccurrence.objects.filter(id=child.id).delete()
 
         self._save_add_trainings(instance, new_datetimes, commit)
+        weekdays = self.cleaned_data["weekdays"]
+        if commit:
+            for (
+                participant_enrollment
+            ) in instance.trainingparticipantenrollment_set.all():
+                for weekday_attending_obj in participant_enrollment.weekdays.all():
+                    if weekday_attending_obj.weekday not in weekdays:
+                        weekday_attending_obj.delete()
+
         return instance
 
     def _save_add_trainings(self, event, new_dates, commit=True):
@@ -232,6 +305,16 @@ class TrainingForm(EventForm):
             )
             if commit:
                 occurrence.save()
+                for coach_assignment in event.coachpositionassignment_set.all():
+                    super().coach_assignment_update_attendance(
+                        coach_assignment, event, [occurrence]
+                    )
+                for (
+                    participant_enrollment
+                ) in event.trainingparticipantenrollment_set.all():
+                    super().participant_enrollment_update_attendance(
+                        participant_enrollment, [occurrence]
+                    )
 
     def _create_training_datetime(self, date_raw):
         date = parse_czech_date(date_raw)
@@ -400,27 +483,6 @@ class InitializeWeekdaysProvider:
             enrollment.weekdays.add(weekday_obj)
 
 
-class TrainingParticipantEnrollmentUpdateAttendanceProvider:
-    def update_attendance(self, instance):
-        for occurrence in instance.event.eventoccurrence_set.all():
-            if (
-                instance.state == ParticipantEnrollment.State.APPROVED
-                and instance.attends_on_weekday(occurrence.weekday())
-            ):
-                TrainingParticipantAttendance(
-                    enrollment=instance,
-                    person=instance.person,
-                    occurrence=occurrence,
-                    state=TrainingAttendance.PRESENT,
-                ).save()
-            else:
-                attendance = TrainingParticipantAttendance.objects.filter(
-                    occurrence=occurrence, person=instance.person
-                ).first()
-                if attendance is not None:
-                    attendance.delete()
-
-
 class TrainingParticipantEnrollmentForm(
     TrainingWeekdaysSelectionMixin,
     ParticipantEnrollmentForm,
@@ -456,7 +518,7 @@ class TrainingParticipantEnrollmentForm(
         if commit:
             super().initialize_weekdays(instance, weekdays_cleaned)
             instance.save()
-            super().update_attendance(instance)
+            super().participant_enrollment_update_attendance(instance)
         return instance
 
 
@@ -491,11 +553,13 @@ class TrainingEnrollMyselfParticipantForm(
             instance.save()
             super().initialize_weekdays(instance, weekdays)
             instance.save()
-            super().update_attendance(instance)
+            super().participant_enrollment_update_attendance(instance)
         return instance
 
 
-class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
+class CoachAssignmentForm(
+    EventFormMixin, CoachAssignmentUpdateAttendanceProvider, OrganizerAssignmentForm
+):
     class Meta(OrganizerAssignmentForm.Meta):
         model = CoachPositionAssignment
 
@@ -540,25 +604,8 @@ class CoachAssignmentForm(EventFormMixin, OrganizerAssignmentForm):
         ):
             self.event.main_coach_assignment = None
 
-        for occurrence in self.event.eventoccurrence_set.all():
-            (
-                organizer_assignment,
-                _,
-            ) = CoachOccurrenceAssignment.objects.get_or_create(
-                occurrence=occurrence,
-                person=instance.person,
-                defaults={
-                    "position_assignment": instance.position_assignment,
-                    "person": instance.person,
-                    "occurrence": occurrence,
-                    "state": TrainingAttendance.PRESENT,
-                },
-            )
-            organizer_assignment.position_assignment = instance.position_assignment
-            if commit:
-                organizer_assignment.save()
-
         if commit:
+            super().coach_assignment_update_attendance(instance, self.event)
             instance.save()
             self.event.save()
         return instance
@@ -593,7 +640,7 @@ class TrainingBulkApproveParticipantsForm(
             enrollment.state = ParticipantEnrollment.State.APPROVED
             if commit:
                 enrollment.save()
-                super().update_attendance(enrollment)
+                super().participant_enrollment_update_attendance(enrollment)
 
         self.cleaned_data["count"] = len(enrollments_2_approve)
         return instance
@@ -960,13 +1007,27 @@ class ReopenTrainingOccurrenceForm(ModelForm):
         instance = super().save(False)
         instance.state = EventOrOccurrenceState.OPEN
 
-        observed_participant_assignments = TrainingParticipantAttendance.objects.filter(
-            occurrence=instance, state=TrainingAttendance.UNEXCUSED
+        present_coach_assignments = CoachOccurrenceAssignment.objects.filter(
+            occurrence=instance, state=TrainingAttendance.PRESENT
         )
-        for participant_assignment in observed_participant_assignments:
-            participant_assignment.state = TrainingAttendance.PRESENT
-            if commit:
-                participant_assignment.save()
+        for present_coach_assignment in present_coach_assignments:
+            present_coach_assignment.transaction.delete()
+            present_coach_assignment.transaction = None
+
+        observed_unexcused_assignments = [
+            TrainingParticipantAttendance.objects.filter(
+                occurrence=instance, state=TrainingAttendance.UNEXCUSED
+            ),
+            CoachOccurrenceAssignment.objects.filter(
+                occurrence=instance, state=TrainingAttendance.UNEXCUSED
+            ),
+        ]
+
+        for unexcused_assignments in observed_unexcused_assignments:
+            for assignment in unexcused_assignments:
+                assignment.state = TrainingAttendance.PRESENT
+                if commit:
+                    assignment.save()
 
         if commit:
             instance.save()

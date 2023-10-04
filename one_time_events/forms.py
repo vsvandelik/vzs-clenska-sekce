@@ -239,12 +239,16 @@ class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
     def update_attendance(self, instance):
         for occurrence in instance.event.eventoccurrence_set.all():
             if instance.state == ParticipantEnrollment.State.APPROVED:
-                OneTimeEventParticipantAttendance(
-                    enrollment=instance,
-                    person=instance.person,
+                OneTimeEventParticipantAttendance.objects.update_or_create(
                     occurrence=occurrence,
-                    state=OneTimeEventAttendance.PRESENT,
-                ).save()
+                    person=instance.person,
+                    defaults={
+                        "enrollment": instance,
+                        "person": instance.person,
+                        "occurrence": occurrence,
+                        "state": OneTimeEventAttendance.PRESENT,
+                    },
+                )
             else:
                 attendance = OneTimeEventParticipantAttendance.objects.filter(
                     occurrence=occurrence, person=instance.person
