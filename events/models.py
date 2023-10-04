@@ -309,6 +309,9 @@ class OrganizerAssignment(PolymorphicModel):
             self.person, self.position_assignment
         )
 
+    def is_transaction_settled(self):
+        return self.transaction is not None and self.transaction.is_settled
+
 
 class EventPersonTypeConstraint(models.Model):
     person_type = models.CharField(

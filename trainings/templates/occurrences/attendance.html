@@ -8,6 +8,15 @@
 {% block savebtn_value %}{% if occurrence.is_opened %}Zapsat docházku{% else %}Upravit docházku{% endif %}{% endblock %}
 
 {% block organizers_pretty_name %}Trenéři{% endblock %}
+{% block notifications %}
+    {% if not occurrence.can_be_reopened %}
+        <div class="card bg-warning">
+            <div class="card-header border-0">
+                Existují trenéři, kteří již mají proplacenou transakci, úpravou jejich docházky nebude úpravena jejich transakce
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
 {% block participants_body %}
     <div class="row">
         <div class="col-12 col-md-6">
@@ -33,8 +42,10 @@
                                     </td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
-                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox" {% if participant_assignment in participant_assignments %}checked{% endif %}
-                                                   class="custom-control-input" name="participants" value="{{ participant_assignment.id }}">
+                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
+                                                   {% if participant_assignment in participant_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="participants"
+                                                   value="{{ participant_assignment.id }}">
                                             <label for="{{ participant_assignment.id }}_participant_checkbox"
                                                    class="custom-control-label"></label>
                                         </div>
@@ -69,8 +80,10 @@
                                     </td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
-                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox" {% if participant_assignment in participant_assignments %}checked{% endif %}
-                                                   class="custom-control-input" name="participants" value="{{ participant_assignment.id }}">
+                                            <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
+                                                   {% if participant_assignment in participant_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="participants"
+                                                   value="{{ participant_assignment.id }}">
                                             <label for="{{ participant_assignment.id }}_participant_checkbox"
                                                    class="custom-control-label"></label>
                                         </div>
@@ -104,7 +117,7 @@
                         </thead>
                         <tbody>
                             {% for coach_assignment in occurrence.regular_not_excused_coaches_assignments_sorted %}
-                                <tr>
+                                <tr {% if coach_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
                                     <td>
                                         <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
                                     </td>
@@ -113,8 +126,10 @@
                                     </td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
-                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox" {% if coach_assignment in coach_assignments %}checked{% endif %}
-                                                   class="custom-control-input" name="coaches" value="{{ coach_assignment.id }}">
+                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox"
+                                                   {% if coach_assignment in coach_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="coaches"
+                                                   value="{{ coach_assignment.id }}">
                                             <label for="{{ coach_assignment.id }}_coach_checkbox"
                                                    class="custom-control-label"></label>
                                         </div>
@@ -144,7 +159,7 @@
                         </thead>
                         <tbody>
                             {% for coach_assignment in occurrence.one_time_not_excused_coaches_assignments_sorted %}
-                                <tr>
+                                <tr {% if coach_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
                                     <td>
                                         <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
                                     </td>
@@ -153,8 +168,10 @@
                                     </td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
-                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox" {% if coach_assignment in coach_assignments %}checked{% endif %}
-                                                   class="custom-control-input" name="coaches" value="{{ coach_assignment.id }}">
+                                            <input id="{{ coach_assignment.id }}_coach_checkbox" type="checkbox"
+                                                   {% if coach_assignment in coach_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="coaches"
+                                                   value="{{ coach_assignment.id }}">
                                             <label for="{{ coach_assignment.id }}_coach_checkbox"
                                                    class="custom-control-label"></label>
                                         </div>

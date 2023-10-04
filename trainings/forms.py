@@ -545,6 +545,7 @@ class TrainingEnrollMyselfParticipantForm(
         weekdays = self.cleaned_data["weekdays"]
         if (
             self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
+            and self.event.can_person_enroll_as_participant(self.person)
             and all(map(instance.training.has_weekday_free_spot, weekdays))
         ):
             instance.state = ParticipantEnrollment.State.APPROVED

@@ -39,7 +39,34 @@ from .models import (
 )
 
 
-class OneTimeEventForm(EventForm):
+class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
+    def participant_enrollment_update_attendance(self, instance, occurrences_list=None):
+        if occurrences_list is None:
+            occurrences_list = instance.event.eventoccurrence_set.all()
+
+        for occurrence in occurrences_list:
+            if instance.state == ParticipantEnrollment.State.APPROVED:
+                OneTimeEventParticipantAttendance.objects.update_or_create(
+                    occurrence=occurrence,
+                    person=instance.person,
+                    defaults={
+                        "enrollment": instance,
+                        "person": instance.person,
+                        "occurrence": occurrence,
+                        "state": OneTimeEventAttendance.PRESENT,
+                    },
+                )
+            else:
+                attendance = OneTimeEventParticipantAttendance.objects.filter(
+                    occurrence=occurrence, person=instance.person
+                ).first()
+                if attendance is not None:
+                    attendance.delete()
+
+
+class OneTimeEventForm(
+    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider, EventForm
+):
     class Meta(EventForm.Meta):
         model = OneTimeEvent
         fields = ["default_participation_fee"] + EventForm.Meta.fields
@@ -136,25 +163,33 @@ class OneTimeEventForm(EventForm):
 
         children = instance.occurrences_list()
         occurrences = self.cleaned_data["occurrences"]
-        for child in children:
-            occurrence = self._find_occurrence_with_date(child.date)
-            if occurrence is not None:
-                if child.hours != occurrence[1]:
-                    child.hours = occurrence[1]
-                    child.save()
-                self.cleaned_data["occurrences"].remove(occurrence)
-            else:
-                child.delete()
 
-        for i in range(len(occurrences)):
-            date, hours = occurrences[i]
-            occurrence_obj = OneTimeEventOccurrence(
-                event=instance,
-                state=EventOrOccurrenceState.OPEN,
-                date=date,
-                hours=hours,
-            )
-            occurrence_obj.save()
+        if commit:
+            for child in children:
+                occurrence = self._find_occurrence_with_date(child.date)
+                if occurrence is not None:
+                    if child.hours != occurrence[1]:
+                        child.hours = occurrence[1]
+                        child.save()
+                    self.cleaned_data["occurrences"].remove(occurrence)
+                else:
+                    child.delete()
+
+            for i in range(len(occurrences)):
+                date, hours = occurrences[i]
+                occurrence_obj = OneTimeEventOccurrence(
+                    event=instance,
+                    state=EventOrOccurrenceState.OPEN,
+                    date=date,
+                    hours=hours,
+                )
+                occurrence_obj.save()
+                for (
+                    participant_enrollment
+                ) in instance.onetimeeventparticipantenrollment_set.all():
+                    super().participant_enrollment_update_attendance(
+                        participant_enrollment, [occurrence_obj]
+                    )
 
         return instance
 
@@ -235,28 +270,6 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
-class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
-    def update_attendance(self, instance):
-        for occurrence in instance.event.eventoccurrence_set.all():
-            if instance.state == ParticipantEnrollment.State.APPROVED:
-                OneTimeEventParticipantAttendance.objects.update_or_create(
-                    occurrence=occurrence,
-                    person=instance.person,
-                    defaults={
-                        "enrollment": instance,
-                        "person": instance.person,
-                        "occurrence": occurrence,
-                        "state": OneTimeEventAttendance.PRESENT,
-                    },
-                )
-            else:
-                attendance = OneTimeEventParticipantAttendance.objects.filter(
-                    occurrence=occurrence, person=instance.person
-                ).first()
-                if attendance is not None:
-                    attendance.delete()
-
-
 class OneTimeEventEnrollmentApprovedHooks(
     OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
 ):
@@ -277,7 +290,7 @@ class OneTimeEventEnrollmentApprovedHooks(
         if instance.transaction is not None:
             instance.transaction.save()
         instance.save()
-        super().update_attendance(instance)
+        super().participant_enrollment_update_attendance(instance)
 
 
 class OneTimeEventParticipantEnrollmentForm(
@@ -362,7 +375,7 @@ class OneTimeEventEnrollMyselfParticipantForm(
 
         if commit:
             instance.save()
-            super().update_attendance(instance)
+            super().participant_enrollment_update_attendance(instance)
 
         return instance
 

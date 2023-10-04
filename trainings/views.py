@@ -503,18 +503,6 @@ class FillAttendanceView(
         return super().get_context_data(**kwargs)
 
 
-# class EditAttendanceView(
-#     MessagesMixin,
-#     RedirectToOccurrenceDetailOnSuccessMixin,
-#     InsertOccurrenceIntoModelFormKwargsMixin,
-#     EventOccurrenceIdCheckMixin,
-#     generic.UpdateView
-# ):
-#     form_class = EditAttendanceForm
-#     success_message = "Úprava docházky proběhla úspěšně"
-#     template_name = "occurrences/edit_attendance.html"
-
-
 class ReopenTrainingOccurrenceView(
     MessagesMixin,
     TrainingAttendanceMixin,
