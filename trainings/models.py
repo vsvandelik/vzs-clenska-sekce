@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
+from itertools import chain as iter_chain
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -286,6 +287,18 @@ class Training(Event):
 
         return chosen_enrollments
 
+    def _can_person_interact_with_nonrecursive(self, person):
+        return any(
+            occurence.can_person_interact_with(person)
+            for occurence in self._occurrences_list()
+        )
+
+    def can_person_interact_with(self, person):
+        return any(
+            training._can_person_interact_with_nonrecursive(person)
+            for training in iter_chain(self.replaces_training_list(), [self])
+        )
+
 
 class CoachPositionAssignment(models.Model):
     person = models.ForeignKey(
@@ -513,6 +526,14 @@ class TrainingOccurrence(EventOccurrence):
             if excused[i].occurrence.can_attendance_by_replaced_by(self):
                 return True
         return False
+
+    def can_person_interact_with(self, person):
+        return (
+            self.can_participant_enroll(person)
+            or self.can_participant_unenroll(person)
+            or self.can_participant_excuse(person)
+            or self.can_coach_excuse(person)
+        )
 
 
 class TrainingParticipantAttendance(models.Model):
