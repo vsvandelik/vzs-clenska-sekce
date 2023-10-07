@@ -1,66 +1,67 @@
 from django.contrib import messages
 from django.db.models import Q
 from django.http import Http404
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.views import (
+    BulkApproveParticipantsMixin,
+    EnrollMyselfParticipantMixin,
     EventCreateMixin,
-    EventUpdateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
-    RedirectToEventDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    EventUpdateMixin,
+    InsertEventIntoContextData,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
+    OccurrenceDetailBaseView,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
-    EnrollMyselfParticipantMixin,
-    InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnFailureMixin,
-    BulkApproveParticipantsMixin,
-    InsertEventIntoContextData,
-    OccurrenceDetailBaseView,
-    InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    EventOccurrenceIdCheckMixin,
-    InsertPositionAssignmentIntoModelFormKwargs,
+    RedirectToOccurrenceDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import (
-    MessagesMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
+    MessagesMixin,
 )
+
 from .forms import (
-    TrainingForm,
-    TrainingReplaceableForm,
-    TrainingParticipantEnrollmentForm,
-    TrainingEnrollMyselfParticipantForm,
-    CoachAssignmentForm,
-    TrainingBulkApproveParticipantsForm,
     CancelCoachExcuseForm,
-    ExcuseMyselfCoachForm,
-    CoachAssignmentDeleteForm,
-    CoachExcuseForm,
-    TrainingEnrollMyselfOrganizerOccurrenceForm,
-    TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
-    CoachOccurrenceAssignmentForm,
-    ParticipantExcuseForm,
     CancelParticipantExcuseForm,
+    CoachAssignmentDeleteForm,
+    CoachAssignmentForm,
+    CoachExcuseForm,
+    CoachOccurrenceAssignmentForm,
+    ExcuseMyselfCoachForm,
     ExcuseMyselfParticipantForm,
-    TrainingUnenrollMyselfParticipantFromOccurrenceForm,
-    TrainingParticipantAttendanceForm,
+    ParticipantExcuseForm,
+    TrainingBulkApproveParticipantsForm,
+    TrainingEnrollMyselfOrganizerOccurrenceForm,
+    TrainingEnrollMyselfParticipantForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
+    TrainingForm,
+    TrainingParticipantAttendanceForm,
+    TrainingParticipantEnrollmentForm,
+    TrainingReplaceableForm,
+    TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
+    TrainingUnenrollMyselfParticipantFromOccurrenceForm,
 )
 from .models import (
-    Training,
-    TrainingReplaceabilityForParticipants,
-    TrainingParticipantEnrollment,
-    CoachPositionAssignment,
-    TrainingOccurrence,
     CoachOccurrenceAssignment,
+    CoachPositionAssignment,
+    Training,
+    TrainingOccurrence,
     TrainingParticipantAttendance,
+    TrainingParticipantEnrollment,
+    TrainingReplaceabilityForParticipants,
 )
 
 
@@ -206,6 +207,7 @@ class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.UpdateView):
     success_message = "Odhlášení trenéra proběhlo úspěšně"
     template_name = "trainings/modals/delete_coach_assignment.html"
     form_class = CoachAssignmentDeleteForm
+    event_id_key = "event_id"
 
 
 class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
