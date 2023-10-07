@@ -222,6 +222,7 @@ class Event(PolymorphicModel):
             self.can_person_enroll_as_waiting(person)
             or self.can_person_enroll_as_participant(person)
             or self.can_participant_unenroll(person)
+            or person in self.enrolled_participants.all()
         )
 
     def can_user_manage(self, user):
