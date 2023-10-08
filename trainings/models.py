@@ -1,7 +1,8 @@
 from collections import defaultdict
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
+from itertools import chain as iter_chain
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -10,11 +11,11 @@ from django.utils.translation import gettext_lazy as _
 from events.models import (
     Event,
     EventOccurrence,
-    ParticipantEnrollment,
     OrganizerAssignment,
+    ParticipantEnrollment,
 )
 from positions.models import EventPosition
-from trainings.utils import days_shortcut_list, weekday_pretty, weekday_2_day_shortcut
+from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
 from vzs import settings
 
 
@@ -45,6 +46,13 @@ class Training(Event):
         CLIMBING = "lezecky", _("lezecký")
         SWIMMING = "plavecky", _("plavecký")
         MEDICAL = "zdravoveda", _("zdravověda")
+
+    class Meta:
+        permissions = [
+            ("lezecky", _("Správce lezeckých tréninků")),
+            ("plavecky", _("Správce plaveckých tréninků")),
+            ("zdravoveda", _("Správce zdravovědy")),
+        ]
 
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
@@ -279,6 +287,18 @@ class Training(Event):
 
         return chosen_enrollments
 
+    def _can_person_interact_with_nonrecursive(self, person):
+        return any(
+            occurence.can_person_interact_with(person)
+            for occurence in self._occurrences_list()
+        )
+
+    def can_person_interact_with(self, person):
+        return any(
+            training._can_person_interact_with_nonrecursive(person)
+            for training in iter_chain(self.replaces_training_list(), [self])
+        )
+
 
 class CoachPositionAssignment(models.Model):
     person = models.ForeignKey(
@@ -506,6 +526,14 @@ class TrainingOccurrence(EventOccurrence):
             if excused[i].occurrence.can_attendance_by_replaced_by(self):
                 return True
         return False
+
+    def can_person_interact_with(self, person):
+        return (
+            self.can_participant_enroll(person)
+            or self.can_participant_unenroll(person)
+            or self.can_participant_excuse(person)
+            or self.can_coach_excuse(person)
+        )
 
 
 class TrainingParticipantAttendance(models.Model):

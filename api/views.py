@@ -1,15 +1,15 @@
-from .models import Token
-from .forms import TokenGenerateForm
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, DeleteView
+from django.views.generic.list import ListView
 
 from users.views import PermissionRequiredMixin
 
-from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, DeleteView
-from django.urls import reverse_lazy
+from .forms import TokenGenerateForm
+from .models import Token
 
 
 class APIPermissionRequiredMixin(PermissionRequiredMixin):
-    permission_required = "api"
+    permissions_required = ["api"]
 
 
 class TokenIndexView(APIPermissionRequiredMixin, ListView):
