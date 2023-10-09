@@ -47,15 +47,13 @@ from .models import (
 
 
 class CoachAssignmentUpdateAttendanceProvider:
-    def coach_assignment_update_attendance(
-        self, instance, event, occurrences_list=None
-    ):
-        if occurrences_list is None:
-            occurrences_list = event.eventoccurrence_set.filter(
+    def coach_assignment_update_attendance(self, instance, event, occurrences=None):
+        if occurrences is None:
+            occurrences = event.eventoccurrence_set.filter(
                 state=EventOrOccurrenceState.OPEN
             )
 
-        for occurrence in occurrences_list:
+        for occurrence in occurrences:
             (
                 organizer_assignment,
                 _,

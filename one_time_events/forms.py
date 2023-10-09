@@ -40,11 +40,11 @@ from .models import (
 
 
 class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
-    def participant_enrollment_update_attendance(self, instance, occurrences_list=None):
-        if occurrences_list is None:
-            occurrences_list = instance.event.eventoccurrence_set.all()
+    def participant_enrollment_update_attendance(self, instance, occurrences=None):
+        if occurrences is None:
+            occurrences = instance.event.eventoccurrence_set.all()
 
-        for occurrence in occurrences_list:
+        for occurrence in occurrences:
             if instance.state == ParticipantEnrollment.State.APPROVED:
                 OneTimeEventParticipantAttendance.objects.update_or_create(
                     occurrence=occurrence,
