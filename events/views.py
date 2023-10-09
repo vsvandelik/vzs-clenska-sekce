@@ -1,5 +1,9 @@
+from typing import Any
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.query import QuerySet
 from django.http import Http404
-from django.shortcuts import get_object_or_404, reverse, redirect
+from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.views import generic
 
@@ -7,21 +11,30 @@ from events.models import ParticipantEnrollment, EventOrOccurrenceState
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
+from users.views import PermissionRequiredMixin
 from vzs.mixin_extensions import (
-    MessagesMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
+    MessagesMixin,
 )
+
 from .forms import (
     EventAgeLimitForm,
-    EventPositionAssignmentForm,
-    EventGroupMembershipForm,
     EventAllowedPersonTypeForm,
+    EventGroupMembershipForm,
+    EventPositionAssignmentForm,
 )
-from .models import (
-    Event,
-    EventPositionAssignment,
-    EventOccurrence,
-)
+from .models import Event, EventOccurrence, EventPositionAssignment
+
+
+class EventManagePermissionMixin(PermissionRequiredMixin):
+    event_id_key = "pk"
+
+    @classmethod
+    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
+        event_pk = kwargs[cls.event_id_key]
+
+        for event in Event.objects.filter(pk=event_pk):
+            return event.can_user_manage(logged_in_user)
 
 
 class EventMixin:
@@ -228,12 +241,27 @@ class EventDetailBaseView(
         return super().get_context_data(**kwargs)
 
 
-class EventIndexView(EventMixin, generic.ListView):
+class EventIndexView(LoginRequiredMixin, generic.ListView):
     template_name = "events/index.html"
     context_object_name = "events"
 
+    def get_queryset(self):
+        user = self.request.user
+        active_person = self.request.active_person
 
-class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
+        visible_event_pks = [
+            event.pk
+            for event in Event.objects.all()
+            if event.can_user_manage(user)
+            or event.can_person_interact_with(active_person)
+        ]
+
+        return Event.objects.filter(pk__in=visible_event_pks)
+
+
+class EventDeleteView(
+    EventManagePermissionMixin, EventMixin, MessagesMixin, generic.DeleteView
+):
     template_name = "events/modals/delete.html"
     success_url = reverse_lazy("events:index")
 
@@ -241,7 +269,9 @@ class EventDeleteView(EventMixin, MessagesMixin, generic.DeleteView):
         return f"Událost {self.object.name} úspěšně smazána"
 
 
-class EventPositionAssignmentMixin(MessagesMixin, RedirectToEventDetailOnSuccessMixin):
+class EventPositionAssignmentMixin(
+    EventManagePermissionMixin, MessagesMixin, RedirectToEventDetailOnSuccessMixin
+):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
 
@@ -251,8 +281,8 @@ class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
 
 
 class EventPositionAssignmentCreateView(
-    EventPositionAssignmentCreateUpdateMixin,
     InsertEventIntoModelFormKwargsMixin,
+    EventPositionAssignmentCreateUpdateMixin,
     generic.CreateView,
 ):
     template_name = "events/create_event_position_assignment.html"
@@ -281,21 +311,26 @@ class EventPositionAssignmentDeleteView(
         return f"Organizátorská pozice {self.object.position} smazána"
 
 
-class EditAgeLimitView(MessagesMixin, EventRestrictionMixin, generic.UpdateView):
+class EditAgeLimitView(
+    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, generic.UpdateView
+):
     template_name = "events/edit_age_limit.html"
     form_class = EventAgeLimitForm
     success_message = "Změna věkového omezení uložena"
 
 
-class EditGroupMembershipView(MessagesMixin, EventRestrictionMixin, generic.UpdateView):
+class EditGroupMembershipView(
+    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, generic.UpdateView
+):
     template_name = "events/edit_group_membership.html"
     form_class = EventGroupMembershipForm
     success_message = "Změna vyžadování skupiny uložena"
 
 
 class AddRemoveAllowedPersonTypeView(
-    MessagesMixin,
     InsertEventIntoSelfObjectMixin,
+    EventManagePermissionMixin,
+    MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     generic.UpdateView,
 ):
@@ -356,6 +391,7 @@ class EnrollMyselfParticipantMixin(
 
 
 class UnenrollMyselfParticipantView(
+    PermissionRequiredMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
@@ -365,6 +401,15 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+    @classmethod
+    def view_has_permission(cls, logged_in_user, active_person, pk):
+        enrollment_pk = pk
+
+        for enrollment in ParticipantEnrollment.objects.filter(pk=enrollment_pk):
+            return enrollment.person == active_person
+
+        return False
 
 
 class BulkApproveParticipantsMixin(
