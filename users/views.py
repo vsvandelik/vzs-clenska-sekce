@@ -36,50 +36,53 @@ from .utils import get_random_password
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
-    permission_required = "superuser"
+    permissions_required = None
 
     @classmethod
-    def get_permission_required(cls):
-        # a little hack as we assume we will set permission_required only per class, not per object
-        obj = DjangoPermissionRequiredMixin()
-        obj.permission_required = cls.permission_required
-        return obj.get_permission_required()
+    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
+        if cls.permissions_required is None:
+            raise ImproperlyConfigured(
+                f"{cls.__name__} is missing a permissions_required attribute."
+            )
 
-    @classmethod
-    def view_has_permission(cls, user, **kwargs):
-        perms = cls.get_permission_required()
-        return user.has_perms(perms)
+        return logged_in_user.has_perms(cls.permissions_required)
 
     def has_permission(self):
-        return self.view_has_permission(self.request.user, **self.kwargs)
+        return self.view_has_permission(
+            self.request.user, self.request.active_person, **self.kwargs
+        )
 
 
-class _UserCreateDeletePermissionMixin(PermissionRequiredMixin, PersonPermissionMixin):
+def _user_can_manage_person(user, person_pk):
+    return user.is_superuser or (
+        PersonPermissionMixin.get_queryset_by_permission(user)
+        .filter(pk=person_pk)
+        .exists()
+    )
+
+
+class _UserCreateDeletePermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, user, pk):
-        if cls.get_queryset_by_permission(user).filter(pk=pk):
-            return True
-
-        return super().view_has_permission(user)
+    def view_has_permission(cls, logged_in_user, active_person, pk):
+        person_pk = pk
+        return _user_can_manage_person(logged_in_user, person_pk)
 
 
-class _UserGeneratePasswordPermissionMixin(
-    PermissionRequiredMixin, PersonPermissionMixin
-):
+class _UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, user, pk):
+    def view_has_permission(cls, logged_in_user, active_person, pk):
+        person_pk = pk
+
         # a user shouldn't be allowed to regenerate their own password
-        if user.person.pk == pk:
-            return False
+        is_different_person = logged_in_user.person.pk != person_pk
 
-        if cls.get_queryset_by_permission(user).filter(pk=pk):
-            return True
-
-        return super().view_has_permission(user)
+        return is_different_person and _user_can_manage_person(
+            logged_in_user, person_pk
+        )
 
 
 class _UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
-    permission_required = "users.spravce_povoleni"
+    permissions_required = ["users.spravce_povoleni"]
 
 
 class UserCreateView(
@@ -185,6 +188,7 @@ class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
 
 
 class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordBaseMixin):
+    permissions_required = ["superuser"]
     form_class = forms.UserChangePasswordRepeatForm
 
 
