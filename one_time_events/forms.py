@@ -175,8 +175,7 @@ class OneTimeEventForm(
                 else:
                     child.delete()
 
-            for i in range(len(occurrences)):
-                date, hours = occurrences[i]
+            for date, hours in occurrences:
                 occurrence_obj = OneTimeEventOccurrence(
                     event=instance,
                     state=EventOrOccurrenceState.OPEN,
