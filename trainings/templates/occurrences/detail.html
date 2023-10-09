@@ -53,6 +53,21 @@
                     </form>
                 </div>
             {% endif %}
+            {% if occurrence.can_attendance_be_filled %}
+                <div class="btn-group-md btn-group mb-3 elevation-2">
+                    <a class="btn btn-info" href="{% url 'trainings:fill-attendance' event.id occurrence.id %}">
+                        {% if occurrence.is_opened %}Zapsat{% else %}Upravit{% endif %} docházku</a>
+                </div>
+            {% endif %}
+            {% if not occurrence.is_opened %}
+                <div class="btn-group-md btn-group mb-3 elevation-2">
+                    <a class="btn btn-secondary"
+                       data-toggle="modal"
+                       data-target="#reopen-training-occurrence"
+                       data-action="{% url 'trainings:reopen-occurrence' event.id occurrence.id %}"
+                    >Znovu otevřít a zrušit zápis docházky</a>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="row">
@@ -68,9 +83,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% include 'occurrences/detail_components/excused_participants.html' %}
                         {% include 'occurrences/detail_components/regular_participants.html' %}
                         {% include 'occurrences/detail_components/one_time_participants.html' %}
+                        {% include 'occurrences/detail_components/excused_participants.html' %}
+                        {% include 'occurrences/detail_components/unexcused_participants.html' %}
                     </div>
                 </div>
             </div>
@@ -86,9 +102,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% include 'occurrences/detail_components/excused_coaches.html' %}
                         {% include 'occurrences/detail_components/regular_coaches.html' %}
                         {% include 'occurrences/detail_components/one_time_coaches.html' %}
+                        {% include 'occurrences/detail_components/excused_coaches.html' %}
+                        {% include 'occurrences/detail_components/unexcused_coaches.html' %}
                         {% include 'occurrences/detail_components/positions_capacity.html' %}
                     </div>
                 </div>
@@ -107,15 +124,19 @@
     {% include 'modal_include.html' with id='unenroll-myself-participant-occurrence-modal' %}
     {% include 'modal_include.html' with id='delete-one-time-participant-modal' %}
 
+    {% include 'modal_include.html' with id='reopen-training-occurrence' %}
+
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
         simpleOrderableTableEnable("participants-excused-table", [0])
+        simpleOrderableTableEnable("participants-unexcused-table", [0])
         simpleOrderableTableEnable("participants-regular-table", [0])
         simpleOrderableTableEnable("one-time-participants-table", [0])
 
         simpleOrderableTableEnable("coaches-excused-table", [0, 1])
+        simpleOrderableTableEnable("coaches-unexcused-table", [0, 1])
         simpleOrderableTableEnable("coaches-regular-table", [0, 1])
         simpleOrderableTableEnable("one-time-coaches-table", [0, 1])
         simpleOrderableTableEnable("positions-capacity-table", [0, 1])
@@ -133,5 +154,7 @@
         registerModal('excuse-myself-participant-modal')
         registerModal('unenroll-myself-participant-occurrence-modal')
         registerModal('delete-one-time-participant-modal')
+
+        registerModal('reopen-training-occurrence')
     </script>
 {% endblock %}

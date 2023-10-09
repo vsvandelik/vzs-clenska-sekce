@@ -12,20 +12,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for participant_assignment in occurrence.regular_present_participants_assignments %}
+                    {% for participant_assignment in occurrence.regular_present_participants_assignments_sorted %}
                         <tr>
                             <td>
                                 <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a class="btn btn-secondary btn-sm"
-                                       data-toggle="modal"
-                                       data-target="#excuse-participant-modal"
-                                       data-action="{% url 'trainings:excuse-participant' event.id occurrence.id participant_assignment.id %}">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                    </a>
-                                </div>
+                                {% if occurrence.is_opened %}
+                                    <div class="btn-group">
+                                        <a class="btn btn-secondary btn-sm"
+                                           data-toggle="modal"
+                                           data-target="#excuse-participant-modal"
+                                           data-action="{% url 'trainings:excuse-participant' event.id occurrence.id participant_assignment.id %}">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

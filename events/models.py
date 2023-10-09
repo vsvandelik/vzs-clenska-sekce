@@ -289,6 +289,10 @@ class EventOccurrence(PolymorphicModel):
     def attending_participants_attendance(self):
         raise NotImplementedError
 
+    @property
+    def is_opened(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -315,6 +319,9 @@ class OrganizerAssignment(PolymorphicModel):
         return self.occurrence.can_unenroll_position(
             self.person, self.position_assignment
         )
+
+    def is_transaction_settled(self):
+        return self.transaction is not None and self.transaction.is_settled
 
 
 class EventPersonTypeConstraint(models.Model):

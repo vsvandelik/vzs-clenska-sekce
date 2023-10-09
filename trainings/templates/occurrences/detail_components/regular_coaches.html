@@ -13,7 +13,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for coach_assignment in occurrence.regular_present_coaches_assignments %}
+                    {% for coach_assignment in occurrence.regular_present_coaches_assignments_sorted %}
                         <tr>
                             <td>
                                 <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
@@ -22,14 +22,16 @@
                                 <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a class="btn btn-secondary btn-sm"
-                                       data-toggle="modal"
-                                       data-target="#excuse-coach-modal"
-                                       data-action="{% url 'trainings:excuse-coach' event.id occurrence.id coach_assignment.id %}">
-                                        <i class="fas fa-sign-out-alt"></i>
-                                    </a>
-                                </div>
+                                {% if occurrence.is_opened %}
+                                    <div class="btn-group">
+                                        <a class="btn btn-secondary btn-sm"
+                                           data-toggle="modal"
+                                           data-target="#excuse-coach-modal"
+                                           data-action="{% url 'trainings:excuse-coach' event.id occurrence.id coach_assignment.id %}">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

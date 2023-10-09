@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.views import generic
 
-from events.models import ParticipantEnrollment
+from events.models import ParticipantEnrollment, EventOrOccurrenceState
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
@@ -428,16 +428,20 @@ class BulkApproveParticipantsMixin(
         return kwargs
 
 
-class EventOccurrenceIdCheckMixin:
-    def dispatch(self, request, *args, **kwargs):
+class GetOccurrenceProvider:
+    def get_occurrence(self, *args, **kwargs):
         if "occurrence_id" in kwargs:
             pk = kwargs["occurrence_id"]
         elif "pk" in kwargs:
             pk = kwargs["pk"]
         else:
             raise NotImplementedError
+        return get_object_or_404(EventOccurrence, pk=pk)
 
-        occurrence = get_object_or_404(EventOccurrence, pk=pk)
+
+class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
         if occurrence.event.id != kwargs["event_id"]:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
@@ -450,3 +454,11 @@ class OccurrenceDetailBaseView(
     generic.DetailView,
 ):
     occurrence_id_key = "pk"
+
+
+class OccurrenceOpenRestrictionMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
+        if occurrence.state != EventOrOccurrenceState.OPEN:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)

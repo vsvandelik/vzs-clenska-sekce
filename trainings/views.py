@@ -1,11 +1,15 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from events.models import EventOccurrence
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
@@ -26,10 +30,16 @@ from events.views import (
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
+    InsertOccurrenceIntoSelfObjectMixin,
+    OccurrenceOpenRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
+    InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
 
@@ -47,6 +57,8 @@ from .forms import (
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingEnrollMyselfParticipantForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
+    FillAttendanceForm,
+    ReopenTrainingOccurrenceForm,
     TrainingForm,
     TrainingParticipantAttendanceForm,
     TrainingParticipantEnrollmentForm,
@@ -245,6 +257,7 @@ class CoachOccurrenceBaseView(
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
+    OccurrenceOpenRestrictionMixin,
     generic.FormView,
 ):
     model = CoachOccurrenceAssignment
@@ -342,6 +355,7 @@ class EditOneTimeCoachView(
     MessagesMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
+    OccurrenceOpenRestrictionMixin,
     generic.UpdateView,
 ):
     model = CoachOccurrenceAssignment
@@ -368,6 +382,7 @@ class ParticipantOccurrenceBaseView(
     InsertOccurrenceIntoContextData,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
+    OccurrenceOpenRestrictionMixin,
     generic.FormView,
 ):
     model = TrainingParticipantAttendance
@@ -451,8 +466,59 @@ class EnrollMyselfParticipantFromOccurrenceView(
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
+    OccurrenceOpenRestrictionMixin,
     generic.CreateView,
 ):
     form_class = TrainingEnrollMyselfParticipantOccurrenceForm
     success_message = "Přihlášení jako jednorázový účastník proběhlo úspěšně"
     template_name = "occurrences/detail.html"
+
+
+class TrainingAttendanceMixin:
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = self.get_object()
+        if datetime.now(tz=timezone.get_default_timezone()) < occurrence.datetime_start:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class FillAttendanceView(
+    MessagesMixin,
+    TrainingAttendanceMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    generic.UpdateView,
+):
+    form_class = FillAttendanceForm
+    model = TrainingOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Zapsání docházky proběhlo úspěšně"
+    template_name = "occurrences/attendance.html"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "participant_assignments", self.get_form().checked_participant_assignments()
+        )
+        kwargs.setdefault(
+            "coach_assignments", self.get_form().checked_coach_assignments()
+        )
+        return super().get_context_data(**kwargs)
+
+
+class ReopenTrainingOccurrenceView(
+    MessagesMixin,
+    TrainingAttendanceMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    generic.UpdateView,
+):
+    form_class = ReopenTrainingOccurrenceForm
+    model = TrainingOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
+    template_name = "occurrences/modals/reopen_training.html"
