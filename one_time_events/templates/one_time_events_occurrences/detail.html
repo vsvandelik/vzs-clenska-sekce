@@ -39,7 +39,8 @@
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
-
+        simpleOrderableTableEnable("participants-missing-table", [0])
+        simpleOrderableTableEnable("organizers-missing-table", [0])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>
