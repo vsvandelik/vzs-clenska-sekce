@@ -90,4 +90,9 @@ urlpatterns = [
         views.OneTimeEventEnrollMyselfOrganizerView.as_view(),
         name="enroll-myself-organizer",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/",
+        views.OneTimeOccurrenceDetailView.as_view(),
+        name="occurrence-detail",
+    ),
 ]

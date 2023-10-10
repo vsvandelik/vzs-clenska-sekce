@@ -245,8 +245,9 @@ class OneTimeEventOccurrence(EventOccurrence):
         )
 
     def attending_participants_attendance(self):
-        # TODO: implement
-        raise NotImplementedError
+        return self.onetimeeventparticipantattendance_set.filter(
+            state=OneTimeEventAttendance.PRESENT
+        )
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

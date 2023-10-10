@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load vzs_filters %}
+{% load static %}
+{% block title %}
+    Detail dne {{ occurrence.date|date }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'one_time_events_occurrences/detail_components/overview.html' %}
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Chybějící
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'one_time_events_occurrences/detail_components/missing_participants.html' %}
+                        {% include 'one_time_events_occurrences/detail_components/missing_organizers.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+
+    </script>
+{% endblock %}

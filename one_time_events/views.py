@@ -18,6 +18,7 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
     InsertPositionAssignmentIntoModelFormKwargs,
+    OccurrenceDetailBaseView,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -41,6 +42,7 @@ from .forms import (
 from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
+    OneTimeEventOccurrence,
 )
 
 
@@ -264,3 +266,8 @@ class OneTimeEventEnrollMyselfOrganizerView(
     form_class = OneTimeEventEnrollMyselfOrganizerForm
     success_message = "Přihlášení jako organizátor proběhlo úspěšně"
     template_name = "one_time_events/enroll_myself_organizer.html"
+
+
+class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
+    model = OneTimeEventOccurrence
+    template_name = "one_time_events_occurrences/detail.html"
