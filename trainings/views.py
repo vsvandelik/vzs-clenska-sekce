@@ -526,3 +526,7 @@ class ReopenTrainingOccurrenceView(
     occurrence_id_key = "pk"
     success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
     template_name = "trainings_occurrences/modals/reopen_training.html"
+
+
+class OpenOccurrencesOverviewView(InsertEventIntoContextData, generic.TemplateView):
+    template_name = "trainings/modals/open_occurrences_overview.html"

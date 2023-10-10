@@ -13,6 +13,7 @@ from events.models import (
     EventOccurrence,
     OrganizerAssignment,
     ParticipantEnrollment,
+    EventOrOccurrenceState,
 )
 from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
@@ -299,6 +300,14 @@ class Training(Event):
             for training in iter_chain(self.replaces_training_list(), [self])
         )
 
+    def exists_occurrence_with_unfilled_attendance(self):
+        return any(
+            [
+                occurrence.attendace_not_filled_when_should()
+                for occurrence in self.eventoccurrence_set.all()
+            ]
+        )
+
 
 class CoachPositionAssignment(models.Model):
     person = models.ForeignKey(
@@ -567,6 +576,12 @@ class TrainingOccurrence(EventOccurrence):
 
     def can_attendance_be_filled(self):
         return datetime.now(tz=timezone.get_default_timezone()) > self.datetime_start
+
+    def attendace_not_filled_when_should(self):
+        return (
+            self.can_attendance_be_filled()
+            and self.state == EventOrOccurrenceState.OPEN
+        )
 
     def coach_assignments_settled(self):
         return CoachOccurrenceAssignment.objects.filter(

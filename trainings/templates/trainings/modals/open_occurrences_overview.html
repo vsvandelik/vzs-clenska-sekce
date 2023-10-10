@@ -1,33 +1,35 @@
 {% extends "modal.html" %}
-
+{% load static %}
 {% block modal_title %}
-    Neuzavřené tréninky
+    Dny k uzavření
 {% endblock %}
 
 {% block modal_body %}
-    <form method="post" action="{% url "trainings:add-replaceable-training" object.pk %}" id="add-replaceable-training">
-        {% csrf_token %}
-    </form>
-    <table class="table table-striped" id="add-managed-person-table">
+    <table class="table table-striped" id="open-occurrences-table">
         <thead>
             <tr>
-                <th>Trénink</th>
+                <th>Den</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            {% for training in trainings_for_replacement %}
-                <tr>
-                    <td class="align-middle">{{ training }}</td>
-                    <td class="text-center">
-                        <button type="submit" name="training_2" value="{{ training.pk }}" form="add-replaceable-training" class="btn btn-primary btn-sm">Přidat oboustranně</button>
-                    </td>
-                </tr>
+            {% for occurrence in event.sorted_occurrences_list %}
+                {% if occurrence.attendace_not_filled_when_should %}
+                    <tr>
+                        <td><a target="_blank" href="{% url 'trainings:occurrence-detail' event.id occurrence.id %}">{{ occurrence.datetime_start|date }}</a></td>
+                        <td>
+                            <a target="_blank" href="{% url 'trainings:fill-attendance' event.id occurrence.id %}" class="btn btn-info">Zapsat docházku</a>
+                        </td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
 {% endblock %}
 
-{% block modal_footer %}
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavřít</button>
+{% block modal_scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("open-occurrences-table", [0])
+    </script>
 {% endblock %}
