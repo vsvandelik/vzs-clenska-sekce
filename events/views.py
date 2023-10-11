@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,6 +6,7 @@ from django.db.models.query import QuerySet
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import generic
 
 from events.models import ParticipantEnrollment, EventOrOccurrenceState

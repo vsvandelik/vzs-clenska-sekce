@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from django.http import Http404
+from django.utils import timezone
 from django.views import generic
 
 from events.views import (
@@ -19,6 +23,8 @@ from events.views import (
     InsertOccurrenceIntoContextData,
     InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -38,6 +44,7 @@ from .forms import (
     OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerForm,
+    OneTimeEventFillAttendanceForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -271,3 +278,37 @@ class OneTimeEventEnrollMyselfOrganizerView(
 class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
     model = OneTimeEventOccurrence
     template_name = "one_time_events_occurrences/detail.html"
+
+
+class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = self.get_object()
+        if datetime.now(tz=timezone.get_default_timezone()).date() < occurrence.date:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class OneTimeEventFillAttendanceView(
+    MessagesMixin,
+    OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
+    InsertEventIntoContextData,
+    generic.UpdateView,
+):
+    form_class = OneTimeEventFillAttendanceForm
+    model = OneTimeEventOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Zapsání docházky proběhlo úspěšně"
+    template_name = "one_time_events_occurrences/attendance.html"
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "participant_assignments", self.get_form().checked_participant_assignments()
+        )
+        kwargs.setdefault(
+            "organizer_assignments", self.get_form().checked_organizer_assignments()
+        )
+        return super().get_context_data(**kwargs)

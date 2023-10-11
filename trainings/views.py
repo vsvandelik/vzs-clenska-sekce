@@ -9,20 +9,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import EventOccurrence
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
-    EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
@@ -33,7 +29,6 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
-    InsertOccurrenceIntoSelfObjectMixin,
     OccurrenceOpenRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
 )
@@ -42,7 +37,6 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -57,7 +51,7 @@ from .forms import (
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingEnrollMyselfParticipantForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
-    FillAttendanceForm,
+    TrainingFillAttendanceForm,
     ReopenTrainingOccurrenceForm,
     TrainingForm,
     TrainingParticipantAttendanceForm,
@@ -478,7 +472,7 @@ class EnrollMyselfParticipantFromOccurrenceView(
     template_name = "trainings_occurrences/detail.html"
 
 
-class TrainingAttendanceMixin:
+class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
         if datetime.now(tz=timezone.get_default_timezone()) < occurrence.datetime_start:
@@ -486,9 +480,9 @@ class TrainingAttendanceMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class FillAttendanceView(
+class TrainingFillAttendanceView(
     MessagesMixin,
-    TrainingAttendanceMixin,
+    TrainingOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
@@ -496,7 +490,7 @@ class FillAttendanceView(
     InsertEventIntoContextData,
     generic.UpdateView,
 ):
-    form_class = FillAttendanceForm
+    form_class = TrainingFillAttendanceForm
     model = TrainingOccurrence
     occurrence_id_key = "pk"
     success_message = "Zapsání docházky proběhlo úspěšně"
@@ -514,7 +508,7 @@ class FillAttendanceView(
 
 class ReopenTrainingOccurrenceView(
     MessagesMixin,
-    TrainingAttendanceMixin,
+    TrainingOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,

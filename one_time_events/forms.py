@@ -624,3 +624,92 @@ class OneTimeEventEnrollMyselfOrganizerForm(
             if commit:
                 instance.save()
         return instance
+
+
+class OneTimeEventFillAttendanceForm(ModelForm):
+    class Meta:
+        model = OneTimeEventOccurrence
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        post = kwargs.pop("request").POST
+        self.organizers = post.getlist("organizers")
+        self.participants = post.getlist("participants")
+        super().__init__(*args, **kwargs)
+
+    def _clean_parse_organizers(self):
+        organizer_assignments = []
+        for organizer_assignment_id_str in self.organizers:
+            try:
+                organizer_assignment_id = int(organizer_assignment_id_str)
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota přiřazení organizátora")
+                continue
+            organizer_assignment = OrganizerOccurrenceAssignment.objects.filter(
+                id=organizer_assignment_id
+            ).first()
+            organizer_assignments.append(organizer_assignment)
+        self.cleaned_data["organizers"] = organizer_assignments
+
+    def _clean_parse_participants(self):
+        participant_assignments = []
+        for participant_assignment_id_str in self.participants:
+            try:
+                participant_assignment_id = int(participant_assignment_id_str)
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota přiřazení účastníka")
+                continue
+            participant_assignment = OneTimeEventParticipantAttendance.objects.filter(
+                id=participant_assignment_id
+            ).first()
+            participant_assignments.append(participant_assignment)
+        self.cleaned_data["participants"] = participant_assignments
+
+    def checked_participant_assignments(self):
+        if hasattr(self, "cleaned_data") and "participants" in self.cleaned_data:
+            return self.cleaned_data["participants"]
+        if self.instance.is_opened:
+            return OneTimeEventParticipantAttendance.objects.filter(
+                Q(occurrence=self.instance)
+            )
+        return OneTimeEventParticipantAttendance.objects.filter(
+            occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
+        )
+
+    def checked_organizer_assignments(self):
+        if hasattr(self, "cleaned_data") and "organizers" in self.cleaned_data:
+            return self.cleaned_data["coaches"]
+        if self.instance.is_opened:
+            return OrganizerOccurrenceAssignment.objects.filter(
+                Q(occurrence=self.instance)
+            )
+        return OrganizerOccurrenceAssignment.objects.filter(
+            occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self._clean_parse_organizers()
+        self._clean_parse_participants()
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = EventOrOccurrenceState.CLOSED
+
+        observed_assignments = [
+            OneTimeEventParticipantAttendance.objects.filter(Q(occurrence=instance)),
+            OrganizerOccurrenceAssignment.objects.filter(Q(occurrence=instance)),
+        ]
+
+        assignments = [self.cleaned_data["participants"], self.cleaned_data["coaches"]]
+
+        for i in range(0, 2):
+            entity_assignments = observed_assignments[i]
+            for entity_assignment in entity_assignments:
+                if entity_assignment in assignments[i]:
+                    entity_assignment.state = OneTimeEventAttendance.PRESENT
+                if commit:
+                    entity_assignment.save()
+        if commit:
+            instance.save()

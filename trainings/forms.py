@@ -851,7 +851,7 @@ class TrainingEnrollMyselfParticipantOccurrenceForm(
         return instance
 
 
-class FillAttendanceForm(ModelForm):
+class TrainingFillAttendanceForm(ModelForm):
     class Meta:
         model = TrainingOccurrence
         fields = []

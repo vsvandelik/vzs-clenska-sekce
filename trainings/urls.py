@@ -155,7 +155,7 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/detail-dne/<int:pk>/vyplnit-dochazku/",
-        views.FillAttendanceView.as_view(),
+        views.TrainingFillAttendanceView.as_view(),
         name="fill-attendance",
     ),
     path(
