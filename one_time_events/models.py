@@ -252,6 +252,12 @@ class OneTimeEventOccurrence(EventOccurrence):
     def participants_assignment_by_Q(self, q_condition):
         return self.onetimeeventparticipantattendance_set.filter(q_condition)
 
+    def approved_participant_assignments(self):
+        return self.participants_assignment_by_Q(Q())
+
+    def approved_organizer_assignment(self):
+        return self.organizers_assignments_by_Q(Q())
+
     def missing_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(state=OneTimeEventAttendance.MISSING)

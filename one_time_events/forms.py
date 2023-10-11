@@ -702,14 +702,20 @@ class OneTimeEventFillAttendanceForm(ModelForm):
             OrganizerOccurrenceAssignment.objects.filter(Q(occurrence=instance)),
         ]
 
-        assignments = [self.cleaned_data["participants"], self.cleaned_data["coaches"]]
+        assignments = [
+            self.cleaned_data["participants"],
+            self.cleaned_data["organizers"],
+        ]
 
         for i in range(0, 2):
             entity_assignments = observed_assignments[i]
             for entity_assignment in entity_assignments:
                 if entity_assignment in assignments[i]:
                     entity_assignment.state = OneTimeEventAttendance.PRESENT
+                else:
+                    entity_assignment.state = OneTimeEventAttendance.MISSING
                 if commit:
                     entity_assignment.save()
         if commit:
             instance.save()
+        return instance
