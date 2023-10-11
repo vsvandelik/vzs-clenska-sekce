@@ -11,17 +11,16 @@
                     </tr>
                 </thead>
                 <tbody>
-{#                TODO#}
-{#                {% for coach_assignment in occurrence.unexcused_coaches_assignments_sorted %}#}
-{#                    <tr>#}
-{#                        <td>#}
-{#                            <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>#}
-{#                        </td>#}
-{#                        <td>#}
-{#                            <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>#}
-{#                        </td>#}
-{#                    </tr>#}
-{#                {% endfor %}#}
+                    {% for organizer_assignment in occurrence.missing_organizers_assignments_sorted %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'positions:detail' organizer_assignment.position_assignment.position.id %}">{{ organizer_assignment.position_assignment.position }}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

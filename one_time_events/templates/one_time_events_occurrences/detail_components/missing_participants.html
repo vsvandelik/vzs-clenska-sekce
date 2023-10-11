@@ -11,14 +11,13 @@
                     </tr>
                 </thead>
                 <tbody>
-{#                    TODO#}
-{#                    {% for participant_assignment in occurrence.unexcused_participants_assignments_sorted %}#}
-{#                        <tr>#}
-{#                            <td>#}
-{#                                <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>#}
-{#                            </td>#}
-{#                        </tr>#}
-{#                    {% endfor %}#}
+                    {% for participant_assignment in occurrence.missing_participants_assignments_sorted %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

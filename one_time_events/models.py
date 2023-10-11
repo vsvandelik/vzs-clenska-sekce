@@ -249,6 +249,22 @@ class OneTimeEventOccurrence(EventOccurrence):
             state=OneTimeEventAttendance.PRESENT
         )
 
+    def participants_assignment_by_Q(self, q_condition):
+        return self.onetimeeventparticipantattendance_set.filter(q_condition)
+
+    def missing_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            Q(state=OneTimeEventAttendance.MISSING)
+        ).order_by("person")
+
+    def organizers_assignments_by_Q(self, q_condition):
+        return self.organizeroccurrenceassignment_set.filter(q_condition)
+
+    def missing_organizers_assignments_sorted(self):
+        return self.organizers_assignments_by_Q(
+            Q(state=OneTimeEventAttendance.MISSING)
+        ).order_by("person")
+
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(
