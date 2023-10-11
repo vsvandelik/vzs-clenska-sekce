@@ -4,6 +4,7 @@ from django.http import Http404
 from django.utils import timezone
 from django.views import generic
 
+from events.models import EventOrOccurrenceState
 from events.views import (
     EventCreateMixin,
     EventDetailBaseView,
@@ -25,6 +26,7 @@ from events.views import (
     OccurrenceDetailBaseView,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
+    GetOccurrenceProvider,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -288,10 +290,19 @@ class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class OccurrenceNotApprovedRestrictionMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
+        if occurrence.state == EventOrOccurrenceState.COMPLETED:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class OneTimeEventFillAttendanceView(
     MessagesMixin,
     OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    OccurrenceNotApprovedRestrictionMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
     InsertRequestIntoModelFormKwargsMixin,
