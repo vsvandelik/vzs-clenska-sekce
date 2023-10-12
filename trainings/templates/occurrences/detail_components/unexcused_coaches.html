@@ -1,0 +1,29 @@
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Chybějící neomluvení</div>
+        </div>
+        <div class="card-body">
+            <table class="table" id="coaches-unexcused-table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Pozice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coach_assignment in occurrence.unexcused_coaches_assignments_sorted %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

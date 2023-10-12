@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
-from features.models import FeatureAssignment, Feature
+from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
 
@@ -217,6 +217,17 @@ class Event(PolymorphicModel):
     def substitute_enrollments_2_capacity(self):
         raise NotImplementedError
 
+    def can_person_interact_with(self, person):
+        return (
+            self.can_person_enroll_as_waiting(person)
+            or self.can_person_enroll_as_participant(person)
+            or self.can_participant_unenroll(person)
+            or person in self.enrolled_participants.all()
+        )
+
+    def can_user_manage(self, user):
+        return user.has_perm(f"{type(self)._meta.app_label}.{self.category}")
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -278,6 +289,10 @@ class EventOccurrence(PolymorphicModel):
     def attending_participants_attendance(self):
         raise NotImplementedError
 
+    @property
+    def is_opened(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -304,6 +319,9 @@ class OrganizerAssignment(PolymorphicModel):
         return self.occurrence.can_unenroll_position(
             self.person, self.position_assignment
         )
+
+    def is_transaction_settled(self):
+        return self.transaction is not None and self.transaction.is_settled
 
 
 class EventPersonTypeConstraint(models.Model):

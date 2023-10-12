@@ -1,7 +1,7 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
-from django.http import HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -16,14 +16,15 @@ from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
 from vzs.utils import export_queryset_csv, reverse_with_get_params
+
 from .forms import (
-    TransactionEditForm,
+    TransactionAddTrainingPaymentForm,
+    TransactionCreateBulkConfirmForm,
+    TransactionCreateBulkForm,
     TransactionCreateForm,
     TransactionCreateFromPersonForm,
+    TransactionEditForm,
     TransactionFilterForm,
-    TransactionCreateBulkForm,
-    TransactionCreateBulkConfirmForm,
-    TransactionAddTrainingPaymentForm,
 )
 from .models import Transaction
 from .utils import send_email_transactions
@@ -98,31 +99,6 @@ class TransactionListMixin(generic.detail.DetailView):
 
 class TransactionListView(TransactionListMixin):
     template_name = "transactions/list.html"
-
-    def get_context_data(self, **kwargs):
-        person = self.object
-        transactions = person.transactions
-
-        transactions_debt = transactions.filter(Transaction.Q_debt)
-        transactions_reward = transactions.filter(Transaction.Q_reward)
-
-        transactions_due = transactions.filter(fio_transaction__isnull=True)
-        transactions_current_debt = transactions_due.filter(Transaction.Q_debt)
-        transactions_due_reward = transactions_due.filter(Transaction.Q_reward)
-
-        current_debt = (
-            transactions_current_debt.aggregate(result=Sum("amount"))["result"] or 0
-        )
-        due_reward = (
-            transactions_due_reward.aggregate(result=Sum("amount"))["result"] or 0
-        )
-
-        kwargs.setdefault("transactions_debt", transactions_debt)
-        kwargs.setdefault("transactions_reward", transactions_reward)
-        kwargs.setdefault("current_debt", current_debt)
-        kwargs.setdefault("due_reward", due_reward)
-
-        return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         if self.request.user.has_perm("transactions.spravce_transakci"):
@@ -427,7 +403,7 @@ class TransactionSendEmailView(generic.View):
         )
 
 
-class MyTransactionsView(TransactionListMixin):
+class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
     template_name = "transactions/my_transactions.html"
 
     def get_object(self, queryset=None):
