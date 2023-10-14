@@ -1,9 +1,15 @@
+import random
+from datetime import timedelta, date
+
+import unidecode
 from django.core.management import BaseCommand
 
-from features.models import Feature
+from features.models import Feature, FeatureAssignment
 from groups.models import Group
+from persons.models import Person
 from positions.models import EventPosition
-from price_lists.models import PriceList, PriceListBonus
+from transactions.models import Transaction, FioTransaction
+from vzs.management.commands.data_list import names, addresses
 
 
 class Command(BaseCommand):
@@ -12,13 +18,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # self._add_qualifications()
         # self._add_permissions()
-        # self._add_equipment()
+        self._add_equipment()
 
         # self._add_groups()
 
         # self._add_positions()
 
-        self._add_price_lists()
+        self._add_persons()
 
         self.stdout.write(self.style.SUCCESS(f"Successfully added some demo data."))
 
@@ -224,15 +230,15 @@ class Command(BaseCommand):
         EventPosition.objects.all().delete()
 
         EventPosition.objects.create(
-            name="Zdravotník", min_age=18, min_age_enabled=True
+            name="Zdravotník", min_age=18, wage_hour=50
         ).required_features.add(
             Feature.objects.get(name="Zdravotník zotavovacích akcí")
         )
 
-        EventPosition.objects.create(name="Velitel", min_age=18, min_age_enabled=True)
+        EventPosition.objects.create(name="Velitel", min_age=18, wage_hour=30)
 
         ridic_clunu = EventPosition.objects.create(
-            name="Řidič člunu", min_age=18, min_age_enabled=True
+            name="Řidič člunu", min_age=18, wage_hour=0
         )
         ridic_clunu.required_features.add(
             Feature.objects.get(name="Vůdce záchranného plavidla")
@@ -240,18 +246,17 @@ class Command(BaseCommand):
         ridic_clunu.required_features.add(Feature.objects.get(name="Záchranář VZS"))
 
         EventPosition.objects.create(
-            name="Řidič auta (bez B+E)", min_age=18, min_age_enabled=True
+            name="Řidič auta (bez B+E)", min_age=18, wage_hour=0
         ).required_features.add(Feature.objects.get(name="B"))
 
         EventPosition.objects.create(
-            name="Řidič auta s velkým vozíkem", min_age=18, min_age_enabled=True
+            name="Řidič auta s velkým vozíkem", min_age=18, wage_hour=0
         ).required_features.add(Feature.objects.get(name="B+E"))
 
         trener_plavani = EventPosition.objects.create(
             name="Trenér plavání",
             min_age=18,
-            min_age_enabled=True,
-            group_membership_required=True,
+            wage_hour=0,
             group=Group.objects.get(name="Trenéři plavání"),
         )
         trener_plavani.required_features.add(Feature.objects.get(name="Trenér plavání"))
@@ -262,72 +267,83 @@ class Command(BaseCommand):
         EventPosition.objects.create(
             name="Instruktor lezení",
             min_age=18,
-            min_age_enabled=True,
-            group_membership_required=True,
+            wage_hour=0,
             group=Group.objects.get(name="Trenéři lezení"),
         ).required_features.add(Feature.objects.get(name="Instruktor lezení"))
 
-    def _add_price_lists(self):
-        PriceList.objects.all().delete()
+    def _add_persons(self):
+        Person.objects.all().delete()
 
-        zajistovacka_celodenni = PriceList.objects.create(
-            name="Komerční zajišťovací akce",
-            salary_base=2000,
-            participant_fee=0,
-            is_template=True,
-        )
-        PriceListBonus.objects.create(
-            price_list=zajistovacka_celodenni,
-            feature=Feature.objects.get(name="Vůdce záchranného plavidla"),
-            extra_salary=300,
-        )
-        PriceListBonus.objects.create(
-            price_list=zajistovacka_celodenni,
-            feature=Feature.objects.get(name="Záchranář VZS"),
-            extra_salary=500,
-        )
+        # Setting age boundaries for children
+        max_birthdate = date.today() - timedelta(days=(6 * 365))
+        min_birthdate = date.today() - timedelta(days=(17 * 365))
 
-        zajistovacka_puldenni = PriceList.objects.create(
-            name="Komerční zajišťovací akce - půlden",
-            salary_base=1000,
-            participant_fee=0,
-            is_template=True,
-        )
-        PriceListBonus.objects.create(
-            price_list=zajistovacka_puldenni,
-            feature=Feature.objects.get(name="Vůdce záchranného plavidla"),
-            extra_salary=150,
-        )
-        PriceListBonus.objects.create(
-            price_list=zajistovacka_puldenni,
-            feature=Feature.objects.get(name="Záchranář VZS"),
-            extra_salary=250,
-        )
+        for name in names[:100]:
+            first_name, last_name = name.split(" ")
+            new_person = Person(
+                email=f"{unidecode.unidecode(first_name)}.{unidecode.unidecode(last_name)}@email.cz",
+                first_name=first_name,
+                last_name=last_name,
+                date_of_birth=min_birthdate
+                + timedelta(
+                    days=random.randint(0, (max_birthdate - min_birthdate).days)
+                ),
+                sex=random.choices(Person.Sex.values)[0],
+                person_type="dite",
+                birth_number=f"{random.randint(0, 99):02}{random.randint(0, 12):02}{random.randint(0, 31):02}",
+                health_insurance_company=random.choices(
+                    Person.HealthInsuranceCompany.values
+                )[0],
+            )
 
-        prezentacni_akce = PriceList.objects.create(
-            name="Prezentační akce",
-            salary_base=2000,
-            participant_fee=0,
-            is_template=True,
-        )
+            if random.randint(0, 2) == 1:
+                new_person.phone = f"{random.randint(600000000, 799999999)}"
 
-        trenink = PriceList.objects.create(
-            name="Trénink", salary_base=200, participant_fee=0, is_template=True
-        )
-        PriceListBonus.objects.create(
-            price_list=trenink,
-            feature=Feature.objects.get(name="Trenér plavání"),
-            extra_salary=20,
-        )
-        PriceListBonus.objects.create(
-            price_list=trenink,
-            feature=Feature.objects.get(name="Plavčík/plavčice"),
-            extra_salary=20,
-        )
+            if random.randint(0, 2) == 1:
+                new_person.street, new_person.city, postcode = random.choice(addresses)
+                new_person.postcode = int(postcode.replace(" ", ""))
 
-        kurz_plavcik = PriceList.objects.create(
-            name="Kurz plavčík 2023",
-            salary_base=2000,
-            participant_fee=3000,
-            is_template=False,
-        )
+            if random.randint(0, 2) == 1:
+                new_person.swimming_time = f"{random.randint(0, 1):02}:{random.randint(0, 59):02}.{random.randint(0, 99):02}"
+
+            new_person.save()
+
+            if random.randint(0, 4) == 1:
+                assigned_feature = FeatureAssignment.objects.create(
+                    feature=Feature.objects.get(name="Ploutve"),
+                    person=new_person,
+                    date_assigned=date(date.today().year, 9, random.randint(1, 30)),
+                    date_expire=date(date.today().year + 1, 6, random.randint(1, 30)),
+                    code=f"Ploutve č. {random.randint(0, 999):03}",
+                )
+
+                fio_transaction = None
+                if random.randint(0, 1) == 1:
+                    fio_transaction = FioTransaction.objects.create(
+                        date_settled=date.today(),
+                        fio_id=random.randint(0, 999999999),
+                    )
+
+                Transaction.objects.create(
+                    person=new_person,
+                    amount=-Feature.objects.get(name="Ploutve").fee,
+                    feature_assigment=assigned_feature,
+                    reason="Poplatek za ploutve",
+                    date_due=assigned_feature.date_assigned + timedelta(days=30),
+                    fio_transaction=fio_transaction,
+                )
+
+            for i in range(random.randint(0, 4)):
+                existing_parents = Person.objects.filter(person_type="rodic").all()
+
+                if random.randint(0, 4) == 1:  # existing parent
+                    new_person.managed_by.add(random.choice(existing_parents))
+                else:
+                    new_parent = Person.objects.create(
+                        first_name=f"Rodič {i}",
+                        last_name=last_name,
+                        email=f"rodic.{i}.{unidecode.unidecode(first_name)}.{unidecode.unidecode(last_name)}@email.cz",
+                        person_type="rodic",
+                    )
+
+                    new_person.managed_by.add(new_parent)
