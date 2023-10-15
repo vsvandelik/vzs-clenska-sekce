@@ -276,6 +276,7 @@ class EventPositionAssignmentMixin(
 ):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
+    event_id_key = "event_id"
 
 
 class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
