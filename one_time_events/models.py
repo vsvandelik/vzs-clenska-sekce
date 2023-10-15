@@ -253,7 +253,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         return self.onetimeeventparticipantattendance_set.filter(q_condition)
 
     def approved_participant_assignments(self):
-        return self.participants_assignment_by_Q(Q())
+        return self.participants_assignment_by_Q(Q()).order_by("person")
 
     def approved_organizer_assignment(self):
         return self.organizers_assignments_by_Q(Q())
@@ -272,7 +272,17 @@ class OneTimeEventOccurrence(EventOccurrence):
         ).order_by("person")
 
     def approved_organizer_assignments(self):
-        pass
+        return self.organizers_assignments_by_Q(Q()).order_by("person")
+
+    def organizer_assignments_settled(self):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            Q(occurrence=self)
+            & ~Q(transaction=None)
+            & ~Q(transaction__fio_transaction=None)
+        )
+
+    def can_be_changed_from_approve_to_open(self):
+        return len(self.organizer_assignments_settled()) == 0
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

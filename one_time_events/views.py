@@ -27,6 +27,9 @@ from events.views import (
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     GetOccurrenceProvider,
+    OccurrenceNotOpenedRestrictionMixin,
+    OccurrenceIsClosedRestrictionMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -48,6 +51,7 @@ from .forms import (
     OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventFillAttendanceForm,
     ApproveOccurrenceForm,
+    ReopenOneTimeEventOccurrenceForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -329,14 +333,6 @@ class OneTimeEventFillAttendanceView(
     template_name = "one_time_events_occurrences/attendance.html"
 
 
-class OccurrenceNotOpenedRestrictionMixin(GetOccurrenceProvider):
-    def dispatch(self, request, *args, **kwargs):
-        occurrence = super().get_occurrence(*args, **kwargs)
-        if occurrence.state == EventOrOccurrenceState.OPEN:
-            raise Http404("Tato stránka není dostupná")
-        return super().dispatch(request, *args, **kwargs)
-
-
 class ApproveOccurrenceView(
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
@@ -352,3 +348,19 @@ class ApproveOccurrenceView(
     occurrence_id_key = "pk"
     success_message = "Schválení proběhlo úspěšně"
     template_name = "one_time_events_occurrences/approve_occurrence.html"
+
+
+class ReopenOneTimeEventOccurrenceView(
+    MessagesMixin,
+    OccurrenceIsClosedRestrictionMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    generic.UpdateView,
+):
+    form_class = ReopenOneTimeEventOccurrenceForm
+    model = OneTimeEventOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
+    template_name = "one_time_events_occurrences/modals/reopen_occurrence.html"

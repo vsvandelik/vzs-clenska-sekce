@@ -998,7 +998,7 @@ class ReopenTrainingOccurrenceForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        if not self.instance.can_be_reopened:
+        if not self.instance.can_be_reopened():
             self.add_error(None, "Tato událost nemůže být znovu otevřena")
         return cleaned_data
 

@@ -74,7 +74,9 @@
                                         <input id="{{ organizer_assignment.id }}_organizer_checkbox" type="checkbox"
                                                {% if organizer_assignment in organizer_assignments %}checked{% endif %}
                                                class="custom-control-input" name="organizers"
-                                               value="{{ organizer_assignment.id }}">
+                                               value="{{ organizer_assignment.id }}"
+                                               onchange="organizerAttendaceChanged(this)"
+                                        >
                                         <label for="{{ organizer_assignment.id }}_organizer_checkbox"
                                                class="custom-control-label"></label>
                                     </div>
@@ -83,7 +85,8 @@
                                     <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
                                            class="form-control"
                                            type="number" value=""
-                                           style="display: none">
+                                           {% if organizer_assignment not in organizer_assignments %}disabled{% endif %}
+                                    >
                                 </td>
                             </tr>
                         {% endfor %}
@@ -95,6 +98,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static 'one_time_events_occurrences/approve_occurrence.js' %}"></script>
     <script src="{% static "datatables.js" %}"></script>
     <script>
         simpleOrderableTableEnable("participants-table", [0])

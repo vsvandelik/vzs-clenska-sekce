@@ -754,3 +754,32 @@ class ApproveOccurrenceForm(ModelForm):
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
         )
+
+
+class ReopenOneTimeEventOccurrenceForm(ModelForm):
+    class Meta:
+        model = OneTimeEventOccurrence
+        fields = []
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.state = EventOrOccurrenceState.OPEN
+
+        observed_assignments = [
+            OneTimeEventParticipantAttendance.objects.filter(
+                occurrence=instance, state=OneTimeEventAttendance.MISSING
+            ),
+            OrganizerOccurrenceAssignment.objects.filter(
+                occurrence=instance, state=OneTimeEventAttendance.MISSING
+            ),
+        ]
+
+        for assignments in observed_assignments:
+            for assignment in assignments:
+                assignment.state = OneTimeEventAttendance.PRESENT
+                if commit:
+                    assignment.save()
+
+        if commit:
+            instance.save()
+        return instance

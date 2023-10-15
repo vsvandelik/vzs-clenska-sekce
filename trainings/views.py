@@ -31,6 +31,7 @@ from events.views import (
     InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceOpenRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    OccurrenceNotOpenedRestrictionMixin,
 )
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
@@ -508,7 +509,7 @@ class TrainingFillAttendanceView(
 
 class ReopenTrainingOccurrenceView(
     MessagesMixin,
-    TrainingOccurrenceAttendanceCanBeFilledMixin,
+    OccurrenceNotOpenedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
@@ -519,7 +520,7 @@ class ReopenTrainingOccurrenceView(
     model = TrainingOccurrence
     occurrence_id_key = "pk"
     success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
-    template_name = "trainings_occurrences/modals/reopen_training.html"
+    template_name = "trainings_occurrences/modals/reopen_occurrence.html"
 
 
 class OpenOccurrencesOverviewView(InsertEventIntoContextData, generic.TemplateView):

@@ -1,0 +1,22 @@
+{% extends "modal.html" %}
+{% load vzs_filters %}
+{% load static %}
+{% block modal_title %}
+    Znovu otevření a zrušení zápisu docházky
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu znovu otevřít a zrušit předání ke schválení se zápisem docházky
+            dne {{ occurrence.date|date }}
+            události {{ occurrence.event }}?</p>
+    </div>
+
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    <form method="post" action="{% url 'one_time_events:reopen-occurrence' event.id occurrence.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Znovu otevřít a zrušit zápis docházky</button>
+    </form>
+{% endblock %}

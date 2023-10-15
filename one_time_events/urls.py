@@ -105,4 +105,9 @@ urlpatterns = [
         views.ApproveOccurrenceView.as_view(),
         name="approve-occurrence",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/znovu-otevrit/",
+        views.ReopenOneTimeEventOccurrenceView.as_view(),
+        name="reopen-occurrence",
+    ),
 ]
