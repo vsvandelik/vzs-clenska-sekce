@@ -66,17 +66,19 @@
                                 <a href="{% url 'positions:detail' organizer_assignment.position_assignment.position.id %}">{{ organizer_assignment.position_assignment.position }}</a>
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a class="btn btn-success btn-sm"
-                                       href="{% url 'one_time_events:edit-organizer-for-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}">
-                                        <i class="fas fa-pen"></i>
-                                    </a>
-                                    <a href="#" data-toggle="modal" data-target="#delete-organizer-assignment-modal"
-                                       data-action="{% url 'one_time_events:delete-organizer-from-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}"
-                                       class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
+                                {% if occurrence.is_opened %}
+                                    <div class="btn-group">
+                                        <a class="btn btn-success btn-sm"
+                                           href="{% url 'one_time_events:edit-organizer-for-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="#" data-toggle="modal" data-target="#delete-organizer-assignment-modal"
+                                           data-action="{% url 'one_time_events:delete-organizer-from-occurrence' organizer_assignment.occurrence.id organizer_assignment.id %}"
+                                           class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -85,8 +87,11 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'one_time_events:add-organizer-for-occurrence' occurrence.id %}" class="btn-primary btn">Přidat</a>
-        </div>
+        {% if occurrence.is_opened %}
+            <div class="card-footer text-center">
+                <a href="{% url 'one_time_events:add-organizer-for-occurrence' occurrence.id %}"
+                   class="btn-primary btn">Přidat</a>
+            </div>
+        {% endif %}
     </div>
 </div>

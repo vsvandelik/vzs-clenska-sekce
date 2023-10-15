@@ -30,6 +30,7 @@ from events.views import (
     OccurrenceNotOpenedRestrictionMixin,
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceOpenRestrictionMixin,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -166,7 +167,9 @@ class EditOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.Update
         return super().get_context_data(**kwargs)
 
 
-class DeleteOrganizerForOccurrenceView(OrganizerForOccurrenceMixin, generic.DeleteView):
+class DeleteOrganizerForOccurrenceView(
+    OccurrenceOpenRestrictionMixin, OrganizerForOccurrenceMixin, generic.DeleteView
+):
     model = OrganizerOccurrenceAssignment
     template_name = "one_time_events/modals/delete_organizer_assignment.html"
     context_object_name = "organizer_assignment"

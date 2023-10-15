@@ -9,6 +9,18 @@
 {% block card_title %}Přidání{% endblock %}
 {% block savebtn_value %}Přidat{% endblock %}
 {% block savebtn_class %}btn-primary{% endblock %}
+{% block child2_notifications %}
+    <div id="not-opened-notification" class="card bg-danger" style="display: none">
+        <div class="card-header border-0">
+            Dny, jejichž výběr je zakázán, již nejsou otevřeny
+        </div>
+    </div>
+    <div id="capacity-notification" class="card bg-warning" style="display: none">
+        <div class="card-header border-0">
+            Dny ve žlutém pozadí jsou již zaplněny
+        </div>
+    </div>
+{% endblock %}
 {% block body2 %}
     {% include 'one_time_events/components/occurrence_selection.html' %}
 {% endblock %}

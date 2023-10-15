@@ -379,7 +379,17 @@ class OneTimeEventEnrollMyselfParticipantForm(
         return instance
 
 
-class OrganizerOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm):
+class OccurrenceOpenRestrictionMixin:
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.occurrence.is_opened:
+            self.add_error(None, "Tento ten již není otevřen")
+        return cleaned_data
+
+
+class OrganizerOccurrenceAssignmentForm(
+    OccurrenceFormMixin, OccurrenceOpenRestrictionMixin, OrganizerAssignmentForm
+):
     class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
 
@@ -417,7 +427,8 @@ class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["person"].widget.queryset = Person.objects.filter(
-            organizeroccurrenceassignment__occurrence__event=self.event
+            organizeroccurrenceassignment__occurrence__event=self.event,
+            organizeroccurrenceassignment__occurrence__state=EventOrOccurrenceState.OPEN,
         ).distinct()
 
     def clean(self):

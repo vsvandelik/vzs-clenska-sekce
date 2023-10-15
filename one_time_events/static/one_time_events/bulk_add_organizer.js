@@ -27,15 +27,31 @@ function update(positionId) {
         $(`#occurrence-${oid}-count`).text(actual)
         const card = $(`#occurrence-${oid}-card`)
         const checkbox = $(`#occurrence-${oid}`)
+        const checkboxIsDisabled = checkbox.prop('disabled')
+        if(checkboxIsDisabled) {
+            checkbox.prop('checked', false)
+            showNotOpenedNotification()
+        }
         if(actual >= max) {
+            showCapacityNotification()
             card.addClass('bg-warning')
-            notifyCheckboxDisable(checkbox)
+            if(!checkboxIsDisabled)
+                notifyCheckboxDisable(checkbox)
         }
         else {
             card.removeClass('bg-warning')
-            notifyCheckboxEnable(checkbox)
+            if(!checkboxIsDisabled)
+                notifyCheckboxEnable(checkbox)
         }
     }
+}
+
+function showCapacityNotification() {
+    $('#capacity-notification').show()
+}
+
+function showNotOpenedNotification() {
+    $('#not-opened-notification').show()
 }
 
 function positionChanged() {
