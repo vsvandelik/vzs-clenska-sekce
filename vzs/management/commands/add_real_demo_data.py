@@ -3,6 +3,7 @@ from datetime import timedelta, date
 
 import unidecode
 from django.core.management import BaseCommand
+from django.db.models import Q
 
 from features.models import Feature, FeatureAssignment
 from groups.models import Group
@@ -16,15 +17,16 @@ class Command(BaseCommand):
     help = "Add real demo data to the database"
 
     def handle(self, *args, **options):
-        # self._add_qualifications()
-        # self._add_permissions()
+        self._add_qualifications()
+        self._add_permissions()
         self._add_equipment()
 
-        # self._add_groups()
+        self._add_groups()
 
-        # self._add_positions()
+        self._add_positions()
 
-        self._add_persons()
+        self._add_persons_children()
+        self._add_persons_others()
 
         self.stdout.write(self.style.SUCCESS(f"Successfully added some demo data."))
 
@@ -271,8 +273,10 @@ class Command(BaseCommand):
             group=Group.objects.get(name="Trenéři lezení"),
         ).required_features.add(Feature.objects.get(name="Instruktor lezení"))
 
-    def _add_persons(self):
-        Person.objects.all().delete()
+    def _add_persons_children(self):
+        Person.objects.filter(
+            Q(person_type=Person.Type.CHILD) | Q(person_type=Person.Type.PARENT)
+        ).delete()
 
         # Setting age boundaries for children
         max_birthdate = date.today() - timedelta(days=(6 * 365))
@@ -347,3 +351,104 @@ class Command(BaseCommand):
                     )
 
                     new_person.managed_by.add(new_parent)
+
+    def _add_persons_others(self):
+        Person.objects.exclude(
+            Q(person_type=Person.Type.CHILD) | Q(person_type=Person.Type.PARENT)
+        ).delete()
+
+        # Setting age boundaries for children
+        max_birthdate = date.today() - timedelta(days=(18 * 365))
+        min_birthdate = date.today() - timedelta(days=(100 * 365))
+
+        for name in names[100:]:
+            first_name, last_name = name.split(" ")
+            new_person = Person(
+                email=f"{unidecode.unidecode(first_name)}.{unidecode.unidecode(last_name)}@email.cz",
+                first_name=first_name,
+                last_name=last_name,
+                date_of_birth=min_birthdate
+                + timedelta(
+                    days=random.randint(0, (max_birthdate - min_birthdate).days)
+                ),
+                phone=f"{random.randint(600000000, 799999999)}",
+                sex=random.choices(Person.Sex.values)[0],
+                person_type=random.choice(
+                    [
+                        Person.Type.ADULT,
+                        Person.Type.EXTERNAL,
+                        Person.Type.HONORARY,
+                        Person.Type.FORMER,
+                    ]
+                ),
+                birth_number=f"{random.randint(0, 99):02}{random.randint(0, 12):02}{random.randint(0, 31):02}",
+                health_insurance_company=random.choices(
+                    Person.HealthInsuranceCompany.values
+                )[0],
+            )
+
+            new_person.street, new_person.city, postcode = random.choice(addresses)
+            new_person.postcode = int(postcode.replace(" ", ""))
+
+            new_person.save()
+
+            all_qualifications = Feature.qualifications.all()
+            all_permissions = Feature.permissions.all()
+            all_equipments = Feature.equipments.all()
+
+            for i in range(random.randint(0, 8)):
+                FeatureAssignment.objects.create(
+                    feature=random.choice(all_qualifications),
+                    person=new_person,
+                    date_assigned=new_person.date_of_birth
+                    + timedelta(
+                        days=random.randint(
+                            0, (date.today() - new_person.date_of_birth).days
+                        )
+                    ),
+                )
+
+            for i in range(random.randint(0, 8)):
+                FeatureAssignment.objects.create(
+                    feature=random.choice(all_permissions),
+                    person=new_person,
+                    date_assigned=new_person.date_of_birth
+                    + timedelta(
+                        days=random.randint(
+                            0, (date.today() - new_person.date_of_birth).days
+                        )
+                    ),
+                )
+
+            for i in range(random.randint(0, 8)):
+                FeatureAssignment.objects.create(
+                    feature=random.choice(all_equipments),
+                    person=new_person,
+                    date_assigned=new_person.date_of_birth
+                    + timedelta(
+                        days=random.randint(
+                            0, (date.today() - new_person.date_of_birth).days
+                        )
+                    ),
+                )
+
+            new_person.groups.add(Group.objects.get(name="Dospělí"))
+
+            if random.randint(0, 5) == 1:
+                new_person.groups.add(Group.objects.get(name="Tým IZS"))
+
+            if random.randint(0, 5) == 1:
+                new_person.groups.add(Group.objects.get(name="Velitelé - Orlík"))
+
+            if random.randint(0, 5) == 1:
+                new_person.groups.add(Group.objects.get(name="Představenstvo"))
+
+            if new_person.featureassignment_set.contains(
+                Feature.objects.get(name="Trenér plavání")
+            ):
+                new_person.groups.add(Group.objects.get(name="Trenéři plavání"))
+
+            if new_person.featureassignment_set.contains(
+                Feature.objects.get(name="Instruktor lezení")
+            ):
+                new_person.groups.add(Group.objects.get(name="Trenéři lezení"))
