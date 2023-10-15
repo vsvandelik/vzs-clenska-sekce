@@ -180,6 +180,9 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     def receive_amount(self):
+        if self.transaction is not None:
+            return self.transaction.amount
+
         hours = self.occurrence.hours
         wage_hour = self.position_assignment.position.wage_hour
         person_rate = PersonHourlyRate.get_person_hourly_rates(self.person)

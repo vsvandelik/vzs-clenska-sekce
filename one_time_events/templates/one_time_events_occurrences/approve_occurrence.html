@@ -1,5 +1,6 @@
 {% extends 'one_time_events_occurrences/detail_bases/attendance.html' %}
 {% load static %}
+{% load vzs_filters %}
 {% block location_text %}{{ event }} – {{ occurrence.date|date }}{% endblock %}
 {% block form_action %}{% url 'one_time_events:approve-occurrence' event.id occurrence.id %}{% endblock %}
 
@@ -84,7 +85,7 @@
                                 <td>
                                     <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
                                            class="form-control"
-                                           type="number" value="{{ organizer_assignment.receive_amount }}" min="0"
+                                           type="number" value="{{ organizer_amounts|index:organizer_assignment.id }}" min="0"
                                            {% if organizer_assignment not in organizer_assignments %}disabled{% endif %}
                                     >
                                 </td>

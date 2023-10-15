@@ -28,6 +28,7 @@ from events.models import (
 from events.utils import parse_czech_date
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
 from .models import (
     OneTimeEvent,
@@ -637,16 +638,32 @@ class OneTimeEventEnrollMyselfOrganizerForm(
         return instance
 
 
-class OneTimeEventFillAttendanceForm(ModelForm):
-    class Meta:
-        model = OneTimeEventOccurrence
-        fields = []
+class CleanParseParticipantAssignmentsMixin:
+    def clean(self):
+        cleaned_data = super().clean()
+        self._clean_parse_participants()
+        return cleaned_data
 
-    def __init__(self, *args, **kwargs):
-        post = kwargs.pop("request").POST
-        self.organizers = post.getlist("organizers")
-        self.participants = post.getlist("participants")
-        super().__init__(*args, **kwargs)
+    def _clean_parse_participants(self):
+        participant_assignments = []
+        for participant_assignment_id_str in self.participants:
+            try:
+                participant_assignment_id = int(participant_assignment_id_str)
+            except ValueError:
+                self.add_error(None, "Neplatná hodnota přiřazení účastníka")
+                continue
+            participant_assignment = OneTimeEventParticipantAttendance.objects.filter(
+                id=participant_assignment_id
+            ).first()
+            participant_assignments.append(participant_assignment)
+        self.cleaned_data["participants"] = participant_assignments
+
+
+class CleanParseOrganizerAssignmentsMixin:
+    def clean(self):
+        cleaned_data = super().clean()
+        self._clean_parse_organizers()
+        return cleaned_data
 
     def _clean_parse_organizers(self):
         organizer_assignments = []
@@ -662,19 +679,21 @@ class OneTimeEventFillAttendanceForm(ModelForm):
             organizer_assignments.append(organizer_assignment)
         self.cleaned_data["organizers"] = organizer_assignments
 
-    def _clean_parse_participants(self):
-        participant_assignments = []
-        for participant_assignment_id_str in self.participants:
-            try:
-                participant_assignment_id = int(participant_assignment_id_str)
-            except ValueError:
-                self.add_error(None, "Neplatná hodnota přiřazení účastníka")
-                continue
-            participant_assignment = OneTimeEventParticipantAttendance.objects.filter(
-                id=participant_assignment_id
-            ).first()
-            participant_assignments.append(participant_assignment)
-        self.cleaned_data["participants"] = participant_assignments
+
+class OneTimeEventFillAttendanceForm(
+    CleanParseParticipantAssignmentsMixin,
+    CleanParseOrganizerAssignmentsMixin,
+    ModelForm,
+):
+    class Meta:
+        model = OneTimeEventOccurrence
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        post = kwargs.pop("request").POST
+        self.organizers = post.getlist("organizers")
+        self.participants = post.getlist("participants")
+        super().__init__(*args, **kwargs)
 
     def checked_participant_assignments(self):
         if hasattr(self, "cleaned_data") and "participants" in self.cleaned_data:
@@ -707,6 +726,14 @@ class OneTimeEventFillAttendanceForm(ModelForm):
     def save(self, commit=True):
         instance = super().save(False)
         instance.state = EventOrOccurrenceState.CLOSED
+        closed_occurrences_count = OneTimeEventOccurrence.objects.filter(
+            event=instance.event, state=EventOrOccurrenceState.CLOSED
+        ).count()
+        occurrences_count = instance.event.eventoccurrence_set.count()
+        if closed_occurrences_count + 1 == occurrences_count:
+            instance.event.state = EventOrOccurrenceState.CLOSED
+            if commit:
+                instance.event.save()
 
         observed_assignments = [
             OneTimeEventParticipantAttendance.objects.filter(Q(occurrence=instance)),
@@ -732,22 +759,88 @@ class OneTimeEventFillAttendanceForm(ModelForm):
         return instance
 
 
-class ApproveOccurrenceForm(ModelForm):
+class ApproveOccurrenceForm(
+    CleanParseParticipantAssignmentsMixin,
+    CleanParseOrganizerAssignmentsMixin,
+    ModelForm,
+):
     class Meta:
         model = OneTimeEventOccurrence
         fields = []
 
     def __init__(self, *args, **kwargs):
-        post = kwargs.pop("request").POST
-        # TODO
+        self.post = kwargs.pop("request").POST
+        self.participants = self.post.getlist("participants")
+        self.organizers = self.post.getlist("organizers")
         super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
+        self._clean_parse_organizer_amounts()
         return cleaned_data
+
+    def _clean_parse_organizer_amounts(self):
+        organizer_amounts = {}
+        for organizer_assignment in self.cleaned_data["organizers"]:
+            key = f"{organizer_assignment.id}_organizer_amount"
+            if key not in self.post:
+                self.add_error(
+                    None,
+                    f"Chybí částka k proplacení organizátoru {organizer_assignment.person}",
+                )
+            else:
+                amount = self.post[key]
+                organizer_amounts[organizer_assignment.id] = amount
+        self.cleaned_data["organizer_amounts"] = organizer_amounts
 
     def save(self, commit=True):
         instance = super().save(False)
+        instance.state = EventOrOccurrenceState.COMPLETED
+        approved_occurrences_count = OneTimeEventOccurrence.objects.filter(
+            event=instance.event, state=EventOrOccurrenceState.COMPLETED
+        ).count()
+        occurrences_count = instance.event.eventoccurrence_set.count()
+        if approved_occurrences_count + 1 == occurrences_count:
+            instance.event.state = EventOrOccurrenceState.COMPLETED
+            if commit:
+                instance.event.save()
+
+        for (
+            participant_attendance
+        ) in instance.onetimeeventparticipantattendance_set.all():
+            if participant_attendance in self.cleaned_data["participants"]:
+                participant_attendance.state = OneTimeEventAttendance.PRESENT
+            else:
+                participant_attendance.state = OneTimeEventAttendance.MISSING
+            if commit:
+                participant_attendance.save()
+
+        for organizer_assignment in instance.organizeroccurrenceassignment_set.all():
+            if organizer_assignment in self.cleaned_data["organizers"]:
+                organizer_assignment.state = OneTimeEventAttendance.PRESENT
+                amount = self.cleaned_data["organizer_amounts"][organizer_assignment.id]
+                if organizer_assignment.transaction is None:
+                    organizer_assignment.transaction = Transaction(
+                        amount=amount,
+                        reason=f"Organizátor {instance.event} dne {instance.date}",
+                        date_due=instance.date + timedelta(days=14),
+                        person=organizer_assignment.person,
+                        event=instance.event,
+                    )
+                elif not organizer_assignment.transaction.is_settled:
+                    organizer_assignment.transaction.amount = amount
+                if commit:
+                    organizer_assignment.transaction.save()
+                    organizer_assignment.save()
+            else:
+                organizer_assignment.state = OneTimeEventAttendance.MISSING
+                if (
+                    organizer_assignment.transaction is not None
+                    and not organizer_assignment.is_settled
+                ):
+                    organizer_assignment.transaction.delete()
+                    organizer_assignment.transaction = None
+
         if commit:
             instance.save()
         return instance
@@ -765,6 +858,18 @@ class ApproveOccurrenceForm(ModelForm):
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
         )
+
+    def organizer_amounts(self):
+        if hasattr(self, "cleaned_data") and "organizer_amounts" in self.cleaned_data:
+            return self.cleaned_data["organizer_amounts"]
+        organizer_amounts = {}
+        for (
+            organizer_assignment
+        ) in self.instance.organizeroccurrenceassignment_set.all():
+            organizer_amounts[
+                organizer_assignment.id
+            ] = organizer_assignment.receive_amount()
+        return organizer_amounts
 
 
 class ReopenOneTimeEventOccurrenceForm(ModelForm):

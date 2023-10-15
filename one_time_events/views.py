@@ -352,6 +352,10 @@ class ApproveOccurrenceView(
     success_message = "Schválení proběhlo úspěšně"
     template_name = "one_time_events_occurrences/approve_occurrence.html"
 
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("organizer_amounts", self.get_form().organizer_amounts())
+        return super().get_context_data(**kwargs)
+
 
 class ReopenOneTimeEventOccurrenceView(
     MessagesMixin,
