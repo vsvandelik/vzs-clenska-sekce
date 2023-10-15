@@ -13,6 +13,7 @@ from events.models import (
     ParticipantEnrollment,
 )
 from features.models import Feature, FeatureAssignment
+from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
@@ -177,6 +178,19 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
+
+    def receive_amount(self):
+        hours = self.occurrence.hours
+        wage_hour = self.position_assignment.position.wage_hour
+        person_rate = PersonHourlyRate.get_person_hourly_rates(self.person)
+        category = self.occurrence.event.category
+
+        if category in person_rate:
+            salary = person_rate[category] * hours
+        else:
+            salary = 0
+
+        return salary + wage_hour * hours
 
     class Meta:
         unique_together = ["person", "occurrence"]

@@ -952,12 +952,11 @@ class TrainingFillAttendanceForm(ModelForm):
                     entity_assignment.state = TrainingAttendance.PRESENT
                     if type(entity_assignment) is CoachOccurrenceAssignment:
                         occurrence_date = instance.datetime_start.date()
-                        rate = PersonHourlyRate.objects.filter(
-                            person=entity_assignment.person,
-                            event_type=instance.event.category,
-                        ).first()
-                        if rate is not None:
-                            hourly_rate = rate.hourly_rate
+                        person_rate = PersonHourlyRate.get_person_hourly_rates(
+                            entity_assignment.person
+                        )
+                        if instance.event.category in person_rate:
+                            hourly_rate = person_rate[instance.event.category]
                             if entity_assignment.transaction is None:
                                 entity_assignment.transaction = Transaction(
                                     amount=hourly_rate * instance.hours,

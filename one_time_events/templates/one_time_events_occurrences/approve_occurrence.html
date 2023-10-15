@@ -84,7 +84,7 @@
                                 <td>
                                     <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
                                            class="form-control"
-                                           type="number" value=""
+                                           type="number" value="{{ organizer_assignment.receive_amount }}" min="0"
                                            {% if organizer_assignment not in organizer_assignments %}disabled{% endif %}
                                     >
                                 </td>
