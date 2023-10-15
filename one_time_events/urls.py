@@ -100,4 +100,9 @@ urlpatterns = [
         views.OneTimeEventFillAttendanceView.as_view(),
         name="fill-attendance",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/schvalit-den/",
+        views.ApproveOccurrenceView.as_view(),
+        name="approve-occurrence",
+    ),
 ]

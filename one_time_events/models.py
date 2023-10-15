@@ -271,6 +271,9 @@ class OneTimeEventOccurrence(EventOccurrence):
             Q(state=OneTimeEventAttendance.MISSING)
         ).order_by("person")
 
+    def approved_organizer_assignments(self):
+        pass
+
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(

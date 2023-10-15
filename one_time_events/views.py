@@ -47,6 +47,7 @@ from .forms import (
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventFillAttendanceForm,
+    ApproveOccurrenceForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -298,8 +299,20 @@ class OccurrenceNotApprovedRestrictionMixin(GetOccurrenceProvider):
         return super().dispatch(request, *args, **kwargs)
 
 
+class OneTimeEventFillAttendanceInsertAssignmentsIntoContextData:
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault(
+            "participant_assignments", self.get_form().checked_participant_assignments()
+        )
+        kwargs.setdefault(
+            "organizer_assignments", self.get_form().checked_organizer_assignments()
+        )
+        return super().get_context_data(**kwargs)
+
+
 class OneTimeEventFillAttendanceView(
     MessagesMixin,
+    OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     OccurrenceNotApprovedRestrictionMixin,
@@ -315,11 +328,27 @@ class OneTimeEventFillAttendanceView(
     success_message = "Zapsání docházky proběhlo úspěšně"
     template_name = "one_time_events_occurrences/attendance.html"
 
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault(
-            "participant_assignments", self.get_form().checked_participant_assignments()
-        )
-        kwargs.setdefault(
-            "organizer_assignments", self.get_form().checked_organizer_assignments()
-        )
-        return super().get_context_data(**kwargs)
+
+class OccurrenceNotOpenedRestrictionMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
+        if occurrence.state == EventOrOccurrenceState.OPEN:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ApproveOccurrenceView(
+    MessagesMixin,
+    OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
+    EventOccurrenceIdCheckMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    OccurrenceNotOpenedRestrictionMixin,
+    InsertOccurrenceIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.UpdateView,
+):
+    form_class = ApproveOccurrenceForm
+    model = OneTimeEventOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Schválení proběhlo úspěšně"
+    template_name = "one_time_events_occurrences/approve_occurrence.html"

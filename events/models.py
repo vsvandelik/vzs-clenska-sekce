@@ -293,6 +293,10 @@ class EventOccurrence(PolymorphicModel):
     def is_opened(self):
         return self.state == EventOrOccurrenceState.OPEN
 
+    @property
+    def is_closed(self):
+        return self.state == EventOrOccurrenceState.CLOSED
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

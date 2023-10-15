@@ -678,7 +678,7 @@ class OneTimeEventFillAttendanceForm(ModelForm):
 
     def checked_organizer_assignments(self):
         if hasattr(self, "cleaned_data") and "organizers" in self.cleaned_data:
-            return self.cleaned_data["coaches"]
+            return self.cleaned_data["organizers"]
         if self.instance.is_opened:
             return OrganizerOccurrenceAssignment.objects.filter(
                 Q(occurrence=self.instance)
@@ -719,3 +719,38 @@ class OneTimeEventFillAttendanceForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class ApproveOccurrenceForm(ModelForm):
+    class Meta:
+        model = OneTimeEventOccurrence
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        post = kwargs.pop("request").POST
+        # TODO
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            instance.save()
+        return instance
+
+    def checked_participant_assignments(self):
+        if hasattr(self, "cleaned_data") and "participants" in self.cleaned_data:
+            return self.cleaned_data["participants"]
+        return OneTimeEventParticipantAttendance.objects.filter(
+            Q(occurrence=self.instance), state=OneTimeEventAttendance.PRESENT
+        )
+
+    def checked_organizer_assignments(self):
+        if hasattr(self, "cleaned_data") and "organizers" in self.cleaned_data:
+            return self.cleaned_data["organizers"]
+        return OrganizerOccurrenceAssignment.objects.filter(
+            occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
+        )
