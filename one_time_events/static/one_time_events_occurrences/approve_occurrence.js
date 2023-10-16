@@ -1,5 +1,5 @@
 window.addEventListener('load', event => {
-    const checkboxes = [... document.getElementsByTagName('input')].filter(e => e.type === 'checkbox')
+    const checkboxes = [... document.getElementsByTagName('input')].filter(e => e.type === 'checkbox' && e.onchange !== null)
     for(const checkbox of checkboxes)
         organizerAttendaceChanged(checkbox)
 })

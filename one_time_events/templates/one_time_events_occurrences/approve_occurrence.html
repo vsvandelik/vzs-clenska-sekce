@@ -10,6 +10,16 @@
 {% block savebtn_value %}{% if occurrence.is_closed %}Schválit a vytvořit transakce{% else %}Upravit
 {% endif %}{% endblock %}
 
+{% block notifications %}
+    {% if not occurrence.can_be_reopened %}
+        <div class="card bg-warning">
+            <div class="card-header border-0">
+                Existují organizátoři, kteří již mají proplacenou transakci, úpravou jejich docházky nebude úpravena jejich transakce
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block organizers_pretty_name %}Organizátoři{% endblock %}
 {% block participants_body %}
     <div class="col-12 col-md-6">
@@ -66,7 +76,7 @@
                     </thead>
                     <tbody>
                         {% for organizer_assignment in occurrence.approved_organizer_assignments %}
-                            <tr>
+                            <tr {% if organizer_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
                                 <td>
                                     <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
                                 </td>
@@ -76,7 +86,7 @@
                                                {% if organizer_assignment in organizer_assignments %}checked{% endif %}
                                                class="custom-control-input" name="organizers"
                                                value="{{ organizer_assignment.id }}"
-                                               onchange="organizerAttendaceChanged(this)"
+                                               {% if organizer_assignment.transaction is None or not organizer_assignment.transaction.is_settled %}onchange="organizerAttendaceChanged(this)"{% endif %}
                                         >
                                         <label for="{{ organizer_assignment.id }}_organizer_checkbox"
                                                class="custom-control-label"></label>
@@ -86,7 +96,7 @@
                                     <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
                                            class="form-control"
                                            type="number" value="{{ organizer_amounts|index:organizer_assignment.id }}" min="0"
-                                           {% if organizer_assignment not in organizer_assignments %}disabled{% endif %}
+                                           {% if organizer_assignment.transaction is not None and organizer_assignment.transaction.is_settled %}disabled{% endif %}
                                     >
                                 </td>
                             </tr>

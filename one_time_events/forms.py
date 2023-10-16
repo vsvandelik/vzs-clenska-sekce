@@ -784,12 +784,24 @@ class ApproveOccurrenceForm(
         for organizer_assignment in self.cleaned_data["organizers"]:
             key = f"{organizer_assignment.id}_organizer_amount"
             if key not in self.post:
+                if (
+                    organizer_assignment.transaction is not None
+                    and organizer_assignment.transaction.is_settled
+                ):
+                    continue
                 self.add_error(
                     None,
                     f"Chybí částka k proplacení organizátoru {organizer_assignment.person}",
                 )
             else:
-                amount = self.post[key]
+                amount_str = self.post[key]
+                try:
+                    amount = int(amount_str)
+                except ValueError:
+                    self.add_error(None, "Neplatná částka k vyplacení")
+                    continue
+                if amount < 0:
+                    self.add_error(None, "Záporná částka k vyplacení organizátorovi")
                 organizer_amounts[organizer_assignment.id] = amount
         self.cleaned_data["organizer_amounts"] = organizer_amounts
 
@@ -818,28 +830,34 @@ class ApproveOccurrenceForm(
         for organizer_assignment in instance.organizeroccurrenceassignment_set.all():
             if organizer_assignment in self.cleaned_data["organizers"]:
                 organizer_assignment.state = OneTimeEventAttendance.PRESENT
-                amount = self.cleaned_data["organizer_amounts"][organizer_assignment.id]
-                if organizer_assignment.transaction is None:
-                    organizer_assignment.transaction = Transaction(
-                        amount=amount,
-                        reason=f"Organizátor {instance.event} dne {instance.date}",
-                        date_due=instance.date + timedelta(days=14),
-                        person=organizer_assignment.person,
-                        event=instance.event,
-                    )
-                elif not organizer_assignment.transaction.is_settled:
-                    organizer_assignment.transaction.amount = amount
-                if commit:
-                    organizer_assignment.transaction.save()
-                    organizer_assignment.save()
+                organizer_amounts = self.cleaned_data["organizer_amounts"]
+                if organizer_assignment.id not in organizer_amounts:
+                    amount = organizer_assignment.transaction.amount
+                else:
+                    amount = organizer_amounts[organizer_assignment.id]
+                if amount > 0:
+                    if organizer_assignment.transaction is None:
+                        organizer_assignment.transaction = Transaction(
+                            amount=amount,
+                            reason=f"Organizátor {instance.event} dne {instance.date}",
+                            date_due=instance.date + timedelta(days=14),
+                            person=organizer_assignment.person,
+                            event=instance.event,
+                        )
+                    elif not organizer_assignment.transaction.is_settled:
+                        organizer_assignment.transaction.amount = amount
+                    if commit:
+                        organizer_assignment.transaction.save()
             else:
                 organizer_assignment.state = OneTimeEventAttendance.MISSING
                 if (
                     organizer_assignment.transaction is not None
-                    and not organizer_assignment.is_settled
+                    and not organizer_assignment.transaction.is_settled
                 ):
                     organizer_assignment.transaction.delete()
                     organizer_assignment.transaction = None
+            if commit:
+                organizer_assignment.save()
 
         if commit:
             instance.save()
