@@ -18,6 +18,7 @@ from events.forms_bases import (
     OccurrenceFormMixin,
     EnrollMyselfOrganizerOccurrenceForm,
     UnenrollMyselfOccurrenceForm,
+    ReopenOccurrenceMixin,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -914,6 +915,18 @@ class ReopenOneTimeEventOccurrenceForm(ModelForm):
                 if commit:
                     assignment.save()
 
+        if commit:
+            instance.save()
+        return instance
+
+
+class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
+    class Meta:
+        model = OneTimeEventOccurrence
+        fields = []
+
+    def save(self, commit=True):
+        instance = super().save(False)
         if commit:
             instance.save()
         return instance

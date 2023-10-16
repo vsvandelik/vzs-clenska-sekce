@@ -16,6 +16,7 @@
             {% include 'one_time_events_occurrences/fill_attendance_button.html' %}
             {% include 'one_time_events_occurrences/reopen_button.html' %}
             {% include 'one_time_events_occurrences/approve_occurrence_button.html' %}
+            {% include 'one_time_events_occurrences/cancel_approvement_button.html' %}
         </div>
     </div>
     <div class="row">
@@ -39,6 +40,7 @@
         </div>
     </div>
     {% include "modal_include.html" with id="reopen-one-time-event-occurrence" %}
+    {% include "modal_include.html" with id="cancel-occurrence-approvement" %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -49,5 +51,6 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal('reopen-one-time-event-occurrence')
+        registerModal('cancel-occurrence-approvement')
     </script>
 {% endblock %}

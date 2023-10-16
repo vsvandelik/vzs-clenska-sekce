@@ -1,0 +1,70 @@
+{% extends "modal.html" %}
+{% load vzs_filters %}
+{% load static %}
+{% block modal_title %}
+    Zrušení schválení
+{% endblock %}
+
+{% block modal_body %}
+    <div class="row">
+        <p class="px-4">Chcete opravdu zrušit schválení dne {{ occurrence.date|date }}
+            události {{ occurrence.event }}?</p>
+    </div>
+    <div class="row">
+        <p class="px-4">Toto způsobí</p>
+    </div>
+    <div class="row">
+        <ul>
+            <li>Znovu otevření dne</li>
+            <li>Smazání docházky účastníků a organizátorů</li>
+            <li>Smazání vytvořených transakcí</li>
+        </ul>
+    </div>
+    <div class="row">
+        {% if not occurrence.can_be_reopened %}
+            <div class="card bg-warning">
+                <div class="card-header border-0">
+                    Tuto akci není možné provést dokud dotčené osoby budou mít proplacenou transakci
+                </div>
+            </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <table id="reopen-organizers-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Osoba</th>
+                                <th>Transakce</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for organizer_assignment in occurrence.organizer_assignments_settled %}
+                                <tr>
+                                    <td><a target="_blank"
+                                           href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+                                    </td>
+                                    <td>{{ organizer_assignment.transaction.amount|money }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+{% endblock %}
+{% block modal_footer_classes %}justify-content-center{% endblock %}
+{% block modal_footer %}
+    {% if occurrence.can_be_reopened %}
+        <form method="post" action="{% url 'one_time_events:cancel-occurrence-approvement' event.id occurrence.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Zrušit schválení</button>
+        </form>
+    {% endif %}
+{% endblock %}
+{% block modal_scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("reopen-organizers-table", [0, 1])
+    </script>
+{% endblock %}

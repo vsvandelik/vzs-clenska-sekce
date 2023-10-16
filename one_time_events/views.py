@@ -31,6 +31,7 @@ from events.views import (
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     OccurrenceOpenRestrictionMixin,
+    OccurrenceIsApprovedRestrictionMixin,
 )
 from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
@@ -53,6 +54,7 @@ from .forms import (
     OneTimeEventFillAttendanceForm,
     ApproveOccurrenceForm,
     ReopenOneTimeEventOccurrenceForm,
+    CancelOccurrenceApprovementForm,
 )
 from .models import (
     OneTimeEventParticipantEnrollment,
@@ -371,3 +373,21 @@ class ReopenOneTimeEventOccurrenceView(
     occurrence_id_key = "pk"
     success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
     template_name = "one_time_events_occurrences/modals/reopen_occurrence.html"
+
+
+class CancelOccurrenceApprovementView(
+    MessagesMixin,
+    OccurrenceIsApprovedRestrictionMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceDetailOnFailureMixin,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoContextData,
+    generic.UpdateView,
+):
+    form_class = CancelOccurrenceApprovementForm
+    model = OneTimeEventOccurrence
+    occurrence_id_key = "pk"
+    success_message = "Zrušení schválení proběhlo úspěšně"
+    template_name = (
+        "one_time_events_occurrences/modals/cancel_occurrence_approvement.html"
+    )

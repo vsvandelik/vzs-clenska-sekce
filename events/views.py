@@ -481,3 +481,11 @@ class OccurrenceIsClosedRestrictionMixin(GetOccurrenceProvider):
         if occurrence.state != EventOrOccurrenceState.CLOSED:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
+
+
+class OccurrenceIsApprovedRestrictionMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
+        if occurrence.state != EventOrOccurrenceState.COMPLETED:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)

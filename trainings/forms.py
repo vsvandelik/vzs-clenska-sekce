@@ -18,6 +18,7 @@ from events.forms_bases import (
     OccurrenceFormMixin,
     PersonMetaMixin,
     ActivePersonFormMixin,
+    ReopenOccurrenceMixin,
 )
 from events.models import (
     EventOrOccurrenceState,
@@ -990,16 +991,10 @@ class TrainingFillAttendanceForm(ModelForm):
         return instance
 
 
-class ReopenTrainingOccurrenceForm(ModelForm):
+class ReopenTrainingOccurrenceForm(ReopenOccurrenceMixin, ModelForm):
     class Meta:
         model = TrainingOccurrence
         fields = []
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if not self.instance.can_be_reopened():
-            self.add_error(None, "Tato událost nemůže být znovu otevřena")
-        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
