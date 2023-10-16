@@ -728,7 +728,11 @@ class OneTimeEventFillAttendanceForm(
         instance = super().save(False)
         instance.state = EventOrOccurrenceState.CLOSED
         closed_occurrences_count = OneTimeEventOccurrence.objects.filter(
-            event=instance.event, state=EventOrOccurrenceState.CLOSED
+            Q(event=instance.event)
+            & Q(
+                Q(state=EventOrOccurrenceState.CLOSED)
+                | Q(state=EventOrOccurrenceState.COMPLETED)
+            )
         ).count()
         occurrences_count = instance.event.eventoccurrence_set.count()
         if closed_occurrences_count + 1 == occurrences_count:
@@ -899,6 +903,7 @@ class ReopenOneTimeEventOccurrenceForm(ModelForm):
     def save(self, commit=True):
         instance = super().save(False)
         instance.state = EventOrOccurrenceState.OPEN
+        instance.event.state = EventOrOccurrenceState.OPEN
 
         observed_assignments = [
             OneTimeEventParticipantAttendance.objects.filter(
@@ -917,6 +922,7 @@ class ReopenOneTimeEventOccurrenceForm(ModelForm):
 
         if commit:
             instance.save()
+            instance.event.save()
         return instance
 
 
@@ -927,6 +933,29 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
 
     def save(self, commit=True):
         instance = super().save(False)
+        instance.state = EventOrOccurrenceState.OPEN
+        instance.event.state = EventOrOccurrenceState.OPEN
+
+        organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence=instance
+        )
+        for organizer_assignment in organizer_assignments:
+            organizer_assignment.state = OneTimeEventAttendance.PRESENT
+            if organizer_assignment.transaction is not None:
+                organizer_assignment.transaction.delete()
+                organizer_assignment.transaction = None
+            if commit:
+                organizer_assignment.save()
+
+        participant_assignments = OneTimeEventParticipantAttendance.objects.filter(
+            occurrence=instance
+        )
+        for participant_assignment in participant_assignments:
+            participant_assignment.state = OneTimeEventAttendance.PRESENT
+            if commit:
+                participant_assignment.save()
+
         if commit:
             instance.save()
+            instance.event.save()
         return instance

@@ -298,7 +298,7 @@ class OneTimeEventOccurrence(EventOccurrence):
             & ~Q(transaction__fio_transaction=None)
         )
 
-    def can_be_reopen(self):
+    def can_be_reopened(self):
         return len(self.organizer_assignments_settled()) == 0
 
 
