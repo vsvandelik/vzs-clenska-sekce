@@ -7,7 +7,7 @@
     {% elif active_person_can_unenroll %}
         {% include 'events/detail_components/unenroll_button.html' %}
     {% elif active_person_can_enroll_as_waiting %}
-        <a data-toggle="modal" data-target="#enroll-myself-participant"
+        <a data-toggle="modal" data-target="#enroll-myself-participant-modal"
            data-action="{% url 'one_time_events:enroll-myself-participant' event.id %}" class="btn btn-info">Přihlásit se jako náhradník</a>
     {% endif %}
 </div>

@@ -59,13 +59,13 @@
     {% include "modal_include.html" with id="delete-event-modal" template="events/modals/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
-    {% include "modal_include.html" with id="enroll-myself-participant" %}
-    {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
     {% include 'modal_include.html' with id='delete-organizer-assignment-modal' %}
     {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
     {% include 'modal_include.html' with id='unenroll-myself-organizer-modal' %}
-    {% include 'modal_include.html' with id='open-occurrences-overview' %}
-    {% include 'modal_include.html' with id='closed-occurrences-overview' %}
+    {% include 'modal_include.html' with id='open-occurrences-overview-modal' %}
+    {% include 'modal_include.html' with id='closed-occurrences-overview-modal' %}
 {% endblock %}
 
 {% block scripts %}
@@ -85,12 +85,12 @@
     <script>
         registerModal("delete-position-assignment-modal")
         registerModal('delete-participant-enrollment-modal')
-        registerModal('enroll-myself-participant')
-        registerModal('unenroll-myself-participant')
+        registerModal('enroll-myself-participant-modal')
+        registerModal('unenroll-myself-participant-modal')
         registerModal('delete-organizer-assignment-modal')
         registerModal('unenroll-myself-organizer-occurrence-modal')
         registerModal('unenroll-myself-organizer-modal')
-        registerModal('open-occurrences-overview')
-        registerModal('closed-occurrences-overview')
+        registerModal('open-occurrences-overview-modal')
+        registerModal('closed-occurrences-overview-modal')
     </script>
 {% endblock %}
