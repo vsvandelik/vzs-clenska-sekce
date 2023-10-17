@@ -78,7 +78,7 @@
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
     {% include "modal_include.html" with id="unenroll-myself-participant" %}
     {% include "modal_include.html" with id="delete-coach-assignment-modal" %}
-    {% include 'modal_include.html' with id='open-occurrences-overview' %}
+    registerModal('open-occurrences-overview')
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>

@@ -523,5 +523,7 @@ class ReopenTrainingOccurrenceView(
     template_name = "trainings_occurrences/modals/reopen_occurrence.html"
 
 
-class OpenOccurrencesOverviewView(InsertEventIntoContextData, generic.TemplateView):
+class TrainingOpenOccurrencesOverviewView(
+    InsertEventIntoContextData, generic.TemplateView
+):
     template_name = "trainings/modals/open_occurrences_overview.html"

@@ -391,3 +391,15 @@ class CancelOccurrenceApprovementView(
     template_name = (
         "one_time_events_occurrences/modals/cancel_occurrence_approvement.html"
     )
+
+
+class OneTimeEventOpenOccurrencesOverviewView(
+    InsertEventIntoContextData, generic.TemplateView
+):
+    template_name = "one_time_events/modals/open_occurrences_overview.html"
+
+
+class OneTimeEventClosedOccurrencesOverviewView(
+    InsertEventIntoContextData, generic.TemplateView
+):
+    template_name = "one_time_events/modals/closed_occurrences_overview.html"

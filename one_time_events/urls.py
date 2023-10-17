@@ -115,4 +115,14 @@ urlpatterns = [
         views.CancelOccurrenceApprovementView.as_view(),
         name="cancel-occurrence-approvement",
     ),
+    path(
+        "<int:event_id>/zobrazit-dny-k-uzavreni/",
+        views.OneTimeEventOpenOccurrencesOverviewView.as_view(),
+        name="open-occurrences-overview",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dny-ke-schvaleni/",
+        views.OneTimeEventClosedOccurrencesOverviewView.as_view(),
+        name="closed-occurrences-overview",
+    ),
 ]

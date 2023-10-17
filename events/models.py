@@ -228,6 +228,14 @@ class Event(PolymorphicModel):
     def can_user_manage(self, user):
         return user.has_perm(f"{type(self)._meta.app_label}.{self.category}")
 
+    def exists_occurrence_with_unfilled_attendance(self):
+        return any(
+            [
+                occurrence.attendace_not_filled_when_should()
+                for occurrence in self.eventoccurrence_set.all()
+            ]
+        )
+
 
 class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -288,6 +296,12 @@ class EventOccurrence(PolymorphicModel):
 
     def attending_participants_attendance(self):
         raise NotImplementedError
+
+    def attendace_not_filled_when_should(self):
+        return (
+            self.can_attendance_be_filled()
+            and self.state == EventOrOccurrenceState.OPEN
+        )
 
     @property
     def is_opened(self):

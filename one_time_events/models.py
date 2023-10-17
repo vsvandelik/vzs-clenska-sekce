@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -164,6 +165,12 @@ class OneTimeEvent(Event):
             or super().can_person_interact_with(person)
         )
 
+    def exists_closed_occurrence(self):
+        for occurrence in self.eventoccurrence_set.all():
+            if occurrence.state == EventOrOccurrenceState.CLOSED:
+                return True
+        return False
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -300,6 +307,15 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def can_be_reopened(self):
         return len(self.organizer_assignments_settled()) == 0
+
+    def can_attendance_be_filled(self):
+        return datetime.now(tz=timezone.get_default_timezone()).date() >= self.date
+
+    def not_approved_when_should(self):
+        return (
+            self.can_attendance_be_filled()
+            and self.state == EventOrOccurrenceState.CLOSED
+        )
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

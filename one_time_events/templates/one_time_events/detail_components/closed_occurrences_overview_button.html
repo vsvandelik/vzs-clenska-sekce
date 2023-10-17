@@ -1,0 +1,9 @@
+{% if event.exists_closed_occurrence %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a class="btn btn-info"
+           data-toggle="modal"
+           data-target="#closed-occurrences-overview"
+           data-action="{% url 'one_time_events:closed-occurrences-overview' event.id %}"
+        >Dny ke schválení</a>
+    </div>
+{% endif %}
