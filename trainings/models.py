@@ -312,6 +312,14 @@ class CoachPositionAssignment(models.Model):
         on_delete=models.CASCADE,
     )
 
+    def coach_attendance(self, occurrence):
+        out = CoachOccurrenceAssignment.objects.filter(
+            person=self.person, occurrence=occurrence
+        )
+        if out is None:
+            return None
+        return out.first()
+
     class Meta:
         unique_together = ["person", "training"]
 
@@ -329,6 +337,15 @@ class CoachOccurrenceAssignment(OrganizerAssignment):
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
     state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
+
+    def is_present(self):
+        return self.state == TrainingAttendance.PRESENT
+
+    def is_excused(self):
+        return self.state == TrainingAttendance.EXCUSED
+
+    def is_unexcused(self):
+        return self.state == TrainingAttendance.UNEXCUSED
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -608,6 +625,18 @@ class TrainingParticipantAttendance(models.Model):
     def can_unenroll(self):
         return self.occurrence.can_participant_unenroll(self.person)
 
+    @property
+    def is_present(self):
+        return self.state == TrainingAttendance.PRESENT
+
+    @property
+    def is_excused(self):
+        return self.state == TrainingAttendance.EXCUSED
+
+    @property
+    def is_unexcused(self):
+        return self.state == TrainingAttendance.UNEXCUSED
+
     class Meta:
         unique_together = ["person", "occurrence"]
 
@@ -631,6 +660,12 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
             return True
         except TrainingWeekdays.DoesNotExist:
             return False
+
+    def participant_attendance(self, occurrence):
+        out = self.trainingparticipantattendance_set.filter(occurrence=occurrence)
+        if out is not None:
+            return out.first()
+        return None
 
     @property
     def event(self):

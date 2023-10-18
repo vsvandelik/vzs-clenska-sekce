@@ -1,3 +1,4 @@
+{% load trainings_template_tags %}
 {% if active_person_can_participant_unenroll %}
     <div class="btn-group-md btn-group mb-3 elevation-2">
         {% with participant_attendance=occurrence|get_participant_attendance:active_person %}

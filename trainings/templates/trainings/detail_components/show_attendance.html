@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load vzs_filters %}
+{% load static %}
+{% load trainings_template_tags %}
+
+{% block title %}
+    Docházka
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Účastníci
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped" id="participant-attendance-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for occurrence in event.sorted_occurrences_list %}
+                                    {% if occurrence.is_closed %}
+                                        <th>{{ occurrence.datetime_start|date }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant_enrollment in event.trainingparticipantenrollment_set.all %}
+                                {% if participant_enrollment.state == participant_enrollment.State.APPROVED %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'persons:detail' participant_enrollment.person.id %}">{{ participant_enrollment.person }}</a>
+                                        </td>
+                                        {% for occurrence in event.sorted_occurrences_list %}
+                                            {% if occurrence.is_closed %}
+                                                {% with participant_attendance=participant_enrollment|get_participant_attendance:occurrence %}
+                                                    <td>{% if participant_attendance is None %}
+                                                        —{% elif participant_attendance.is_present %}
+                                                        <i class="fas fa-check"></i>{% elif participant_attendance.is_excused %}
+                                                        O{% else %}
+                                                        N{% endif %}</td>
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Trenéři
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped" id="coach-attendance-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for occurrence in event.sorted_occurrences_list %}
+                                    {% if occurrence.is_closed %}
+                                        <th>{{ occurrence.datetime_start|date }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for coach_assignment in event.coachpositionassignment_set.all %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
+                                    </td>
+                                    {% for occurrence in event.sorted_occurrences_list %}
+                                        {% if occurrence.is_closed %}
+                                            {% with coach_attendance=coach_assignment|get_coach_attendance:occurrence %}
+                                                <td>{% if coach_attendance is None %}—{% elif coach_attendance.is_present %}
+                                                    <i class="fas fa-check"></i>{% elif coach_attendance.is_excused %}
+                                                    O{% else %}
+                                                    N{% endif %}</td>
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    Legenda
+    <ul>
+        <li><i class="fas fa-check"></i> přítomen</li>
+        <li>O omluven</li>
+        <li>N neomluven</li>
+        <li>— nebyl přihlášen (přidán mezi schválené po uzavření dne, nebo tento den v týdnu účastník nechodí)</li>
+    </ul>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("participant-attendance-table", [0], [0])
+        datatableEnable("coach-attendance-table", [0], [0])
+    </script>
+{% endblock %}
