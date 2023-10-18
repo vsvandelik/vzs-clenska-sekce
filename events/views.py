@@ -1,17 +1,13 @@
-from typing import Any
-
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models.query import QuerySet
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.views import generic
 
-from events.models import ParticipantEnrollment, EventOrOccurrenceState
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
-from users.views import PermissionRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
@@ -24,17 +20,11 @@ from .forms import (
     EventPositionAssignmentForm,
 )
 from .models import Event, EventOccurrence, EventPositionAssignment
-
-
-class EventManagePermissionMixin(PermissionRequiredMixin):
-    event_id_key = "pk"
-
-    @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
-        event_pk = kwargs[cls.event_id_key]
-
-        for event in Event.objects.filter(pk=event_pk):
-            return event.can_user_manage(logged_in_user)
+from .permissions import (
+    EventInteractPermissionMixin,
+    EventManagePermissionMixin,
+    UnenrollMyselfPermissionMixin,
+)
 
 
 class EventMixin:
@@ -197,7 +187,9 @@ class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
-class EventUpdateMixin(EventCreateUpdateMixin, generic.UpdateView):
+class EventUpdateMixin(
+    EventManagePermissionMixin, EventCreateUpdateMixin, generic.UpdateView
+):
     success_message = "Událost %(name)s úspěšně upravena."
 
 
@@ -218,7 +210,10 @@ class PersonTypeInsertIntoContextDataMixin:
 
 
 class EventDetailBaseView(
-    EventMixin, PersonTypeInsertIntoContextDataMixin, generic.DetailView
+    EventInteractPermissionMixin,
+    EventMixin,
+    PersonTypeInsertIntoContextDataMixin,
+    generic.DetailView,
 ):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
@@ -274,6 +269,7 @@ class EventPositionAssignmentMixin(
 ):
     model = EventPositionAssignment
     context_object_name = "position_assignment"
+    event_id_key = "event_id"
 
 
 class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
@@ -328,8 +324,8 @@ class EditGroupMembershipView(
 
 
 class AddRemoveAllowedPersonTypeView(
-    InsertEventIntoSelfObjectMixin,
     EventManagePermissionMixin,
+    InsertEventIntoSelfObjectMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     generic.UpdateView,
@@ -350,6 +346,7 @@ class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMi
 
 
 class ParticipantEnrollmentCreateMixin(
+    EventManagePermissionMixin,
     ParticipantEnrollmentMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
@@ -380,6 +377,7 @@ class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.Delet
 
 
 class EnrollMyselfParticipantMixin(
+    EventInteractPermissionMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
     MessagesMixin,
@@ -391,7 +389,7 @@ class EnrollMyselfParticipantMixin(
 
 
 class UnenrollMyselfParticipantView(
-    PermissionRequiredMixin,
+    UnenrollMyselfPermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
@@ -402,17 +400,9 @@ class UnenrollMyselfParticipantView(
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
 
-    @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, pk):
-        enrollment_pk = pk
-
-        for enrollment in ParticipantEnrollment.objects.filter(pk=enrollment_pk):
-            return enrollment.person == active_person
-
-        return False
-
 
 class BulkApproveParticipantsMixin(
+    EventManagePermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoContextData,
