@@ -62,10 +62,5 @@ def get_participant_attendance(occurrence, person):
 
 
 @register.filter
-def get_participant_attendance(participant_enrollment, occurrence):
-    return participant_enrollment.participant_attendance(occurrence)
-
-
-@register.filter
 def get_coach_attendance(coach_assignment, occurrence):
     return coach_assignment.coach_attendance(occurrence)

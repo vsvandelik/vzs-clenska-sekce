@@ -403,3 +403,9 @@ class OneTimeEventClosedOccurrencesOverviewView(
     InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/closed_occurrences_overview.html"
+
+
+class OneTimeEventShowAttendanceView(
+    MessagesMixin, InsertEventIntoContextData, generic.TemplateView
+):
+    template_name = "one_time_events/detail_components/show_attendance.html"

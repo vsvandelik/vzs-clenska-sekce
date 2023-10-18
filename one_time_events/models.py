@@ -118,10 +118,14 @@ class OneTimeEvent(Event):
     def enrollments_by_Q(self, condition):
         return self.onetimeeventparticipantenrollment_set.filter(condition)
 
-    def organizers_assignments(self):
-        return OrganizerOccurrenceAssignment.objects.filter(
-            position__in=self.positions.all()
+    def organizer_persons(self):
+        persons = set()
+        assignments = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__in=self.eventoccurrence_set.all()
         )
+        for assignment in assignments:
+            persons.add(assignment.person)
+        return persons
 
     def __str__(self):
         return self.name
@@ -201,6 +205,12 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
             salary = 0
 
         return salary + wage_hour * hours
+
+    def is_present(self):
+        return self.state == OneTimeEventAttendance.PRESENT
+
+    def is_missing(self):
+        return self.state == OneTimeEventAttendance.MISSING
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -334,6 +344,14 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
 
     class Meta:
         unique_together = ["one_time_event", "person"]
+
+    def participant_attendance(self, occurrence):
+        attendance = self.onetimeeventparticipantattendance_set.filter(
+            occurrence=occurrence
+        )
+        if attendance is not None:
+            return attendance.first()
+        return None
 
     def delete(self):
         transaction = OneTimeEventParticipantEnrollment.objects.get(

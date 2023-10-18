@@ -125,4 +125,9 @@ urlpatterns = [
         views.OneTimeEventClosedOccurrencesOverviewView.as_view(),
         name="closed-occurrences-overview",
     ),
+    path(
+        "<int:event_id>/zobrazit-dochazku/",
+        views.OneTimeEventShowAttendanceView.as_view(),
+        name="show-attendance",
+    ),
 ]

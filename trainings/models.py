@@ -244,11 +244,6 @@ class Training(Event):
             i += 1
         return weekdays
 
-    def organizers_assignments(self):
-        return CoachOccurrenceAssignment.objects.filter(
-            position__in=self.positions.all()
-        )
-
     def position_coaches(self, position_assignment):
         return self.coachpositionassignment_set.filter(
             position_assignment=position_assignment
@@ -313,12 +308,12 @@ class CoachPositionAssignment(models.Model):
     )
 
     def coach_attendance(self, occurrence):
-        out = CoachOccurrenceAssignment.objects.filter(
+        coach_assignment = CoachOccurrenceAssignment.objects.filter(
             person=self.person, occurrence=occurrence
         )
-        if out is None:
+        if coach_assignment is None:
             return None
-        return out.first()
+        return coach_assignment.first()
 
     class Meta:
         unique_together = ["person", "training"]
@@ -662,9 +657,11 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
             return False
 
     def participant_attendance(self, occurrence):
-        out = self.trainingparticipantattendance_set.filter(occurrence=occurrence)
-        if out is not None:
-            return out.first()
+        attendance = self.trainingparticipantattendance_set.filter(
+            occurrence=occurrence
+        )
+        if attendance is not None:
+            return attendance.first()
         return None
 
     @property

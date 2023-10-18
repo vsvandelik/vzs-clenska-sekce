@@ -532,4 +532,4 @@ class TrainingOpenOccurrencesOverviewView(
 class TrainingShowAttendanceView(
     MessagesMixin, InsertEventIntoContextData, generic.TemplateView
 ):
-    template_name = "trainings/detail_components/show_attendance.html"
+    template_name = "trainings/show_attendance.html"

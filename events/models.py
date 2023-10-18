@@ -211,9 +211,6 @@ class Event(PolymorphicModel):
     def rejected_participants(self):
         return self.participants_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
 
-    def organizers_assignments(self):
-        raise NotImplementedError
-
     def substitute_enrollments_2_capacity(self):
         raise NotImplementedError
 
