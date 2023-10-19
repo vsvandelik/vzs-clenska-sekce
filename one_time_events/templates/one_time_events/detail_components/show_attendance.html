@@ -52,9 +52,7 @@
                                                 {% with participant_attendance=participant_enrollment|participant_enrollment_2_attendance:occurrence %}
                                                     <td>{% if participant_attendance is None %}
                                                         —{% elif participant_attendance.is_present %}
-                                                        <i class="fas fa-check"></i>{% elif participant_attendance.is_excused %}
-                                                        O{% else %}
-                                                        N{% endif %}</td>
+                                                        <i class="fas fa-check"></i>{% else %}N{% endif %}</td>
                                                 {% endwith %}
                                             {% endif %}
                                         {% endfor %}
@@ -118,7 +116,7 @@
         <li><i class="fas fa-check"></i> přítomen</li>
         <li>O omluven</li>
         <li>N neomluven</li>
-        <li>— nebyl přihlášen (přidán po uzavření dne, nebo tento den v týdnu účastník nechodí)</li>
+        <li>— nebyl přihlášen (přidán po uzavření dne, nebo tento den nebyla osoba přihlášena)</li>
     </ul>
 {% endblock %}
 

@@ -226,6 +226,12 @@ class OneTimeEventParticipantAttendance(models.Model):
     )
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
+    def is_present(self):
+        return self.state == OneTimeEventAttendance.PRESENT
+
+    def is_missing(self):
+        return self.state == OneTimeEventAttendance.MISSING
+
     class Meta:
         unique_together = ["person", "occurrence"]
 
