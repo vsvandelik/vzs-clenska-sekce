@@ -206,9 +206,11 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
 
         return salary + wage_hour * hours
 
+    @property
     def is_present(self):
         return self.state == OneTimeEventAttendance.PRESENT
 
+    @property
     def is_missing(self):
         return self.state == OneTimeEventAttendance.MISSING
 
@@ -226,9 +228,11 @@ class OneTimeEventParticipantAttendance(models.Model):
     )
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
+    @property
     def is_present(self):
         return self.state == OneTimeEventAttendance.PRESENT
 
+    @property
     def is_missing(self):
         return self.state == OneTimeEventAttendance.MISSING
 

@@ -333,12 +333,15 @@ class CoachOccurrenceAssignment(OrganizerAssignment):
     )
     state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
 
+    @property
     def is_present(self):
         return self.state == TrainingAttendance.PRESENT
 
+    @property
     def is_excused(self):
         return self.state == TrainingAttendance.EXCUSED
 
+    @property
     def is_unexcused(self):
         return self.state == TrainingAttendance.UNEXCUSED
 
