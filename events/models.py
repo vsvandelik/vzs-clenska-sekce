@@ -115,11 +115,12 @@ class Event(PolymorphicModel):
         missing_age = person_with_age.age is None and (
             req_obj.min_age is not None or req_obj.max_age is not None
         )
-        min_age_out = (
-            req_obj.min_age is not None and req_obj.min_age > person_with_age.age
+
+        min_age_out = req_obj.min_age is not None and (
+            missing_age or req_obj.min_age > person_with_age.age
         )
-        max_age_out = (
-            req_obj.max_age is not None and req_obj.max_age < person_with_age.age
+        max_age_out = req_obj.max_age is not None and (
+            missing_age or req_obj.max_age < person_with_age.age
         )
         group_unsatisfied = (
             req_obj.group is not None and req_obj.group not in person.groups.all()
