@@ -6,7 +6,6 @@ from django.views import generic
 
 from events.permissions import OccurrenceManagePermissionMixin
 from events.views import (
-    BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
@@ -14,11 +13,6 @@ from events.views import (
     EventManagePermissionMixin,
     EventRestrictionMixin,
     EventUpdateMixin,
-    InsertEventIntoContextData,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertOccurrenceIntoContextData,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    InsertPositionAssignmentIntoModelFormKwargs,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
@@ -45,12 +39,10 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-
 from .forms import (
     BulkAddOrganizerToOneTimeEventForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
-    OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
     OneTimeEventEnrollMyselfParticipantForm,
     OneTimeEventForm,
@@ -61,14 +53,12 @@ from .forms import (
     ApproveOccurrenceForm,
     ReopenOneTimeEventOccurrenceForm,
     CancelOccurrenceApprovementForm,
+    TrainingCategoryForm,
+    OrganizerOccurrenceAssignmentForm,
+    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
 )
 from .models import (
-    OneTimeEventParticipantEnrollment,
-    OrganizerOccurrenceAssignment,
     OneTimeEventOccurrence,
-    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
-    OrganizerOccurrenceAssignmentForm,
-    TrainingCategoryForm,
 )
 from .models import OneTimeEventParticipantEnrollment, OrganizerOccurrenceAssignment
 from .permissions import (
