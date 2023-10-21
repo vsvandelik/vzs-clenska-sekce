@@ -656,6 +656,9 @@ class CleanParseParticipantAssignmentsMixin:
             participant_assignment = OneTimeEventParticipantAttendance.objects.filter(
                 id=participant_assignment_id
             ).first()
+            if participant_assignment is None:
+                self.add_error(None, "Neexistující účastník")
+                continue
             participant_assignments.append(participant_assignment)
         self.cleaned_data["participants"] = participant_assignments
 
@@ -677,6 +680,9 @@ class CleanParseOrganizerAssignmentsMixin:
             organizer_assignment = OrganizerOccurrenceAssignment.objects.filter(
                 id=organizer_assignment_id
             ).first()
+            if organizer_assignment is None:
+                self.add_error(None, "Neexistující organizátor")
+                continue
             organizer_assignments.append(organizer_assignment)
         self.cleaned_data["organizers"] = organizer_assignments
 
@@ -718,12 +724,6 @@ class OneTimeEventFillAttendanceForm(
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
         )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        self._clean_parse_organizers()
-        self._clean_parse_participants()
-        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(False)
