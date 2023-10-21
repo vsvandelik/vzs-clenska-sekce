@@ -1004,8 +1004,9 @@ class ReopenTrainingOccurrenceForm(ReopenOccurrenceMixin, ModelForm):
             occurrence=instance, state=TrainingAttendance.PRESENT
         )
         for present_coach_assignment in present_coach_assignments:
-            present_coach_assignment.transaction.delete()
-            present_coach_assignment.transaction = None
+            if present_coach_assignment.transaction is not None:
+                present_coach_assignment.transaction.delete()
+                present_coach_assignment.transaction = None
 
         observed_unexcused_assignments = [
             TrainingParticipantAttendance.objects.filter(

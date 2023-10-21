@@ -228,10 +228,10 @@ class Event(PolymorphicModel):
 
     def exists_occurrence_with_unfilled_attendance(self):
         return any(
-            [
+            (
                 occurrence.attendace_not_filled_when_should()
                 for occurrence in self.eventoccurrence_set.all()
-            ]
+            )
         )
 
 
