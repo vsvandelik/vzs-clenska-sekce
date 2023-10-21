@@ -727,19 +727,8 @@ class OneTimeEventFillAttendanceForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.state = EventOrOccurrenceState.CLOSED
-        closed_occurrences_count = OneTimeEventOccurrence.objects.filter(
-            Q(event=instance.event)
-            & Q(
-                Q(state=EventOrOccurrenceState.CLOSED)
-                | Q(state=EventOrOccurrenceState.COMPLETED)
-            )
-        ).count()
-        occurrences_count = instance.event.eventoccurrence_set.count()
-        if closed_occurrences_count + 1 == occurrences_count:
-            instance.event.state = EventOrOccurrenceState.CLOSED
-            if commit:
-                instance.event.save()
+
+        self._change_state_to_closed(commit, instance)
 
         observed_assignments = [
             OneTimeEventParticipantAttendance.objects.filter(occurrence=instance),
@@ -763,6 +752,21 @@ class OneTimeEventFillAttendanceForm(
         if commit:
             instance.save()
         return instance
+
+    def _change_state_to_closed(self, commit, occurrence):
+        occurrence.state = EventOrOccurrenceState.CLOSED
+        closed_occurrences_count = OneTimeEventOccurrence.objects.filter(
+            Q(event=occurrence.event)
+            & Q(
+                Q(state=EventOrOccurrenceState.CLOSED)
+                | Q(state=EventOrOccurrenceState.COMPLETED)
+            )
+        ).count()
+        occurrences_count = occurrence.event.eventoccurrence_set.count()
+        if closed_occurrences_count + 1 == occurrences_count:
+            occurrence.event.state = EventOrOccurrenceState.CLOSED
+            if commit:
+                occurrence.event.save()
 
 
 class ApproveOccurrenceForm(
@@ -813,19 +817,30 @@ class ApproveOccurrenceForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.state = EventOrOccurrenceState.COMPLETED
-        approved_occurrences_count = OneTimeEventOccurrence.objects.filter(
-            event=instance.event, state=EventOrOccurrenceState.COMPLETED
-        ).count()
-        occurrences_count = instance.event.eventoccurrence_set.count()
-        if approved_occurrences_count + 1 == occurrences_count:
-            instance.event.state = EventOrOccurrenceState.COMPLETED
-            if commit:
-                instance.event.save()
 
+        self._change_state_to_approve(commit, instance)
+        self._update_participants_attendance(commit, instance)
+        self._update_organizers_attendance_transaction(commit, instance)
+
+        if commit:
+            instance.save()
+        return instance
+
+    def _change_state_to_approve(self, commit, occurrence):
+        occurrence.state = EventOrOccurrenceState.COMPLETED
+        approved_occurrences_count = OneTimeEventOccurrence.objects.filter(
+            event=occurrence.event, state=EventOrOccurrenceState.COMPLETED
+        ).count()
+        occurrences_count = occurrence.event.eventoccurrence_set.count()
+        if approved_occurrences_count + 1 == occurrences_count:
+            occurrence.event.state = EventOrOccurrenceState.COMPLETED
+            if commit:
+                occurrence.event.save()
+
+    def _update_participants_attendance(self, commit, occurrence):
         for (
             participant_attendance
-        ) in instance.onetimeeventparticipantattendance_set.all():
+        ) in occurrence.onetimeeventparticipantattendance_set.all():
             if participant_attendance in self.cleaned_data["participants"]:
                 participant_attendance.state = OneTimeEventAttendance.PRESENT
             else:
@@ -833,6 +848,7 @@ class ApproveOccurrenceForm(
             if commit:
                 participant_attendance.save()
 
+    def _update_organizers_attendance_transaction(self, commit, instance):
         for organizer_assignment in instance.organizeroccurrenceassignment_set.all():
             if organizer_assignment in self.cleaned_data["organizers"]:
                 organizer_assignment.state = OneTimeEventAttendance.PRESENT
@@ -864,10 +880,6 @@ class ApproveOccurrenceForm(
                     organizer_assignment.transaction = None
             if commit:
                 organizer_assignment.save()
-
-        if commit:
-            instance.save()
-        return instance
 
     def checked_participant_assignments(self):
         if hasattr(self, "cleaned_data") and "participants" in self.cleaned_data:
@@ -937,8 +949,17 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
         instance.state = EventOrOccurrenceState.OPEN
         instance.event.state = EventOrOccurrenceState.OPEN
 
+        self._remove_organizer_attendance_transactions(commit, instance)
+        self._remove_participant_attendance(commit, instance)
+
+        if commit:
+            instance.save()
+            instance.event.save()
+        return instance
+
+    def _remove_organizer_attendance_transactions(self, commit, occurrence):
         organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
-            occurrence=instance
+            occurrence=occurrence
         )
         for organizer_assignment in organizer_assignments:
             organizer_assignment.state = OneTimeEventAttendance.PRESENT
@@ -948,15 +969,11 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
             if commit:
                 organizer_assignment.save()
 
+    def _remove_participant_attendance(self, commit, occurrence):
         participant_assignments = OneTimeEventParticipantAttendance.objects.filter(
-            occurrence=instance
+            occurrence=occurrence
         )
         for participant_assignment in participant_assignments:
             participant_assignment.state = OneTimeEventAttendance.PRESENT
             if commit:
                 participant_assignment.save()
-
-        if commit:
-            instance.save()
-            instance.event.save()
-        return instance
