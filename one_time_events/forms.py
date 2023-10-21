@@ -385,7 +385,7 @@ class OccurrenceOpenRestrictionMixin:
     def clean(self):
         cleaned_data = super().clean()
         if not self.occurrence.is_opened:
-            self.add_error(None, "Tento ten již není otevřen")
+            self.add_error(None, "Tento den již není otevřen")
         return cleaned_data
 
 
