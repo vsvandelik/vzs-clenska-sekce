@@ -701,7 +701,7 @@ class OneTimeEventFillAttendanceForm(
             return self.cleaned_data["participants"]
         if self.instance.is_opened:
             return OneTimeEventParticipantAttendance.objects.filter(
-                Q(occurrence=self.instance)
+                occurrence=self.instance
             )
         return OneTimeEventParticipantAttendance.objects.filter(
             occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
@@ -712,8 +712,9 @@ class OneTimeEventFillAttendanceForm(
             return self.cleaned_data["organizers"]
         if self.instance.is_opened:
             return OrganizerOccurrenceAssignment.objects.filter(
-                Q(occurrence=self.instance)
+                occurrence=self.instance
             )
+
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence=self.instance, state=OneTimeEventAttendance.PRESENT
         )
@@ -741,8 +742,8 @@ class OneTimeEventFillAttendanceForm(
                 instance.event.save()
 
         observed_assignments = [
-            OneTimeEventParticipantAttendance.objects.filter(Q(occurrence=instance)),
-            OrganizerOccurrenceAssignment.objects.filter(Q(occurrence=instance)),
+            OneTimeEventParticipantAttendance.objects.filter(occurrence=instance),
+            OrganizerOccurrenceAssignment.objects.filter(occurrence=instance),
         ]
 
         assignments = [
