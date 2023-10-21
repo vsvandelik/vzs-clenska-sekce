@@ -1,92 +1,35 @@
-from typing import Any
-
 from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
-from django.contrib.auth import models as auth_models
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-)
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import send_mail
-from django.db import models
-from django.http import (
-    Http404,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    HttpResponseRedirect,
-)
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from persons.models import Person
-from persons.views import PersonPermissionMixin
 from vzs import settings
 
 from . import forms
 from .backends import GoogleBackend
 from .models import Permission, ResetPasswordToken, User
+from .permissions import (
+    PermissionRequiredMixin,
+    UserCreateDeletePermissionMixin,
+    UserGeneratePasswordPermissionMixin,
+    UserManagePermissionsPermissionMixin,
+)
 from .utils import get_random_password
 
 
-class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
-    permissions_required = None
-
-    @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
-        if cls.permissions_required is None:
-            raise ImproperlyConfigured(
-                f"{cls.__name__} is missing a permissions_required attribute."
-            )
-
-        return logged_in_user.has_perms(cls.permissions_required)
-
-    def has_permission(self):
-        return self.view_has_permission(
-            self.request.user, self.request.active_person, **self.kwargs
-        )
-
-
-def _user_can_manage_person(user, person_pk):
-    return user.is_superuser or (
-        PersonPermissionMixin.get_queryset_by_permission(user)
-        .filter(pk=person_pk)
-        .exists()
-    )
-
-
-class _UserCreateDeletePermissionMixin(PermissionRequiredMixin):
-    @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, pk):
-        person_pk = pk
-        return _user_can_manage_person(logged_in_user, person_pk)
-
-
-class _UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
-    @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, pk):
-        person_pk = pk
-
-        # a user shouldn't be allowed to regenerate their own password
-        is_different_person = logged_in_user.person.pk != person_pk
-
-        return is_different_person and _user_can_manage_person(
-            logged_in_user, person_pk
-        )
-
-
-class _UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
-    permissions_required = ["users.spravce_povoleni"]
-
-
 class UserCreateView(
-    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
 ):
     template_name = "users/create.html"
     form_class = forms.UserCreateForm
@@ -116,7 +59,7 @@ class UserCreateView(
 
 
 class UserDeleteView(
-    _UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
+    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
 ):
     model = User
     context_object_name = "user_object"
@@ -193,7 +136,7 @@ class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordBas
 
 
 class UserGenerateNewPasswordView(
-    _UserGeneratePasswordPermissionMixin, UserChangePasswordMixin
+    UserGeneratePasswordPermissionMixin, UserChangePasswordMixin
 ):
     http_method_names = ["post"]
     form_class = forms.UserChangePasswordForm
@@ -262,21 +205,21 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
         )
 
 
-class PermissionsView(_UserManagePermissionsPermissionMixin, generic.list.ListView):
+class PermissionsView(UserManagePermissionsPermissionMixin, generic.list.ListView):
     model = Permission
     template_name = "users/permissions.html"
     context_object_name = "permissions"
 
 
 class PermissionDetailView(
-    _UserManagePermissionsPermissionMixin, generic.detail.DetailView
+    UserManagePermissionsPermissionMixin, generic.detail.DetailView
 ):
     model = Permission
     template_name = "users/permission_detail.html"
 
 
 class UserAssignRemovePermissionView(
-    _UserManagePermissionsPermissionMixin,
+    UserManagePermissionsPermissionMixin,
     SuccessMessageMixin,
     generic.detail.SingleObjectMixin,
     generic.edit.FormView,

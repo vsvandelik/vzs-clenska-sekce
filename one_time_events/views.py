@@ -4,16 +4,24 @@ from django.http import Http404
 from django.utils import timezone
 from django.views import generic
 
+from events.permissions import OccurrenceManagePermissionMixin
 from events.views import (
+    BulkApproveParticipantsMixin,
+    EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
-    EventUpdateMixin,
     EventGeneratesDatesMixin,
+    EventManagePermissionMixin,
     EventRestrictionMixin,
+    EventUpdateMixin,
+    InsertEventIntoContextData,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
     ParticipantEnrollmentCreateMixin,
-    ParticipantEnrollmentUpdateMixin,
     ParticipantEnrollmentDeleteMixin,
-    EnrollMyselfParticipantMixin,
+    ParticipantEnrollmentUpdateMixin,
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
@@ -33,21 +41,20 @@ from events.views import (
     OccurrenceNotApprovedRestrictionMixin,
 )
 from vzs.mixin_extensions import (
-    InsertRequestIntoModelFormKwargsMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    MessagesMixin,
 )
-from vzs.mixin_extensions import MessagesMixin
+
 from .forms import (
-    OneTimeEventForm,
-    TrainingCategoryForm,
-    OneTimeEventParticipantEnrollmentForm,
-    OneTimeEventEnrollMyselfParticipantForm,
-    OrganizerOccurrenceAssignmentForm,
-    BulkDeleteOrganizerFromOneTimeEventForm,
     BulkAddOrganizerToOneTimeEventForm,
+    BulkDeleteOrganizerFromOneTimeEventForm,
     OneTimeEventBulkApproveParticipantsForm,
+    OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
-    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
+    OneTimeEventEnrollMyselfParticipantForm,
+    OneTimeEventForm,
+    OneTimeEventParticipantEnrollmentForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventFillAttendanceForm,
@@ -59,6 +66,16 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
     OneTimeEventOccurrence,
+    OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
+    OrganizerOccurrenceAssignmentForm,
+    TrainingCategoryForm,
+)
+from .models import OneTimeEventParticipantEnrollment, OrganizerOccurrenceAssignment
+from .permissions import (
+    OccurrenceEnrollOrganizerPermissionMixin,
+    OccurrenceUnenrollOrganizerPermissionMixin,
+    OneTimeEventEnrollOrganizerPermissionMixin,
+    OneTimeEventUnenrollOrganizerPermissionMixin,
 )
 
 
@@ -96,7 +113,7 @@ class OneTimeEventUpdateView(
 
 
 class EditTrainingCategoryView(
-    MessagesMixin, EventRestrictionMixin, generic.UpdateView
+    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, generic.UpdateView
 ):
     template_name = "one_time_events/edit_training_category.html"
     form_class = TrainingCategoryForm
@@ -133,7 +150,9 @@ class OneTimeEventEnrollMyselfParticipantView(
     success_message = "Přihlášení na událost proběhlo úspěšně"
 
 
-class OrganizerForOccurrenceMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
+class OrganizerForOccurrenceMixin(
+    OccurrenceManagePermissionMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin
+):
     pass
 
 
@@ -180,6 +199,7 @@ class DeleteOrganizerForOccurrenceView(
 
 
 class BulkCreateDeleteOrganizerMixin(
+    EventManagePermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
@@ -228,6 +248,7 @@ class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
 
 
 class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
+    OccurrenceEnrollOrganizerPermissionMixin,
     RedirectToEventDetailOnFailureMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
@@ -243,6 +264,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceView(
 
 
 class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
+    OccurrenceUnenrollOrganizerPermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
@@ -256,6 +278,7 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
 
 
 class OneTimeEventUnenrollMyselfOrganizerView(
+    OneTimeEventUnenrollOrganizerPermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
@@ -273,6 +296,7 @@ class OneTimeEventUnenrollMyselfOrganizerView(
 
 
 class OneTimeEventEnrollMyselfOrganizerView(
+    OneTimeEventEnrollOrganizerPermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
