@@ -196,11 +196,11 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
 
         hours = self.occurrence.hours
         wage_hour = self.position_assignment.position.wage_hour
-        person_rate = PersonHourlyRate.get_person_hourly_rates(self.person)
+        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
         category = self.occurrence.event.category
 
-        if category in person_rate:
-            salary = person_rate[category] * hours
+        if category in person_rates:
+            salary = person_rates[category] * hours
         else:
             salary = 0
 
