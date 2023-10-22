@@ -14,8 +14,8 @@
                                         <tr>
                                             <td class="w-100 align-middle">{{ occurrence.date|date }}</td>
                                             <td>
-                                                <a class="btn btn-info btn-sm" href="">
-                                                    <i class="fas fa-info"></i>TODO
+                                                <a class="btn btn-info btn-sm" href="{% url 'one_time_events:occurrence-detail' event.id occurrence.id %}">
+                                                    <i class="fas fa-info"></i>
                                                 </a>
                                             </td>
                                         </tr>

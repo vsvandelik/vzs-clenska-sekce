@@ -1,0 +1,10 @@
+{% if active_person_can_participant_enroll %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <form method="post"
+              action="{% url 'trainings:enroll-myself-participant-occurrence' event.id occurrence.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Přihlásit se jako jednorázový účastník
+            </button>
+        </form>
+    </div>
+{% endif %}

@@ -59,3 +59,8 @@ def get_participant_attendance(occurrence, person):
     return TrainingParticipantAttendance.objects.get(
         occurrence=occurrence, person=person
     )
+
+
+@register.filter
+def get_coach_attendance(coach_assignment, occurrence):
+    return coach_assignment.coach_attendance(occurrence)

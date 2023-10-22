@@ -1,0 +1,28 @@
+{% extends 'events/attendance.html' %}
+{% load static %}
+{% block body %}
+    <form method="post" action="{% block form_action %}{% endblock %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="card-title h5">
+                            Docházka
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% block participants_body %}{% endblock %}
+                            {% block organizers_body %}{% endblock %}
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <input type="submit" class="btn btn-primary"
+                               value="{% block savebtn_value %}{% endblock %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

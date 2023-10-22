@@ -155,12 +155,22 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/detail-dne/<int:pk>/vyplnit-dochazku/",
-        views.FillAttendanceView.as_view(),
+        views.TrainingFillAttendanceView.as_view(),
         name="fill-attendance",
     ),
     path(
         "<int:event_id>/detail-dne/<int:pk>/znovu-otevrit/",
         views.ReopenTrainingOccurrenceView.as_view(),
         name="reopen-occurrence",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dny-k-zavreni/",
+        views.TrainingOpenOccurrencesOverviewView.as_view(),
+        name="open-occurrences-overview",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dochazku/",
+        views.TrainingShowAttendanceView.as_view(),
+        name="show-attendance",
     ),
 ]

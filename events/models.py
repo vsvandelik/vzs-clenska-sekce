@@ -115,11 +115,12 @@ class Event(PolymorphicModel):
         missing_age = person_with_age.age is None and (
             req_obj.min_age is not None or req_obj.max_age is not None
         )
-        min_age_out = (
-            req_obj.min_age is not None and req_obj.min_age > person_with_age.age
+
+        min_age_out = req_obj.min_age is not None and (
+            missing_age or req_obj.min_age > person_with_age.age
         )
-        max_age_out = (
-            req_obj.max_age is not None and req_obj.max_age < person_with_age.age
+        max_age_out = req_obj.max_age is not None and (
+            missing_age or req_obj.max_age < person_with_age.age
         )
         group_unsatisfied = (
             req_obj.group is not None and req_obj.group not in person.groups.all()
@@ -211,9 +212,6 @@ class Event(PolymorphicModel):
     def rejected_participants(self):
         return self.participants_by_Q(Q(state=ParticipantEnrollment.State.REJECTED))
 
-    def organizers_assignments(self):
-        raise NotImplementedError
-
     def substitute_enrollments_2_capacity(self):
         raise NotImplementedError
 
@@ -227,6 +225,14 @@ class Event(PolymorphicModel):
 
     def can_user_manage(self, user):
         return user.has_perm(f"{type(self)._meta.app_label}.{self.category}")
+
+    def exists_occurrence_with_unfilled_attendance(self):
+        return any(
+            (
+                occurrence.attendace_not_filled_when_should()
+                for occurrence in self.eventoccurrence_set.all()
+            )
+        )
 
 
 class EventOccurrence(PolymorphicModel):
@@ -289,9 +295,23 @@ class EventOccurrence(PolymorphicModel):
     def attending_participants_attendance(self):
         raise NotImplementedError
 
+    def attendace_not_filled_when_should(self):
+        return (
+            self.can_attendance_be_filled()
+            and self.state == EventOrOccurrenceState.OPEN
+        )
+
     @property
     def is_opened(self):
         return self.state == EventOrOccurrenceState.OPEN
+
+    @property
+    def is_closed(self):
+        return self.state == EventOrOccurrenceState.CLOSED
+
+    @property
+    def is_approved(self):
+        return self.state == EventOrOccurrenceState.COMPLETED
 
 
 class EventPositionAssignment(models.Model):

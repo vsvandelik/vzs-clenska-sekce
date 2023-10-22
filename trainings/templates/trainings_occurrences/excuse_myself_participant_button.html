@@ -1,0 +1,9 @@
+{% if active_person_can_participant_excuse %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a data-toggle="modal"
+           data-target="#excuse-myself-participant-modal"
+           data-action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}"
+           class="btn btn-secondary">Nahlásit neúčast jako účastník</a>
+
+    </div>
+{% endif %}

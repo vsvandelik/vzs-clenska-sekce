@@ -1,0 +1,6 @@
+{% if not occurrence.is_opened %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a class="btn btn-info" href="{% url 'one_time_events:approve-occurrence' event.id occurrence.id %}">
+            {% if occurrence.is_closed %}Schválit docházku{% else %}Upravit schválení docházky{% endif %}</a>
+    </div>
+{% endif %}

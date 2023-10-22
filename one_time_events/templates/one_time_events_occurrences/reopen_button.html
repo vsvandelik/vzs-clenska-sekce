@@ -1,0 +1,9 @@
+{% if occurrence.is_closed %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a class="btn btn-secondary"
+           data-toggle="modal"
+           data-target="#reopen-one-time-event-occurrence"
+           data-action="{% url 'one_time_events:reopen-occurrence' event.id occurrence.id %}"
+        >Znovu otevřít a zrušit předání ke schválení</a>
+    </div>
+{% endif %}

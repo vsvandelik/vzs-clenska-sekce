@@ -5,6 +5,7 @@
             <div class="custom-control custom-checkbox">
                 <input name="occurrences" id="occurrence-{{ occurrence.id }}" type="checkbox"
                        {% if occurrence.id in checked_occurrences %}checked{% endif %}
+                       {% if not occurrence.is_opened %}disabled{% endif %}
                        class="custom-control-input"
                        value="{{ occurrence.id }}">
                 <label for="occurrence-{{ occurrence.id }}" class="custom-control-label">{{ occurrence.date|date }}</label>

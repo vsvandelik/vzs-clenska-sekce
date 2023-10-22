@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -13,6 +14,7 @@ from events.models import (
     ParticipantEnrollment,
 )
 from features.models import Feature, FeatureAssignment
+from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
@@ -116,10 +118,14 @@ class OneTimeEvent(Event):
     def enrollments_by_Q(self, condition):
         return self.onetimeeventparticipantenrollment_set.filter(condition)
 
-    def organizers_assignments(self):
-        return OrganizerOccurrenceAssignment.objects.filter(
-            position__in=self.positions.all()
+    def organizer_persons(self):
+        persons = set()
+        assignments = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__in=self.eventoccurrence_set.all()
         )
+        for assignment in assignments:
+            persons.add(assignment.person)
+        return persons
 
     def __str__(self):
         return self.name
@@ -163,6 +169,12 @@ class OneTimeEvent(Event):
             or super().can_person_interact_with(person)
         )
 
+    def exists_closed_occurrence(self):
+        for occurrence in self.eventoccurrence_set.all():
+            if occurrence.state == EventOrOccurrenceState.CLOSED:
+                return True
+        return False
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -178,6 +190,30 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     )
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
+    def receive_amount(self):
+        if self.transaction is not None:
+            return self.transaction.amount
+
+        hours = self.occurrence.hours
+        wage_hour = self.position_assignment.position.wage_hour
+        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
+        category = self.occurrence.event.category
+
+        if category in person_rates:
+            salary = person_rates[category] * hours
+        else:
+            salary = 0
+
+        return salary + wage_hour * hours
+
+    @property
+    def is_present(self):
+        return self.state == OneTimeEventAttendance.PRESENT
+
+    @property
+    def is_missing(self):
+        return self.state == OneTimeEventAttendance.MISSING
+
     class Meta:
         unique_together = ["person", "occurrence"]
 
@@ -191,6 +227,14 @@ class OneTimeEventParticipantAttendance(models.Model):
         "one_time_events.OneTimeEventOccurrence", on_delete=models.CASCADE
     )
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
+
+    @property
+    def is_present(self):
+        return self.state == OneTimeEventAttendance.PRESENT
+
+    @property
+    def is_missing(self):
+        return self.state == OneTimeEventAttendance.MISSING
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -245,8 +289,53 @@ class OneTimeEventOccurrence(EventOccurrence):
         )
 
     def attending_participants_attendance(self):
-        # TODO: implement
-        raise NotImplementedError
+        return self.onetimeeventparticipantattendance_set.filter(
+            state=OneTimeEventAttendance.PRESENT
+        )
+
+    def participants_assignment_by_Q(self, q_condition):
+        return self.onetimeeventparticipantattendance_set.filter(q_condition)
+
+    def approved_participant_assignments(self):
+        return self.participants_assignment_by_Q(Q()).order_by("person")
+
+    def approved_organizer_assignment(self):
+        return self.organizers_assignments_by_Q(Q())
+
+    def missing_participants_assignments_sorted(self):
+        return self.participants_assignment_by_Q(
+            Q(state=OneTimeEventAttendance.MISSING)
+        ).order_by("person")
+
+    def organizers_assignments_by_Q(self, q_condition):
+        return self.organizeroccurrenceassignment_set.filter(q_condition)
+
+    def missing_organizers_assignments_sorted(self):
+        return self.organizers_assignments_by_Q(
+            Q(state=OneTimeEventAttendance.MISSING)
+        ).order_by("person")
+
+    def approved_organizer_assignments(self):
+        return self.organizers_assignments_by_Q(Q()).order_by("person")
+
+    def organizer_assignments_settled(self):
+        return OrganizerOccurrenceAssignment.objects.filter(
+            Q(occurrence=self)
+            & ~Q(transaction=None)
+            & ~Q(transaction__fio_transaction=None)
+        )
+
+    def can_be_reopened(self):
+        return len(self.organizer_assignments_settled()) == 0
+
+    def can_attendance_be_filled(self):
+        return datetime.now(tz=timezone.get_default_timezone()).date() >= self.date
+
+    def not_approved_when_should(self):
+        return (
+            self.can_attendance_be_filled()
+            and self.state == EventOrOccurrenceState.CLOSED
+        )
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
@@ -265,6 +354,14 @@ class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
 
     class Meta:
         unique_together = ["one_time_event", "person"]
+
+    def participant_attendance(self, occurrence):
+        attendance = self.onetimeeventparticipantattendance_set.filter(
+            occurrence=occurrence
+        )
+        if attendance is not None:
+            return attendance.first()
+        return None
 
     def delete(self):
         transaction = OneTimeEventParticipantEnrollment.objects.get(

@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
@@ -12,7 +13,6 @@ from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -419,6 +419,8 @@ class BulkApproveParticipantsMixin(
 
 
 class GetOccurrenceProvider:
+    occurrence_q_condition_restriction = Q()
+
     def get_occurrence(self, *args, **kwargs):
         if "occurrence_id" in kwargs:
             pk = kwargs["occurrence_id"]
@@ -426,7 +428,20 @@ class GetOccurrenceProvider:
             pk = kwargs["pk"]
         else:
             raise NotImplementedError
-        return get_object_or_404(EventOccurrence, pk=pk)
+        occurrence_set = EventOccurrence.objects.filter(
+            Q(pk=pk) & self.occurrence_q_condition_restriction
+        )
+        if occurrence_set.exists():
+            return occurrence_set.first()
+        return None
+
+
+class OccurrenceRestrictionMixin(GetOccurrenceProvider):
+    def dispatch(self, request, *args, **kwargs):
+        occurrence = super().get_occurrence(*args, **kwargs)
+        if occurrence is None:
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
@@ -446,9 +461,21 @@ class OccurrenceDetailBaseView(
     occurrence_id_key = "pk"
 
 
-class OccurrenceOpenRestrictionMixin(GetOccurrenceProvider):
-    def dispatch(self, request, *args, **kwargs):
-        occurrence = super().get_occurrence(*args, **kwargs)
-        if occurrence.state != EventOrOccurrenceState.OPEN:
-            raise Http404("Tato stránka není dostupná")
-        return super().dispatch(request, *args, **kwargs)
+class OccurrenceOpenRestrictionMixin(OccurrenceRestrictionMixin):
+    occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.OPEN)
+
+
+class OccurrenceNotOpenedRestrictionMixin(OccurrenceRestrictionMixin):
+    occurrence_q_condition_restriction = ~Q(state=EventOrOccurrenceState.OPEN)
+
+
+class OccurrenceIsClosedRestrictionMixin(OccurrenceRestrictionMixin):
+    occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.CLOSED)
+
+
+class OccurrenceIsApprovedRestrictionMixin(OccurrenceRestrictionMixin):
+    occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.COMPLETED)
+
+
+class OccurrenceNotApprovedRestrictionMixin(OccurrenceRestrictionMixin):
+    occurrence_q_condition_restriction = ~Q(state=EventOrOccurrenceState.COMPLETED)

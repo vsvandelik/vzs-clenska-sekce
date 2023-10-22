@@ -1,0 +1,34 @@
+{% load vzs_filters %}
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Přehled</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Datum</td>
+                        <td class="w-100">{{ occurrence.date|date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Počet hodin</td>
+                        <td class="w-100">{{ occurrence.hours }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Kapacita:</td>
+                        <td class="w-100">
+                            {{ occurrence.attending_participants_attendance|length }} / {{ event.get_capacity_display }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold align-middle">Stav:</td>
+                        <td class="w-100">
+                            {{ occurrence.get_state_display }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

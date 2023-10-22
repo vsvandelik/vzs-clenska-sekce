@@ -9,20 +9,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import EventOccurrence
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
-    EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
@@ -33,16 +29,15 @@ from events.views import (
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
-    InsertOccurrenceIntoSelfObjectMixin,
     OccurrenceOpenRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    OccurrenceNotOpenedRestrictionMixin,
 )
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -57,7 +52,7 @@ from .forms import (
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingEnrollMyselfParticipantForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
-    FillAttendanceForm,
+    TrainingFillAttendanceForm,
     ReopenTrainingOccurrenceForm,
     TrainingForm,
     TrainingParticipantAttendanceForm,
@@ -228,7 +223,7 @@ class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
 
 class TrainingOccurrenceDetailView(OccurrenceDetailBaseView):
     model = TrainingOccurrence
-    template_name = "occurrences/detail.html"
+    template_name = "trainings_occurrences/detail.html"
 
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
@@ -269,7 +264,7 @@ class CancelCoachExcuseView(
     generic.UpdateView,
 ):
     form_class = CancelCoachExcuseForm
-    template_name = "occurrences/modals/cancel_coach_excuse.html"
+    template_name = "trainings_occurrences/modals/cancel_coach_excuse.html"
     success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
 
 
@@ -279,7 +274,7 @@ class ExcuseMyselfCoachView(
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfCoachForm
-    template_name = "occurrences/modals/excuse_myself_coach.html"
+    template_name = "trainings_occurrences/modals/excuse_myself_coach.html"
     success_message = "Vaše trenérská neúčast byla úspěšně nahlášena"
 
     def get_object(self, queryset=None):
@@ -300,7 +295,7 @@ class CoachExcuseView(
     generic.UpdateView,
 ):
     form_class = CoachExcuseForm
-    template_name = "occurrences/modals/coach_excuse.html"
+    template_name = "trainings_occurrences/modals/coach_excuse.html"
     success_message = "Omluvení trenéra proběhlo úspěšně"
 
 
@@ -314,14 +309,14 @@ class EnrollMyselfOrganizerForOccurrenceView(
 ):
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení jako jednorázový trenér proběhlo úspěšně"
-    template_name = "occurrences/detail.html"
+    template_name = "trainings_occurrences/detail.html"
 
 
 class OneTimeCoachDeleteView(
     CoachOccurrenceBaseView,
     generic.DeleteView,
 ):
-    template_name = "occurrences/modals/delete_one_time_coach.html"
+    template_name = "trainings_occurrences/modals/delete_one_time_coach.html"
 
     def get_success_message(self, cleaned_data):
         return (
@@ -335,7 +330,9 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
     generic.UpdateView,
 ):
     form_class = TrainingUnenrollMyselfOrganizerFromOccurrenceForm
-    template_name = "occurrences/modals/unenroll_myself_organizer_occurrence.html"
+    template_name = (
+        "trainings_occurrences/modals/unenroll_myself_organizer_occurrence.html"
+    )
 
     def get_success_message(self, cleaned_data):
         return f"Odhlášení z jednorázové trenérské pozice proběhlo úspěšně"
@@ -347,7 +344,7 @@ class AddOneTimeCoachView(
     generic.CreateView,
 ):
     form_class = CoachOccurrenceAssignmentForm
-    template_name = "occurrences/create_coach_occurrence_assignment.html"
+    template_name = "trainings_occurrences/create_coach_occurrence_assignment.html"
     success_message = "Jednorázový trenér %(person)s přidán"
 
 
@@ -361,7 +358,7 @@ class EditOneTimeCoachView(
     model = CoachOccurrenceAssignment
     form_class = CoachOccurrenceAssignmentForm
     context_object_name = "assignment"
-    template_name = "occurrences/edit_coach_occurrence_assignment.html"
+    template_name = "trainings_occurrences/edit_coach_occurrence_assignment.html"
     success_message = "Přihláska jednorázového trenéra %(person)s upravena"
 
     def get_form_kwargs(self):
@@ -394,7 +391,7 @@ class ExcuseParticipantView(
     generic.UpdateView,
 ):
     form_class = ParticipantExcuseForm
-    template_name = "occurrences/modals/participant_excuse.html"
+    template_name = "trainings_occurrences/modals/participant_excuse.html"
     success_message = "Omluvení účastníka proběhlo úspěšně"
 
 
@@ -403,7 +400,7 @@ class CancelParticipantExcuseView(
     generic.UpdateView,
 ):
     form_class = CancelParticipantExcuseForm
-    template_name = "occurrences/modals/cancel_participant_excuse.html"
+    template_name = "trainings_occurrences/modals/cancel_participant_excuse.html"
     success_message = "Zrušení omluvenky účastníka proběhlo úspěšně"
 
 
@@ -413,7 +410,7 @@ class ExcuseMyselfParticipantView(
     generic.UpdateView,
 ):
     form_class = ExcuseMyselfParticipantForm
-    template_name = "occurrences/modals/excuse_myself_participant.html"
+    template_name = "trainings_occurrences/modals/excuse_myself_participant.html"
     success_message = "Vaše neúčast jako účastník byla úspěšně nahlášena"
 
     def get_object(self, queryset=None):
@@ -435,7 +432,9 @@ class UnenrollMyselfParticipantFromOccurrenceView(
     generic.UpdateView,
 ):
     form_class = TrainingUnenrollMyselfParticipantFromOccurrenceForm
-    template_name = "occurrences/modals/unenroll_myself_participant_occurrence.html"
+    template_name = (
+        "trainings_occurrences/modals/unenroll_myself_participant_occurrence.html"
+    )
     success_message = "Odhlášení jako jednorázový účastník proběhlo úspěšně"
 
 
@@ -445,7 +444,7 @@ class AddOneTimeParticipantView(
     generic.CreateView,
 ):
     form_class = TrainingParticipantAttendanceForm
-    template_name = "occurrences/create_one_time_participant.html"
+    template_name = "trainings_occurrences/create_one_time_participant.html"
     success_message = "Jednorázový účastník %(person)s přidán"
 
 
@@ -453,7 +452,7 @@ class OneTimeParticipantDeleteView(
     ParticipantOccurrenceBaseView,
     generic.DeleteView,
 ):
-    template_name = "occurrences/modals/delete_one_time_participant.html"
+    template_name = "trainings_occurrences/modals/delete_one_time_participant.html"
 
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.object.person} byla úspěšně odebrána jako účastník"
@@ -471,10 +470,10 @@ class EnrollMyselfParticipantFromOccurrenceView(
 ):
     form_class = TrainingEnrollMyselfParticipantOccurrenceForm
     success_message = "Přihlášení jako jednorázový účastník proběhlo úspěšně"
-    template_name = "occurrences/detail.html"
+    template_name = "trainings_occurrences/detail.html"
 
 
-class TrainingAttendanceMixin:
+class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
         if datetime.now(tz=timezone.get_default_timezone()) < occurrence.datetime_start:
@@ -482,9 +481,9 @@ class TrainingAttendanceMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class FillAttendanceView(
+class TrainingFillAttendanceView(
     MessagesMixin,
-    TrainingAttendanceMixin,
+    TrainingOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
@@ -492,11 +491,11 @@ class FillAttendanceView(
     InsertEventIntoContextData,
     generic.UpdateView,
 ):
-    form_class = FillAttendanceForm
+    form_class = TrainingFillAttendanceForm
     model = TrainingOccurrence
     occurrence_id_key = "pk"
     success_message = "Zapsání docházky proběhlo úspěšně"
-    template_name = "occurrences/attendance.html"
+    template_name = "trainings_occurrences/attendance.html"
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault(
@@ -510,7 +509,7 @@ class FillAttendanceView(
 
 class ReopenTrainingOccurrenceView(
     MessagesMixin,
-    TrainingAttendanceMixin,
+    OccurrenceNotOpenedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
@@ -521,4 +520,16 @@ class ReopenTrainingOccurrenceView(
     model = TrainingOccurrence
     occurrence_id_key = "pk"
     success_message = "Znovu otevření události a zrušení docházky proběhlo úspěšně"
-    template_name = "occurrences/modals/reopen_training.html"
+    template_name = "trainings_occurrences/modals/reopen_occurrence.html"
+
+
+class TrainingOpenOccurrencesOverviewView(
+    InsertEventIntoContextData, generic.TemplateView
+):
+    template_name = "trainings/modals/open_occurrences_overview.html"
+
+
+class TrainingShowAttendanceView(
+    MessagesMixin, InsertEventIntoContextData, generic.TemplateView
+):
+    template_name = "trainings/show_attendance.html"

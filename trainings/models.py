@@ -13,6 +13,7 @@ from events.models import (
     EventOccurrence,
     OrganizerAssignment,
     ParticipantEnrollment,
+    EventOrOccurrenceState,
 )
 from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
@@ -243,11 +244,6 @@ class Training(Event):
             i += 1
         return weekdays
 
-    def organizers_assignments(self):
-        return CoachOccurrenceAssignment.objects.filter(
-            position__in=self.positions.all()
-        )
-
     def position_coaches(self, position_assignment):
         return self.coachpositionassignment_set.filter(
             position_assignment=position_assignment
@@ -311,6 +307,14 @@ class CoachPositionAssignment(models.Model):
         on_delete=models.CASCADE,
     )
 
+    def coach_attendance(self, occurrence):
+        coach_assignment = CoachOccurrenceAssignment.objects.filter(
+            person=self.person, occurrence=occurrence
+        )
+        if coach_assignment is None:
+            return None
+        return coach_assignment.first()
+
     class Meta:
         unique_together = ["person", "training"]
 
@@ -328,6 +332,18 @@ class CoachOccurrenceAssignment(OrganizerAssignment):
         "trainings.TrainingOccurrence", on_delete=models.CASCADE
     )
     state = models.CharField(max_length=9, choices=TrainingAttendance.choices)
+
+    @property
+    def is_present(self):
+        return self.state == TrainingAttendance.PRESENT
+
+    @property
+    def is_excused(self):
+        return self.state == TrainingAttendance.EXCUSED
+
+    @property
+    def is_unexcused(self):
+        return self.state == TrainingAttendance.UNEXCUSED
 
     class Meta:
         unique_together = ["person", "occurrence"]
@@ -607,6 +623,18 @@ class TrainingParticipantAttendance(models.Model):
     def can_unenroll(self):
         return self.occurrence.can_participant_unenroll(self.person)
 
+    @property
+    def is_present(self):
+        return self.state == TrainingAttendance.PRESENT
+
+    @property
+    def is_excused(self):
+        return self.state == TrainingAttendance.EXCUSED
+
+    @property
+    def is_unexcused(self):
+        return self.state == TrainingAttendance.UNEXCUSED
+
     class Meta:
         unique_together = ["person", "occurrence"]
 
@@ -630,6 +658,14 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
             return True
         except TrainingWeekdays.DoesNotExist:
             return False
+
+    def participant_attendance(self, occurrence):
+        attendance = self.trainingparticipantattendance_set.filter(
+            occurrence=occurrence
+        )
+        if attendance is not None:
+            return attendance.first()
+        return None
 
     @property
     def event(self):

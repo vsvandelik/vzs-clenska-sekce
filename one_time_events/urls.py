@@ -90,4 +90,44 @@ urlpatterns = [
         views.OneTimeEventEnrollMyselfOrganizerView.as_view(),
         name="enroll-myself-organizer",
     ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/",
+        views.OneTimeOccurrenceDetailView.as_view(),
+        name="occurrence-detail",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/vyplnit-dochazku/",
+        views.OneTimeEventFillAttendanceView.as_view(),
+        name="fill-attendance",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/schvalit-den/",
+        views.ApproveOccurrenceView.as_view(),
+        name="approve-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/znovu-otevrit/",
+        views.ReopenOneTimeEventOccurrenceView.as_view(),
+        name="reopen-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/zrusit-schvaleni/",
+        views.CancelOccurrenceApprovementView.as_view(),
+        name="cancel-occurrence-approvement",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dny-k-uzavreni/",
+        views.OneTimeEventOpenOccurrencesOverviewView.as_view(),
+        name="open-occurrences-overview",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dny-ke-schvaleni/",
+        views.OneTimeEventClosedOccurrencesOverviewView.as_view(),
+        name="closed-occurrences-overview",
+    ),
+    path(
+        "<int:event_id>/zobrazit-dochazku/",
+        views.OneTimeEventShowAttendanceView.as_view(),
+        name="show-attendance",
+    ),
 ]

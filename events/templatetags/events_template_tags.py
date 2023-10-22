@@ -24,3 +24,8 @@ def can_unenroll_position(occurrence_and_person, position_assignment):
 def get_organizer_assignment(occurrence_and_person, position_assignment):
     occurrence, person = occurrence_and_person
     return occurrence.get_organizer_assignment(person, position_assignment)
+
+
+@register.filter
+def participant_enrollment_2_attendance(participant_enrollment, occurrence):
+    return participant_enrollment.participant_attendance(occurrence)

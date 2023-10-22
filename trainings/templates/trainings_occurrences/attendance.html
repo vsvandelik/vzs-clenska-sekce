@@ -1,4 +1,4 @@
-{% extends 'events/attendance.html' %}
+{% extends 'trainings_occurrences/detail_bases/attendance.html' %}
 {% load static %}
 {% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
 {% block form_action %}{% url 'trainings:fill-attendance' event.id occurrence.id %}{% endblock %}
@@ -31,7 +31,7 @@
                         <thead>
                             <tr>
                                 <th>Jméno</th>
-                                <th>Přítomen</th>
+                                <th>Přítomnost</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,7 +69,7 @@
                         <thead>
                             <tr>
                                 <th>Jméno</th>
-                                <th>Přítomen</th>
+                                <th>Přítomnost</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,7 +112,7 @@
                             <tr>
                                 <th>Jméno</th>
                                 <th>Pozice</th>
-                                <th>Přítomen</th>
+                                <th>Přítomnost</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,7 +154,7 @@
                             <tr>
                                 <th>Jméno</th>
                                 <th>Pozice</th>
-                                <th>Přítomen</th>
+                                <th>Přítomnost</th>
                             </tr>
                         </thead>
                         <tbody>

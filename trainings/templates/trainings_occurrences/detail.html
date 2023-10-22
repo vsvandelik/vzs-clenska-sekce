@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load vzs_filters %}
+{% load trainings_template_tags %}
+{% load static %}
+{% block title %}
+    Detail dne {{ occurrence.datetime_start|date }}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            {% include 'trainings_occurrences/excuse_myself_coach_button.html' %}
+            {% include 'trainings_occurrences/excuse_myself_participant_button.html' %}
+            {% include 'trainings_occurrences/unenroll_myself_participant_occurrence_button.html' %}
+            {% include 'trainings_occurrences/enroll_myself_participant_occurrence_button.html' %}
+            {% include 'trainings_occurrences/fill_attendance_button.html' %}
+            {% include 'trainings_occurrences/reopen_button.html' %}
+        </div>
+    </div>
+    <div class="row">
+        {% include 'trainings_occurrences/detail_components/overview.html' %}
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Účastníci
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'trainings_occurrences/detail_components/regular_participants.html' %}
+                        {% include 'trainings_occurrences/detail_components/one_time_participants.html' %}
+                        {% include 'trainings_occurrences/detail_components/excused_participants.html' %}
+                        {% include 'trainings_occurrences/detail_components/unexcused_participants.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="card-title h5">
+                        Trenéři
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% include 'trainings_occurrences/detail_components/regular_coaches.html' %}
+                        {% include 'trainings_occurrences/detail_components/one_time_coaches.html' %}
+                        {% include 'trainings_occurrences/detail_components/excused_coaches.html' %}
+                        {% include 'trainings_occurrences/detail_components/unexcused_coaches.html' %}
+                        {% include 'trainings_occurrences/detail_components/positions_capacity.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'modal_include.html' with id='cancel-coach-excuse-modal' %}
+    {% include 'modal_include.html' with id='excuse-myself-coach-modal' %}
+    {% include 'modal_include.html' with id='excuse-coach-modal' %}
+    {% include 'modal_include.html' with id='delete-one-time-coach-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-organizer-occurrence-modal' %}
+
+    {% include 'modal_include.html' with id='excuse-participant-modal' %}
+    {% include 'modal_include.html' with id='cancel-participant-excuse-modal' %}
+    {% include 'modal_include.html' with id='excuse-myself-participant-modal' %}
+    {% include 'modal_include.html' with id='unenroll-myself-participant-occurrence-modal' %}
+    {% include 'modal_include.html' with id='delete-one-time-participant-modal' %}
+
+    {% include 'modal_include.html' with id='reopen-training-occurrence-modal' %}
+
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("participants-excused-table", [0])
+        simpleOrderableTableEnable("participants-unexcused-table", [0])
+        simpleOrderableTableEnable("participants-regular-table", [0])
+        simpleOrderableTableEnable("one-time-participants-table", [0])
+
+        simpleOrderableTableEnable("coaches-excused-table", [0, 1])
+        simpleOrderableTableEnable("coaches-unexcused-table", [0, 1])
+        simpleOrderableTableEnable("coaches-regular-table", [0, 1])
+        simpleOrderableTableEnable("one-time-coaches-table", [0, 1])
+        simpleOrderableTableEnable("positions-capacity-table", [0, 1])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal("cancel-coach-excuse-modal")
+        registerModal('excuse-myself-coach-modal')
+        registerModal('excuse-coach-modal')
+        registerModal('delete-one-time-coach-modal')
+        registerModal('unenroll-myself-organizer-occurrence-modal')
+
+        registerModal('excuse-participant-modal')
+        registerModal("cancel-participant-excuse-modal")
+        registerModal('excuse-myself-participant-modal')
+        registerModal('unenroll-myself-participant-occurrence-modal')
+        registerModal('delete-one-time-participant-modal')
+
+        registerModal('reopen-training-occurrence-modal')
+    </script>
+{% endblock %}

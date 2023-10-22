@@ -1,0 +1,94 @@
+{% extends 'one_time_events_occurrences/detail_bases/attendance.html' %}
+{% load static %}
+{% block location_text %}{{ event }} – {{ occurrence.date|date }}{% endblock %}
+{% block form_action %}{% url 'one_time_events:fill-attendance' event.id occurrence.id %}{% endblock %}
+
+{% block title %}{% if occurrence.is_opened %}Vyplnění docházky{% else %}Úprava docházky{% endif %}{% endblock %}
+
+{% block savebtn_value %}{% if occurrence.is_opened %}Zapsat docházku a předat ke schválení{% else %}Upravit docházku a předat ke schválení{% endif %}{% endblock %}
+
+{% block organizers_pretty_name %}Organizátoři{% endblock %}
+{% block participants_body %}
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title h5">Účastníci</div>
+            </div>
+            <div class="card-body">
+                <table class="table" id="participants-table">
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th>Přítomnost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant_assignment in occurrence.approved_participant_assignments %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
+                                </td>
+                                <td>
+                                    <div class="custom-control custom-checkbox">
+                                        <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
+                                               {% if participant_assignment in participant_assignments %}checked{% endif %}
+                                               class="custom-control-input" name="participants"
+                                               value="{{ participant_assignment.id }}">
+                                        <label for="{{ participant_assignment.id }}_participant_checkbox"
+                                               class="custom-control-label"></label>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block organizers_body %}
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title h5">Organizátoři</div>
+            </div>
+            <div class="card-body">
+                <table class="table" id="organizers-table">
+                    <thead>
+                        <tr>
+                            <th>Osoba</th>
+                            <th>Přítomnost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for organizer_assignment in occurrence.approved_organizer_assignments %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+                                </td>
+                                <td>
+                                    <div class="custom-control custom-checkbox">
+                                        <input id="{{ organizer_assignment.id }}_organizer_checkbox" type="checkbox"
+                                               {% if organizer_assignment in organizer_assignments %}checked{% endif %}
+                                               class="custom-control-input" name="organizers"
+                                               value="{{ organizer_assignment.id }}">
+                                        <label for="{{ organizer_assignment.id }}_organizer_checkbox"
+                                               class="custom-control-label"></label>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        simpleOrderableTableEnable("participants-table", [0])
+        simpleOrderableTableEnable("organizers-table", [0])
+    </script>
+{% endblock %}

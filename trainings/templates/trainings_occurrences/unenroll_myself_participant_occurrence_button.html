@@ -1,0 +1,11 @@
+{% load trainings_template_tags %}
+{% if active_person_can_participant_unenroll %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        {% with participant_attendance=occurrence|get_participant_attendance:active_person %}
+            <a data-toggle="modal"
+               data-target="#unenroll-myself-participant-occurrence-modal"
+               data-action="{% url 'trainings:unenroll-myself-participant-occurrence' event.id occurrence.id participant_attendance.id %}"
+               class="btn btn-secondary">Odhlásit se jako jednorázový účastník</a>
+        {% endwith %}
+    </div>
+{% endif %}

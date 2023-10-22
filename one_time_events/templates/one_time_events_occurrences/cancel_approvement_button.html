@@ -1,0 +1,9 @@
+{% if occurrence.is_approved %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a class="btn btn-secondary"
+           data-toggle="modal"
+           data-target="#cancel-occurrence-approvement"
+           data-action="{% url 'one_time_events:cancel-occurrence-approvement' event.id occurrence.id %}"
+        >Zrušit schválení</a>
+    </div>
+{% endif %}

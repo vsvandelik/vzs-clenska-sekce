@@ -20,6 +20,16 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 <a href="{% url 'trainings:add-transaction' event.id %}?event_id={{ event.id }}" class="btn btn-info">Přidat transakci</a>
             </div>
+            {% if event.exists_occurrence_with_unfilled_attendance %}
+                <div class="btn-group-md btn-group mb-3 elevation-2">
+                    <a class="btn btn-info"
+                       data-toggle="modal"
+                       data-target="#open-occurrences-overview-modal"
+                       data-action="{% url 'trainings:open-occurrences-overview' event.id %}"
+                    >Dny k uzavření</a>
+                </div>
+            {% endif %}
+            {% include 'trainings/detail_components/show_attendance_button.html' %}
         </div>
     </div>
     <div class="row">
@@ -67,8 +77,10 @@
     {% include "modal_include.html" with id="delete-event-modal" template="events/modals/delete.html" %}
     {% include "modal_include.html" with id="delete-position-assignment-modal" %}
     {% include "modal_include.html" with id="delete-participant-enrollment-modal" %}
-    {% include "modal_include.html" with id="unenroll-myself-participant" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
     {% include "modal_include.html" with id="delete-coach-assignment-modal" %}
+    {% include 'modal_include.html' with id='open-occurrences-overview-modal' %}
+    {% include 'modal_include.html' with id='show-attendance-modal' %}
 {% endblock %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
@@ -84,7 +96,9 @@
     <script>
         registerModal("delete-position-assignment-modal")
         registerModal('delete-participant-enrollment-modal')
-        registerModal('unenroll-myself-participant')
+        registerModal('unenroll-myself-participant-modal')
         registerModal('delete-coach-assignment-modal')
+        registerModal('open-occurrences-overview-modal')
+        registerModal('show-attendance-modal')
     </script>
 {% endblock %}
