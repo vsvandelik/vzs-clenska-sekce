@@ -1,10 +1,14 @@
 from datetime import timedelta
 
 from django import forms
+from django.core.mail import send_mail
 from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
+from django.urls import reverse
 from django_select2.forms import Select2Widget
+from django.utils.translation import gettext_lazy as _
+from pytz import unicode
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -19,6 +23,7 @@ from events.forms_bases import (
     EnrollMyselfOrganizerOccurrenceForm,
     UnenrollMyselfOccurrenceForm,
     ReopenOccurrenceMixin,
+    InsertRequestIntoSelf,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -274,7 +279,7 @@ class TrainingCategoryForm(ModelForm):
 class OneTimeEventEnrollmentApprovedHooks(
     OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
 ):
-    def approved_hooks(self, instance, event):
+    def approved_hooks(self, commit, instance, event):
         if instance.transaction is not None:
             if not instance.transaction.is_settled:
                 instance.transaction.amount = -instance.agreed_participation_fee
@@ -286,16 +291,34 @@ class OneTimeEventEnrollmentApprovedHooks(
                     instance, event
                 )
             )
+        if commit:
+            instance.transaction.save()
+            if instance.person.email is not None:
+                payment_info = ""
+                if not instance.transaction.is_settled:
+                    qr_uri = self.request.build_absolute_uri(
+                        reverse("transactions:qr", args=(instance.transaction.pk,))
+                    )
+                    payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
+                send_mail(
+                    _("Schválení prihlášky"),
+                    _(
+                        f"Vaše prihláška na jednorázovou událost {event} byla schválena{payment_info}"
+                    ),
+                    None,
+                    [instance.person.email],
+                    fail_silently=False,
+                )
 
     def save_enrollment(self, instance):
-        if instance.transaction is not None:
-            instance.transaction.save()
         instance.save()
         super().participant_enrollment_update_attendance(instance)
 
 
 class OneTimeEventParticipantEnrollmentForm(
-    ParticipantEnrollmentForm, OneTimeEventEnrollmentApprovedHooks
+    InsertRequestIntoSelf,
+    ParticipantEnrollmentForm,
+    OneTimeEventEnrollmentApprovedHooks,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
@@ -326,7 +349,7 @@ class OneTimeEventParticipantEnrollmentForm(
         instance = super().save(False)
 
         if instance.state == ParticipantEnrollment.State.APPROVED:
-            super().approved_hooks(instance, self.event)
+            super().approved_hooks(commit, instance, self.event)
         else:
             instance.agreed_participation_fee = None
             if instance.transaction is not None and not instance.transaction.is_settled:
@@ -509,7 +532,9 @@ class BulkAddOrganizerToOneTimeEventForm(
 
 
 class OneTimeEventBulkApproveParticipantsForm(
-    OneTimeEventEnrollmentApprovedHooks, BulkApproveParticipantsForm
+    InsertRequestIntoSelf,
+    OneTimeEventEnrollmentApprovedHooks,
+    BulkApproveParticipantsForm,
 ):
     class Meta(BulkApproveParticipantsForm.Meta):
         model = OneTimeEvent
@@ -543,7 +568,7 @@ class OneTimeEventBulkApproveParticipantsForm(
         for enrollment in enrollments_2_approve:
             enrollment.agreed_participation_fee = fee
             enrollment.state = ParticipantEnrollment.State.APPROVED
-            super().approved_hooks(enrollment, instance)
+            super().approved_hooks(commit, enrollment, instance)
             if commit:
                 super().save_enrollment(enrollment)
 

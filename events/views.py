@@ -12,6 +12,7 @@ from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
+    InsertRequestIntoModelFormKwargsMixin,
 )
 from .forms import (
     EventAgeLimitForm,
@@ -350,12 +351,17 @@ class ParticipantEnrollmentCreateMixin(
     ParticipantEnrollmentMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
     generic.CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
 
-class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
+class ParticipantEnrollmentUpdateMixin(
+    ParticipantEnrollmentMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    generic.UpdateView,
+):
     success_message = "Změna přihlášky proběhla úspěšně"
 
     def get_form_kwargs(self):
@@ -406,6 +412,7 @@ class BulkApproveParticipantsMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoContextData,
+    InsertRequestIntoModelFormKwargsMixin,
     generic.UpdateView,
 ):
     event_id_key = "pk"
