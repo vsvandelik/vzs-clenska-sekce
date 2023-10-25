@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
@@ -6,6 +7,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
+from django.utils.translation import gettext_lazy as _
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
@@ -405,6 +407,21 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+    def form_valid(self, form):
+        enrollment = self.object
+        if enrollment.person.email is not None:
+            if enrollment.state == ParticipantEnrollment.State.REJECTED:
+                send_mail(
+                    _(f"Odhlášení z události"),
+                    _(
+                        f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
+                    ),
+                    None,
+                    [enrollment.person.email],
+                    fail_silently=False,
+                )
+        return super().form_valid(form)
 
 
 class BulkApproveParticipantsMixin(

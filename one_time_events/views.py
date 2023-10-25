@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from django.core.mail import send_mail
 from django.http import Http404
 from django.utils import timezone
 from django.views import generic
 
+from events.models import ParticipantEnrollment
 from events.permissions import OccurrenceManagePermissionMixin
 from events.views import (
     EnrollMyselfParticipantMixin,
@@ -34,6 +36,7 @@ from events.views import (
     OccurrenceIsApprovedRestrictionMixin,
     OccurrenceNotApprovedRestrictionMixin,
 )
+from django.utils.translation import gettext_lazy as _
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
@@ -129,6 +132,31 @@ class OneTimeEventParticipantEnrollmentUpdateView(
 
 class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
     template_name = "one_time_events/modals/delete_participant_enrollment.html"
+
+    def form_valid(self, form):
+        enrollment = self.object
+        if enrollment.person.email is not None:
+            if enrollment.state == ParticipantEnrollment.State.REJECTED:
+                send_mail(
+                    _(f"Zrušení odmítnutí účasti"),
+                    _(
+                        f"Na jednorázovou událost {enrollment.event} vám bylo umožněno znovu se přihlásit"
+                    ),
+                    None,
+                    [enrollment.person.email],
+                    fail_silently=False,
+                )
+            else:
+                send_mail(
+                    _(f"Odstranění přihlášky"),
+                    _(
+                        f"Vaše přihláška na jednorázové události {enrollment.event} byla smazána administrátorem"
+                    ),
+                    None,
+                    [enrollment.person.email],
+                    fail_silently=False,
+                )
+        return super().form_valid(form)
 
 
 class OneTimeEventEnrollMyselfParticipantView(

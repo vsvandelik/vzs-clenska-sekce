@@ -275,8 +275,58 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
+class OneTimeEventEnrollmentSubstituteSendMailProvider:
+    def enrollment_substitute_send_mail(self, enrollment):
+        state_pretty = enrollment.get_state_display()
+        if enrollment.person.email is not None:
+            send_mail(
+                _(f"Změna stavu přihlášky: {state_pretty}"),
+                _(
+                    f"Vaší prihlášce na jednorázovou událost {enrollment.event} byl zmenen stav na {state_pretty}"
+                ),
+                None,
+                [enrollment.person.email],
+                fail_silently=False,
+            )
+
+
+class OneTimeEventEnrollmentRefusedSendMailProvider:
+    def enrollment_refused_send_mail(self, enrollment):
+        if enrollment.person.email is not None:
+            send_mail(
+                _(f"Odmítnutí účasti"),
+                _(
+                    f"Na jednorázové události {enrollment.event} vám byla zakázána ucast"
+                ),
+                None,
+                [enrollment.person.email],
+                fail_silently=False,
+            )
+
+
+class OneTimeEventEnrollmentApproveSendMailProvider:
+    def enrollment_approve_send_mail(self, enrollment):
+        if enrollment.person.email is not None:
+            payment_info = ""
+            if not enrollment.transaction.is_settled:
+                qr_uri = self.request.build_absolute_uri(
+                    reverse("transactions:qr", args=(enrollment.transaction.pk,))
+                )
+                payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
+            send_mail(
+                _("Schválení prihlášky"),
+                _(
+                    f"Vaše prihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
+                ),
+                None,
+                [enrollment.person.email],
+                fail_silently=False,
+            )
+
+
 class OneTimeEventEnrollmentApprovedHooks(
-    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
+    OneTimeEventEnrollmentApproveSendMailProvider,
+    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider,
 ):
     def approved_hooks(self, commit, instance, event):
         if instance.transaction is not None:
@@ -292,22 +342,7 @@ class OneTimeEventEnrollmentApprovedHooks(
             )
         if commit:
             instance.transaction.save()
-            if instance.person.email is not None:
-                payment_info = ""
-                if not instance.transaction.is_settled:
-                    qr_uri = self.request.build_absolute_uri(
-                        reverse("transactions:qr", args=(instance.transaction.pk,))
-                    )
-                    payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
-                send_mail(
-                    _("Schválení prihlášky"),
-                    _(
-                        f"Vaše prihláška na jednorázovou událost {event} byla schválena{payment_info}"
-                    ),
-                    None,
-                    [instance.person.email],
-                    fail_silently=False,
-                )
+            super().enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
         instance.save()
@@ -317,6 +352,8 @@ class OneTimeEventEnrollmentApprovedHooks(
 class OneTimeEventParticipantEnrollmentForm(
     InsertRequestIntoSelf,
     ParticipantEnrollmentForm,
+    OneTimeEventEnrollmentSubstituteSendMailProvider,
+    OneTimeEventEnrollmentRefusedSendMailProvider,
     OneTimeEventEnrollmentApprovedHooks,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
@@ -351,6 +388,10 @@ class OneTimeEventParticipantEnrollmentForm(
             super().approved_hooks(commit, instance, self.event)
         else:
             instance.agreed_participation_fee = None
+            if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
+                super().enrollment_substitute_send_mail(instance)
+            else:
+                super().enrollment_refused_send_mail(instance)
             if instance.transaction is not None and not instance.transaction.is_settled:
                 instance.transaction.delete()
                 instance.transaction = None
@@ -362,6 +403,7 @@ class OneTimeEventParticipantEnrollmentForm(
 
 class OneTimeEventEnrollMyselfParticipantForm(
     EnrollMyselfParticipantForm,
+    OneTimeEventEnrollmentSubstituteSendMailProvider,
     OneTimeEventParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
@@ -384,6 +426,7 @@ class OneTimeEventEnrollMyselfParticipantForm(
             instance.state = ParticipantEnrollment.State.APPROVED
         else:
             instance.state = ParticipantEnrollment.State.SUBSTITUTE
+            super().enrollment_substitute_send_mail(instance)
 
         if (
             self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
