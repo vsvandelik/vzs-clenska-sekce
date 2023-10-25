@@ -8,7 +8,6 @@ from django.forms import ModelForm, CheckboxSelectMultiple, Form
 from django.urls import reverse
 from django_select2.forms import Select2Widget
 from django.utils.translation import gettext_lazy as _
-from pytz import unicode
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
