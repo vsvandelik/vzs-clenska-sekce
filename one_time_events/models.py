@@ -30,6 +30,7 @@ class OneTimeEvent(Event):
         COMMERCIAL = "komercni", _("komerční")
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
+        FOR_CHILDREN = "pro-deti", _("pro děti")
 
     class Meta:
         permissions = [
