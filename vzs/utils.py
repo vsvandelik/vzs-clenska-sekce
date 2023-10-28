@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 
+from vzs import settings
+
 
 def _date_prague(date):
     return timezone.localdate(date, timezone=zoneinfo.ZoneInfo("Europe/Prague"))
@@ -34,3 +36,7 @@ def reverse_with_get_params(*args, **kwargs):
     if get_params:
         url += "?" + parse.urlencode(get_params)
     return url
+
+
+def get_server_url():
+    return f"{settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}"

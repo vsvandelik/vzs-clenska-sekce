@@ -3,11 +3,13 @@ from collections import defaultdict
 
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+from django.urls import reverse
 
 from events.models import EventOrOccurrenceState, Event
 from one_time_events.models import OneTimeEventOccurrence
 from vzs import settings
 from vzs.settings import ONETIME_EVENT_CLOSE_DEADLINE_DAYS
+from vzs.utils import get_server_url
 
 
 class Command(BaseCommand):
@@ -34,9 +36,13 @@ class Command(BaseCommand):
         for event_id, organizers in event_organizers.items():
             event = Event.objects.get(pk=event_id)
 
+            url_address = get_server_url() + reverse(
+                "one_time_events:detail", kwargs={"pk": event_id}
+            )
+
             send_mail(
                 "Upozornění na neuzavřenou akci",
-                "Uzavřete akci s názvem " + event.name + ".",
+                f"Uzavřete akci s názvem {event.name} na adrese {url_address}.",
                 settings.ADMIN_EMAIL,
                 [organizers],
                 fail_silently=False,
