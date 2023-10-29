@@ -13,7 +13,9 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
                 { "targets": "_all", "searchable": false, "orderable": false },
             ],
             "order": order,
-            "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]]
+            "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]],
+            "stateSave": true,
+            "stateDuration": -1
         });
     });
 }
@@ -28,7 +30,9 @@ function simpleOrderableTableEnable(id, orderableColumns, order = []) {
             "order": order,
             "searching": false,
             "paging": false,
-            "info": false
+            "info": false,
+            "stateSave": true,
+            "stateDuration": -1
         });
     });
 }
