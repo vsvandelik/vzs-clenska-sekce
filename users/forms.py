@@ -162,3 +162,7 @@ class UserResetPasswordRequestForm(forms.ModelForm):
                 token.save()
 
         return token
+
+
+class LogoutForm(forms.Form):
+    remember = forms.BooleanField(required=False)
