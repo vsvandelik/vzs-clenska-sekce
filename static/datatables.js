@@ -8,11 +8,12 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
     $(function () {
         $("#" + id).DataTable({
             "columnDefs": [
-                {"targets": searchableColumns, "searchable": true},
-                {"targets": orderableColumns, "orderable": true},
-                {"targets": "_all", "searchable": false, "orderable": false},
+                { "targets": searchableColumns, "searchable": true },
+                { "targets": orderableColumns, "orderable": true },
+                { "targets": "_all", "searchable": false, "orderable": false },
             ],
             "order": order,
+            "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]]
         });
     });
 }
@@ -21,13 +22,13 @@ function simpleOrderableTableEnable(id, orderableColumns, order = []) {
     $(function () {
         $("#" + id).DataTable({
             "columnDefs": [
-                {"targets": orderableColumns, "orderable": true},
-                {"targets": "_all", "searchable": false, "orderable": false},
+                { "targets": orderableColumns, "orderable": true },
+                { "targets": "_all", "searchable": false, "orderable": false },
             ],
             "order": order,
             "searching": false,
             "paging": false,
-            "info":false
+            "info": false
         });
     });
 }
