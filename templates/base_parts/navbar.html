@@ -17,7 +17,7 @@
             <li class="nav-item dropdown">
                 {% with managed_persons=user.person.get_managed_persons %}
                     {% with do_render_dropdown=managed_persons|length|neq:1 %}
-                        <a class="nav-link" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
+                        <a class="nav-link{% if not do_render_dropdown %} nav-link-no-hover{% endif %}" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
                             <i class="far fa-user"></i>
                             {{ active_person.first_name }} {{ active_person.last_name }}
 
