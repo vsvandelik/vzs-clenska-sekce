@@ -5,7 +5,7 @@ from urllib import parse
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, formats
 from vzs import settings
 
 from persons.models import Person
@@ -66,3 +66,7 @@ def email_notification_recipient_set(person):
     for person_managing in persons_managing:
         emails.add(person_managing.email)
     return emails
+
+
+def date_pretty(value):
+    return formats.date_format(value, settings.cs_formats.DATE_FORMAT)

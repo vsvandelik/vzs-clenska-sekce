@@ -34,7 +34,7 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email
+from vzs.utils import send_notification_email, date_pretty
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -507,6 +507,22 @@ class OrganizerOccurrenceAssignmentForm(
         return instance
 
 
+class BulkAddOrganizerSendMailProvider:
+    def organizer_added_send_mail(self, occurrences, organizer_assignment):
+        dates = []
+        for occurrence in occurrences:
+            dates.append(date_pretty(occurrence.date))
+        dates_pretty = ", ".join(dates)
+
+        send_notification_email(
+            _(f"Prihlaseni organizátora"),
+            _(
+                f"Byl(a) jste prihlasen jako organizator na pozici {organizer_assignment.position_assignment} dny {dates_pretty} udalosti {occurrences[0].event}"
+            ),
+            [organizer_assignment.person],
+        )
+
+
 class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
     person = forms.IntegerField(
         label="Osoba",
@@ -568,7 +584,9 @@ class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
 
 
 class BulkAddOrganizerToOneTimeEventForm(
-    BulkAddOrganizerToOneTimeEventMixin, OrganizerAssignmentForm
+    BulkAddOrganizerToOneTimeEventMixin,
+    BulkAddOrganizerSendMailProvider,
+    OrganizerAssignmentForm,
 ):
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
@@ -586,12 +604,15 @@ class BulkAddOrganizerToOneTimeEventForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-        for occurrence in self.cleaned_data["occurrences"]:
+        cleaned_occurrences = self.cleaned_data["occurrences"]
+        for occurrence in cleaned_occurrences:
             instance.pk = None
             instance.id = None
             instance.occurrence = occurrence
             if commit:
                 instance.save()
+        if cleaned_occurrences is not None or cleaned_occurrences != []:
+            super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
 
@@ -641,7 +662,7 @@ class OneTimeEventBulkApproveParticipantsForm(
 
 
 class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
-    EnrollMyselfOrganizerOccurrenceForm
+    OrganizerOccurrenceAssignedSendMailProvider, EnrollMyselfOrganizerOccurrenceForm
 ):
     class Meta(EnrollMyselfOrganizerOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
@@ -651,6 +672,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
         instance.state = OneTimeEventAttendance.PRESENT
         if commit:
             instance.save()
+        super().assigned_send_mail(instance)
         return instance
 
 
@@ -681,6 +703,7 @@ class OneTimeEventUnenrollMyselfOrganizerForm(
 class OneTimeEventEnrollMyselfOrganizerForm(
     ActivePersonFormMixin,
     BulkAddOrganizerToOneTimeEventMixin,
+    BulkAddOrganizerSendMailProvider,
     OrganizerEnrollMyselfForm,
 ):
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
@@ -719,12 +742,15 @@ class OneTimeEventEnrollMyselfOrganizerForm(
     def save(self, commit=True):
         instance = super().save(False)
         instance.person = self.person
-        for occurrence in self.cleaned_data["occurrences"]:
+        cleaned_occurrences = self.cleaned_data["occurrences"]
+        for occurrence in cleaned_occurrences:
             instance.pk = None
             instance.id = None
             instance.occurrence = occurrence
             if commit:
                 instance.save()
+        if cleaned_occurrences is not None or cleaned_occurrences != []:
+            super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
 

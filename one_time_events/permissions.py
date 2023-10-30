@@ -17,7 +17,9 @@ class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixinB
 
 class OccurrenceEnrollOrganizerPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
+    def view_has_permission(
+        cls, logged_in_user, active_person, occurrence_id, **kwargs
+    ):
         for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
             return occurrence.event.can_enroll_organizer(active_person)
 
@@ -26,7 +28,9 @@ class OccurrenceEnrollOrganizerPermissionMixin(PermissionRequiredMixin):
 
 class OccurrenceUnenrollOrganizerPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
+    def view_has_permission(
+        cls, logged_in_user, active_person, occurrence_id, **kwargs
+    ):
         for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
             return occurrence.event.can_unenroll_organizer(active_person)
 

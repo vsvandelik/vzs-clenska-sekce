@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.core.mail import send_mail
 from django.http import Http404
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.models import ParticipantEnrollment
@@ -36,12 +36,12 @@ from events.views import (
     OccurrenceIsApprovedRestrictionMixin,
     OccurrenceNotApprovedRestrictionMixin,
 )
-from django.utils.translation import gettext_lazy as _
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.utils import send_notification_email
 from .forms import (
     BulkAddOrganizerToOneTimeEventForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
@@ -137,24 +137,20 @@ class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMix
         enrollment = self.object
         if enrollment.person.email is not None:
             if enrollment.state == ParticipantEnrollment.State.REJECTED:
-                send_mail(
-                    _(f"Zrušení odmítnutí účasti"),
+                send_notification_email(
+                    _(f"Zruseni odmitnuti ucasti"),
                     _(
                         f"Na jednorázovou událost {enrollment.event} vám bylo umožněno znovu se přihlásit"
                     ),
-                    None,
-                    [enrollment.person.email],
-                    fail_silently=False,
+                    [enrollment.person],
                 )
             else:
-                send_mail(
-                    _(f"Odstranění přihlášky"),
+                send_notification_email(
+                    _(f"Odstraneni prihlasky"),
                     _(
                         f"Vaše přihláška na jednorázové události {enrollment.event} byla smazána administrátorem"
                     ),
-                    None,
-                    [enrollment.person.email],
-                    fail_silently=False,
+                    [enrollment.person],
                 )
         return super().form_valid(form)
 
@@ -169,7 +165,7 @@ class OneTimeEventEnrollMyselfParticipantView(
 
 
 class OrganizerForOccurrenceMixin(
-    # OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixin,
     RedirectToEventDetailOnSuccessMixin,
     MessagesMixin,
 ):
@@ -217,6 +213,17 @@ class DeleteOrganizerForOccurrenceView(
     def get_success_message(self, cleaned_data):
         return f"Organizátor {self.object.person} odebrán"
 
+    def form_valid(self, form):
+        assignment = self.object
+        send_notification_email(
+            _(f"Odhlášení z události"),
+            _(
+                f"Vase prihlaska na organizatorskou pozici dne {assignment.occurrence.date} udalosti {assignment.occurrence.event} byla odstranena administratorem"
+            ),
+            [assignment.person],
+        )
+        return super().form_valid(form)
+
 
 class BulkCreateDeleteOrganizerMixin(
     EventManagePermissionMixin,
@@ -249,6 +256,13 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         OrganizerOccurrenceAssignment.objects.filter(
             person=person, occurrence__event=event
         ).delete()
+
+        send_notification_email(
+            _(f"Odhlaseni organizatora"),
+            _(f"Byl(a) jste odhlasen jako organizator ze vsech dnu udalosti {event}"),
+            [person],
+        )
+
         return super().form_valid(form)
 
 
@@ -296,6 +310,18 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     success_message = "Odhlášení z organizátorské pozice proběhlo úspěšně"
     template_name = "one_time_events/modals/unenroll_myself_organizer_occurrence.html"
 
+    def form_valid(self, form):
+        assignment = form.instance
+        send_notification_email(
+            _(f"Odhlaseni organizatora"),
+            _(
+                f"Byl(a) jste odhlasen jako organizator dne udalosti {assignment.occurrence.event}"
+            ),
+            [assignment.person],
+        )
+
+        return super().form_valid(form)
+
 
 class OneTimeEventUnenrollMyselfOrganizerView(
     OneTimeEventUnenrollOrganizerPermissionMixin,
@@ -303,7 +329,7 @@ class OneTimeEventUnenrollMyselfOrganizerView(
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
-    InsertRequestIntoModelFormKwargsMixin,
+    InsertActivePersonIntoModelFormKwargsMixin,
     generic.FormView,
 ):
     form_class = OneTimeEventUnenrollMyselfOrganizerForm
@@ -312,6 +338,15 @@ class OneTimeEventUnenrollMyselfOrganizerView(
 
     def form_valid(self, form):
         form.cleaned_data["assignments_2_delete"].delete()
+
+        send_notification_email(
+            _(f"Odhlaseni organizatora"),
+            _(
+                f"Byl(a) jste odhlasen jako organizator ze vsech dnu udalosti {self.event}"
+            ),
+            [form.person],
+        )
+
         return super().form_valid(form)
 
 

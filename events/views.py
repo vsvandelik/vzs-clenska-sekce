@@ -16,6 +16,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
     InsertRequestIntoModelFormKwargsMixin,
 )
+from vzs.utils import send_notification_email
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -410,17 +411,13 @@ class UnenrollMyselfParticipantView(
 
     def form_valid(self, form):
         enrollment = self.object
-        if enrollment.person.email is not None:
-            if enrollment.state == ParticipantEnrollment.State.REJECTED:
-                send_mail(
-                    _(f"Odhlášení z události"),
-                    _(
-                        f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
-                    ),
-                    None,
-                    [enrollment.person.email],
-                    fail_silently=False,
-                )
+        send_notification_email(
+            _(f"Odhlášení z události"),
+            _(
+                f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
+            ),
+            [enrollment.person],
+        )
         return super().form_valid(form)
 
 
