@@ -330,7 +330,9 @@ class OneTimeEventEnrollmentApprovedHooks(
             )
         if commit:
             instance.transaction.save()
-            super().enrollment_approve_send_mail(instance)
+            old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
+            if instance.state != old_instance.state:
+                super().enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
         instance.save()
@@ -376,10 +378,12 @@ class OneTimeEventParticipantEnrollmentForm(
             super().approved_hooks(commit, instance, self.event)
         else:
             instance.agreed_participation_fee = None
-            if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
-                super().enrollment_substitute_send_mail(instance)
-            else:
-                super().enrollment_refused_send_mail(instance)
+            old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
+            if instance.state != old_instance.state:
+                if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
+                    super().enrollment_substitute_send_mail(instance)
+                else:
+                    super().enrollment_refused_send_mail(instance)
             if instance.transaction is not None and not instance.transaction.is_settled:
                 instance.transaction.delete()
                 instance.transaction = None
