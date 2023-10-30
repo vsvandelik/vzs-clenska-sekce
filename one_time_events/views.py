@@ -113,7 +113,9 @@ class EditTrainingCategoryView(
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin(
+    InsertRequestIntoModelFormKwargsMixin
+):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventParticipantEnrollmentForm
 
@@ -276,7 +278,9 @@ class BulkAddOrganizerToOneTimeEventView(
     success_message = "Organizátor %(person)s přidán na vybrané dny"
 
 
-class OneTimeEventBulkApproveParticipantsView(BulkApproveParticipantsMixin):
+class OneTimeEventBulkApproveParticipantsView(
+    InsertRequestIntoModelFormKwargsMixin, BulkApproveParticipantsMixin
+):
     form_class = OneTimeEventBulkApproveParticipantsForm
     template_name = "one_time_events/bulk_approve_participants.html"
 

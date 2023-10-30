@@ -289,7 +289,7 @@ class OneTimeEventEnrollmentSubstituteSendMailProvider:
 class OneTimeEventEnrollmentRefusedSendMailProvider:
     def enrollment_refused_send_mail(self, enrollment):
         send_notification_email(
-            _(f"Odmítnutí účasti"),
+            _(f"Odmitnuti ucasti"),
             _(f"Na jednorázové události {enrollment.event} vám byla zakázána ucast"),
             [enrollment.person],
         )
@@ -373,13 +373,15 @@ class OneTimeEventParticipantEnrollmentForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-
         if instance.state == ParticipantEnrollment.State.APPROVED:
             super().approved_hooks(commit, instance, self.event)
         else:
             instance.agreed_participation_fee = None
-            old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
-            if instance.state != old_instance.state:
+            if (
+                instance.id is None
+                or instance.state
+                != OneTimeEventParticipantEnrollment.objects.get(id=instance.id).state
+            ):
                 if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
                     super().enrollment_substitute_send_mail(instance)
                 else:

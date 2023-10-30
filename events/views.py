@@ -354,7 +354,6 @@ class ParticipantEnrollmentCreateMixin(
     ParticipantEnrollmentMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
-    InsertRequestIntoModelFormKwargsMixin,
     generic.CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
@@ -362,7 +361,6 @@ class ParticipantEnrollmentCreateMixin(
 
 class ParticipantEnrollmentUpdateMixin(
     ParticipantEnrollmentMixin,
-    InsertRequestIntoModelFormKwargsMixin,
     generic.UpdateView,
 ):
     success_message = "Změna přihlášky proběhla úspěšně"
@@ -426,7 +424,6 @@ class BulkApproveParticipantsMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoContextData,
-    InsertRequestIntoModelFormKwargsMixin,
     generic.UpdateView,
 ):
     event_id_key = "pk"
