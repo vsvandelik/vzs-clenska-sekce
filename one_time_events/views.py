@@ -169,7 +169,9 @@ class OneTimeEventEnrollMyselfParticipantView(
 
 
 class OrganizerForOccurrenceMixin(
-    OccurrenceManagePermissionMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin
+    # OccurrenceManagePermissionMixin,
+    RedirectToEventDetailOnSuccessMixin,
+    MessagesMixin,
 ):
     pass
 
