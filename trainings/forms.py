@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
+from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -33,6 +34,7 @@ from trainings.utils import (
 )
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.utils import send_notification_email
 from vzs.widgets import TimePickerWithIcon
 from .models import (
     Training,
@@ -482,9 +484,36 @@ class InitializeWeekdaysProvider:
             enrollment.weekdays.add(weekday_obj)
 
 
+class TrainingEnrollmentStateChangedSendMailProvider:
+    def enrollment_state_changed_send_mail(self, enrollment):
+        if enrollment.state == ParticipantEnrollment.State.APPROVED:
+            send_notification_email(
+                _(f"Zmena stavu prihlásky"),
+                _(f"Vaše prihláška na trénink {enrollment.event} byla schválena"),
+                [enrollment.person],
+            )
+        elif enrollment.state == ParticipantEnrollment.State.SUBSTITUTE:
+            send_notification_email(
+                _(f"Zmena stavu prihlásky"),
+                _(
+                    f"Vaší prihlášce na trénink událost {enrollment.event} byl zmenen stav na NAHRADNIK"
+                ),
+                [enrollment.person],
+            )
+        elif enrollment.state == ParticipantEnrollment.State.REJECTED:
+            send_notification_email(
+                _(f"Odmitnuti ucasti"),
+                _(f"Na tréninku {enrollment.event} vám byla zakázána ucast"),
+                [enrollment.person],
+            )
+        else:
+            raise NotImplementedError
+
+
 class TrainingParticipantEnrollmentForm(
     TrainingWeekdaysSelectionMixin,
     ParticipantEnrollmentForm,
+    TrainingEnrollmentStateChangedSendMailProvider,
     InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
@@ -507,6 +536,11 @@ class TrainingParticipantEnrollmentForm(
         if instance.id is not None or commit:
             if instance.id is None:
                 instance.save()
+                super().enrollment_state_changed_send_mail(instance)
+            else:
+                old_instance = TrainingParticipantEnrollment.objects.get(id=instance.id)
+                if old_instance.state != instance.state:
+                    super().enrollment_state_changed_send_mail(instance)
             instance_weekdays_objs = instance.weekdays.all()
             for weekday_obj in instance_weekdays_objs:
                 if weekday_obj.weekday not in weekdays_cleaned:

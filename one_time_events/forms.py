@@ -361,6 +361,9 @@ class OneTimeEventParticipantEnrollmentForm(
             and self.instance.transaction.is_settled
         ):
             self.fields["agreed_participation_fee"].widget.attrs["readonly"] = True
+            self.fields["agreed_participation_fee"].widget.attrs["value"] = abs(
+                self.instance.transaction.amount
+            )
 
     def clean(self):
         cleaned_data = super().clean()

@@ -137,23 +137,22 @@ class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMix
 
     def form_valid(self, form):
         enrollment = self.object
-        if enrollment.person.email is not None:
-            if enrollment.state == ParticipantEnrollment.State.REJECTED:
-                send_notification_email(
-                    _(f"Zruseni odmitnuti ucasti"),
-                    _(
-                        f"Na jednorázovou událost {enrollment.event} vám bylo umožněno znovu se přihlásit"
-                    ),
-                    [enrollment.person],
-                )
-            else:
-                send_notification_email(
-                    _(f"Odstraneni prihlasky"),
-                    _(
-                        f"Vaše přihláška na jednorázové události {enrollment.event} byla smazána administrátorem"
-                    ),
-                    [enrollment.person],
-                )
+        if enrollment.state == ParticipantEnrollment.State.REJECTED:
+            send_notification_email(
+                _(f"Zruseni odmitnuti ucasti"),
+                _(
+                    f"Na jednorázovou událost {enrollment.event} vám bylo umožněno znovu se přihlásit"
+                ),
+                [enrollment.person],
+            )
+        else:
+            send_notification_email(
+                _(f"Odstraneni prihlasky"),
+                _(
+                    f"Vaše přihláška na jednorázové události {enrollment.event} byla smazána administrátorem"
+                ),
+                [enrollment.person],
+            )
         return super().form_valid(form)
 
 

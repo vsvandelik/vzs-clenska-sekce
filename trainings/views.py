@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from events.models import ParticipantEnrollment
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
@@ -38,6 +39,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.utils import send_notification_email
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -168,6 +170,26 @@ class TrainingParticipantEnrollmentUpdateView(
 
 class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
     template_name = "trainings/modals/delete_participant_enrollment.html"
+
+    def form_valid(self, form):
+        enrollment = self.object
+        if enrollment.state == ParticipantEnrollment.State.REJECTED:
+            send_notification_email(
+                _(f"Zruseni odmitnuti ucasti"),
+                _(
+                    f"Na trénink {enrollment.event} vám bylo umožněno znovu se přihlásit"
+                ),
+                [enrollment.person],
+            )
+        else:
+            send_notification_email(
+                _(f"Odstraneni prihlasky"),
+                _(
+                    f"Vaše přihláška na trenink {enrollment.event} byla smazána administrátorem"
+                ),
+                [enrollment.person],
+            )
+        return super().form_valid(form)
 
 
 class TrainingEnrollMyselfParticipantView(
