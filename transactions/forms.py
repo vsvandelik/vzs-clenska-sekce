@@ -4,12 +4,15 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Row, Column
 from django import forms
 from django.forms import ModelForm, ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
+from events.forms_bases import InsertRequestIntoSelf
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.utils import send_notification_email
 from vzs.widgets import DatePickerWithIcon
 from .models import Transaction, BulkTransaction
 from .utils import parse_transactions_filter_queryset
@@ -121,7 +124,7 @@ class Label:
         return f"<label class='col-form-label'>{self.text}</label>"
 
 
-class TransactionCreateBulkConfirmForm(forms.Form):
+class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, forms.Form):
     def __init__(self, *args, **kwargs):
         persons_transactions = kwargs.pop("persons_transactions", [])
         self.event = kwargs.pop("event", None)
@@ -221,6 +224,20 @@ class TransactionCreateBulkConfirmForm(forms.Form):
             transaction.bulk_transaction = bulk_transaction
             transaction.save()
             enrollment.transactions.add(transaction)
+            self.send_new_transaction_email(enrollment, transaction)
+
+    def send_new_transaction_email(self, enrollment, transaction):
+        qr_uri = self.request.build_absolute_uri(
+            reverse("transactions:qr", args=(transaction.pk,))
+        )
+        payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
+        send_notification_email(
+            _("Nová transakce k zaplacení"),
+            _(
+                f"U udalosti {enrollment.event} byla vytvorena nova transakce k zaplaceni.{payment_info}"
+            ),
+            [enrollment.person],
+        )
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
