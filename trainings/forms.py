@@ -629,6 +629,17 @@ class CoachAssignmentNoLongerMainCoachSendMailProvider:
         )
 
 
+class CoachAssignmentDeletedSendMailProvider:
+    def assignment_delete_send_mail(self, assignment):
+        send_notification_email(
+            _(f"Zruseni trenera"),
+            _(
+                f"Byl(a) jste odebran(a) z trenerske pozice {assignment.position_assignment.position} udalosti {assignment.training}"
+            ),
+            [assignment.person],
+        )
+
+
 class CoachAssignmentForm(
     EventFormMixin,
     CoachAssignmentSendMailProvider,
@@ -684,14 +695,14 @@ class CoachAssignmentForm(
             self.event.main_coach_assignment = None
 
         if instance.id is None:
-            super().assigned_send_mail(self.instance)
+            super().assigned_send_mail(instance)
         else:
-            old_instance = CoachPositionAssignment.objects.get(id=self.instance.id)
+            old_instance = CoachPositionAssignment.objects.get(id=instance.id)
             if (
-                old_instance.position_assignment != self.instance.position_assignment
-                or old_instance.is_main_coach() != self.instance.is_main_coach()
+                old_instance.position_assignment != instance.position_assignment
+                or old_instance.is_main_coach() != instance.is_main_coach()
             ):
-                super().assignment_changed_send_mail(self.instance, old_instance)
+                super().assignment_changed_send_mail(instance, old_instance)
 
         if commit:
             super().coach_assignment_update_attendance(instance, self.event)
@@ -700,13 +711,14 @@ class CoachAssignmentForm(
         return instance
 
 
-class CoachAssignmentDeleteForm(ModelForm):
+class CoachAssignmentDeleteForm(CoachAssignmentDeletedSendMailProvider, ModelForm):
     class Meta:
         model = CoachPositionAssignment
         fields = []
 
     def save(self, commit=True):
         instance = super().save(False)
+        super().assignment_delete_send_mail(instance)
         if commit:
             CoachOccurrenceAssignment.objects.filter(
                 person=instance.person, occurrence__event=instance.training
