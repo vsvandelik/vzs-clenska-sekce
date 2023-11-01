@@ -286,35 +286,8 @@ class OneTimeEventEnrollmentSubstituteSendMailProvider:
         )
 
 
-class OneTimeEventEnrollmentRefusedSendMailProvider:
-    def enrollment_refused_send_mail(self, enrollment):
-        send_notification_email(
-            _(f"Odmitnuti ucasti"),
-            _(f"Na jednorázové události {enrollment.event} vám byla zakázána ucast"),
-            [enrollment.person],
-        )
-
-
-class OneTimeEventEnrollmentApproveSendMailProvider:
-    def enrollment_approve_send_mail(self, enrollment):
-        payment_info = ""
-        if not enrollment.transaction.is_settled:
-            qr_uri = self.request.build_absolute_uri(
-                reverse("transactions:qr", args=(enrollment.transaction.pk,))
-            )
-            payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
-        send_notification_email(
-            _("Schválení prihlášky"),
-            _(
-                f"Vaše prihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
-            ),
-            [enrollment.person],
-        )
-
-
 class OneTimeEventEnrollmentApprovedHooks(
-    OneTimeEventEnrollmentApproveSendMailProvider,
-    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider,
+    OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
 ):
     def approved_hooks(self, commit, instance, event):
         if instance.transaction is not None:
@@ -332,18 +305,32 @@ class OneTimeEventEnrollmentApprovedHooks(
             instance.transaction.save()
             old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
             if instance.state != old_instance.state:
-                super().enrollment_approve_send_mail(instance)
+                self._enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
         instance.save()
         super().participant_enrollment_update_attendance(instance)
+
+    def _enrollment_approve_send_mail(self, enrollment):
+        payment_info = ""
+        if not enrollment.transaction.is_settled:
+            qr_uri = self.request.build_absolute_uri(
+                reverse("transactions:qr", args=(enrollment.transaction.pk,))
+            )
+            payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
+        send_notification_email(
+            _("Schválení prihlášky"),
+            _(
+                f"Vaše prihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
+            ),
+            [enrollment.person],
+        )
 
 
 class OneTimeEventParticipantEnrollmentForm(
     InsertRequestIntoSelf,
     ParticipantEnrollmentForm,
     OneTimeEventEnrollmentSubstituteSendMailProvider,
-    OneTimeEventEnrollmentRefusedSendMailProvider,
     OneTimeEventEnrollmentApprovedHooks,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
@@ -388,7 +375,7 @@ class OneTimeEventParticipantEnrollmentForm(
                 if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
                     super().enrollment_substitute_send_mail(instance)
                 else:
-                    super().enrollment_refused_send_mail(instance)
+                    self._enrollment_refused_send_mail(instance)
             if instance.transaction is not None and not instance.transaction.is_settled:
                 instance.transaction.delete()
                 instance.transaction = None
@@ -396,6 +383,13 @@ class OneTimeEventParticipantEnrollmentForm(
         if commit:
             super().save_enrollment(instance)
         return instance
+
+    def _enrollment_refused_send_mail(self, enrollment):
+        send_notification_email(
+            _(f"Odmitnuti ucasti"),
+            _(f"Na jednorázové události {enrollment.event} vám byla zakázána ucast"),
+            [enrollment.person],
+        )
 
 
 class OneTimeEventEnrollMyselfParticipantForm(
@@ -462,21 +456,9 @@ class OrganizerOccurrenceAssignedSendMailProvider:
         )
 
 
-class OrganizerOccurrenceAssignmentChangedSendMailProvider:
-    def assignment_changed_send_mail(self, new_assignment, old_assignment):
-        send_notification_email(
-            _(f"Zmena prihlasky organizatora"),
-            _(
-                f"Doslo ke zmene organizatorske pozice, na kterou jste prihlasen(a): {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position} dne {new_assignment.occurrence.date} na udalosti {new_assignment.occurrence.event}"
-            ),
-            [new_assignment.person],
-        )
-
-
 class OrganizerOccurrenceAssignmentForm(
     OccurrenceFormMixin,
     OrganizerOccurrenceAssignedSendMailProvider,
-    OrganizerOccurrenceAssignmentChangedSendMailProvider,
     OccurrenceOpenRestrictionMixin,
     OrganizerAssignmentForm,
 ):
@@ -508,12 +490,21 @@ class OrganizerOccurrenceAssignmentForm(
                 old_instance.position_assignment.position
                 != instance.position_assignment.position
             ):
-                super().assignment_changed_send_mail(instance, old_instance)
+                self._assignment_changed_send_mail(instance, old_instance)
         else:
             super().assigned_send_mail(instance)
         if commit:
             instance.save()
         return instance
+
+    def _assignment_changed_send_mail(self, new_assignment, old_assignment):
+        send_notification_email(
+            _(f"Zmena prihlasky organizatora"),
+            _(
+                f"Doslo ke zmene organizatorske pozice, na kterou jste prihlasen(a): {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position} dne {new_assignment.occurrence.date} na udalosti {new_assignment.occurrence.event}"
+            ),
+            [new_assignment.person],
+        )
 
 
 class BulkAddOrganizerSendMailProvider:
