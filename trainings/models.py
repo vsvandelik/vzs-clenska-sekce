@@ -315,6 +315,9 @@ class CoachPositionAssignment(models.Model):
             return None
         return coach_assignment.first()
 
+    def is_main_coach(self):
+        return self.training.main_coach_assignment == self
+
     class Meta:
         unique_together = ["person", "training"]
 

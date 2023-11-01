@@ -558,6 +558,7 @@ class TrainingParticipantEnrollmentForm(
 class TrainingEnrollMyselfParticipantForm(
     TrainingWeekdaysSelectionMixin,
     EnrollMyselfParticipantForm,
+    TrainingEnrollmentStateChangedSendMailProvider,
     InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
@@ -583,6 +584,7 @@ class TrainingEnrollMyselfParticipantForm(
         ):
             instance.state = ParticipantEnrollment.State.APPROVED
 
+        super().enrollment_state_changed_send_mail(instance)
         if commit:
             instance.save()
             super().initialize_weekdays(instance, weekdays)
@@ -591,8 +593,49 @@ class TrainingEnrollMyselfParticipantForm(
         return instance
 
 
+class CoachAssignmentSendMailProvider:
+    def assigned_send_mail(self, assignment):
+        main_coach_txt = ""
+        if assignment.is_main_coach():
+            main_coach_txt = "garantující"
+        send_notification_email(
+            _(f"Prihlaseni trenera"),
+            _(
+                f"Byl(a) jste prihlasen jako {main_coach_txt} trenér na pozici {assignment.position_assignment.position} na trenink {assignment.training}"
+            ),
+            [assignment.person],
+        )
+
+
+class CoachAssignmentChangedSendMailProvider:
+    def assignment_changed_send_mail(self, new_assignment, old_assignment):
+        old_main_coach = "ANO" if old_assignment.is_main_coach() else "NE"
+        new_main_coach = "ANO" if new_assignment.is_main_coach() else "NE"
+        send_notification_email(
+            _(f"Uprava prihlasky trenera"),
+            _(
+                f"Vase prihlaska na trenera udalosti {new_assignment.training} byla upravena. Pozice: {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}, garant: {old_main_coach} --> {new_main_coach}"
+            ),
+            [new_assignment.person],
+        )
+
+
+class CoachAssignmentNoLongerMainCoachSendMailProvider:
+    def no_longer_main_coach_send_mail(self, assignment):
+        send_notification_email(
+            _(f"Uprava garanta tréninku"),
+            _(f"Byl vám odebrán status garanta tréninku {assignment.training}"),
+            [assignment.person],
+        )
+
+
 class CoachAssignmentForm(
-    EventFormMixin, CoachAssignmentUpdateAttendanceProvider, OrganizerAssignmentForm
+    EventFormMixin,
+    CoachAssignmentSendMailProvider,
+    CoachAssignmentChangedSendMailProvider,
+    CoachAssignmentNoLongerMainCoachSendMailProvider,
+    CoachAssignmentUpdateAttendanceProvider,
+    OrganizerAssignmentForm,
 ):
     class Meta(OrganizerAssignmentForm.Meta):
         model = CoachPositionAssignment
@@ -631,12 +674,24 @@ class CoachAssignmentForm(
             instance.person = self.person
 
         if self.cleaned_data["main_coach_assignment"]:
+            if self.event.main_coach_assignment is not None:
+                super().no_longer_main_coach_send_mail(self.event.main_coach_assignment)
             self.event.main_coach_assignment = instance
         elif (
             self.event.main_coach_assignment is not None
             and instance.person == self.event.main_coach_assignment.person
         ):
             self.event.main_coach_assignment = None
+
+        if instance.id is None:
+            super().assigned_send_mail(self.instance)
+        else:
+            old_instance = CoachPositionAssignment.objects.get(id=self.instance.id)
+            if (
+                old_instance.position_assignment != self.instance.position_assignment
+                or old_instance.is_main_coach() != self.instance.is_main_coach()
+            ):
+                super().assignment_changed_send_mail(self.instance, old_instance)
 
         if commit:
             super().coach_assignment_update_attendance(instance, self.event)
