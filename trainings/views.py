@@ -39,7 +39,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.utils import send_notification_email
+from vzs.utils import send_notification_email, date_pretty
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -344,6 +344,17 @@ class OneTimeCoachDeleteView(
         return (
             f"Osoba {self.object.person} byla úspěšně odebrána jako jednorázový trenér"
         )
+
+    def form_valid(self, form):
+        assignment = self.object
+        send_notification_email(
+            _(f"Zruseni jednorazove trenerske ucasti"),
+            _(
+                f"Vase jednorazova trenerska ucast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} byla zrusena administratorem"
+            ),
+            [assignment.person],
+        )
+        return super().form_valid(form)
 
 
 class UnenrollMyselfOrganizerFromOccurrenceView(

@@ -214,7 +214,7 @@ class PersonTypeInsertIntoContextDataMixin:
 
 
 class EventDetailBaseView(
-    EventInteractPermissionMixin,
+    # EventInteractPermissionMixin,
     EventMixin,
     PersonTypeInsertIntoContextDataMixin,
     generic.DetailView,
