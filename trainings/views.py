@@ -490,6 +490,17 @@ class OneTimeParticipantDeleteView(
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.object.person} byla úspěšně odebrána jako účastník"
 
+    def form_valid(self, form):
+        attendance = self.object
+        send_notification_email(
+            _(f"Zruseni jednorazove ucasti ucastnika"),
+            _(
+                f"Vase jednorazova ucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} byla zrusena administratorem"
+            ),
+            [attendance.person],
+        )
+        return super().form_valid(form)
+
 
 class EnrollMyselfParticipantFromOccurrenceView(
     MessagesMixin,

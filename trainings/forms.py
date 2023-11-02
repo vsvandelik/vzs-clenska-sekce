@@ -847,7 +847,7 @@ class CoachExcuseForm(ExcuseCoachForm):
 
     def _excuse_coach_send_mail(self, assignment):
         send_notification_email(
-            _(f"Omluveni neucasti trenera"),
+            _("Omluveni neucasti trenera"),
             _(
                 f"Administrator zaevidoval vasi neucast dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event}"
             ),
@@ -869,7 +869,7 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
 
     def _one_time_assignment_created(self, assignment):
         send_notification_email(
-            _(f"Jednorazova trenerska ucast"),
+            _("Jednorazova trenerska ucast"),
             _(
                 f"Potvrzujeme vasi prihlasku jako jednorazovy trener na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event}"
             ),
@@ -890,7 +890,7 @@ class TrainingUnenrollMyselfOrganizerFromOccurrenceForm(UnenrollMyselfOccurrence
 
     def _one_time_assignment_deleted(self, assignment):
         send_notification_email(
-            _(f"Zruseni jednorazove trenerske ucasti"),
+            _("Zruseni jednorazove ucasti trenera"),
             _(
                 f"Vase jednorazova trenerska ucast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} byla zrusena na vlastni zadost"
             ),
@@ -973,10 +973,42 @@ class ParticipantExcuseForm(ExcuseParticipantForm):
     class Meta(ExcuseParticipantForm.Meta):
         pass
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_participant_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _excuse_participant_send_mail(self, attendance):
+        send_notification_email(
+            _(f"Omluveni neucasti ucastnika"),
+            _(
+                f"Administrator zaevidoval vasi neucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
+
 
 class CancelParticipantExcuseForm(CancelExcuseForm):
     class Meta(CancelExcuseForm.Meta):
         model = TrainingParticipantAttendance
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._cancel_excuse_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _cancel_excuse_send_mail(self, attendance):
+        send_notification_email(
+            _(f"Zruseni omluvenky ucastnika"),
+            _(
+                f"Vase omluveni neucasti dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} bylo zruseno administratorem"
+            ),
+            [attendance.person],
+        )
 
 
 class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
@@ -989,10 +1021,42 @@ class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
             self.add_error(None, "Již se není možné odhlásit jako účastník")
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_myself_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _excuse_myself_send_mail(self, attendance):
+        send_notification_email(
+            _(f"Omluveni neucasti ucastnika"),
+            _(
+                f"Potvrzujeme nahlaseni neucasti dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
+
 
 class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
     class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = TrainingParticipantAttendance
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._one_time_attendance_deleted(instance)
+        if commit:
+            instance.delete()
+        return instance
+
+    def _one_time_attendance_deleted(self, attendance):
+        send_notification_email(
+            _(f"Zruseni jednorazove ucasti ucastnika"),
+            _(
+                f"Vase jednorazova ucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} byla zrusena na vlastni zadost"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
@@ -1013,11 +1077,21 @@ class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
         instance = super().save(False)
         instance.occurrence = self.occurrence
         instance.state = TrainingAttendance.PRESENT
+        self._new_one_time_participant_added_send_mail(instance)
         if instance.id is not None:
             instance.person = self.person
         if commit:
             instance.save()
         return instance
+
+    def _new_one_time_participant_added_send_mail(self, attendance):
+        send_notification_email(
+            _(f"Jednorazova ucast ucastnika"),
+            _(
+                f"Byl(a) jste pridan(a) jako jednorazovy ucastnik dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} administratorem"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingEnrollMyselfParticipantOccurrenceForm(
@@ -1040,9 +1114,19 @@ class TrainingEnrollMyselfParticipantOccurrenceForm(
         instance.person = self.person
         instance.occurrence = self.occurrence
         instance.state = TrainingAttendance.PRESENT
+        self._one_time_attendance_created(instance)
         if commit:
             instance.save()
         return instance
+
+    def _one_time_attendance_created(self, attendance):
+        send_notification_email(
+            _("Jednorazova ucast na treninku"),
+            _(
+                f"Potvrzujeme vasi prihlasku jako jednorazovy ucastnik dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingFillAttendanceForm(ModelForm):
