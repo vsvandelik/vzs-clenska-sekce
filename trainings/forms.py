@@ -33,6 +33,7 @@ from trainings.utils import (
     day_shortcut_2_weekday,
 )
 from transactions.models import Transaction
+from vzs import settings
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.utils import send_notification_email, date_pretty, time_pretty
 from vzs.widgets import TimePickerWithIcon
@@ -1291,7 +1292,54 @@ class TrainingFillAttendanceForm(ModelForm):
 
         if commit:
             instance.save()
+        self._check_repeating_absence(instance)
         return instance
+
+    def _check_repeating_absence(self, occurrence):
+        event = occurrence.event
+        sorted_occurrences = event.sorted_occurrences_list()
+        idx = self._index(sorted_occurrences, occurrence)
+        for (
+            participant_attendance
+        ) in occurrence.trainingparticipantattendance_set.all():
+            absence_count = self._count_participant_absence_in_row(
+                participant_attendance.person, sorted_occurrences, idx
+            )
+            if (
+                absence_count >= settings.MIN_PARTICIPANT_ABSENCE_SEND_MAIL
+                and event.main_coach_assignment is not None
+            ):
+                send_notification_email(
+                    _("Opakovana absence ucastnika treninku"),
+                    _(
+                        f"Na treninku {event}, kde jste garantujicim trenerem, byl ucastnik {participant_attendance.person} {absence_count}x za sebou nepritomen"
+                    ),
+                    [event.main_coach_assignment.person],
+                )
+
+    def _count_participant_absence_in_row(self, person, sorted_occurrences, stop_idx):
+        idx = stop_idx
+        count = 0
+        while idx >= 0:
+            occurrence = sorted_occurrences[idx]
+            participant_attendance = (
+                occurrence.trainingparticipantattendance_set.filter(
+                    person=person
+                ).first()
+            )
+            if participant_attendance is not None:
+                if participant_attendance.state != TrainingAttendance.PRESENT:
+                    count += 1
+                else:
+                    return count
+            idx -= 1
+        return count
+
+    def _index(self, polymorphic_queryset, item):
+        for i in range(len(polymorphic_queryset)):
+            if polymorphic_queryset[i] == item:
+                return i
+        return -1
 
 
 class ReopenTrainingOccurrenceForm(ReopenOccurrenceMixin, ModelForm):
