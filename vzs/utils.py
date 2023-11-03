@@ -70,3 +70,7 @@ def email_notification_recipient_set(person):
 
 def date_pretty(value):
     return formats.date_format(value, settings.cs_formats.DATE_FORMAT)
+
+
+def time_pretty(value):
+    return formats.time_format(value, settings.cs_formats.TIME_FORMAT)

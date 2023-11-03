@@ -34,7 +34,7 @@ from trainings.utils import (
 )
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, date_pretty
+from vzs.utils import send_notification_email, date_pretty, time_pretty
 from vzs.widgets import TimePickerWithIcon
 from .models import (
     Training,
@@ -807,7 +807,31 @@ class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
         return instance
 
 
-class ExcuseMyselfCoachForm(ExcuseCoachForm):
+class TrainingPositionFreeSpotSendMailProvider:
+    def offer_free_training_position_send_mail(self, assignment):
+        category = assignment.occurrence.event.category
+        recipients = []
+        hourly_rates = PersonHourlyRate.objects.filter(event_type=category)
+        for hourly_rate in hourly_rates:
+            if (
+                hourly_rate.person == assignment.person
+                or not assignment.occurrence.can_enroll_position(
+                    hourly_rate.person, assignment.position_assignment
+                )
+            ):
+                continue
+            recipients.append(hourly_rate.person)
+
+        send_notification_email(
+            _(f"Nabidka volné trenérské pozice"),
+            _(
+                f"Jednorázově se uvolnila trenérská pozice {assignment.position_assignment.position} na tréninku {assignment.occurrence.event} dne {date_pretty(assignment.occurrence.datetime_start)} od {time_pretty(assignment.occurrence.datetime_start)} do {time_pretty(assignment.occurrence.datetime_end)}"
+            ),
+            recipients,
+        )
+
+
+class ExcuseMyselfCoachForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoachForm):
     class Meta(ExcuseCoachForm.Meta):
         pass
 
@@ -822,6 +846,7 @@ class ExcuseMyselfCoachForm(ExcuseCoachForm):
         self._excuse_myself_send_mail(instance)
         if commit:
             instance.save()
+        super().offer_free_training_position_send_mail(instance)
         return instance
 
     def _excuse_myself_send_mail(self, assignment):
@@ -834,7 +859,7 @@ class ExcuseMyselfCoachForm(ExcuseCoachForm):
         )
 
 
-class CoachExcuseForm(ExcuseCoachForm):
+class CoachExcuseForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoachForm):
     class Meta(ExcuseCoachForm.Meta):
         pass
 
@@ -843,6 +868,7 @@ class CoachExcuseForm(ExcuseCoachForm):
         self._excuse_coach_send_mail(instance)
         if commit:
             instance.save()
+        super().offer_free_training_position_send_mail(instance)
         return instance
 
     def _excuse_coach_send_mail(self, assignment):
