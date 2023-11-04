@@ -611,7 +611,7 @@ class BulkAddOrganizerToOneTimeEventForm(
             instance.occurrence = occurrence
             if commit:
                 instance.save()
-        if cleaned_occurrences is not None or cleaned_occurrences != []:
+        if cleaned_occurrences:
             super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
@@ -749,7 +749,7 @@ class OneTimeEventEnrollMyselfOrganizerForm(
             instance.occurrence = occurrence
             if commit:
                 instance.save()
-        if cleaned_occurrences is not None or cleaned_occurrences != []:
+        if cleaned_occurrences:
             super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
