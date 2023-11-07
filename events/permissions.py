@@ -69,5 +69,9 @@ class EventInteractPermissionMixin(EventPermissionMixin):
 
 class UnenrollMyselfPermissionMixin(ObjectPermissionMixin):
     @classmethod
+    def get_model_class(cls):
+        return ParticipantEnrollment
+
+    @classmethod
     def predicate(cls, enrollment, logged_in_user, active_person):
         return enrollment.person == active_person
