@@ -13,7 +13,6 @@ from events.models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from features.models import Feature, FeatureAssignment
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
@@ -337,12 +336,6 @@ class OneTimeEventOccurrence(EventOccurrence):
             self.can_attendance_be_filled()
             and self.state == EventOrOccurrenceState.CLOSED
         )
-
-    def can_user_manage(self, user):
-        return self.event.can_user_manage(user)
-
-    def can_user_fill_attendance(self, user):
-        return self.can_user_manage(user)  # TODO: implement
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

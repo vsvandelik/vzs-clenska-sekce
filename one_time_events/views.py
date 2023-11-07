@@ -4,7 +4,11 @@ from django.http import Http404
 from django.utils import timezone
 from django.views import generic
 
-from events.permissions import OccurrenceManagePermissionMixin
+from events.permissions import (
+    OccurrenceEnrollOrganizerPermissionMixin,
+    OccurrenceManagePermissionMixin,
+    OccurrenceUnenrollOrganizerPermissionMixin,
+)
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
@@ -65,9 +69,7 @@ from .models import (
 )
 from .permissions import (
     OccurenceFillAttendancePermissionMixin,
-    OccurenceManagePermissionMixin,
-    OccurrenceEnrollOrganizerPermissionMixin,
-    OccurrenceUnenrollOrganizerPermissionMixin,
+    OccurenceManagePermissionMixin2,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
 )
@@ -114,7 +116,7 @@ class EditTrainingCategoryView(
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin(EventManagePermissionMixin):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventParticipantEnrollmentForm
 
@@ -304,9 +306,7 @@ class OneTimeEventEnrollMyselfOrganizerView(
     template_name = "one_time_events/enroll_myself_organizer.html"
 
 
-class OneTimeOccurrenceDetailView(
-    OccurenceFillAttendancePermissionMixin, OccurrenceDetailBaseView
-):
+class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
     model = OneTimeEventOccurrence
     template_name = "one_time_events_occurrences/detail.html"
 
@@ -351,7 +351,7 @@ class OneTimeEventFillAttendanceView(
 
 
 class ApproveOccurrenceView(
-    OccurenceManagePermissionMixin,
+    OccurenceManagePermissionMixin2,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     EventOccurrenceIdCheckMixin,
@@ -373,7 +373,7 @@ class ApproveOccurrenceView(
 
 
 class ReopenOneTimeEventOccurrenceView(
-    OccurenceManagePermissionMixin,
+    OccurenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -390,7 +390,7 @@ class ReopenOneTimeEventOccurrenceView(
 
 
 class CancelOccurrenceApprovementView(
-    OccurenceManagePermissionMixin,
+    OccurenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsApprovedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -409,19 +409,19 @@ class CancelOccurrenceApprovementView(
 
 
 class OneTimeEventOpenOccurrencesOverviewView(
-    OccurenceManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
+    OccurenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/open_occurrences_overview.html"
 
 
 class OneTimeEventClosedOccurrencesOverviewView(
-    OccurenceManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
+    OccurenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/closed_occurrences_overview.html"
 
 
 class OneTimeEventShowAttendanceView(
-    OccurenceManagePermissionMixin,
+    OccurenceManagePermissionMixin2,
     MessagesMixin,
     InsertEventIntoContextData,
     generic.TemplateView,

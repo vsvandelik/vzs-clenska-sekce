@@ -1,13 +1,16 @@
 from django.urls import path
 
 from transactions import views as transactions_views
+
 from . import views
 
 app_name = "trainings"
 
 urlpatterns = [
     path("<int:pk>/", views.TrainingDetailView.as_view(), name="detail"),
-    path("pridat/", views.TrainingCreateView.as_view(), name="add"),
+    path(
+        "pridat/", views.TrainingCreateView.as_view(), name="add"
+    ),  # TODO: permissions
     path(
         "<int:pk>/upravit/",
         views.TrainingUpdateView.as_view(),
