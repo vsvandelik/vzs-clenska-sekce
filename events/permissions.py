@@ -2,56 +2,72 @@ from events.models import Event, EventOccurrence, ParticipantEnrollment
 from users.views import PermissionRequiredMixin
 
 
-class EventInteractPermissionMixinBase(PermissionRequiredMixin):
+class ObjectPermissionMixin(PermissionRequiredMixin):
     @classmethod
-    def get_event_id_key(cls):
+    def get_primary_key_name(cls):
+        return "pk"
+
+    @classmethod
+    def get_model_class(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def predicate(cls, instance, logged_in_user, active_person):
+        raise NotImplementedError
+
+    @classmethod
+    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
+        pk = kwargs[cls.get_primary_key_name()]
+
+        for instance in cls.get_model_class().objects.filter(pk=pk):
+            return cls.predicate(instance, logged_in_user, active_person)
+
+        return False
+
+
+class EventPermissionMixin(ObjectPermissionMixin):
+    @classmethod
+    def get_primary_key_name(cls):
         event_id_key = getattr(cls, "event_id_key", None)
 
         return event_id_key if event_id_key is not None else "pk"
 
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
-        raise NotImplementedError
+    def get_model_class(cls):
+        return Event
+
+
+class OccurrencePermissionMixin(ObjectPermissionMixin):
+    @classmethod
+    def get_primary_key_name(cls):
+        return "occurrence_id"
 
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
-        event_pk = kwargs[cls.get_event_id_key()]
-
-        for event in Event.objects.filter(pk=event_pk):
-            return cls._permission_predicate(event, logged_in_user, active_person)
-
-        return False
+    def get_model_class(cls):
+        return EventOccurrence
 
 
-class OccurrenceManagePermissionMixin(PermissionRequiredMixin):
+class OccurrenceManagePermissionMixin(OccurrencePermissionMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_user_manage(logged_in_user)
-
-        return False
+    def predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.event.can_user_manage(logged_in_user)
 
 
-class EventManagePermissionMixin(EventInteractPermissionMixinBase):
+class EventManagePermissionMixin(EventPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def predicate(cls, event, logged_in_user, active_person):
         return event.can_user_manage(logged_in_user)
 
 
-class EventInteractPermissionMixin(EventInteractPermissionMixinBase):
+class EventInteractPermissionMixin(EventPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def predicate(cls, event, logged_in_user, active_person):
         return event.can_user_manage(logged_in_user) or event.can_person_interact_with(
             active_person
         )
 
 
-class UnenrollMyselfPermissionMixin(PermissionRequiredMixin):
+class UnenrollMyselfPermissionMixin(ObjectPermissionMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, pk):
-        enrollment_pk = pk
-
-        for enrollment in ParticipantEnrollment.objects.filter(pk=enrollment_pk):
-            return enrollment.person == active_person
-
-        return False
+    def predicate(cls, enrollment, logged_in_user, active_person):
+        return enrollment.person == active_person

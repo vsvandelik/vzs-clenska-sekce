@@ -1,33 +1,45 @@
-from events.models import EventOccurrence
-from events.permissions import EventInteractPermissionMixinBase
-from users.views import PermissionRequiredMixin
+from events.permissions import EventInteractPermissionMixin, OccurrencePermissionMixin
 
 
-class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixinBase):
+class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def predicate(cls, event, logged_in_user, active_person):
         return event.can_enroll_organizer(active_person)
 
 
-class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixinBase):
+class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def predicate(cls, event, logged_in_user, active_person):
         return event.can_unenroll_organizer(active_person)
 
 
-class OccurrenceEnrollOrganizerPermissionMixin(PermissionRequiredMixin):
+class OccurrenceEnrollOrganizerPermissionMixin(OccurrencePermissionMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_enroll_organizer(active_person)
-
-        return False
+    def predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.event.can_enroll_organizer(active_person)
 
 
-class OccurrenceUnenrollOrganizerPermissionMixin(PermissionRequiredMixin):
+class OccurrenceUnenrollOrganizerPermissionMixin(OccurrencePermissionMixin):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_unenroll_organizer(active_person)
+    def predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.event.can_unenroll_organizer(active_person)
 
-        return False
+
+class OccurenceManagePermissionMixin(OccurrencePermissionMixin):
+    @classmethod
+    def get_primary_key_name(cls):
+        return "pk"
+
+    @classmethod
+    def predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.can_user_manage(logged_in_user)
+
+
+class OccurenceFillAttendancePermissionMixin(OccurrencePermissionMixin):
+    @classmethod
+    def get_primary_key_name(cls):
+        return "pk"
+
+    @classmethod
+    def predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.can_user_fill_attendance(logged_in_user)

@@ -338,6 +338,12 @@ class OneTimeEventOccurrence(EventOccurrence):
             and self.state == EventOrOccurrenceState.CLOSED
         )
 
+    def can_user_manage(self, user):
+        return self.event.can_user_manage(user)
+
+    def can_user_fill_attendance(self, user):
+        return self.can_user_manage(user)  # TODO: implement
+
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
     one_time_event = models.ForeignKey(
