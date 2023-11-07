@@ -13,6 +13,7 @@ from events.permissions import (
     EventManagePermissionMixin,
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixin2,
     OccurrenceUnenrollOrganizerPermissionMixin,
 )
 from events.views import (
@@ -39,7 +40,7 @@ from events.views import (
     RedirectToOccurrenceDetailOnFailureMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
 )
-from one_time_events.permissions import OccurenceFillAttendancePermissionMixin
+from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
 from trainings.permissions import (
     OccurrenceEnrollMyselfParticipantPermissionMixin,
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
@@ -515,7 +516,7 @@ class TrainingOccurrenceAttendanceCanBeFilledMixin:
 
 
 class TrainingFillAttendanceView(
-    OccurenceFillAttendancePermissionMixin,
+    OccurrenceFillAttendancePermissionMixin,
     MessagesMixin,
     TrainingOccurrenceAttendanceCanBeFilledMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -542,7 +543,7 @@ class TrainingFillAttendanceView(
 
 
 class ReopenTrainingOccurrenceView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceNotOpenedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -559,13 +560,13 @@ class ReopenTrainingOccurrenceView(
 
 
 class TrainingOpenOccurrencesOverviewView(
-    OccurrenceManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "trainings/modals/open_occurrences_overview.html"
 
 
 class TrainingShowAttendanceView(
-    OccurrenceManagePermissionMixin,
+    EventManagePermissionMixin,
     MessagesMixin,
     InsertEventIntoContextData,
     generic.TemplateView,

@@ -13,9 +13,7 @@ from events.models import (
     EventOccurrence,
     OrganizerAssignment,
     ParticipantEnrollment,
-    EventOrOccurrenceState,
 )
-from positions.models import EventPosition
 from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
 from vzs import settings
 
@@ -285,8 +283,8 @@ class Training(Event):
 
     def _can_person_interact_with_nonrecursive(self, person):
         return any(
-            occurence.can_person_interact_with(person)
-            for occurence in self._occurrences_list()
+            occurrence.can_person_interact_with(person)
+            for occurrence in self._occurrences_list()
         )
 
     def can_person_interact_with(self, person):

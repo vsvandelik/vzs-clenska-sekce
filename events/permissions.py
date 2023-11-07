@@ -53,7 +53,13 @@ class OccurrencePermissionMixin(ObjectPermissionMixin):
 class OccurrenceManagePermissionMixin(OccurrencePermissionMixin):
     @classmethod
     def permission_predicate(cls, occurrence, logged_in_user, active_person):
-        return occurrence.event.can_user_manage(logged_in_user)
+        return occurrence.can_user_manage(logged_in_user)
+
+
+class OccurrenceManagePermissionMixin2(OccurrenceManagePermissionMixin):
+    @classmethod
+    def get_path_parameter_mapping(cls):
+        return {"pk": (EventOccurrence, "occurrence")}
 
 
 class EventManagePermissionMixin(EventPermissionMixin):

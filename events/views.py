@@ -7,7 +7,7 @@ from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
-from one_time_events.permissions import OccurenceDetailPermissionMixin
+from one_time_events.permissions import OccurrenceDetailPermissionMixin
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
@@ -457,7 +457,7 @@ class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
 
 
 class OccurrenceDetailBaseView(
-    OccurenceDetailPermissionMixin,
+    OccurrenceDetailPermissionMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,

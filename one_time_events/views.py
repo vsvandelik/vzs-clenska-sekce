@@ -68,8 +68,8 @@ from .models import (
     OrganizerOccurrenceAssignment,
 )
 from .permissions import (
-    OccurenceFillAttendancePermissionMixin,
-    OccurenceManagePermissionMixin2,
+    OccurrenceFillAttendancePermissionMixin,
+    OccurrenceManagePermissionMixin2,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
 )
@@ -331,7 +331,7 @@ class OneTimeEventFillAttendanceInsertAssignmentsIntoContextData:
 
 
 class OneTimeEventFillAttendanceView(
-    OccurenceFillAttendancePermissionMixin,
+    OccurrenceFillAttendancePermissionMixin,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
@@ -351,7 +351,7 @@ class OneTimeEventFillAttendanceView(
 
 
 class ApproveOccurrenceView(
-    OccurenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     EventOccurrenceIdCheckMixin,
@@ -373,7 +373,7 @@ class ApproveOccurrenceView(
 
 
 class ReopenOneTimeEventOccurrenceView(
-    OccurenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -390,7 +390,7 @@ class ReopenOneTimeEventOccurrenceView(
 
 
 class CancelOccurrenceApprovementView(
-    OccurenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsApprovedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -409,19 +409,19 @@ class CancelOccurrenceApprovementView(
 
 
 class OneTimeEventOpenOccurrencesOverviewView(
-    OccurenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
+    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/open_occurrences_overview.html"
 
 
 class OneTimeEventClosedOccurrencesOverviewView(
-    OccurenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
+    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/closed_occurrences_overview.html"
 
 
 class OneTimeEventShowAttendanceView(
-    OccurenceManagePermissionMixin2,
+    EventManagePermissionMixin,
     MessagesMixin,
     InsertEventIntoContextData,
     generic.TemplateView,
