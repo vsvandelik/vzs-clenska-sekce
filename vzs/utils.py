@@ -74,3 +74,21 @@ def date_pretty(value):
 
 def time_pretty(value):
     return formats.time_format(value, settings.cs_formats.TIME_FORMAT)
+
+
+def qr(transaction):
+    return (
+        f"http://api.paylibo.com/paylibo/generator/czech/image"
+        f"?currency=CZK"
+        f"&accountNumber={settings.FIO_ACCOUNT_NUMBER}"
+        f"&bankCode={settings.FIO_BANK_NUMBER}"
+        f"&amount={abs(transaction.amount)}"
+        f"&vs={transaction.pk}"
+    )
+
+
+def qr_html_image(transaction, alt_text=None):
+    if alt_text is not None:
+        alt_text = f"alt={alt_text}"
+    qr_img_src = qr(transaction)
+    return f'<img src="{qr_img_src}" {alt_text}>'

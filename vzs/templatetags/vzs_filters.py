@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs import settings
+from vzs.utils import qr as utils_qr
 
 register = template.Library()
 
@@ -48,14 +49,7 @@ def absolute(number):
 
 @register.simple_tag
 def qr(transaction):
-    return (
-        f"http://api.paylibo.com/paylibo/generator/czech/image"
-        f"?currency=CZK"
-        f"&accountNumber={settings.FIO_ACCOUNT_NUMBER}"
-        f"&bankCode={settings.FIO_BANK_NUMBER}"
-        f"&amount={abs(transaction.amount)}"
-        f"&vs={transaction.pk}"
-    )
+    return utils_qr(transaction)
 
 
 @register.filter

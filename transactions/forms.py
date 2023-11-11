@@ -12,7 +12,7 @@ from events.forms_bases import InsertRequestIntoSelf
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email
+from vzs.utils import send_notification_email, qr, qr_html_image
 from vzs.widgets import DatePickerWithIcon
 from .models import Transaction, BulkTransaction
 from .utils import parse_transactions_filter_queryset
@@ -230,6 +230,7 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, forms.Form):
         qr_uri = self.request.build_absolute_uri(
             reverse("transactions:qr", args=(transaction.pk,))
         )
+
         payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
         send_notification_email(
             _("Nová transakce k zaplacení"),
