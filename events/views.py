@@ -375,6 +375,7 @@ class ParticipantEnrollmentDeleteMixin(
     EventManagePermissionMixin, ParticipantEnrollmentMixin, generic.DeleteView
 ):
     model = ParticipantEnrollment
+    event_id_key = "event_id"
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"

@@ -119,6 +119,7 @@ class EditTrainingCategoryView(
 class OneTimeEventParticipantEnrollmentCreateUpdateMixin(EventManagePermissionMixin):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventParticipantEnrollmentForm
+    event_id_key = "event_id"
 
 
 class OneTimeEventParticipantEnrollmentCreateView(

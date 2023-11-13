@@ -132,6 +132,7 @@ class TrainingAddReplaceableTrainingView(
     form_class = TrainingReplaceableForm
     success_message = _("Tréninky pro náhrady byl přidán.")
     model = TrainingReplaceabilityForParticipants
+    event_id_key = "event_id"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -141,6 +142,7 @@ class TrainingAddReplaceableTrainingView(
 
 class TrainingRemoveReplaceableTrainingView(EventManagePermissionMixin, generic.View):
     http_method_names = ["post"]
+    event_id_key = "event_id"
 
     def post(self, request, event_id, *args, **kwargs):
         training_1 = event_id
@@ -170,6 +172,7 @@ class TrainingParticipantEnrollmentCreateUpdateMixin(
 ):
     model = TrainingParticipantEnrollment
     form_class = TrainingParticipantEnrollmentForm
+    event_id_key = "event_id"
 
 
 class TrainingParticipantEnrollmentCreateView(
