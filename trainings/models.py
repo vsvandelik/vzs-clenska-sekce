@@ -282,7 +282,7 @@ class Training(Event):
         return chosen_enrollments
 
     def _can_person_interact_with_nonrecursive(self, person):
-        return any(
+        return super().can_person_interact_with() or any(
             occurrence.can_person_interact_with(person)
             for occurrence in self._occurrences_list()
         )
