@@ -13,9 +13,8 @@
   "homepage": "https://github.com/vsvandelik/vzs-clenska-sekce#readme",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
-    "admin-lte": "3.2",
+    "admin-lte": "3.2.0",
     "bootstrap": "^4.6.2",
-    "datatables.net-bs": "^1.13.4",
     "jquery": "^3.7.0",
     "select2": "^4.1.0-rc.0"
   }
