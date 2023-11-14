@@ -251,7 +251,7 @@ class GoogleLoginView(generic.base.RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         next_redirect = self.request.POST.get("next", "")
 
-        return GoogleBackend.get_redirect_url(
+        return GoogleBackend.create_redirect_url(
             self.request, "users:google-auth", next_redirect
         )
 

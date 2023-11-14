@@ -95,6 +95,10 @@ def _custom_create_permissions(
 
 
 class UsersConfig(AppConfig):
+    """
+    Overrides the default config to use our custom permission generation.
+    """
+
     name = "users"
 
     def ready(self):
