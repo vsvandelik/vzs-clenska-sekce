@@ -1,14 +1,18 @@
-from .models import User
-
-from persons.models import Person
-
 from rest_framework.serializers import (
     HyperlinkedModelSerializer,
     HyperlinkedRelatedField,
 )
 
+from persons.models import Person
+
+from .models import User
+
 
 class UserSerializer(HyperlinkedModelSerializer):
+    """
+    Provides serialization for the :class:`User` model.
+    """
+
     class Meta:
         model = User
         exclude = ["password"]
