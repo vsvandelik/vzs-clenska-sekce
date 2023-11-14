@@ -119,11 +119,10 @@ class EditTrainingCategoryView(
     form_class = TrainingCategoryForm
     success_message = "Změna vyžadování skupiny uložena"
 
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin(
-    InsertRequestIntoModelFormKwargsMixin
-):
 
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin(EventManagePermissionMixin):
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin(
+    EventManagePermissionMixin, InsertRequestIntoModelFormKwargsMixin
+):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventParticipantEnrollmentForm
     event_id_key = "event_id"
