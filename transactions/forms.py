@@ -12,7 +12,7 @@ from events.forms_bases import InsertRequestIntoSelf
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, qr, qr_html_image
+from vzs.utils import send_notification_email
 from vzs.widgets import DatePickerWithIcon
 from .models import Transaction, BulkTransaction
 from .utils import parse_transactions_filter_queryset
@@ -235,7 +235,7 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, forms.Form):
         send_notification_email(
             _("Nová transakce k zaplacení"),
             _(
-                f"U udalosti {enrollment.event} byla vytvorena nova transakce k zaplaceni.{payment_info}"
+                f"U události {enrollment.event} byla vytvořena nová transakce k zaplacení.{payment_info}"
             ),
             [enrollment.person],
         )

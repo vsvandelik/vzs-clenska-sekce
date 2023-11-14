@@ -1,20 +1,18 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
-from django.utils.translation import gettext_lazy as _
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
-    InsertRequestIntoModelFormKwargsMixin,
 )
 from vzs.utils import send_notification_email
 from .forms import (
@@ -410,7 +408,7 @@ class UnenrollMyselfParticipantView(
     def form_valid(self, form):
         enrollment = self.object
         send_notification_email(
-            _(f"Odhlášení z události"),
+            _("Odhlášení z události"),
             _(
                 f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
             ),

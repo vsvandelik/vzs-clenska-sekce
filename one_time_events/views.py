@@ -139,7 +139,7 @@ class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMix
         enrollment = self.object
         if enrollment.state == ParticipantEnrollment.State.REJECTED:
             send_notification_email(
-                _(f"Zruseni odmitnuti ucasti"),
+                _("Zrušení odmítnutí účasti"),
                 _(
                     f"Na jednorázovou událost {enrollment.event} vám bylo umožněno znovu se přihlásit"
                 ),
@@ -147,9 +147,9 @@ class OneTimeEventParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMix
             )
         else:
             send_notification_email(
-                _(f"Odstraneni prihlasky"),
+                _("Odstranění přihlášky"),
                 _(
-                    f"Vaše přihláška na jednorázové události {enrollment.event} byla smazána administrátorem"
+                    f"Vaše přihláška na jednorázovou událost {enrollment.event} byla smazána administrátorem"
                 ),
                 [enrollment.person],
             )
@@ -217,9 +217,9 @@ class DeleteOrganizerForOccurrenceView(
     def form_valid(self, form):
         assignment = self.object
         send_notification_email(
-            _(f"Odhlášení z události"),
+            _("Odhlášení z události"),
             _(
-                f"Vase prihlaska na organizatorskou pozici dne {assignment.occurrence.date} udalosti {assignment.occurrence.event} byla odstranena administratorem"
+                f"Vaše přihláška na organizátorskou pozici dne {assignment.occurrence.date} události {assignment.occurrence.event} byla odstraněna administrátorem"
             ),
             [assignment.person],
         )
@@ -259,8 +259,8 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         ).delete()
 
         send_notification_email(
-            _(f"Odhlaseni organizatora"),
-            _(f"Byl(a) jste odhlasen jako organizator ze vsech dnu udalosti {event}"),
+            _("Odhlášení organizátora"),
+            _(f"Byl(a) jste odhlášen jako organizátor ze všech dnů události {event}"),
             [person],
         )
 
@@ -316,9 +316,9 @@ class OneTimeEventUnenrollMyselfOrganizerOccurrenceView(
     def form_valid(self, form):
         assignment = form.instance
         send_notification_email(
-            _(f"Odhlaseni organizatora"),
+            _("Odhlášení organizátora"),
             _(
-                f"Byl(a) jste odhlasen jako organizator dne udalosti {assignment.occurrence.event}"
+                f"Byl(a) jste odhlášen jako organizátor dne události {assignment.occurrence.event}"
             ),
             [assignment.person],
         )
@@ -343,9 +343,9 @@ class OneTimeEventUnenrollMyselfOrganizerView(
         form.cleaned_data["assignments_2_delete"].delete()
 
         send_notification_email(
-            _(f"Odhlaseni organizatora"),
+            _("Odhlášení organizátora"),
             _(
-                f"Byl(a) jste odhlasen jako organizator ze vsech dnu udalosti {self.event}"
+                f"Byl(a) jste odhlášen jako organizátor ze všech dnů události {self.event}"
             ),
             [form.person],
         )

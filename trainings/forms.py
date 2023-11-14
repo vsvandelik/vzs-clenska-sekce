@@ -489,22 +489,22 @@ class TrainingEnrollmentStateChangedSendMailProvider:
     def enrollment_state_changed_send_mail(self, enrollment):
         if enrollment.state == ParticipantEnrollment.State.APPROVED:
             send_notification_email(
-                _(f"Zmena stavu prihlásky"),
-                _(f"Vaše prihláška na trénink {enrollment.event} byla schválena"),
+                _("Změna stavu přihlášky"),
+                _(f"Vaše přihláška na trénink {enrollment.event} byla schválena"),
                 [enrollment.person],
             )
         elif enrollment.state == ParticipantEnrollment.State.SUBSTITUTE:
             send_notification_email(
-                _(f"Zmena stavu prihlásky"),
+                _("Změna stavu přihlášky"),
                 _(
-                    f"Vaší prihlášce na trénink událost {enrollment.event} byl zmenen stav na NAHRADNIK"
+                    f"Vaší přihlášce na trénink {enrollment.event} byl změněn stav na NÁHRADNÍK"
                 ),
                 [enrollment.person],
             )
         elif enrollment.state == ParticipantEnrollment.State.REJECTED:
             send_notification_email(
-                _(f"Odmitnuti ucasti"),
-                _(f"Na tréninku {enrollment.event} vám byla zakázána ucast"),
+                _("Odmítnutí účasti"),
+                _(f"Na tréninku {enrollment.event} vám byla zakázána účast"),
                 [enrollment.person],
             )
         else:
@@ -666,16 +666,16 @@ class CoachAssignmentForm(
         if assignment.is_main_coach():
             main_coach_txt = "garantující"
         send_notification_email(
-            _(f"Prihlaseni trenera"),
+            _("Přihlášení trenéra"),
             _(
-                f"Byl(a) jste prihlasen jako {main_coach_txt} trenér na pozici {assignment.position_assignment.position} na trenink {assignment.training}"
+                f"Byl(a) jste přihlášen jako {main_coach_txt} trenér na pozici {assignment.position_assignment.position} na trénink {assignment.training}"
             ),
             [assignment.person],
         )
 
     def _no_longer_main_coach_send_mail(self, assignment):
         send_notification_email(
-            _(f"Uprava garanta tréninku"),
+            _("Úprava garanta tréninku"),
             _(f"Byl vám odebrán status garanta tréninku {assignment.training}"),
             [assignment.person],
         )
@@ -684,9 +684,9 @@ class CoachAssignmentForm(
         old_main_coach = "ANO" if old_assignment.is_main_coach() else "NE"
         new_main_coach = "ANO" if new_assignment.is_main_coach() else "NE"
         send_notification_email(
-            _(f"Uprava prihlasky trenera"),
+            _("Úprava přihlášky trenéra"),
             _(
-                f"Vase prihlaska na trenera udalosti {new_assignment.training} byla upravena. Pozice: {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}, garant: {old_main_coach} --> {new_main_coach}"
+                f"Vaše přihláška na trenéra události {new_assignment.training} byla upravena. Pozice: {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}, garant: {old_main_coach} --> {new_main_coach}"
             ),
             [new_assignment.person],
         )
@@ -709,9 +709,9 @@ class CoachAssignmentDeleteForm(ModelForm):
 
     def _assignment_delete_send_mail(self, assignment):
         send_notification_email(
-            _(f"Zruseni trenera"),
+            _("Zrušení trenéra"),
             _(
-                f"Byl(a) jste odebran(a) z trenerske pozice {assignment.position_assignment.position} udalosti {assignment.training}"
+                f"Byl(a) jste odebrán(a) z trenérské pozice {assignment.position_assignment.position} události {assignment.training}"
             ),
             [assignment.person],
         )
@@ -771,9 +771,9 @@ class CancelCoachExcuseForm(CancelExcuseForm):
 
     def _cancel_excuse_send_mail(self, assignment):
         send_notification_email(
-            _(f"Zruseni omluvenky trenera"),
+            _("Zrušení omluvenky trenéra"),
             _(
-                f"Vase omluveni neucasti dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} bylo zruseno administratorem"
+                f"Vaše omluvení neúčasti dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} bylo zrušeno administrátorem"
             ),
             [assignment.person],
         )
@@ -824,7 +824,7 @@ class TrainingPositionFreeSpotSendMailProvider:
             recipients.append(hourly_rate.person)
 
         send_notification_email(
-            _(f"Nabidka volné trenérské pozice"),
+            _("Nabídka volné trenérské pozice"),
             _(
                 f"Jednorázově se uvolnila trenérská pozice {assignment.position_assignment.position} na tréninku {assignment.occurrence.event} dne {date_pretty(assignment.occurrence.datetime_start)} od {time_pretty(assignment.occurrence.datetime_start)} do {time_pretty(assignment.occurrence.datetime_end)}"
             ),
@@ -852,9 +852,9 @@ class ExcuseMyselfCoachForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoac
 
     def _excuse_myself_send_mail(self, assignment):
         send_notification_email(
-            _(f"Omluveni neucasti trenera"),
+            _("Omluvení neúčasti trenéra"),
             _(
-                f"Potvrzujeme nahlaseni neucasti dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event}"
+                f"Potvrzujeme nahlášení neúčasti dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
             ),
             [assignment.person],
         )
@@ -874,9 +874,9 @@ class CoachExcuseForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoachForm)
 
     def _excuse_coach_send_mail(self, assignment):
         send_notification_email(
-            _("Omluveni neucasti trenera"),
+            _("Omluvení neúčasti trenéra"),
             _(
-                f"Administrator zaevidoval vasi neucast dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event}"
+                f"Administrátor zaevidoval vaši neúčast dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
             ),
             [assignment.person],
         )
@@ -896,9 +896,9 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
 
     def _one_time_assignment_created(self, assignment):
         send_notification_email(
-            _("Jednorazova trenerska ucast"),
+            _("Jednorázová trenérská účast"),
             _(
-                f"Potvrzujeme vasi prihlasku jako jednorazovy trener na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event}"
+                f"Potvrzujeme vaši přihlášku jako jednorázový trenér na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
             ),
             [assignment.person],
         )
@@ -917,9 +917,9 @@ class TrainingUnenrollMyselfOrganizerFromOccurrenceForm(UnenrollMyselfOccurrence
 
     def _one_time_assignment_deleted(self, assignment):
         send_notification_email(
-            _("Zruseni jednorazove ucasti trenera"),
+            _("Zrušení jednorázové účasti trenéra"),
             _(
-                f"Vase jednorazova trenerska ucast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} byla zrusena na vlastni zadost"
+                f"Vaše jednorázová trenérská účast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} byla zrušena na vlastní žádost"
             ),
             [assignment.person],
         )
@@ -963,18 +963,18 @@ class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm
 
     def _new_one_time_coach_added_send_mail(self, assignment):
         send_notification_email(
-            _(f"Jednorazova trenerska ucast"),
+            _("Jednorázová trenérská účast"),
             _(
-                f"Byl(a) jste pridan(a) jako jednorazovy trener na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} administratorem"
+                f"Byl(a) jste přidán(a) jako jednorázový trenér na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} administrátorem"
             ),
             [assignment.person],
         )
 
     def _one_time_coach_edit_send_mail(self, new_assignment, old_assignment):
         send_notification_email(
-            _(f"Uprava jednorazove trenerske ucasti"),
+            _("Úprava jednorázové trenérské účasti"),
             _(
-                f"Vase prihlaska na jednorazovy trenera dne {date_pretty(new_assignment.occurrence.datetime_start)} treninku byla upravena: pozice {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}"
+                f"Vaše přihláška na jednorázového trenéra dne {date_pretty(new_assignment.occurrence.datetime_start)} tréninku byla upravena: pozice {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}"
             ),
             [new_assignment.person],
         )
@@ -1009,9 +1009,9 @@ class ParticipantExcuseForm(ExcuseParticipantForm):
 
     def _excuse_participant_send_mail(self, attendance):
         send_notification_email(
-            _(f"Omluveni neucasti ucastnika"),
+            _("Omluvení neúčasti účastníka"),
             _(
-                f"Administrator zaevidoval vasi neucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+                f"Administrátor zaevidoval vaši neúčast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
             ),
             [attendance.person],
         )
@@ -1030,9 +1030,9 @@ class CancelParticipantExcuseForm(CancelExcuseForm):
 
     def _cancel_excuse_send_mail(self, attendance):
         send_notification_email(
-            _(f"Zruseni omluvenky ucastnika"),
+            _("Zrušení omluvenky účastníka"),
             _(
-                f"Vase omluveni neucasti dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} bylo zruseno administratorem"
+                f"Vaše omluvení neúčasti dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} bylo zrušeno administrátorem"
             ),
             [attendance.person],
         )
@@ -1057,9 +1057,9 @@ class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
 
     def _excuse_myself_send_mail(self, attendance):
         send_notification_email(
-            _(f"Omluveni neucasti ucastnika"),
+            _("Omluvení neúčasti účastníka"),
             _(
-                f"Potvrzujeme nahlaseni neucasti dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+                f"Potvrzujeme nahlášení neúčasti dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
             ),
             [attendance.person],
         )
@@ -1078,9 +1078,9 @@ class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurren
 
     def _one_time_attendance_deleted(self, attendance):
         send_notification_email(
-            _(f"Zruseni jednorazove ucasti ucastnika"),
+            _("Zrušení jednorázové účasti účastníka"),
             _(
-                f"Vase jednorazova ucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} byla zrusena na vlastni zadost"
+                f"Vaše jednorázová účast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} byla zrušena na vlastní žádost"
             ),
             [attendance.person],
         )
@@ -1113,9 +1113,9 @@ class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
 
     def _new_one_time_participant_added_send_mail(self, attendance):
         send_notification_email(
-            _(f"Jednorazova ucast ucastnika"),
+            _("Jednorázová účast účastníka"),
             _(
-                f"Byl(a) jste pridan(a) jako jednorazovy ucastnik dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} administratorem"
+                f"Byl(a) jste přidán(a) jako jednorázový účastník dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} administrátorem"
             ),
             [attendance.person],
         )
@@ -1148,9 +1148,9 @@ class TrainingEnrollMyselfParticipantOccurrenceForm(
 
     def _one_time_attendance_created(self, attendance):
         send_notification_email(
-            _("Jednorazova ucast na treninku"),
+            _("Jednorázová účast na tréninku"),
             _(
-                f"Potvrzujeme vasi prihlasku jako jednorazovy ucastnik dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event}"
+                f"Potvrzujeme vaši přihlášku jako jednorázový účastník dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
             ),
             [attendance.person],
         )
@@ -1310,9 +1310,9 @@ class TrainingFillAttendanceForm(ModelForm):
                 and event.main_coach_assignment is not None
             ):
                 send_notification_email(
-                    _("Opakovana absence ucastnika treninku"),
+                    _("Opakovaná absence účastníka tréninku"),
                     _(
-                        f"Na treninku {event}, kde jste garantujicim trenerem, byl ucastnik {participant_attendance.person} {absence_count}x za sebou nepritomen"
+                        f"Na tréninku {event}, kde jste garantujícím trenérem, byl účastník {participant_attendance.person} {absence_count}x za sebou nepřítomen"
                     ),
                     [event.main_coach_assignment.person],
                 )

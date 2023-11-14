@@ -278,9 +278,9 @@ class TrainingCategoryForm(ModelForm):
 class OneTimeEventEnrollmentSubstituteSendMailProvider:
     def enrollment_substitute_send_mail(self, enrollment):
         send_notification_email(
-            _(f"Změna stavu přihlášky"),
+            _("Změna stavu přihlášky"),
             _(
-                f"Vaší prihlášce na jednorázovou událost {enrollment.event} byl zmenen stav na NAHRADNIK"
+                f"Vaší přihlášce na jednorázovou událost {enrollment.event} byl změněn stav na NÁHRADNÍK"
             ),
             [enrollment.person],
         )
@@ -319,9 +319,9 @@ class OneTimeEventEnrollmentApprovedHooks(
             )
             payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
         send_notification_email(
-            _("Schválení prihlášky"),
+            _("Schválení přihlášky"),
             _(
-                f"Vaše prihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
+                f"Vaše přihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
             ),
             [enrollment.person],
         )
@@ -386,8 +386,8 @@ class OneTimeEventParticipantEnrollmentForm(
 
     def _enrollment_refused_send_mail(self, enrollment):
         send_notification_email(
-            _(f"Odmitnuti ucasti"),
-            _(f"Na jednorázové události {enrollment.event} vám byla zakázána ucast"),
+            _("Odmítnutí účasti"),
+            _(f"Na jednorázové události {enrollment.event} vám byla zakázána účast"),
             [enrollment.person],
         )
 
@@ -448,9 +448,9 @@ class OccurrenceOpenRestrictionMixin:
 class OrganizerOccurrenceAssignedSendMailProvider:
     def assigned_send_mail(self, organizer_assignment):
         send_notification_email(
-            _(f"Prihlaseni organizátora"),
+            _("Přihlášení organizátora"),
             _(
-                f"Byl(a) jste uspesne prihlasen(a) jako {organizer_assignment.position_assignment.position} dne {organizer_assignment.occurrence.date} na udalosti {organizer_assignment.occurrence.event}"
+                f"Byl(a) jste úspěšně přihlášen(a) jako {organizer_assignment.position_assignment.position} dne {organizer_assignment.occurrence.date} na události {organizer_assignment.occurrence.event}"
             ),
             [organizer_assignment.person],
         )
@@ -499,9 +499,9 @@ class OrganizerOccurrenceAssignmentForm(
 
     def _assignment_changed_send_mail(self, new_assignment, old_assignment):
         send_notification_email(
-            _(f"Zmena prihlasky organizatora"),
+            _("Změna přihlášky organizátora"),
             _(
-                f"Doslo ke zmene organizatorske pozice, na kterou jste prihlasen(a): {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position} dne {new_assignment.occurrence.date} na udalosti {new_assignment.occurrence.event}"
+                f"Došlo ke změně organizátorské pozice, na kterou jste přihlášen(a): {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position} dne {new_assignment.occurrence.date} na události {new_assignment.occurrence.event}"
             ),
             [new_assignment.person],
         )
@@ -515,9 +515,9 @@ class BulkAddOrganizerSendMailProvider:
         dates_pretty = ", ".join(dates)
 
         send_notification_email(
-            _(f"Prihlaseni organizátora"),
+            _("Přihlášení organizátora"),
             _(
-                f"Byl(a) jste prihlasen jako organizator na pozici {organizer_assignment.position_assignment} dny {dates_pretty} udalosti {occurrences[0].event}"
+                f"Byl(a) jste přihlášen jako organizátor na pozici {organizer_assignment.position_assignment} dny {dates_pretty} události {occurrences[0].event}"
             ),
             [organizer_assignment.person],
         )

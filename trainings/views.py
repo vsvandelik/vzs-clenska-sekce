@@ -175,7 +175,7 @@ class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
         enrollment = self.object
         if enrollment.state == ParticipantEnrollment.State.REJECTED:
             send_notification_email(
-                _(f"Zruseni odmitnuti ucasti"),
+                _("Zrušení odmítnutí účasti"),
                 _(
                     f"Na trénink {enrollment.event} vám bylo umožněno znovu se přihlásit"
                 ),
@@ -183,9 +183,9 @@ class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
             )
         else:
             send_notification_email(
-                _(f"Odstraneni prihlasky"),
+                _("Odstranění přihlášky"),
                 _(
-                    f"Vaše přihláška na trenink {enrollment.event} byla smazána administrátorem"
+                    f"Vaše přihláška na trénink {enrollment.event} byla smazána administrátorem"
                 ),
                 [enrollment.person],
             )
@@ -348,9 +348,9 @@ class OneTimeCoachDeleteView(
     def form_valid(self, form):
         assignment = self.object
         send_notification_email(
-            _(f"Zruseni jednorazove trenerske ucasti"),
+            _("Zrušení jednorázové trenérské účasti"),
             _(
-                f"Vase jednorazova trenerska ucast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} treninku {assignment.occurrence.event} byla zrusena administratorem"
+                f"Vaše jednorázová trenérská účast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} byla zrušena administrátorem"
             ),
             [assignment.person],
         )
@@ -493,9 +493,9 @@ class OneTimeParticipantDeleteView(
     def form_valid(self, form):
         attendance = self.object
         send_notification_email(
-            _(f"Zruseni jednorazove ucasti ucastnika"),
+            _("Zrušení jednorázové účasti účastníka"),
             _(
-                f"Vase jednorazova ucast dne {date_pretty(attendance.occurrence.datetime_start)} treninku {attendance.occurrence.event} byla zrusena administratorem"
+                f"Vaše jednorázová účast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} byla zrušena administrátorem"
             ),
             [attendance.person],
         )
