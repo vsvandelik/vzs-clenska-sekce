@@ -1,23 +1,17 @@
-.. VZS Clenska sekce documentation master file, created by
-   sphinx-quickstart on Tue Nov 14 10:59:37 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Členská sekce VZS P15
+=====================
 
-Welcome to VZS Clenska sekce's documentation!
-=============================================
-
-.. automodule:: vzs
-   :members:
+Tento dokument slouží jako komplexní dokumentace webové aplikace členské sekce VZS P15.
+Najdete zde jednak uživatelskou dokumentaci, instalační a programátorskou dokumentaci složenou
+ze dvou částí. Jednak je zde high-level dokumentace, která popisuje celkovou architekturu aplikace
+a jednak je zde automaticky generovaná dokumentace ze zdrojových kódů. Vzhledem k tomu, že
+jsou zdrojové kódy v angličtině, je i tato dokumentace v angličtině.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Obsah:
 
-   _autodoc/modules
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   uzivatelska
+   instalace
+   highlevel
+   Programátorská dokumentace [en] <_autodoc/modules>
