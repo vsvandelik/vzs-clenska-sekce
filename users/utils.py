@@ -1,10 +1,14 @@
-from django.utils.crypto import get_random_string
-
 import secrets
 import string
 
+from django.utils.crypto import get_random_string
 
-def get_random_password():
+
+def create_random_password():
+    """
+    Creates a random password.
+    """
+
     character_list = list(
         get_random_string(4, string.ascii_uppercase)
         + get_random_string(4, string.ascii_lowercase)

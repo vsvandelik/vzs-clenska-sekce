@@ -25,7 +25,7 @@ from .permissions import (
     UserGeneratePasswordPermissionMixin,
     UserManagePermissionsPermissionMixin,
 )
-from .utils import get_random_password
+from .utils import create_random_password
 
 
 class UserCreateView(
@@ -145,7 +145,7 @@ class UserGenerateNewPasswordView(
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
 
-        self.password = get_random_password()
+        self.password = create_random_password()
 
         kwargs["data"] = {"password": self.password}
 

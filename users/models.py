@@ -14,7 +14,17 @@ from vzs.models import RenderableModelMixin
 
 
 class UserManager(auth_models.BaseUserManager):
+    """
+    A custom manager for the :class:`User` model.
+
+    Provides utility methods for creating regular users and superusers.
+    """
+
     def create_user(self, person, password=None):
+        """
+        Creates and saves a :class:`User` with the given person and password.
+        """
+
         if not person:
             raise ValueError("Users must have a person set")
 
@@ -30,6 +40,11 @@ class UserManager(auth_models.BaseUserManager):
     def create_superuser(
         self, email, first_name, last_name, sex, person_type, password=None
     ):
+        """
+        Creates and saves a :class:`Person` with the given attributes. Also creates
+        and saves a superuser for that person with the given password.
+        """
+
         person = Person.objects.create(
             email=email,
             first_name=first_name,
@@ -50,6 +65,14 @@ class UserManager(auth_models.BaseUserManager):
 class User(
     RenderableModelMixin, auth_models.AbstractUser, auth_models.PermissionsMixin
 ):
+    """
+    The model providing user functionality.
+
+    Each user is associated with a :class:`Person` instance, which is its primary key.
+
+    Users also have a password and a set of permissions.
+    """
+
     objects = UserManager()
 
     person = models.OneToOneField(
@@ -82,6 +105,10 @@ class User(
 
 
 class Permission(RenderableModelMixin, auth_models.Permission):
+    """
+    Custom permission model with added description field.
+    """
+
     class Meta:
         permissions = [("spravce_povoleni", _("Správce povolení"))]
 
@@ -89,10 +116,18 @@ class Permission(RenderableModelMixin, auth_models.Permission):
 
 
 class ResetPasswordToken(BaseToken):
+    """
+    Token for resetting a user's password through clicking a link in an email.
+    """
+
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
 
     @classproperty
     def has_expired(cls):
+        """
+        Returns a Q object for filtering expired tokens.
+        """
+
         return Q(
             created__lt=timezone.now()
             - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
