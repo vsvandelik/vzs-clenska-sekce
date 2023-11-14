@@ -13,3 +13,12 @@ Je potřeba nastavit Systémovou proměnnou `PYTHONUTF8=1`. To je možné přes 
 ## Informace k front-endu
 
 - Pro zprovoznění frontendových závislostí je třeba mít nainstalované `node.js` a zavolat příkaz `npm install`, který nainstaluje závislosti vydefinované v souboru `package.json`.
+
+## Generovani dokumentace
+
+Ve slozce `docs`:
+
+```
+sphinx-apidoc -o _autodoc ..
+make html
+```
