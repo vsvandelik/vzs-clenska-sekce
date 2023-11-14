@@ -75,6 +75,18 @@ def time_pretty(value):
     return formats.time_format(value, settings.cs_formats.TIME_FORMAT)
 
 
+def payment_email_html(transaction, request):
+    amount = abs(transaction.amount)
+
+    qr_uri = request.build_absolute_uri(
+        reverse("transactions:qr", args=(transaction.pk,))
+    )
+
+    qr_link = f'<a href="{qr_uri}">{qr_uri}</a>'
+
+    return f'Prosím proveďte platbu:<ul><li>Číslo účtu: {settings.FIO_ACCOUNT_PRETTY}</li><li>Částka: {amount} Kč</li><li>Variabilní symbol: {transaction.id}</li><li>Datum splatnosti: {date_pretty(transaction.date_due)}</li></ul>{qr_html_image(transaction, "QR platba")}<p>Informace o této platbě naleznete v IS, odkaz: {qr_link}</p>'
+
+
 def qr(transaction):
     return (
         f"http://api.paylibo.com/paylibo/generator/czech/image"
@@ -88,6 +100,6 @@ def qr(transaction):
 
 def qr_html_image(transaction, alt_text=None):
     if alt_text is not None:
-        alt_text = f"alt={alt_text}"
+        alt_text = f'alt="{alt_text}"'
     qr_img_src = qr(transaction)
     return f'<img src="{qr_img_src}" {alt_text}>'

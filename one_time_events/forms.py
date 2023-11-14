@@ -34,7 +34,7 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, date_pretty
+from vzs.utils import send_notification_email, date_pretty, payment_email_html
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -312,16 +312,15 @@ class OneTimeEventEnrollmentApprovedHooks(
         super().participant_enrollment_update_attendance(instance)
 
     def _enrollment_approve_send_mail(self, enrollment):
-        payment_info = ""
+        payment_html = ""
         if not enrollment.transaction.is_settled:
-            qr_uri = self.request.build_absolute_uri(
-                reverse("transactions:qr", args=(enrollment.transaction.pk,))
+            payment_html = "<br><br>" + payment_email_html(
+                enrollment.transaction, self.request
             )
-            payment_info = f'<br><br>Prosím provedte platbu dle instrukcí viz <a href="{qr_uri}">{qr_uri}</a>'
         send_notification_email(
             _("Schválení přihlášky"),
             _(
-                f"Vaše přihláška na jednorázovou událost {enrollment.event} byla schválena{payment_info}"
+                f"Vaše přihláška na jednorázovou událost {enrollment.event} byla schválena{payment_html}"
             ),
             [enrollment.person],
         )
