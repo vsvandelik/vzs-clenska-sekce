@@ -7,12 +7,14 @@ from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
+from one_time_events.permissions import OccurrenceDetailPermissionMixin
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -369,8 +371,11 @@ class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.Updat
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.DeleteView):
+class ParticipantEnrollmentDeleteMixin(
+    EventManagePermissionMixin, ParticipantEnrollmentMixin, generic.DeleteView
+):
     model = ParticipantEnrollment
+    event_id_key = "event_id"
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
@@ -453,6 +458,7 @@ class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
 
 
 class OccurrenceDetailBaseView(
+    OccurrenceDetailPermissionMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,

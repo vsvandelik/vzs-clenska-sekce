@@ -4,66 +4,72 @@ from django.http import Http404
 from django.utils import timezone
 from django.views import generic
 
-from events.permissions import OccurrenceManagePermissionMixin
+from events.permissions import (
+    OccurrenceEnrollOrganizerPermissionMixin,
+    OccurrenceManagePermissionMixin,
+    OccurrenceUnenrollOrganizerPermissionMixin,
+)
 from events.views import (
+    BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
     EventManagePermissionMixin,
+    EventOccurrenceIdCheckMixin,
     EventRestrictionMixin,
     EventUpdateMixin,
+    InsertEventIntoContextData,
+    InsertEventIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoContextData,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
+    OccurrenceDetailBaseView,
+    OccurrenceIsApprovedRestrictionMixin,
+    OccurrenceIsClosedRestrictionMixin,
+    OccurrenceNotApprovedRestrictionMixin,
+    OccurrenceNotOpenedRestrictionMixin,
+    OccurrenceOpenRestrictionMixin,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
-    BulkApproveParticipantsMixin,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    InsertOccurrenceIntoContextData,
-    InsertPositionAssignmentIntoModelFormKwargs,
-    OccurrenceDetailBaseView,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    EventOccurrenceIdCheckMixin,
-    OccurrenceNotOpenedRestrictionMixin,
-    OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
-    OccurrenceOpenRestrictionMixin,
-    OccurrenceIsApprovedRestrictionMixin,
-    OccurrenceNotApprovedRestrictionMixin,
+    RedirectToOccurrenceDetailOnSuccessMixin,
 )
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+
 from .forms import (
+    ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
+    CancelOccurrenceApprovementForm,
     OneTimeEventBulkApproveParticipantsForm,
+    OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
     OneTimeEventEnrollMyselfParticipantForm,
+    OneTimeEventFillAttendanceForm,
     OneTimeEventForm,
     OneTimeEventParticipantEnrollmentForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
-    OneTimeEventEnrollMyselfOrganizerForm,
-    OneTimeEventFillAttendanceForm,
-    ApproveOccurrenceForm,
-    ReopenOneTimeEventOccurrenceForm,
-    CancelOccurrenceApprovementForm,
-    TrainingCategoryForm,
-    OrganizerOccurrenceAssignmentForm,
     OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
+    OrganizerOccurrenceAssignmentForm,
+    ReopenOneTimeEventOccurrenceForm,
+    TrainingCategoryForm,
 )
 from .models import (
     OneTimeEventOccurrence,
+    OneTimeEventParticipantEnrollment,
+    OrganizerOccurrenceAssignment,
 )
-from .models import OneTimeEventParticipantEnrollment, OrganizerOccurrenceAssignment
 from .permissions import (
-    OccurrenceEnrollOrganizerPermissionMixin,
-    OccurrenceUnenrollOrganizerPermissionMixin,
+    OccurrenceFillAttendancePermissionMixin,
+    OccurrenceManagePermissionMixin2,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
 )
@@ -110,9 +116,10 @@ class EditTrainingCategoryView(
     success_message = "Změna vyžadování skupiny uložena"
 
 
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin:
+class OneTimeEventParticipantEnrollmentCreateUpdateMixin(EventManagePermissionMixin):
     model = OneTimeEventParticipantEnrollment
     form_class = OneTimeEventParticipantEnrollmentForm
+    event_id_key = "event_id"
 
 
 class OneTimeEventParticipantEnrollmentCreateView(
@@ -325,6 +332,7 @@ class OneTimeEventFillAttendanceInsertAssignmentsIntoContextData:
 
 
 class OneTimeEventFillAttendanceView(
+    OccurrenceFillAttendancePermissionMixin,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
@@ -344,6 +352,7 @@ class OneTimeEventFillAttendanceView(
 
 
 class ApproveOccurrenceView(
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     EventOccurrenceIdCheckMixin,
@@ -365,6 +374,7 @@ class ApproveOccurrenceView(
 
 
 class ReopenOneTimeEventOccurrenceView(
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -381,6 +391,7 @@ class ReopenOneTimeEventOccurrenceView(
 
 
 class CancelOccurrenceApprovementView(
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceIsApprovedRestrictionMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
@@ -399,18 +410,21 @@ class CancelOccurrenceApprovementView(
 
 
 class OneTimeEventOpenOccurrencesOverviewView(
-    InsertEventIntoContextData, generic.TemplateView
+    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/open_occurrences_overview.html"
 
 
 class OneTimeEventClosedOccurrencesOverviewView(
-    InsertEventIntoContextData, generic.TemplateView
+    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/closed_occurrences_overview.html"
 
 
 class OneTimeEventShowAttendanceView(
-    MessagesMixin, InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin,
+    MessagesMixin,
+    InsertEventIntoContextData,
+    generic.TemplateView,
 ):
     template_name = "one_time_events/detail_components/show_attendance.html"

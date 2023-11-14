@@ -1,33 +1,30 @@
-from events.models import EventOccurrence
-from events.permissions import EventInteractPermissionMixinBase
-from users.views import PermissionRequiredMixin
+from events.permissions import (
+    EventInteractPermissionMixin,
+    OccurrenceManagePermissionMixin2,
+)
 
 
-class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixinBase):
+class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def permission_predicate(cls, event, logged_in_user, active_person):
         return event.can_enroll_organizer(active_person)
 
 
-class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixinBase):
+class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     @classmethod
-    def _permission_predicate(cls, event, logged_in_user, active_person):
+    def permission_predicate(cls, event, logged_in_user, active_person):
         return event.can_unenroll_organizer(active_person)
 
 
-class OccurrenceEnrollOrganizerPermissionMixin(PermissionRequiredMixin):
+class OccurrenceFillAttendancePermissionMixin(OccurrenceManagePermissionMixin2):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_enroll_organizer(active_person)
-
-        return False
+    def permission_predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.can_user_fill_attendance(logged_in_user)
 
 
-class OccurrenceUnenrollOrganizerPermissionMixin(PermissionRequiredMixin):
+class OccurrenceDetailPermissionMixin(OccurrenceManagePermissionMixin2):
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, occurrence_id):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_unenroll_organizer(active_person)
-
-        return False
+    def permission_predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.can_user_manage(
+            logged_in_user
+        ) or occurrence.can_user_fill_attendance(logged_in_user)

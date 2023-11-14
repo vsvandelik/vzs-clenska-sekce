@@ -313,6 +313,12 @@ class EventOccurrence(PolymorphicModel):
     def is_approved(self):
         return self.state == EventOrOccurrenceState.COMPLETED
 
+    def can_user_manage(self, user):
+        return self.event.can_user_manage(user)
+
+    def can_user_fill_attendance(self, user):
+        return self.can_user_manage(user)  # TODO: implement
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)

@@ -13,7 +13,6 @@ from events.models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from features.models import Feature, FeatureAssignment
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
