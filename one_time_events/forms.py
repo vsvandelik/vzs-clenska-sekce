@@ -278,7 +278,7 @@ class TrainingCategoryForm(ModelForm):
 class OneTimeEventEnrollmentSubstituteSendMailProvider:
     def enrollment_substitute_send_mail(self, enrollment):
         send_notification_email(
-            _(f"Zmena stavu prihlásky"),
+            _(f"Změna stavu přihlášky"),
             _(
                 f"Vaší prihlášce na jednorázovou událost {enrollment.event} byl zmenen stav na NAHRADNIK"
             ),

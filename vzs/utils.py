@@ -6,9 +6,8 @@ from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import timezone, formats
-from vzs import settings
 
-from persons.models import Person
+from vzs import settings
 
 
 def _date_prague(date):
