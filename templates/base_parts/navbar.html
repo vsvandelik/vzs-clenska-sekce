@@ -43,9 +43,20 @@
 
             <!-- Log out -->
             <li class="nav-item">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#logout-modal">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+                {% if logout_remember %}
+                    <form action="{% url "users:logout" %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link nav-link">
+                {% else %}
+                    <a class="nav-link" href="#" data-toggle="modal" data-target="#logout-modal">
+                {% endif %}
+                <i class="fas fa-sign-out-alt"></i>
+                {% if logout_remember %}
+                    </button>
+                    </form>
+                {% else %}
+                    </a>
+                {% endif %}
             </li>
         {% else %}
             <!-- Log in -->

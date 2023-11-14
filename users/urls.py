@@ -1,4 +1,3 @@
-from django.contrib import auth
 from django.urls import path
 
 from . import views
@@ -7,7 +6,7 @@ app_name = "users"
 
 urlpatterns = [
     path("prihlasit/", views.LoginView.as_view(), name="login"),
-    path("odhlasit/", auth.views.LogoutView.as_view(), name="logout"),
+    path("odhlasit/", views.LogoutView.as_view(), name="logout"),
     path(
         "resetovat-heslo/",
         views.UserResetPasswordRequestView.as_view(),

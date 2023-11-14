@@ -10,7 +10,11 @@
                 </button>
             </div>
             <div class="modal-footer">
-                <form action="{% url "users:logout" %}" method="post">
+                <div class="custom-control custom-checkbox mr-auto">
+                    <input type="checkbox" name="remember" id="logout-remember" form="logout-form" class="custom-control-input">
+                    <label for="logout-remember" class="custom-control-label">Již nezobrazovat</label>
+                </div>
+                <form action="{% url "users:logout" %}" method="post" id="logout-form">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Odhlásit</button>
                 </form>

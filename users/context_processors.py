@@ -4,3 +4,11 @@ def active_person(request):
     return {
         "active_person": active_person,
     }
+
+
+def logout_remember(request):
+    logout_remember = getattr(request, "logout_remember", False)
+
+    return {
+        "logout_remember": logout_remember,
+    }

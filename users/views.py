@@ -380,3 +380,15 @@ class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
         self.token.delete()
 
         return response
+
+
+class LogoutView(auth_views.LogoutView):
+    def post(self, request, *args, **kwargs):
+        form = forms.LogoutForm(request.POST)
+
+        response = super().post(request, *args, **kwargs)
+
+        if form.is_valid() and form.cleaned_data["remember"]:
+            response.set_cookie("logout_remember", "true")
+
+        return response
