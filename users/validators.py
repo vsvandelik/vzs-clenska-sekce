@@ -3,6 +3,10 @@ from django.utils.translation import gettext as _
 
 
 class MinimumNumericValidator:
+    """
+    Validates that the password contains at least one numeric character.
+    """
+
     def validate(self, password, user=None):
         numeric_count = sum(c.isdigit() for c in password)
 
@@ -17,6 +21,10 @@ class MinimumNumericValidator:
 
 
 class MinimumCapitalValidator:
+    """
+    Validates that the password contains at least one capital letter.
+    """
+
     def validate(self, password, user=None):
         capital_count = sum(c.isalpha() and c.isupper() for c in password)
 

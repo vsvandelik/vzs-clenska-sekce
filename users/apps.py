@@ -1,12 +1,9 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_migrate
 from django.apps import apps as global_apps
-from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.management import create_contenttypes
-from django.core import exceptions
 from django.db import DEFAULT_DB_ALIAS, router
+from django.db.models.signals import post_migrate
 from django.utils.translation import gettext_lazy as _
-
 
 descriptions = {"ucetni": _("Popis účetního")}
 
@@ -21,7 +18,7 @@ def _get_all_permissions(opts):
     ]
 
 
-def custom_create_permissions(
+def _custom_create_permissions(
     app_config,
     verbosity=2,
     interactive=True,
@@ -98,12 +95,20 @@ def custom_create_permissions(
 
 
 class UsersConfig(AppConfig):
+    """
+    Overrides the default config to use our custom permission generation.
+    """
+
     name = "users"
 
     def ready(self):
+        """
+        Hooks our custom permission generation to the ``post_migrate`` signal.
+        """
+
         post_migrate.disconnect(
             dispatch_uid="django.contrib.auth.management.create_permissions"
         )
         post_migrate.connect(
-            custom_create_permissions, dispatch_uid="custom_create_permissions"
+            _custom_create_permissions, dispatch_uid="_custom_create_permissions"
         )

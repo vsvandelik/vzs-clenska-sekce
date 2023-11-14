@@ -13,7 +13,6 @@ from events.models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from features.models import Feature, FeatureAssignment
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
@@ -30,6 +29,7 @@ class OneTimeEvent(Event):
         COMMERCIAL = "komercni", _("komerční")
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
+        FOR_CHILDREN = "pro-deti", _("pro děti")
 
     class Meta:
         permissions = [
