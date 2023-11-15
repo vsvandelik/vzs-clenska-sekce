@@ -313,6 +313,9 @@ class CoachPositionAssignment(models.Model):
             return None
         return coach_assignment.first()
 
+    def is_main_coach(self):
+        return self.training.main_coach_assignment == self
+
     class Meta:
         unique_together = ["person", "training"]
 
@@ -362,6 +365,9 @@ class TrainingOccurrence(EventOccurrence):
         through="trainings.TrainingParticipantAttendance",
         related_name="training_participants_attendance_set",
     )
+
+    def get_person_organizer_assignment(self, person):
+        return self.coachoccurrenceassignment_set.filter(person=person)
 
     def position_organizers(self, position_assignment):
         return self.coachoccurrenceassignment_set.filter(
@@ -563,14 +569,15 @@ class TrainingOccurrence(EventOccurrence):
         ):
             return False
 
-        observed = TrainingParticipantAttendance.objects.filter(
-            person=person,
-            # occurrence__state=EventOrOccurrenceState.COMPLETED,
-            occurrence__datetime_start__lt=self.datetime_start,
-        )
+        observed = TrainingParticipantAttendance.objects.filter(person=person)
 
-        excused = observed.filter(state=TrainingAttendance.EXCUSED)
+        excused = observed.filter(
+            state=TrainingAttendance.EXCUSED,
+            occurrence__datetime_start__lt=self.datetime_start
+            # occurrence__state = EventOrOccurrenceState.COMPLETED
+        )
         one_time_attendances = observed.filter(enrollment=None)
+
         if excused.count() <= one_time_attendances.count():
             return False
 

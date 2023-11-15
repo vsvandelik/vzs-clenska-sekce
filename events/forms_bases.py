@@ -261,3 +261,9 @@ class ReopenOccurrenceMixin:
         if not self.instance.can_be_reopened():
             self.add_error(None, "Tato událost nemůže být znovu otevřena")
         return cleaned_data
+
+
+class InsertRequestIntoSelf:
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super().__init__(*args, **kwargs)

@@ -239,6 +239,9 @@ class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    def get_person_organizer_assignment(self, person):
+        return self.organizeroccurrenceassignment_set.filter(person=person)
+
     def position_organizers(self, position_assignment):
         raise NotImplementedError
 
@@ -280,11 +283,9 @@ class EventOccurrence(PolymorphicModel):
 
     def can_enroll_position(self, person, position_assignment):
         no_free_spot = not self.has_position_free_spot(position_assignment)
-        organizer_of_position = self.is_organizer_of_position(
-            person, position_assignment
-        )
+        organizer_assignment = self.get_person_organizer_assignment(person)
 
-        if no_free_spot or organizer_of_position:
+        if no_free_spot or organizer_assignment.exists():
             return False
 
         return self.satisfies_position_requirements(person, position_assignment)

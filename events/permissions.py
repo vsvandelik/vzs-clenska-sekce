@@ -46,6 +46,11 @@ class EventPermissionMixin(ObjectPermissionMixin):
 
 class OccurrencePermissionMixin(ObjectPermissionMixin):
     @classmethod
+    def view_has_permission(
+        cls, logged_in_user, active_person, occurrence_id, **kwargs
+    ):
+        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
+            return occurrence.event.can_user_manage(logged_in_user)
     def get_path_parameter_mapping(cls):
         return {"occurrence_id": (EventOccurrence, "occurrence")}
 

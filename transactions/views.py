@@ -16,6 +16,7 @@ from persons.models import Person
 from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
+from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, reverse_with_get_params
 
 from .forms import (
@@ -269,7 +270,10 @@ class TransactionAddTrainingPaymentView(
 
 
 class TransactionCreateBulkConfirmMixin(
-    SuccessMessageMixin, TransactionEditPermissionMixin, generic.edit.FormView
+    SuccessMessageMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    TransactionEditPermissionMixin,
+    generic.edit.FormView,
 ):
     form_class = TransactionCreateBulkConfirmForm
 
