@@ -1,9 +1,10 @@
 import datetime
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Div, Layout, Row, Submit
+from crispy_forms.layout import Submit, Layout, Div, Row, Column
 from django import forms
 from django.forms import ModelForm, ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
@@ -11,20 +12,13 @@ from events.forms_bases import InsertRequestIntoSelf
 from persons.forms import PersonsFilterForm
 from persons.widgets import PersonSelectWidget
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import payment_email_html, send_notification_email
+from vzs.utils import send_notification_email, payment_email_html
 from vzs.widgets import DatePickerWithIcon
-
-from .models import BulkTransaction, Transaction
+from .models import Transaction, BulkTransaction
 from .utils import parse_transactions_filter_queryset
 
 
 class TransactionCreateEditMixin(ModelForm):
-    """
-    A base form for creating and editing transactions.
-
-    Accepts amount, reason, due date and whether it is a reward in the request body.
-    """
-
     class Meta:
         model = Transaction
         fields = ["amount", "reason", "date_due"]
@@ -38,10 +32,6 @@ class TransactionCreateEditMixin(ModelForm):
     is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
 
     def clean_date_due(self):
-        """
-        Validates that the due date is not in the past.
-        """
-
         date_due = self.cleaned_data["date_due"]
 
         if date_due < datetime.date.today():
@@ -50,10 +40,6 @@ class TransactionCreateEditMixin(ModelForm):
         return date_due
 
     def clean(self):
-        """
-        Saves the amount as a negative number if it is not a reward (=> a debt).
-        """
-
         cleaned_data = super().clean()
         amount = cleaned_data.get("amount")
         is_reward = cleaned_data.get("is_reward")
@@ -65,17 +51,6 @@ class TransactionCreateEditMixin(ModelForm):
 
 
 class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
-    """
-    Creates a transaction for a given person.
-
-    Accepts the person as an `__init__` parameter.
-
-    Accepts amount, reason, due date and whether it is a reward in the request body.
-
-    Used for creating a transaction when the person is known
-    from the path or query parameters.
-    """
-
     def __init__(self, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.instance.person = person
@@ -83,15 +58,6 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
 
 
 class TransactionCreateBulkForm(TransactionCreateEditMixin):
-    """
-    Creates transactions for a set of persons.
-
-    The transactions have the same parameters with different persons.
-
-    Accepts the same parameters as :class:`PersonsFilterForm` in the request body
-    plus amount and whether the transactions are rewards.
-    """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -131,16 +97,6 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
 
 
 class TransactionAddTrainingPaymentForm(forms.Form):
-    """
-    Form for collecting data for creation of a bulk debt transaction for a training.
-    Doesn't create the transactions.
-
-    Accepts reason and due date
-    and amounts for each occurence in the week of the training in the request body.
-
-    Prefills the reason with a default value.
-    """
-
     date_due = forms.DateField(label=_("Datum splatnosti"), widget=DatePickerWithIcon())
     reason = forms.CharField(label=_("Popis transakce"))
 
@@ -158,19 +114,10 @@ class TransactionAddTrainingPaymentForm(forms.Form):
 
 
 class Label:
-    """
-    A crispy layout object for rendering a label.
-    """
-
     def __init__(self, text=None):
         self.text = text
 
     def render(self, form, context, template_pack, extra_context=None, **kwargs):
-        """
-        Renders a label with class ``col-form-label``
-        and content of ``self.text`` from ``__init__``.
-        """
-
         if not self.text:
             return ""
 
@@ -178,10 +125,6 @@ class Label:
 
 
 class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, forms.Form):
-    """
-    Creates a bulk debt transaction for a training.
-    """
-
     def __init__(self, *args, **kwargs):
         persons_transactions = kwargs.pop("persons_transactions", [])
         self.event = kwargs.pop("event", None)
