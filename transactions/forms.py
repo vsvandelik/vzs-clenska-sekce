@@ -121,8 +121,8 @@ class TransactionAddTrainingPaymentForm(Form):
     def __init__(self, initial: Mapping[str, Any], event: Event, *args, **kwargs):
         initial["reason"] = _("Platba za tréninky - {0}").format(event)
         super().__init__(
-            initial=initial,
             *args,
+            initial=initial,
             **kwargs,
         )
 
@@ -323,7 +323,7 @@ class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
         initial["is_reward"] = instance.amount > 0
         instance.amount = abs(instance.amount)
 
-        super().__init__(initial=initial, instance=instance, *args, **kwargs)
+        super().__init__(*args, initial=initial, instance=instance, **kwargs)
 
 
 class TransactionFilterForm(Form):

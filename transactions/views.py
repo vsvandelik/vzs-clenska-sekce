@@ -1,10 +1,19 @@
-from datetime import date
+from collections.abc import Mapping
+from re import M
+from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
+from django.db.models.query import QuerySet
+from django.forms import Form
 from django.forms.models import BaseModelForm
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -53,7 +62,7 @@ class TransactionCreateFromPersonView(
     form_class = TransactionCreateFromPersonForm
     template_name = "transactions/create_from_person.html"
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args, **kwargs):
         self.person = get_object_or_404(Person, pk=self.kwargs["person"])
         return super().dispatch(request, *args, **kwargs)
 
@@ -78,7 +87,7 @@ class TransactionListMixin(generic.detail.DetailView):
 
     def get_context_data(self, **kwargs):
         person = self.object
-        transactions = person.transactions
+        transactions: QuerySet[Transaction] = person.transactions
 
         transactions_debt = transactions.filter(Transaction.Q_debt)
         transactions_reward = transactions.filter(Transaction.Q_reward)
@@ -190,7 +199,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView
 
         return super().get_context_data(**kwargs)
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args, **kwargs):
         self.filter_form = TransactionFilterForm(self.request.GET)
 
         return super().get(request, *args, **kwargs)
@@ -205,10 +214,12 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.confirm_get_params = None
+        self.confirm_get_params: Mapping[str, Any]
         self.already_filtered_get_params = None
 
-    def dispatch(self, request, is_already_filtered=False, *args, **kwargs):
+    def dispatch(
+        self, request: HttpRequest, is_already_filtered: bool = False, *args, **kwargs
+    ):
         if is_already_filtered:
             self.already_filtered_get_params = request.GET
 
@@ -225,7 +236,7 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
             "transactions:add-bulk-confirm", get=self.confirm_get_params
         )
 
-    def form_valid(self, form):
+    def form_valid(self, form: Form):
         if self.already_filtered_get_params is None:
             self.confirm_get_params = {
                 k: v
@@ -252,7 +263,7 @@ class TransactionAddTrainingPaymentView(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.confirm_get_params = None
+        self.confirm_get_params: Mapping[str, Any]
 
     def get_success_url(self):
         return reverse_with_get_params(
@@ -261,7 +272,7 @@ class TransactionAddTrainingPaymentView(
             get=self.confirm_get_params,
         )
 
-    def form_valid(self, form):
+    def form_valid(self, form: Form):
         self.confirm_get_params = {
             "reason": form.cleaned_data["reason"],
             "date_due": form.cleaned_data["date_due"],
@@ -281,11 +292,11 @@ class TransactionCreateBulkConfirmMixin(
 ):
     form_class = TransactionCreateBulkConfirmForm
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args, **kwargs):
         required_params = kwargs.pop("required_params", [])
         get_params = self.request.GET
 
-        if not all(param in get_params for param in required_params):
+        if not set(get_params.keys()).issubset(required_params):
             return HttpResponseBadRequest(b"Missing parameters")
 
         return super().dispatch(request, *args, **kwargs)
@@ -301,7 +312,7 @@ class TransactionCreateBulkConfirmMixin(
 
         return kwargs
 
-    def create_transaction_infos(self, params):
+    def create_transaction_infos(self, params: Mapping[str, Any]):
         raise NotImplementedError
 
 
@@ -311,13 +322,11 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
     success_message = _("Hromadná transakce byla přidána")
 
     def dispatch(self, request, *args, **kwargs):
-        required_params = ["amount", "date_due", "reason"]
-
         return super().dispatch(
-            request, required_params=required_params, *args, **kwargs
+            request, *args, required_params=["amount", "date_due", "reason"], **kwargs
         )
 
-    def create_transaction_infos(self, params):
+    def create_transaction_infos(self, params: Mapping[str, Any]):
         selected_persons = parse_persons_filter_queryset(
             params,
             PersonPermissionMixin.get_queryset_by_permission(
@@ -344,7 +353,7 @@ class TransactionCreateTrainingBulkConfirmView(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.event = None
+        self.event: Training
 
     def dispatch(self, request, *args, **kwargs):
         required_params = ["date_due", "reason"]
@@ -354,10 +363,10 @@ class TransactionCreateTrainingBulkConfirmView(
             required_params.append(f"amount_{i}")
 
         return super().dispatch(
-            request, required_params=required_params, *args, **kwargs
+            request, *args, required_params=required_params, **kwargs
         )
 
-    def create_transaction_infos(self, params):
+    def create_transaction_infos(self, params: Mapping[str, Any]):
         approved_enrollments = self.event.approved_enrollments()
 
         for enrollment in approved_enrollments:
@@ -378,16 +387,12 @@ class TransactionCreateTrainingBulkConfirmView(
         kwargs.setdefault("event", self.event)
         return kwargs
 
-    def form_invalid(self, form: BaseModelForm) -> HttpResponse:
-        print(form.errors)
-        return super().form_invalid(form)
-
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
     http_method_names = ["get"]
 
-    def get(self, request, *args, **kwargs):
-        filter_form = TransactionFilterForm(self.request.GET)
+    def get(self, request: HttpRequest, *args, **kwargs):
+        filter_form = TransactionFilterForm(request.GET)
 
         return export_queryset_csv("vzs_transakce_export", filter_form.process_filter())
 
@@ -395,13 +400,13 @@ class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
 class TransactionSendEmailView(generic.View):
     http_method_names = ["get"]
 
-    def get(self, request, *args, **kwargs):
-        filter_form = TransactionFilterForm(self.request.GET)
+    def get(self, request: HttpRequest, *args, **kwargs):
+        filter_form = TransactionFilterForm(request.GET)
 
         send_email_transactions(filter_form.process_filter())
 
         return HttpResponseRedirect(
-            reverse("transactions:index") + "?" + self.request.GET.urlencode()
+            f"{reverse('transactions:index')}?{request.GET.urlencode()}"
         )
 
 
