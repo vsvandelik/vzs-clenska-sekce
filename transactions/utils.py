@@ -43,10 +43,10 @@ def _date_prague(date_time: datetime):
 
 
 def fetch_fio(date_time_start: datetime, date_time_end: datetime):
-    date_time_start = _date_prague(date_time_start)
-    date_time_end = _date_prague(date_time_end)
+    date_start = _date_prague(date_time_start)
+    date_end = _date_prague(date_time_end)
 
-    for received_transaction in _fio_client.period(date_time_start, date_time_end):
+    for received_transaction in _fio_client.period(date_start, date_end):
         received_variabilni = received_transaction["variable_symbol"]
         received_amount = int(received_transaction["amount"])
         received_date = received_transaction["date"]

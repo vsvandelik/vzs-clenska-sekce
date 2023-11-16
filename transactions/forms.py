@@ -118,7 +118,9 @@ class TransactionAddTrainingPaymentForm(Form):
     )
     reason = CharField(label=Transaction._meta.get_field("reason").verbose_name)
 
-    def __init__(self, initial: Mapping[str, Any], event: Event, *args, **kwargs):
+    def __init__(
+        self, initial: MutableMapping[str, Any], event: Event, *args, **kwargs
+    ):
         initial["reason"] = _("Platba za tréninky - {0}").format(event)
         super().__init__(
             *args,
@@ -136,7 +138,7 @@ class TransactionAddTrainingPaymentForm(Form):
 
 
 class Label:
-    def __init__(self, text: str | None = None):
+    def __init__(self, text: Any | None = None):
         self.text = text
 
     def render(self, form, context, template_pack, extra_context=None, **kwargs):
@@ -224,7 +226,7 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
 
         return helper
 
-    def _clean_impl(self, cleaned_data: Mapping[str, Any]):
+    def _clean_impl(self, cleaned_data: MutableMapping[str, Any]):
         for transaction_info in self.transaction_infos:
             person = transaction_info.person
 
