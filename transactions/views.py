@@ -245,6 +245,7 @@ class TransactionAddTrainingPaymentView(
 ):
     template_name = "transactions/create_training_transaction.html"
     form_class = TransactionAddTrainingPaymentForm
+    event_id_key = "event_id"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -345,6 +346,7 @@ class TransactionCreateTrainingBulkConfirmView(
 ):
     template_name = "transactions/create_bulk_confirm.html"
     success_message = _("Hromadná transakce byla přidána")
+    event_id_key = "event_id"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
