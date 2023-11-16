@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from re import M
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -7,13 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
 from django.forms import Form
-from django.forms.models import BaseModelForm
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseRedirect,
-)
+from django.http import HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
