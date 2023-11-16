@@ -1,4 +1,6 @@
 import zoneinfo
+from dataclasses import dataclass
+from datetime import date
 
 from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
@@ -7,8 +9,11 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from fiobank import FioBank
 
+from events.models import ParticipantEnrollment
+from persons.models import Person
 from vzs import settings
-from .models import Transaction, FioTransaction
+
+from .models import FioTransaction, Transaction
 
 _fio_client = FioBank(settings.FIO_TOKEN)
 
@@ -157,3 +162,17 @@ def send_email_transactions(transactions):
             fail_silently=False,
             html_message=html_message,
         )
+
+
+@dataclass
+class TransactionInfo:
+    person: Person
+    amount: int
+    date_due: date
+    enrollment: ParticipantEnrollment | None = None
+
+    def get_amount_field_name(self):
+        return f"transactions-{self.person.pk}-amount"
+
+    def get_date_due_field_name(self):
+        return f"transactions-{self.person.pk}-date_due"

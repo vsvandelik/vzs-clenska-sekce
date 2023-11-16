@@ -1,48 +1,62 @@
-import datetime
+from collections.abc import Iterable, Mapping, MutableMapping
+from datetime import date
+from typing import Any
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, Row, Column
-from django import forms
-from django.forms import ModelForm, ValidationError
-from django.urls import reverse
+from crispy_forms.layout import Column, Div, Layout, Row, Submit
+from django.forms import (
+    BooleanField,
+    CharField,
+    ChoiceField,
+    DateField,
+    Form,
+    IntegerField,
+    ModelChoiceField,
+    ModelForm,
+    ValidationError,
+)
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
 from events.forms_bases import InsertRequestIntoSelf
+from events.models import Event, ParticipantEnrollment
 from persons.forms import PersonsFilterForm
+from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, payment_email_html
+from vzs.utils import payment_email_html, send_notification_email
 from vzs.widgets import DatePickerWithIcon
-from .models import Transaction, BulkTransaction
-from .utils import parse_transactions_filter_queryset
+
+from .models import BulkTransaction, Transaction
+from .utils import TransactionInfo, parse_transactions_filter_queryset
 
 
 class TransactionCreateEditMixin(ModelForm):
     class Meta:
         model = Transaction
         fields = ["amount", "reason", "date_due"]
-        widgets = {
+        widgets: MutableMapping[str, Any] = {
             "date_due": DatePickerWithIcon(),
         }
 
-    amount = forms.IntegerField(
+    amount = IntegerField(
         min_value=1, label=Transaction._meta.get_field("amount").verbose_name
     )
-    is_reward = forms.BooleanField(required=False, label=_("Je transakce odměna?"))
+    is_reward = BooleanField(required=False, label=_("Je transakce odměna?"))
 
     def clean_date_due(self):
         date_due = self.cleaned_data["date_due"]
 
-        if date_due < datetime.date.today():
+        if date_due < date.today():
             raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
 
         return date_due
 
     def clean(self):
         cleaned_data = super().clean()
-        amount = cleaned_data.get("amount")
-        is_reward = cleaned_data.get("is_reward")
+
+        amount = cleaned_data["amount"]
+        is_reward = cleaned_data["is_reward"]
 
         if not is_reward:
             cleaned_data["amount"] = -amount
@@ -51,8 +65,9 @@ class TransactionCreateEditMixin(ModelForm):
 
 
 class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
-    def __init__(self, person, *args, **kwargs):
+    def __init__(self, person: Person, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.instance.person = person
         self.helper = WithoutFormTagFormHelper()
 
@@ -73,7 +88,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         self.filter_helper = WithoutFormTagFormHelper()
 
         # Remove submit button and background from person filter form
-        person_filter_form_layout_rows = person_filter_form.helper.layout.fields[
+        person_filter_form_layout_rows = person_filter_form.helper.layout.fields[  # type: ignore
             0
         ].fields
 
@@ -96,143 +111,190 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         return cleaned_data
 
 
-class TransactionAddTrainingPaymentForm(forms.Form):
-    date_due = forms.DateField(label=_("Datum splatnosti"), widget=DatePickerWithIcon())
-    reason = forms.CharField(label=_("Popis transakce"))
+class TransactionAddTrainingPaymentForm(Form):
+    date_due = DateField(
+        label=Transaction._meta.get_field("date_due").verbose_name,
+        widget=DatePickerWithIcon(),
+    )
+    reason = CharField(label=Transaction._meta.get_field("reason").verbose_name)
 
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop("event", 0)
-        super().__init__(*args, **kwargs)
+    def __init__(self, initial: Mapping[str, Any], event: Event, *args, **kwargs):
+        initial["reason"] = _("Platba za tréninky - {0}").format(event)
+        super().__init__(
+            initial=initial,
+            *args,
+            **kwargs,
+        )
 
-        for i in range(1, self.event.weekly_occurs_count() + 1):
-            self.fields[f"amount_{i}"] = forms.IntegerField(
-                label=_("Suma za trénink {0}x týdně").format(i),
+        self.event = event
+
+        for i in range(self.event.weekly_occurs_count()):
+            self.fields[f"amount_{i}"] = IntegerField(
+                label=_("Suma za trénink {0}x týdně").format(i + 1),
                 min_value=1,
             )
 
-        self.initial["reason"] = _("Platba za tréninky - {0}").format(self.event)
-
 
 class Label:
-    def __init__(self, text=None):
+    def __init__(self, text: str | None = None):
         self.text = text
 
     def render(self, form, context, template_pack, extra_context=None, **kwargs):
-        if not self.text:
+        if self.text is None:
             return ""
 
         return f"<label class='col-form-label'>{self.text}</label>"
 
 
-class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, forms.Form):
-    def __init__(self, *args, **kwargs):
-        persons_transactions = kwargs.pop("persons_transactions", [])
-        self.event = kwargs.pop("event", None)
-        self.reason = kwargs.pop("reason", [])
+class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
+    class Meta:
+        model = BulkTransaction
+        fields = []
 
-        super().__init__(*args, **kwargs)
-
-        layout_divs = []
-        self._add_fields_by_persons_transactions_list(persons_transactions, layout_divs)
-        self._prepare_form_helper(layout_divs)
-
-        self.persons_transactions = persons_transactions
-        self.prepared_transactions = []
-
-    def _add_fields_by_persons_transactions_list(
-        self, persons_transactions, layout_divs
+    def __init__(
+        self,
+        event: Event,
+        reason: str,
+        transaction_infos: Iterable[TransactionInfo],
+        *args,
+        **kwargs,
     ):
-        for transaction in persons_transactions:
-            person = transaction["person"]
-            field_name_amount = f"transactions-{person.id}-amount"
-            field_name_date_due = f"transactions-{person.id}-date_due"
+        super().__init__(*args, **kwargs)
+        self.instance.event = event
+        self.instance.reason = reason
 
-            self.fields[field_name_amount] = forms.IntegerField(
-                required=False, initial=transaction["amount"]
+        self.event = event
+        self.reason = reason
+        self.transaction_infos = transaction_infos
+        self.transactions_and_enrollments: Iterable[tuple[Transaction, Any]]
+
+        self._create_fields(transaction_infos)
+
+        layout_rows = self._create_layout_rows(transaction_infos)
+        self.helper = self._create_form_helper(layout_rows)
+
+    def _create_fields(self, transaction_infos: Iterable[TransactionInfo]):
+        for transaction_info in transaction_infos:
+            field_name_amount = transaction_info.get_amount_field_name()
+            field_name_date_due = transaction_info.get_date_due_field_name()
+
+            self.fields[field_name_amount] = IntegerField(
+                required=False, initial=transaction_info.amount
             )
-            self.fields[field_name_date_due] = forms.DateField(
+            self.fields[field_name_date_due] = DateField(
                 required=False,
-                initial=transaction["date_due"],
+                initial=transaction_info.date_due,
                 widget=DatePickerWithIcon(),
             )
 
-            layout_divs.append(
-                Row(
-                    Column(Label(person), css_class="col-md-4"),
-                    Column(field_name_amount, css_class="col-md-4"),
-                    Column(field_name_date_due, css_class="col-md-4"),
-                    css_class="row",
-                ),
+    @staticmethod
+    def _create_layout_rows(transaction_infos: Iterable[TransactionInfo]):
+        for transaction_info in transaction_infos:
+            person = transaction_info.person
+            field_name_amount = transaction_info.get_amount_field_name()
+            field_name_date_due = transaction_info.get_date_due_field_name()
+
+            yield Row(
+                Column(Label(person), css_class="col-md-4"),
+                Column(field_name_amount, css_class="col-md-4"),
+                Column(field_name_date_due, css_class="col-md-4"),
+                css_class="row",
             )
 
-    def _prepare_form_helper(self, layout_divs):
-        self.helper = WithoutFormTagFormHelper()
-        self.helper.form_show_labels = False
-        self.helper.layout = Layout(
+    @staticmethod
+    def _create_form_helper(layout_divs: Iterable[Div]):
+        helper = WithoutFormTagFormHelper()
+
+        helper.form_show_labels = False
+        helper.layout = Layout(
             Row(
                 Column(Label(), css_class="col-md-4"),
-                Column(Label(_("Částka")), css_class="col-md-4 text-center"),
-                Column(Label(_("Datum splatnosti")), css_class="col-md-4 text-center"),
+                Column(
+                    Label(Transaction._meta.get_field("amount").verbose_name),
+                    css_class="col-md-4 text-center",
+                ),
+                Column(
+                    Label(Transaction._meta.get_field("date_due").verbose_name),
+                    css_class="col-md-4 text-center",
+                ),
                 css_class="row",
             ),
             *layout_divs,
         )
 
-    def clean(self):
-        cleaned_data = super().clean()
+        return helper
 
-        for person_transaction in self.persons_transactions:
-            person = person_transaction["person"]
-            field_name_amount = f"transactions-{person.id}-amount"
-            field_name_date_due = f"transactions-{person.id}-date_due"
+    def _clean_impl(self, cleaned_data: Mapping[str, Any]):
+        for transaction_info in self.transaction_infos:
+            person = transaction_info.person
+
+            field_name_amount = transaction_info.get_amount_field_name()
+            field_name_date_due = transaction_info.get_date_due_field_name()
 
             amount = cleaned_data.get(field_name_amount)
             date_due = cleaned_data.get(field_name_date_due)
 
-            if not amount or amount == 0:
-                cleaned_data.pop(field_name_amount)
-                cleaned_data.pop(field_name_date_due)
-            elif not date_due:
+            if amount is None or amount == 0:
+                del cleaned_data[field_name_amount]
+                del cleaned_data[field_name_date_due]
+                continue
+
+            if date_due is None:
                 self.add_error(
                     field_name_date_due, _("Datum splatnosti musí být vyplněno.")
                 )
-            elif date_due < datetime.date.today():
+                continue
+
+            if date_due < date.today():
                 self.add_error(
                     field_name_date_due, _("Datum splatnosti nemůže být v minulosti.")
                 )
-            else:
-                self.prepared_transactions.append(
-                    (
-                        Transaction(
-                            person=person,
-                            amount=amount,
-                            reason=self.reason,
-                            date_due=date_due,
-                            event=self.event,
-                        ),
-                        person_transaction["enrollment"],
-                    )
-                )
+                continue
+
+            yield (
+                Transaction(
+                    person=person,
+                    amount=amount,
+                    reason=self.reason,
+                    date_due=date_due,
+                    event=self.event,
+                ),
+                transaction_info.enrollment,
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        self.transactions_and_enrollments = list(self._clean_impl(cleaned_data))
 
         return cleaned_data
 
-    def create_transactions(self):
-        bulk_transaction = BulkTransaction(reason=self.reason, event=self.event)
-        bulk_transaction.save()
+    def save(self, commit: bool = True):
+        bulk_transaction = super().save(False)
 
-        for transaction, enrollment in self.prepared_transactions:
+        if commit:
+            bulk_transaction.save()
+
+        for transaction, enrollment in self.transactions_and_enrollments:
             transaction.bulk_transaction = bulk_transaction
-            transaction.save()
-            enrollment.transactions.add(transaction)
-            self.send_new_transaction_email(enrollment, transaction)
 
-    def send_new_transaction_email(self, enrollment, transaction):
+            if commit:
+                transaction.save()
+
+            enrollment.transactions.add(transaction)
+
+            self._send_new_transaction_email(enrollment, transaction)
+
+    def _send_new_transaction_email(
+        self, enrollment: ParticipantEnrollment, transaction: Transaction
+    ):
         payment_html = "<br><br>" + payment_email_html(transaction, self.request)
         send_notification_email(
             _("Nová transakce k zaplacení"),
-            _(
-                f"U události {enrollment.event} byla vytvořena nová transakce k zaplacení.{payment_html}"
-            ),
+            _("U události {0} byla vytvořena" "nová transakce k zaplacení.").format(
+                enrollment.event
+            )
+            + payment_html,
             [enrollment.person],
         )
 
@@ -255,31 +317,33 @@ class TransactionCreateForm(TransactionCreateEditPersonSelectMixin):
 
 
 class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
-    def __init__(self, instance, initial, *args, **kwargs):
+    def __init__(
+        self, initial: MutableMapping[str, Any], instance: Transaction, *args, **kwargs
+    ):
         initial["is_reward"] = instance.amount > 0
         instance.amount = abs(instance.amount)
 
-        super().__init__(instance=instance, initial=initial, *args, **kwargs)
+        super().__init__(initial=initial, instance=instance, *args, **kwargs)
 
 
-class TransactionFilterForm(forms.Form):
-    person_name = forms.CharField(label=_("Jméno osoby obsahuje"), required=False)
-    reason = forms.CharField(label=_("Popis obsahuje"), required=False)
-    transaction_type = forms.ChoiceField(
+class TransactionFilterForm(Form):
+    person_name = CharField(label=_("Jméno osoby obsahuje"), required=False)
+    reason = CharField(label=_("Popis obsahuje"), required=False)
+    transaction_type = ChoiceField(
         label=_("Typ transakce"),
         required=False,
         choices=[("", "---------")] + [("reward", "Odměna"), ("debt", "Dluh")],
     )
-    is_settled = forms.ChoiceField(
+    is_settled = ChoiceField(
         label=_("Transakce zaplacena"),
         required=False,
         choices=[("", "---------")] + [("paid", "Ano"), ("not paid", "Ne")],
     )
-    amount_from = forms.IntegerField(label=_("Suma od"), required=False, min_value=1)
-    amount_to = forms.IntegerField(label=_("Suma do"), required=False, min_value=1)
-    date_due_from = forms.DateField(label=_("Datum splatnosti od"), required=False)
-    date_due_to = forms.DateField(label=_("Datum splatnosti do"), required=False)
-    bulk_transaction = forms.ModelChoiceField(
+    amount_from = IntegerField(label=_("Suma od"), required=False, min_value=1)
+    amount_to = IntegerField(label=_("Suma do"), required=False, min_value=1)
+    date_due_from = DateField(label=_("Datum splatnosti od"), required=False)
+    date_due_to = DateField(label=_("Datum splatnosti do"), required=False)
+    bulk_transaction = ModelChoiceField(
         label=_("Hromadná transakce"),
         queryset=BulkTransaction.objects.all(),
         required=False,
@@ -288,11 +352,17 @@ class TransactionFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.form_method = "GET"
-        self.helper.form_id = "transactions-filter-form"
-        self.helper.include_media = False
-        self.helper.layout = Layout(
+
+        self.helper = self._create_form_helper()
+
+    @staticmethod
+    def _create_form_helper():
+        helper = FormHelper()
+
+        helper.form_method = "GET"
+        helper.form_id = "transactions-filter-form"
+        helper.include_media = False
+        helper.layout = Layout(
             Div(
                 Div(
                     Div("person_name", css_class="col-md-4"),
@@ -325,17 +395,28 @@ class TransactionFilterForm(forms.Form):
             )
         )
 
+        return helper
+
     def clean(self):
         cleaned_data = super().clean()
+
         amount_from = cleaned_data.get("amount_from")
         amount_to = cleaned_data.get("amount_to")
         date_due_from = cleaned_data.get("date_due_from")
         date_due_to = cleaned_data.get("date_due_to")
 
-        if amount_from and amount_to and amount_from > amount_to:
+        if (
+            amount_from is not None
+            and amount_to is not None
+            and amount_from > amount_to
+        ):
             raise ValidationError(_("Suma od musí být menší nebo rovna sumě do."))
 
-        if date_due_from and date_due_to and date_due_from > date_due_to:
+        if (
+            date_due_from is not None
+            and date_due_to is not None
+            and date_due_from > date_due_to
+        ):
             raise ValidationError(
                 _("Datum splatnosti od musí být menší nebo roven datumu splatnosti do.")
             )

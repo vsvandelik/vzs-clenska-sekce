@@ -1,7 +1,10 @@
+from datetime import date
+
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
-from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.forms.models import BaseModelForm
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -29,7 +32,7 @@ from .forms import (
     TransactionFilterForm,
 )
 from .models import Transaction
-from .utils import send_email_transactions
+from .utils import TransactionInfo, send_email_transactions
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -264,7 +267,7 @@ class TransactionAddTrainingPaymentView(
             "date_due": form.cleaned_data["date_due"],
         }
 
-        for i in range(1, self.event.weekly_occurs_count() + 1):
+        for i in range(self.event.weekly_occurs_count()):
             self.confirm_get_params[f"amount_{i}"] = form.cleaned_data[f"amount_{i}"]
 
         return super().form_valid(form)
@@ -274,7 +277,7 @@ class TransactionCreateBulkConfirmMixin(
     SuccessMessageMixin,
     InsertRequestIntoModelFormKwargsMixin,
     TransactionEditPermissionMixin,
-    generic.edit.FormView,
+    generic.edit.CreateView,
 ):
     form_class = TransactionCreateBulkConfirmForm
 
@@ -283,7 +286,7 @@ class TransactionCreateBulkConfirmMixin(
         get_params = self.request.GET
 
         if not all(param in get_params for param in required_params):
-            return HttpResponseBadRequest("Missing parameters")
+            return HttpResponseBadRequest(b"Missing parameters")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -292,18 +295,14 @@ class TransactionCreateBulkConfirmMixin(
 
         get_params = self.request.GET
 
-        persons_transactions = self._create_person_transactions(get_params)
-        kwargs.setdefault("persons_transactions", persons_transactions)
+        transaction_infos = list(self.create_transaction_infos(get_params))
+        kwargs.setdefault("transaction_infos", transaction_infos)
         kwargs.setdefault("reason", get_params.get("reason", ""))
 
         return kwargs
 
-    def form_valid(self, form):
-        form.create_transactions()
-        return super().form_valid(form)
-
-    def _create_person_transactions(self, params):
-        raise NotImplementedError()
+    def create_transaction_infos(self, params):
+        raise NotImplementedError
 
 
 class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMixin):
@@ -318,7 +317,7 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
             request, required_params=required_params, *args, **kwargs
         )
 
-    def _create_person_transactions(self, params):
+    def create_transaction_infos(self, params):
         selected_persons = parse_persons_filter_queryset(
             params,
             PersonPermissionMixin.get_queryset_by_permission(
@@ -326,17 +325,12 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
             ),
         )
 
-        persons_transactions = []
         for person in selected_persons:
-            persons_transactions.append(
-                {
-                    "person": person,
-                    "amount": params["amount"],
-                    "date_due": params["date_due"],
-                }
+            yield TransactionInfo(
+                person=person,
+                amount=params["amount"],
+                date_due=params["date_due"],
             )
-
-        return persons_transactions
 
 
 class TransactionCreateTrainingBulkConfirmView(
@@ -356,38 +350,37 @@ class TransactionCreateTrainingBulkConfirmView(
         required_params = ["date_due", "reason"]
         self.event = get_object_or_404(Training, pk=self.kwargs["event_id"])
 
-        for i in range(1, self.event.weekly_occurs_count() + 1):
+        for i in range(self.event.weekly_occurs_count()):
             required_params.append(f"amount_{i}")
 
         return super().dispatch(
             request, required_params=required_params, *args, **kwargs
         )
 
-    def _create_person_transactions(self, params):
+    def create_transaction_infos(self, params):
         approved_enrollments = self.event.approved_enrollments()
-
-        persons_transactions = []
 
         for enrollment in approved_enrollments:
             person = enrollment.person
+
             repetition_per_week = enrollment.weekdays.count()
-            amount = -int(params[f"amount_{repetition_per_week}"])
+            amount = -int(params[f"amount_{repetition_per_week - 1}"])
 
-            persons_transactions.append(
-                {
-                    "person": person,
-                    "amount": amount,
-                    "date_due": params["date_due"],
-                    "enrollment": enrollment,
-                }
+            yield TransactionInfo(
+                person=person,
+                amount=amount,
+                date_due=params["date_due"],
+                enrollment=enrollment,
             )
-
-        return persons_transactions
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.setdefault("event", self.event)
         return kwargs
+
+    def form_invalid(self, form: BaseModelForm) -> HttpResponse:
+        print(form.errors)
+        return super().form_invalid(form)
 
 
 class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
