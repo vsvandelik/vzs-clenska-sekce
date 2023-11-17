@@ -98,9 +98,13 @@ class OneTimeEventDetailView(EventDetailBaseView):
         return super().get_context_data(**kwargs)
 
     def get_template_names(self):
-        # TODO: Determine which template to display based on the user permissions
-        return "one_time_events/detail_for_nonadmin.html"
-        # return "one_time_events/detail.html"
+        active_person = self.request.active_person
+        if hasattr(active_person, "user") and self.object.can_user_manage(
+            active_person.user
+        ):
+            return "one_time_events/detail.html"
+        else:
+            return "one_time_events/detail_for_nonadmin.html"
 
 
 class OneTimeEventListView(generic.ListView):
