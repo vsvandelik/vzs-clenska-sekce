@@ -5,8 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment
-from events.permissions import OccurrenceManagePermissionMixin
+from events.models import ParticipantEnrollment, Event
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -46,8 +45,8 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import send_notification_email
-
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -80,8 +79,6 @@ from .permissions import (
 
 
 class OneTimeEventDetailView(EventDetailBaseView):
-    template_name = "one_time_events/detail.html"
-
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         kwargs.setdefault(
@@ -95,7 +92,33 @@ class OneTimeEventDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "active_person_is_organizer", self.object.is_organizer(active_person)
         )
+        kwargs.setdefault(
+            "map_is_available", GOOGLE_MAPS_API_KEY is not None and self.object.location
+        )
         return super().get_context_data(**kwargs)
+
+    def get_template_names(self):
+        # TODO: Determine which template to display based on the user permissions
+        return "one_time_events/detail_for_nonadmin.html"
+        # return "one_time_events/detail.html"
+
+
+class OneTimeEventListView(generic.ListView):
+    template_name = "one_time_events/index.html"
+    context_object_name = "events"
+
+    def get_queryset(self):
+        user = self.request.user
+        active_person = self.request.active_person
+
+        visible_event_pks = [
+            event.pk
+            for event in Event.objects.all()
+            if event.can_user_manage(user)
+            or event.can_person_interact_with(active_person)
+        ]
+
+        return Event.objects.filter(pk__in=visible_event_pks)
 
 
 class OneTimeEventCreateView(
