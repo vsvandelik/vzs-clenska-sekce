@@ -214,7 +214,7 @@ class Label:
     def render(self, form, context, template_pack, extra_context=None, **kwargs):
         """
         Renders a label with class ``col-form-label``
-        and content of ``self.text`` from ``__init__``.
+        and content of parameter ``text`` from ``__init__``.
         """
 
         if self.text is None:
@@ -226,7 +226,7 @@ class Label:
 class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
     """
     Creates a bulk debt transaction for a training. One :class:`BulkTransaction`
-    and multiple :class:`Transaction` are created.
+    and multiple :class:`Transaction` instances are created.
 
     Also notifies the persons about the created transactions.
 
