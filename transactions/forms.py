@@ -36,12 +36,12 @@ class TransactionCreateEditMixin(ModelForm):
     """
     A mixin form for creating and editing transactions.
 
-    **Request body parameters:**
+    **Request parameters:**
 
-    *   amount
-    *   reason
-    *   date_due
-    *   is_reward
+    *   ``amount``
+    *   ``reason``
+    *   ``date_due``
+    *   ``is_reward``
     """
 
     class Meta:
@@ -93,7 +93,7 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
 
     :parameter person: The person to create the transaction for.
 
-    **Request body parameters:**
+    **Request parameters:**
 
     *   all from :class:`TransactionCreateEditMixin`
     """
@@ -113,7 +113,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
 
     Uses :class:`PersonsFilterForm` for filtering persons.
 
-    **Request body parameters:**
+    **Request parameters:**
 
     *   all from :class:`TransactionCreateEditMixin`
     *   all from :class:`PersonsFilterForm`
@@ -154,6 +154,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         """
         Also cleans the person filter form.
         """
+
         cleaned_data = super().clean()
         cleaned_data = PersonsFilterForm.clean_with_given_values(cleaned_data)
 
@@ -170,12 +171,12 @@ class TransactionAddTrainingPaymentForm(Form):
 
     Prefills the reason form field with a default value.
 
-    **Request body parameters:**
+    **Request parameters:**
 
-    *   reason
-    *   date_due
-    *   amount\\_\\ ``i`` - the amount that should be paid when
-        the person attends ``i`` occurences per week
+    *   ``reason``
+    *   ``date_due``
+    *   ``amount_{i}`` - the amount that should be paid
+        whent he person attends ``i`` occurences per week
 
     :parameter event: The training to (eventually) create all the transactions for.
     """
@@ -230,11 +231,11 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
 
     Also notifies the persons about the created transactions.
 
-    **Request body parameters:**
+    **Request parameters:**
 
-    *   transactions-``pk``-amount - the transaction amount for
+    *   ``transactions-{pk}-amount`` - the transaction amount for
         the person with primary key ``pk``
-    *   transactions-``pk``-date_due - the transaction due date for
+    *   ``transactions-{pk}-date_due`` - the transaction due date for
         the person with primary key ``pk``
 
     :parameter event: The training to create all the transactions for.
@@ -407,9 +408,9 @@ class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
     The person is selected in the form and sent in the request body
     in contrast to :class:`TransactionCreateFromPersonForm`.
 
-    **Request body parameters:**
+    **Request parameters:**
 
-    *   person - the primary key of the person to create the transaction for
+    *   ``person`` - the primary key of the person to create the transaction for
     *   all from :class:`TransactionCreateEditMixin`
     """
 
@@ -457,17 +458,17 @@ class TransactionFilterForm(Form):
 
     Use :func:`process_filter` to get the filtered transactions.
 
-    **Request body parameters:**
+    **Request parameters:**
 
-    *   person_name
-    *   reason
-    *   transaction_type
-    *   is_settled
-    *   amount_from
-    *   amount_to
-    *   date_due_from
-    *   date_due_to
-    *   bulk_transaction
+    *   ``person_name``
+    *   ``reason``
+    *   ``transaction_type``
+    *   ``is_settled``
+    *   ``amount_from``
+    *   ``amount_to``
+    *   ``date_due_from``
+    *   ``date_due_to``
+    *   ``bulk_transaction``
     """
 
     person_name = CharField(label=_("Jméno osoby obsahuje"), required=False)
