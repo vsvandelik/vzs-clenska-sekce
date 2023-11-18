@@ -52,6 +52,8 @@ class BulkTransaction(Model):
 class Transaction(ExportableCSVMixin, Model):
     """
     Represents a financial transaction between the organisation and a person.
+
+    Primary key represents the transaction variable symbol.
     """
 
     class Meta:

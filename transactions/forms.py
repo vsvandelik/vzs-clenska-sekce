@@ -174,7 +174,7 @@ class TransactionAddTrainingPaymentForm(Form):
 
     *   reason
     *   date_due
-    *   amount\_\ ``i`` - the amount that should be paid when
+    *   amount\\_\\ ``i`` - the amount that should be paid when
         the person attends ``i`` occurences per week
 
     :parameter event: The training to (eventually) create all the transactions for.
