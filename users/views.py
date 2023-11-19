@@ -1,9 +1,10 @@
-from django.contrib import messages
-from django.contrib.auth import authenticate
-from django.contrib.auth import login as auth_login
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView as BaseLoginView
+from django.contrib.auth.views import LogoutView as BaseLogoutView
+from django.contrib.auth.views import RedirectURLMixin
+from django.contrib.messages import error as error_message
+from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import send_mail
@@ -11,13 +12,33 @@ from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import RedirectView, View
+from django.views.generic.detail import DetailView, SingleObjectMixin
+from django.views.generic.edit import (
+    BaseFormView,
+    CreateView,
+    DeleteView,
+    FormMixin,
+    FormView,
+    UpdateView,
+)
+from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
-from vzs import settings
+from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
 
-from . import forms
 from .backends import GoogleBackend
+from .forms import (
+    ChangeActivePersonForm,
+    LoginForm,
+    LogoutForm,
+    UserAssignRemovePermissionForm,
+    UserChangePasswordForm,
+    UserChangePasswordOldAndRepeatForm,
+    UserChangePasswordRepeatForm,
+    UserCreateForm,
+    UserResetPasswordRequestForm,
+)
 from .models import Permission, ResetPasswordToken, User
 from .permissions import (
     PermissionRequiredMixin,
@@ -28,32 +49,50 @@ from .permissions import (
 from .utils import create_random_password
 
 
-class UserCreateView(
-    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
-):
+class UserCreateView(UserCreateDeletePermissionMixin, SuccessMessageMixin, CreateView):
     """
-    A view for creating a new user.
+    Creates a new user.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the person whose user account was created.
+
+    **Permissions**:
+
+    Users that can manage the person's membership type.
+
+    **Request body parameters**:
+
+    * ``person``: The ID of the person for whom a user account should be created.
     """
 
     template_name = "users/create.html"
-    form_class = forms.UserCreateForm
+    """:meta private:"""
+
+    form_class = UserCreateForm
+    """:meta private:"""
+
     queryset = Person.objects.filter(user__isnull=True)
+    """:meta private:"""
 
     def get_success_url(self):
-        """
-        Redirects to the detail page of the person whose user account was created.
-        """
+        """:meta private:"""
 
         return reverse("persons:detail", kwargs={"pk": self.person.pk})
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return _(f"{self.object} byl úspěšně přidán.")
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.person = self.get_object()
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs["person"] = self.person
@@ -61,33 +100,54 @@ class UserCreateView(
         return kwargs
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person``
+        """
+
         kwargs.setdefault("person", self.person)
 
         return super().get_context_data(**kwargs)
 
 
-class UserDeleteView(
-    UserCreateDeletePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
-):
+class UserDeleteView(UserCreateDeletePermissionMixin, SuccessMessageMixin, DeleteView):
     """
-    A view for deleting an existing user.
+    Deletes an existing user.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the person whose user account was created.
+
+    **Permissions**:
+
+    Users that can manage the person's membership type.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the user to be deleted.
     """
 
     model = User
+    """:meta private:"""
+
     context_object_name = "user_object"
+    """:meta private:"""
+
     template_name = "users/delete.html"
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.person = self.get_object().person
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        """
-        Redirects to the detail page of the person whose user account was deleted.
-        """
+        """:meta private:"""
+
         return reverse("persons:detail", kwargs={"pk": self.person.pk})
 
     def form_valid(self, form):
+        """:meta private:"""
+
         # success_message is sent after object deletion so we need to save the data
         # we will need later
         self.user_representation = str(self.object)
@@ -95,29 +155,41 @@ class UserDeleteView(
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return _(f"{self.user_representation} byl úspěšně odstraněn.")
 
 
-class UserChangePasswordBaseMixin(generic.edit.UpdateView):
+class UserChangePasswordBaseMixin(UpdateView):
     """
     A base view for changing an existing user's password.
+
+    Logs out the user whose password changed.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's password was changed.
     """
 
     model = User
+    """:meta private:"""
+
     context_object_name = "user_object"
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.object = self.get_object()
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        """
-        Redirects to the detail page of the person whose account's password was changed.
-        """
+        """:meta private:"""
 
         return reverse("persons:detail", kwargs={"pk": self.object.pk})
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         # a weird trick that ensures that the logged in user instance gets the changes
         kwargs = super().get_form_kwargs()
 
@@ -127,61 +199,110 @@ class UserChangePasswordBaseMixin(generic.edit.UpdateView):
         return kwargs
 
     def form_valid(self, form):
-        """
-        Logs out the user if their password changed.
-        """
+        """:meta private:"""
 
         self.object = form.save()
 
         update_session_auth_hash(self.request, self.object)
 
-        return generic.edit.FormMixin.form_valid(self, form)
+        return FormMixin.form_valid(self, form)
 
 
 class UserChangePasswordMixin(SuccessMessageMixin, UserChangePasswordBaseMixin):
-    pass
+    """:meta private:"""
 
-
-class UserChangePasswordBaseMixin(UserChangePasswordMixin):
     template_name = "users/change_password.html"
     success_message = _("Heslo bylo úspěšně změněno.")
 
 
-class UserChangePasswordSelfView(UserChangePasswordBaseMixin):
+class UserChangePasswordSelfView(UserChangePasswordMixin):
     """
-    A view for changing the password of the currently logged in user.
+    Changes the password of the currently logged in user.
+
+    **Success redirection view**: :class:`persons.views.MyProfileView`
+
+    **Request body parameters**:
+
+    *   ``password``
+    *   ``password_repeat`` - For validation purposes only.
+    *   ``password_old`` - For validation purposes only.
     """
 
-    form_class = forms.UserChangePasswordOldAndRepeatForm
+    form_class = UserChangePasswordOldAndRepeatForm
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         return self.request.active_person.user
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse("my-profile:index")
 
 
-class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordBaseMixin):
+class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordMixin):
     """
-    A view for superusers to change password of other users.
+    Changes password of other users.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's password was changed.
+
+    **Permissions**:
+
+    Superusers.
+
+    **Request body parameters**:
+
+    *   ``password``
+    *   ``password_repeat`` - For validation purposes only.
+
+    **Path parameters**:
+
+    *   ``pk`` - The ID of the person whose account password should be changed.
     """
 
     permissions_required = ["superuser"]
-    form_class = forms.UserChangePasswordRepeatForm
+    """:meta private:"""
+
+    form_class = UserChangePasswordRepeatForm
+    """:meta private:"""
 
 
 class UserGenerateNewPasswordView(
-    UserGeneratePasswordPermissionMixin, UserChangePasswordMixin
+    UserGeneratePasswordPermissionMixin,
+    SuccessMessageMixin,
+    UserChangePasswordBaseMixin,
 ):
     """
-    A view for generating a new random password for a user.
+    Generates a new random password for a user.
+
+    Sends an email with the new password to the person.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's password was changed.
+
+    **Permissions**:
+
+    Users that can manage the person's membership type except the edited user.
+
+    **Path parameters**:
+
+    *   ``pk`` - The ID of the person whose account password should be changed.
     """
 
     http_method_names = ["post"]
-    form_class = forms.UserChangePasswordForm
+    """:meta private:"""
+
+    form_class = UserChangePasswordForm
+    """:meta private:"""
+
     success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         self.password = create_random_password()
@@ -191,9 +312,7 @@ class UserGenerateNewPasswordView(
         return kwargs
 
     def form_valid(self, form):
-        """
-        Sends an email with the new password.
-        """
+        """:meta private:"""
 
         response = super().form_valid(form)
 
@@ -216,19 +335,29 @@ def set_active_person(request, person):
     request.session["_active_person_pk"] = person.pk
 
 
-class LoginView(auth_views.LoginView):
+class LoginView(BaseLoginView):
     """
-    A view for logging in.
+    Logs in users.
+
+    Also sets the active person to the owner of the user account.
+
+    **Request body parameters**:
+
+    *   ``email``
+    *   ``password``
     """
 
     template_name = "users/login.html"
-    authentication_form = forms.LoginForm
+    """:meta private:"""
+
+    authentication_form = LoginForm
+    """:meta private:"""
+
     redirect_authenticated_user = True
+    """:meta private:"""
 
     def form_valid(self, form):
-        """
-        Sets the active person to the person associated with the user account.
-        """
+        """:meta private:"""
 
         response = super().form_valid(form)
 
@@ -237,18 +366,29 @@ class LoginView(auth_views.LoginView):
         return response
 
 
-class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
+class ChangeActivePersonView(LoginRequiredMixin, BaseFormView):
     """
-    A view for changing the active person.
+    Changes the active person.
+
+    **Success redirection view**: The page from which the request originated.
+
+    **Permissions**:
+
+    Logged in users changing to a person they manage.
+
+    **Request body parameters**:
+
+    *   ``person``: The ID of the person to be set as the active person.
     """
 
     http_method_names = ["post"]
-    form_class = forms.ChangeActivePersonForm
+    """:meta private:"""
+
+    form_class = ChangeActivePersonForm
+    """:meta private:"""
 
     def form_valid(self, form):
-        """
-        Sets the new active person and redirects back to the request origin page.
-        """
+        """:meta private:"""
 
         request = self.request
         user = request.user
@@ -257,10 +397,10 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
 
         if new_active_person in user.person.get_managed_persons():
             set_active_person(request, new_active_person)
-            messages.success(request, _("Aktivní osoba úspěšně změněna."))
+            success_message(request, _("Aktivní osoba úspěšně změněna."))
         else:
             return HttpResponseForbidden(
-                _("Vybraná osoba není spravována přihlášenou osobou.")
+                _("Vybraná osoba není spravována přihlášenou osobou.").encode("utf-8")
             )
 
         return HttpResponseRedirect(
@@ -268,75 +408,122 @@ class ChangeActivePersonView(LoginRequiredMixin, generic.edit.BaseFormView):
         )
 
 
-class PermissionsView(UserManagePermissionsPermissionMixin, generic.list.ListView):
+class PermissionsView(UserManagePermissionsPermissionMixin, ListView):
     """
-    A view for displaying all permissions.
+    Displays all permissions.
+
+    **Permissions**:
+
+    Users with the ``users.spravce_povoleni`` permission.
     """
 
     model = Permission
+    """:meta private:"""
+
     template_name = "users/permissions.html"
+    """:meta private:"""
+
     context_object_name = "permissions"
+    """:meta private:"""
 
 
-class PermissionDetailView(
-    UserManagePermissionsPermissionMixin, generic.detail.DetailView
-):
+class PermissionDetailView(UserManagePermissionsPermissionMixin, DetailView):
     """
     A view for displaying a permission detail.
+
+    **Permissions**:
+
+    Users with the ``users.spravce_povoleni`` permission.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the permission to be displayed.
     """
 
     model = Permission
+    """:meta private:"""
+
     template_name = "users/permission_detail.html"
+    """:meta private:"""
 
 
 class UserAssignRemovePermissionView(
     UserManagePermissionsPermissionMixin,
     SuccessMessageMixin,
-    generic.detail.SingleObjectMixin,
-    generic.edit.FormView,
+    SingleObjectMixin,
+    FormView,
 ):
     """
     A base view for assigning or removing a permission from a user.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's permissions were changed.
+
+    **Permissions**:
+
+    Users with the ``users.spravce_povoleni`` permission.
+
+    **Request body parameters**:
+
+    *   ``permission``: The ID of the permission to be assigned or removed.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the person whose account's permissions should be changed.
     """
 
-    form_class = forms.UserAssignRemovePermissionForm
+    form_class = UserAssignRemovePermissionForm
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.object = self.get_object(queryset=User.objects.all())
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        """
-        Redirects to the detail page of the person whose
-        user account's permissions were modified.
-        """
+        """:meta private:"""
 
         return reverse("persons:detail", kwargs={"pk": self.object.person.pk})
 
-    def _change_user_permission(self, user, permission):
+    @staticmethod
+    def change_user_permission(user, permission):
+        """
+        Callback to handle permission assignment change.
+        """
+
         raise ImproperlyConfigured("_change_user_permission needs to be overridden.")
 
     def form_valid(self, form):
+        """:meta private:"""
+
         user = self.object
         permission = form.cleaned_data["permission"]
 
-        self._change_user_permission(user, permission)
+        self.change_user_permission(user, permission)
 
         return super().form_valid(form)
 
 
-class GoogleLoginView(generic.base.RedirectView):
+class GoogleLoginView(RedirectView):
     """
-    A view that redirects to Google authentication.
+    Google authentication entry view.
+
+    The Google authentication redirection callback is :class:`GoogleAuthView`.
+    It is passed the ``next`` request body parameter.
+
+    **Success redirection view**: Google authentication page.
+
+    **Request body parameters**:
+
+    *   ``next``: The final URL to redirect to after successful authentication.
     """
 
     http_method_names = ["post"]
+    """:meta private:"""
 
     def get_redirect_url(self, *args, **kwargs):
-        """
-        Redirects to Google authentication and passes it
-        the next redirection destiantion.
-        """
+        """:meta private:"""
 
         next_redirect = self.request.POST.get("next", "")
 
@@ -345,22 +532,36 @@ class GoogleLoginView(generic.base.RedirectView):
         )
 
 
-class GoogleAuthView(auth_views.RedirectURLMixin, generic.base.View):
+class GoogleAuthView(RedirectURLMixin, View):
     """
-    A view that server as Google authentication callback.
+    Serves as Google authentication callback.
 
-    Receives a GET request with ``code`` and ``state`` query parameters.
+    Authenticates the user, logs them in and redirects to the final URL.
+
+    **Success redirection view**: The URL passed in the ``state`` query parameter.
+
+    **Query parameters**:
+
+    *   ``code``: The authentication code.
+    *   ``state``: The encoded final URL to redirect to after successful authentication.
     """
 
     http_method_names = ["get"]
+    """:meta private:"""
+
     redirect_field_name = "state"
-    next_page = settings.LOGIN_REDIRECT_URL
+    """:meta private:"""
+
+    next_page = LOGIN_REDIRECT_URL
+    """:meta private:"""
 
     def _error(self, request, message):
-        messages.error(request, message)
+        error_message(request, message)
         return redirect("users:login")
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         code = request.GET.get("code")
 
         try:
@@ -383,30 +584,48 @@ class GoogleAuthView(auth_views.RedirectURLMixin, generic.base.View):
         if user is None:
             return self._error(request, _("Přihlášení se nezdařilo."))
 
-        auth_login(request, user)
+        login(request, user)
         set_active_person(request, request.user.person)
 
         return HttpResponseRedirect(self.get_success_url())
 
     def get_redirect_url(self):
-        """
-        Redirects to the URL specified in the ``state`` qeury parameter.
-        """
+        """:meta private:"""
 
         return GoogleBackend.state_decode(super().get_redirect_url())
 
 
-class UserAssignPermissionView(
-    generic.list.MultipleObjectMixin, UserAssignRemovePermissionView
-):
+class UserAssignPermissionView(MultipleObjectMixin, UserAssignRemovePermissionView):
     """
     A view for assigning a permission to a user.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's permissions were changed.
+
+    **Permissions**:
+
+    Users with the ``users.spravce_povoleni`` permission.
+
+    **Request body parameters**:
+
+    *   ``permission``: The ID of the permission to be assigned.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the person whose account's permissions should be changed.
     """
 
     template_name = "users/assign_permission.html"
+    """:meta private:"""
+
     success_message = _("Povolení úspěšně přidáno.")
+    """:meta private:"""
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person``
+        """
+
         self.object_list = self.get_queryset()
 
         kwargs.setdefault("person", self.object.person)
@@ -414,41 +633,87 @@ class UserAssignPermissionView(
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
+        """:meta private:"""
+
         # TODO should be:
         # return Permission.objects.difference(self.object.user_permissions.all())
         # but SQlite doesn't support it, change when we start using PostgreSQL
         return Permission.objects.all()
 
-    def _change_user_permission(self, user, permission):
+    @staticmethod
+    def change_user_permission(user, permission):
+        """
+        Assigns the permission.
+        """
+
         user.user_permissions.add(permission)
 
 
 class UserRemovePermissionView(UserAssignRemovePermissionView):
     """
     A view for removing a permission from a user.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView` of the person
+    whose user account's permissions were changed.
+
+    **Permissions**:
+
+    Users with the ``users.spravce_povoleni`` permission.
+
+    **Request body parameters**:
+
+    *   ``permission``: The ID of the permission to be removed.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the person whose account's permissions should be changed.
     """
 
     http_method_names = ["post"]
-    success_message = _("Povolení úspěšně odebráno.")
+    """:meta private:"""
 
-    def _change_user_permission(self, user, permission):
+    success_message = _("Povolení úspěšně odebráno.")
+    """:meta private:"""
+
+    @staticmethod
+    def change_user_permission(user, permission):
+        """
+        Removes the permission.
+        """
+
         user.user_permissions.remove(permission)
 
 
-class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView):
+class UserResetPasswordRequestView(SuccessMessageMixin, CreateView):
     """
-    A view for requesting a password reset.
+    Requests a password reset for a user with the given email.
+
+    Creates a password reset token and sends an email with a password reset link.
+
+    **Success redirection view**: :class:`users.views.LoginView`
+
+    **Request body parameters**:
+
+    *   ``email``
     """
 
     template_name = "users/reset-password-request.html"
-    form_class = forms.UserResetPasswordRequestForm
-    success_url = reverse_lazy("users:login")
-    success_message = _("E-mail s odkazem pro změnu hesla byl odeslán.")
+    """:meta private:"""
 
-    def form_valid(self, form):
-        """
-        Sends an email with a password reset link.
-        """
+    form_class = UserResetPasswordRequestForm
+    """:meta private:"""
+
+    success_url = reverse_lazy("users:login")
+    """:meta private:"""
+
+    success_message = _("E-mail s odkazem pro změnu hesla byl odeslán.")
+    """:meta private:"""
+
+    object: ResetPasswordToken
+    """:meta private:"""
+
+    def form_valid(self, form: UserResetPasswordRequestForm):
+        """:meta private:"""
 
         response = super().form_valid(form)
 
@@ -459,7 +724,7 @@ class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView)
                 _("Zapomenuté heslo"),
                 _(
                     f"Nasledujte následující odkaz pro změnu hesla: "
-                    f"{settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}{reverse('users:reset-password')}?token={token.key}"
+                    f"{SERVER_PROTOCOL}://{SERVER_DOMAIN}{reverse('users:reset-password')}?token={token.key}"
                 ),
                 None,
                 [token.user.person.email],
@@ -469,22 +734,36 @@ class UserResetPasswordRequestView(SuccessMessageMixin, generic.edit.CreateView)
         return response
 
 
-class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
+class UserResetPasswordView(SuccessMessageMixin, UpdateView):
     """
-    A view for handling password reset requests.
+    Handles password reset requests. Deletes the token after the password is changed.
+
+    This is the view that the user is redirected to after clicking the link
+    in the password reset email.
+
+    404 if the token has expired.
+
+    **Success redirection view**: :class:`users.views.LoginView`
+
+    **Query parameters**:
+
+    *   ``token``: The password reset token.
     """
 
     template_name = "users/reset-password.html"
-    form_class = forms.UserChangePasswordRepeatForm
+    """:meta private:"""
+
+    form_class = UserChangePasswordRepeatForm
+    """:meta private:"""
+
     success_url = reverse_lazy("users:login")
+    """:meta private:"""
+
     success_message = _("Heslo změněno.")
+    """:meta private:"""
 
     def get_object(self, queryset=None):
-        """
-        Gets the token instance using the query parameter.
-
-        Checks for the token's expiration.
-        """
+        """:meta private:"""
 
         token_key = self.request.GET.get("token")
 
@@ -501,9 +780,7 @@ class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
         return token.user
 
     def form_valid(self, form):
-        """
-        Deletes the token.
-        """
+        """:meta private:"""
 
         response = super().form_valid(form)
 
@@ -512,18 +789,23 @@ class UserResetPasswordView(SuccessMessageMixin, generic.edit.UpdateView):
         return response
 
 
-class LogoutView(auth_views.LogoutView):
+class LogoutView(BaseLogoutView):
     """
-    A view for logging out.
+    Logs out the user.
+
+    Sets a ``logout_remember`` cookie variable if the user doesn't want
+    to confirm logouts anymore.
+
+    **Request body parameters**:
+
+    *   ``remember``: If set to ``true``,
+        the user won't be asked to confirm logouts anymore.
     """
 
     def post(self, request, *args, **kwargs):
-        """
-        Sets a ``logout_remember`` cookie variable if the user doesn't want
-        to confirm logouts anymore.
-        """
+        """:meta private:"""
 
-        form = forms.LogoutForm(request.POST)
+        form = LogoutForm(request.POST)
 
         response = super().post(request, *args, **kwargs)
 

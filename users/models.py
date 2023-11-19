@@ -118,7 +118,7 @@ class ResetPasswordToken(BaseToken):
     Token for resetting a user's password through clicking a link in an email.
     """
 
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    user: "User" = models.ForeignKey("users.User", on_delete=models.CASCADE)  # type: ignore
 
     @classproperty
     def has_expired(cls):

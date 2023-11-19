@@ -82,13 +82,13 @@ class GoogleBackend(ModelBackend):
         """
 
         if code is None:
-            return
+            return None
 
         self._flow.fetch_token(code=code)
         token = id_token.verify_oauth2_token(self._flow.credentials.id_token, Request())
 
         if "email" not in token:
-            return
+            return None
 
         email = token["email"]
 
@@ -97,6 +97,6 @@ class GoogleBackend(ModelBackend):
         user = UserModel._default_manager.get_by_natural_key(person)
 
         if not self.user_can_authenticate(user):
-            return
+            return None
 
         return user
