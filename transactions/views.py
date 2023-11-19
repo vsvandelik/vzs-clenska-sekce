@@ -11,7 +11,10 @@ from django.http import HttpRequest, HttpResponseBadRequest, HttpResponseRedirec
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views.generic.list import ListView
 
 from events.permissions import EventManagePermissionMixin
 from events.views import (
@@ -40,35 +43,51 @@ from .utils import TransactionInfo, send_email_transactions
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
     """
-    Permission mixin permitting only users
-    with the ``transactions.spravce_transakci`` permission.
-
-    Used for views that manage transactions.
+    Permits users with the ``transactions.spravce_transakci`` permission.
     """
 
     permission_required = "transactions.spravce_transakci"
+    """:meta private:"""
 
 
-class TransactionCreateView(TransactionEditPermissionMixin, generic.edit.CreateView):
+class TransactionCreateView(TransactionEditPermissionMixin, CreateView):
     """
-    A view for creating a new transaction.
+    Creates a new :class:`transactions.models.Transaction`.
 
     Allows selecting a person from a list of all persons.
+
+    **Success redirection view**: :class:`transactions.views.TransactionIndexView`
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
     """
 
     model = Transaction
+    """:meta private:"""
+
     form_class = TransactionCreateForm
+    """:meta private:"""
+
     template_name = "transactions/create.html"
+    """:meta private:"""
+
     success_url = reverse_lazy("transactions:index")
+    """:meta private:"""
 
 
-class TransactionCreateFromPersonView(
-    TransactionEditPermissionMixin, generic.edit.CreateView
-):
+class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView):
     """
     A view for creating a new transaction.
 
     The person comes from the path parameters.
+
+    **Success redirection view**: :class:`TransactionListView`
+    of the person the transaction was created for
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
 
     **Path parameters:**
 
@@ -76,22 +95,37 @@ class TransactionCreateFromPersonView(
     """
 
     model = Transaction
+    """:meta private:"""
+
     form_class = TransactionCreateFromPersonForm
+    """:meta private:"""
+
     template_name = "transactions/create_from_person.html"
+    """:meta private:"""
 
     def dispatch(self, request: HttpRequest, *args, **kwargs):
+        """:meta private:"""
+
         self.person = get_object_or_404(Person, pk=self.kwargs["person"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person`` - the :class:`persons.models.Person` from the path parameters
+        """
+
         kwargs.setdefault("person", self.person)
 
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs.setdefault("person", self.person)
@@ -99,7 +133,7 @@ class TransactionCreateFromPersonView(
         return kwargs
 
 
-class TransactionListMixin(generic.detail.DetailView):
+class TransactionListMixin(DetailView):
     """
     A mixin that provides context data used by views
     that list transactions for a certain person.
@@ -113,12 +147,10 @@ class TransactionListMixin(generic.detail.DetailView):
 
     def get_context_data(self, **kwargs):
         """
-        **Variables provided**:
-
-        *   ``transactions_debt``: a queryset of person's debt transactions
-        *   ``transactions_reward``: a queryset of person's reward transactions
-        *   ``current_debt``: the person's current total debt
-        *   ``due_reward``: the person's total due reward
+        *   ``transactions_debt`` - a queryset of person's debt transactions
+        *   ``transactions_reward`` - a queryset of person's reward transactions
+        *   ``current_debt`` - the person's current total debt
+        *   ``due_reward`` - the person's total due reward
         """
 
         person = self.object
@@ -150,45 +182,57 @@ class TransactionListView(TransactionListMixin):
     """
     A view that displays a list of transactions for a certain person.
 
+    **Permissions**:
+
+    *   users with the ``transactions.spravce_transakci`` permission
+    *   users that manage the transaction's person's membership type
+
     **Path parameters:**
 
-    *   all from :class:`TransactionListMixin`
+    *   ``pk`` - ID of the person to list transactions for
     """
 
     template_name = "transactions/list.html"
+    """:meta private:"""
 
     def get_queryset(self):
+        """:meta private:"""
+
         if self.request.user.has_perm("transactions.spravce_transakci"):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
 
 
-class TransactionQRView(generic.detail.DetailView):
+class TransactionQRView(DetailView):
     """
     Display the QR code for a given transaction.
+
+    See :func:`get_queryset` for more information.
+
+    **Permissions**:
+
+    *   users with the ``transactions.spravce_transakci`` permission
+    *   users that manage the transaction's person's membership type
 
     **Path parameters:**
 
     *   ``pk`` - ID of the transaction to display the QR code for
-
-    See :func:`get_queryset` for more information.
     """
 
     template_name = "transactions/QR.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person`` - the person associated with the transaction
+        """
+
         kwargs.setdefault("person", self.object.person)
 
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
-        """
-        Throws 404 if the transaction is already settled or is a reward.
-
-        If the user is not a transaction manager, throws 404 if the transaction
-        does not belong to them.
-        """
+        """:meta private:"""
 
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
@@ -203,9 +247,13 @@ class TransactionQRView(generic.detail.DetailView):
         return queryset
 
 
-class TransactionEditMixin(TransactionEditPermissionMixin, generic.edit.UpdateView):
+class TransactionEditMixin(TransactionEditPermissionMixin, UpdateView):
     """
     A mixin used by views that edit transactions.
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
 
     **Path parameters:**
 
@@ -217,18 +265,16 @@ class TransactionEditMixin(TransactionEditPermissionMixin, generic.edit.UpdateVi
     template_name = "transactions/edit.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person`` - the person associated with the edited transaction
+        """
+
         kwargs.setdefault("person", self.object.person)
 
         return super().get_context_data(**kwargs)
 
     def get_form(self):
-        """
-        Sets ``self.old_person`` to the person
-        the transaction belongs to at the beginning.
-
-        Used when the transaction's associated person is changed
-        but the deriving view wants to access the original person.
-        """
+        """:meta private:"""
 
         # get_success_url is run after object update so we need to save the data
         # we will need later
@@ -240,16 +286,16 @@ class TransactionEditFromPersonView(TransactionEditMixin):
     """
     Edits a transaction.
 
+    **Success redirection view**: :class:`TransactionListView`
+    of the transaction's original associated person
+
     **Path parameters:**
 
-    *   all from :class:`TransactionEditMixin`
+    *   ``pk`` - ID of the transaction to edit
     """
 
     def get_success_url(self):
-        """
-        Redirects to the original transaction's person's transaction list view
-        regardless whether the person was changed or not.
-        """
+        """:meta private:"""
 
         return reverse("persons:transaction-list", kwargs={"pk": self.old_person.pk})
 
@@ -258,19 +304,27 @@ class TransactionEditView(TransactionEditMixin):
     """
     Edits a transaction.
 
-    Redirects to the transactions index view.
+    **Success redirection view**: :class:`TransactionIndexView`
 
     **Path parameters:**
 
-    *   all from :class:`TransactionEditMixin`
+    *   ``pk`` - ID of the transaction to edit
     """
 
     success_url = reverse_lazy("transactions:index")
+    """:meta private:"""
 
 
-class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteView):
+class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
     """
     Deletes a transaction.
+
+    **Success redirection view**: :class:`TransactionListView`
+    of the transaction's associated person
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
 
     **Path parameters:**
 
@@ -278,48 +332,70 @@ class TransactionDeleteView(TransactionEditPermissionMixin, generic.edit.DeleteV
     """
 
     model = Transaction
+    """:meta private:"""
+
     template_name = "transactions/delete.html"
+    """:meta private:"""
 
     def form_valid(self, form):
+        """:meta private:"""
+
         # success_message is sent after object deletion so we need to save the data
         # we will need later
         self.person = self.object.person
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person`` - the person associated with the edited transaction
+        """
+
         kwargs.setdefault("person", self.object.person)
 
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
-        """
-        Redirects to the associated person's transaction list view.
-        """
+        """:meta private:"""
 
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
 
-class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView):
+class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     """
     Displays a list of all transactions.
 
     Filters using :class:`TransactionFilterForm`.
 
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
     **Query parameters:**
 
-    *   all from :class:`TransactionFilterForm`
+    *   ``person_name``
+    *   ``reason``
+    *   ``transaction_type``
+    *   ``is_settled``
+    *   ``amount_from``
+    *   ``amount_to``
+    *   ``date_due_from``
+    *   ``date_due_to``
+    *   ``bulk_transaction``
     """
 
     model = Transaction
+    """:meta private:"""
+
     template_name = "transactions/index.html"
+    """:meta private:"""
+
     context_object_name = "transactions"
+    """:meta private:"""
 
     def get_context_data(self, **kwargs):
         """
-        **Variables provided**:
-
-        *   ``form``: the filter form
-        *   ``filtered_get``: url encoded GET parameters
+        *   ``form`` - the filter form
+        *   ``filtered_get`` - url encoded GET parameters
             that were used to filter the transactions
         """
 
@@ -329,35 +405,58 @@ class TransactionIndexView(TransactionEditPermissionMixin, generic.list.ListView
         return super().get_context_data(**kwargs)
 
     def get(self, request: HttpRequest, *args, **kwargs):
+        """:meta private:"""
+
         self.filter_form = TransactionFilterForm(self.request.GET)
 
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         """
-        Applies the filter and orders the transactions by due date.
+        Orders the transactions by due date.
         """
 
         return self.filter_form.process_filter().order_by("date_due")
 
 
-class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.FormView):
+class TransactionCreateBulkView(TransactionEditPermissionMixin, FormView):
     """
     A view for creating bulk transactions for a set of persons.
     Doesn't create the transactions, only redirects to the confirmation view.
 
+    **Success redirection view**: :class:`TransactionCreateBulkConfirmView`. Passes it
+    the request body parameters as query parameters.
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
     **Request body parameters:**
 
-    *   all from :class:`TransactionCreateBulkForm`
+    *   ``amount``
+    *   ``reason``
+    *   ``date_due``
+    *   ``is_reward``
+    *   ``name``
+    *   ``email``
+    *   ``qualifications``
+    *   ``permissions``
+    *   ``equipments``
+    *   ``person_type``
+    *   ``age_from``
+    *   ``age_to``
 
     **Path parameters:**
 
     *   ``is_already_filtered`` - whether the request body parameters
-        contain filter parameters
+        contain person filter parameters
     """
 
     template_name = "transactions/create_bulk.html"
+    """:meta private:"""
+
     form_class = TransactionCreateBulkForm
+    """:meta private:"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -367,28 +466,35 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
     def dispatch(
         self, request: HttpRequest, is_already_filtered: bool = False, *args, **kwargs
     ):
+        """:meta private:"""
+
         if is_already_filtered:
             self.already_filtered_get_params = request.GET
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        if self.already_filtered_get_params is not None:
-            kwargs.setdefault("is_already_filtered", True)
+        """
+        *   ``is_already_filtered`` - whether the request body parameters
+            contain person filter parameters
+        """
+
+        kwargs.setdefault(
+            "is_already_filtered", self.already_filtered_get_params is not None
+        )
 
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
-        """
-        Redirects to the confirmation view. Passes it
-        the :class:`TransactionCreateBulkForm`'s cleaned data as query parameters.
-        """
+        """:meta private:"""
 
         return reverse_with_get_params(
             "transactions:add-bulk-confirm", get=self.confirm_get_params
         )
 
     def form_valid(self, form: Form):
+        """:meta private:"""
+
         if self.already_filtered_get_params is None:
             self.confirm_get_params = {
                 key: value
@@ -407,27 +513,46 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
 
 
 class TransactionAddTrainingPaymentView(
-    EventManagePermissionMixin, InsertEventIntoModelFormKwargsMixin, generic.FormView
+    EventManagePermissionMixin, InsertEventIntoModelFormKwargsMixin, FormView
 ):
     """
     A view for creating a bulk transaction as a payment for a training.
     Doesn't create the transactions, only redirects to the confirmation view.
+
+    **Success redirection view**: :class:`TransactionCreateTrainingBulkConfirmView`.
+    Passes it the request body parameters as query parameters.
+
+    **Permissions**:
+
+    Users that manage the training for which the transactions are created.
+
+    **Request body parameters:**
+
+    *   ``reason``
+    *   ``date_due``
+    *   ``amount_{i}`` - the amount that should be paid
+        when he person attends ``i`` occurences per week
+
+    **Path parameters:**
+
+    *   ``event_id`` - ID of the training to create the bulk transaction for
     """
 
     template_name = "transactions/create_training_transaction.html"
+    """:meta private:"""
+
     form_class = TransactionAddTrainingPaymentForm
+    """:meta private:"""
+
     event_id_key = "event_id"
+    """:meta private:"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.confirm_get_params: Mapping[str, Any]
 
     def get_success_url(self):
-        """
-        Redirects to the confirmation view. Passes it
-        the :class:`TransactionAddTrainingPaymentForm`'s cleaned data
-        as query parameters.
-        """
+        """:meta private:"""
 
         return reverse_with_get_params(
             "trainings:add-transaction-confirm",
@@ -436,6 +561,8 @@ class TransactionAddTrainingPaymentView(
         )
 
     def form_valid(self, form: Form):
+        """:meta private:"""
+
         self.confirm_get_params = {
             "reason": form.cleaned_data["reason"],
             "date_due": form.cleaned_data["date_due"],
@@ -451,10 +578,14 @@ class TransactionCreateBulkConfirmMixin(
     SuccessMessageMixin,
     InsertRequestIntoModelFormKwargsMixin,
     TransactionEditPermissionMixin,
-    generic.edit.CreateView,
+    CreateView,
 ):
     """
     A mixin for creating bulk transactions.
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
 
     **Query parameters:**
 
@@ -464,6 +595,8 @@ class TransactionCreateBulkConfirmMixin(
     form_class = TransactionCreateBulkConfirmForm
 
     def dispatch(self, request: HttpRequest, *args, **kwargs):
+        """:meta private:"""
+
         query_parameters = self.request.GET
         required_parameters = chain(["reason"], self.additional_required_parameters())
 
@@ -473,6 +606,8 @@ class TransactionCreateBulkConfirmMixin(
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         query_parameters = self.request.GET
@@ -504,17 +639,28 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
     """
     Creates a bulk transaction with the same amount for all persons.
 
+    **Success redirection view**: :class:`TransactionIndexView`
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
     **Query parameters:**
 
-    *   all from :class:`TransactionCreateBulkConfirmMixin`
+    *   ``reason`` - the reason for all the transactions
     *   all from :class:`persons.forms.PersonFilterForm`
     *   ``amount`` - the amount of all the transactions
     *   ``date_due`` - the due date of all the transactions
     """
 
     template_name = "transactions/create_bulk_confirm.html"
+    """:meta private:"""
+
     success_url = reverse_lazy("transactions:index")
+    """:meta private:"""
+
     success_message = _("Hromadná transakce byla přidána")
+    """:meta private:"""
 
     def create_transaction_infos(
         self, query_parameters: Mapping[str, Any]
@@ -549,9 +695,16 @@ class TransactionCreateTrainingBulkConfirmView(
     """
     Creates a bulk transaction for a training.
 
+    **Success redirection view**: :class:`trainings.views.TrainingDetailView`
+    of the training the transactions were created for
+
+    **Permissions**:
+
+    Users that manage the training for which the transactions are created.
+
     **Query parameters:**
 
-    *   all from :class:`TransactionCreateBulkConfirmMixin`
+    *   ``reason`` - the reason for all the transactions
     *   ``date_due`` - the due date of all the transactions
     *   ``amount_{i}`` - the amount for person to pay
         if they are enrolled in ``i`` training occurences per week
@@ -562,19 +715,28 @@ class TransactionCreateTrainingBulkConfirmView(
     """
 
     template_name = "transactions/create_bulk_confirm.html"
+    """:meta private:"""
+
     success_message = _("Hromadná transakce byla přidána")
+    """:meta private:"""
+
     event_id_key = "event_id"
+    """:meta private:"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.event: Training
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.event = get_object_or_404(Training, pk=self.kwargs["event_id"])
 
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs.setdefault("event", self.event)
         return kwargs
@@ -608,31 +770,72 @@ class TransactionCreateTrainingBulkConfirmView(
         )
 
 
-class TransactionExportView(TransactionEditPermissionMixin, generic.base.View):
+class TransactionExportView(TransactionEditPermissionMixin, View):
     """
     A view for exporting transaction info into a CSV file.
 
     Filters using :class:`TransactionFilterForm`.
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
+    **Query parameters:**
+
+    *   ``person_name``
+    *   ``reason``
+    *   ``transaction_type``
+    *   ``is_settled``
+    *   ``amount_from``
+    *   ``amount_to``
+    *   ``date_due_from``
+    *   ``date_due_to``
+    *   ``bulk_transaction``
     """
 
     http_method_names = ["get"]
+    """:meta private:"""
 
     def get(self, request: HttpRequest, *args, **kwargs):
+        """:meta private:"""
+
         filter_form = TransactionFilterForm(request.GET)
 
         return export_queryset_csv("vzs_transakce_export", filter_form.process_filter())
 
 
-class TransactionSendEmailView(generic.View):
+class TransactionSendEmailView(TransactionEditPermissionMixin, View):
     """
     Sends an email with transaction info for a set of transactions.
 
     Filters using :class:`TransactionFilterForm`.
+
+    **Success redirection view**: :class:`TransactionIndexView`
+    with forwarded query parameters
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
+    **Query parameters:**
+
+    *   ``person_name``
+    *   ``reason``
+    *   ``transaction_type``
+    *   ``is_settled``
+    *   ``amount_from``
+    *   ``amount_to``
+    *   ``date_due_from``
+    *   ``date_due_to``
+    *   ``bulk_transaction``
     """
 
     http_method_names = ["get"]
+    """:meta private:"""
 
     def get(self, request: HttpRequest, *args, **kwargs):
+        """:meta private:"""
+
         filter_form = TransactionFilterForm(request.GET)
 
         send_email_transactions(filter_form.process_filter())
@@ -645,9 +848,16 @@ class TransactionSendEmailView(generic.View):
 class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
     """
     Displays a list of transactions for the active person.
+
+    **Permissions**:
+
+    Logged in users.
     """
 
     template_name = "transactions/my_transactions.html"
+    """:meta private:"""
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         return self.request.active_person
