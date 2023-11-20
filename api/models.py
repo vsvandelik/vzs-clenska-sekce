@@ -12,6 +12,11 @@ class Token(BaseToken):
     If ``key`` is not set, a random key will be generated on :func:`save`.
     """
 
+    name = CharField(_("Název"), max_length=50)
+    """
+    The name of the token.
+    """
+
     key: str
     """
     The token value.
@@ -23,15 +28,9 @@ class Token(BaseToken):
     """
 
     user = None
-    """
-    :meta private:
-    """
-
-    name = CharField(_("Název"), max_length=50)
+    """:meta private:"""
 
     get_next_by_created: ...
     """:meta private:"""
     get_previous_by_created: ...
-    """:meta private:"""
-    name: ...
     """:meta private:"""
