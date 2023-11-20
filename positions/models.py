@@ -6,7 +6,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class EventPosition(models.Model):
-    name = models.CharField(_("Název"), max_length=50)
+    name = models.CharField(
+        _("Název"),
+        max_length=50,
+        unique=True,
+        error_messages={"unique": "Pozice s tímto názvem již existuje."},
+    )
     wage_hour = models.PositiveIntegerField(
         _("Hodinová sazba"), validators=[MinValueValidator(1)]
     )
