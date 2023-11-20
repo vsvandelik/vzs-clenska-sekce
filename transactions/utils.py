@@ -1,13 +1,12 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Any, TypedDict
+from typing import Annotated, TypedDict
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db.models import Q
-from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
@@ -126,85 +125,48 @@ def fetch_fio(date_time_start: datetime, date_time_end: datetime):
         transaction.save()
 
 
-class TransactionFilterDict(TypedDict):
+class TransactionFilter(TypedDict, total=False):
     """
-    The type of the dictionary
-    that is used by :func:`parse_transactions_filter_queryset`.
-    """
+    Defines a filter for transactions.
 
-    person_name: str | None
-    reason: str | None
-    transaction_type: str | None
-    is_settled: bool | None
-    amount_from: int | None
-    amount_to: int | None
-    date_due_from: date | None
-    date_due_to: date | None
-    bulk_transaction: int | None
-
-
-def parse_transactions_filter_queryset(
-    data: TransactionFilterDict, transactions: QuerySet[Transaction]
-):
-    """
-    Filters ``transactions`` queryset according to the ``data`` dictionary.
-
-    The ``data`` dictionary can come for example from a form's cleaned data
-    or query parameters.
-
-    The filter predicates are combined with logical AND.
-    If a key is not present,
-    the corresponding filter predicate is not applied (true for all instances).
+    Use with :func:`vzs.utils.create_filter`.
     """
 
-    person_name = data.get("person_name")
-    reason = data.get("reason")
-    transaction_type = data.get("transaction_type")
-    is_settled = data.get("is_settled")
-    amount_from = data.get("amount_from")
-    amount_to = data.get("amount_to")
-    date_due_from = data.get("date_due_from")
-    date_due_to = data.get("date_due_to")
-    bulk_transaction = data.get("bulk_transaction")
+    person_name: Annotated[
+        str,
+        lambda person_name: Q(person__first_name__icontains=person_name)
+        | Q(person__last_name__icontains=person_name),
+    ]
 
-    if person_name is not None:
-        transactions = transactions.filter(
-            Q(person__first_name__icontains=person_name)
-            | Q(person__last_name__icontains=person_name)
-        )
+    reason: Annotated[str, lambda reason: Q(reason__icontains=reason)]
 
-    if reason is not None:
-        transactions = transactions.filter(reason__icontains=reason)
-
-    if transaction_type is not None:
-        query_expression = (
+    transaction_type: Annotated[
+        str,
+        lambda transaction_type: (
             Transaction.Q_reward if transaction_type == "reward" else Transaction.Q_debt
-        )
-        transactions = transactions.filter(query_expression)
+        ),
+    ]
 
-    if is_settled is not None:
-        transactions = transactions.filter(fio_transaction__isnull=not is_settled)
+    is_settled: Annotated[
+        bool, lambda is_settled: Q(fio_transaction__isnull=not is_settled)
+    ]
 
-    if amount_from is not None:
-        transactions = transactions.filter(
-            Q(amount__gte=amount_from) | Q(amount__lte=-amount_from)
-        )
+    amount_from: Annotated[
+        int,
+        lambda amount_from: Q(amount__gte=amount_from) | Q(amount__lte=-amount_from),
+    ]
 
-    if amount_to is not None:
-        transactions = transactions.filter(
-            Q(amount__lte=amount_to) & Q(amount__gte=-amount_to)
-        )
+    amount_to: Annotated[
+        int, lambda amount_to: Q(amount__lte=amount_to) & Q(amount__gte=-amount_to)
+    ]
 
-    if date_due_from is not None:
-        transactions = transactions.filter(date_due__gte=date_due_from)
+    date_due_from: Annotated[date, lambda date_due_from: Q(date_due__gte=date_due_from)]
 
-    if date_due_to is not None:
-        transactions = transactions.filter(date_due__lte=date_due_to)
+    date_due_to: Annotated[date, lambda date_due_to: Q(date_due__lte=date_due_to)]
 
-    if bulk_transaction is not None:
-        transactions = transactions.filter(bulk_transaction=bulk_transaction)
-
-    return transactions
+    bulk_transaction: Annotated[
+        int, lambda bulk_transaction: Q(bulk_transaction=bulk_transaction)
+    ]
 
 
 def send_email_transactions(transactions: Iterable[Transaction]):

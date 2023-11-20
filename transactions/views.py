@@ -63,16 +63,16 @@ class TransactionCreateView(TransactionEditPermissionMixin, CreateView):
     Users with the ``transactions.spravce_transakci`` permission.
     """
 
-    model = Transaction
-    """:meta private:"""
-
     form_class = TransactionCreateForm
     """:meta private:"""
 
-    template_name = "transactions/create.html"
+    model = Transaction
     """:meta private:"""
 
     success_url = reverse_lazy("transactions:index")
+    """:meta private:"""
+
+    template_name = "transactions/create.html"
     """:meta private:"""
 
 
@@ -94,10 +94,10 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
     *   ``person`` - ID of the person to create the transaction for
     """
 
-    model = Transaction
+    form_class = TransactionCreateFromPersonForm
     """:meta private:"""
 
-    form_class = TransactionCreateFromPersonForm
+    model = Transaction
     """:meta private:"""
 
     template_name = "transactions/create_from_person.html"
@@ -260,9 +260,14 @@ class TransactionEditMixin(TransactionEditPermissionMixin, UpdateView):
     *   ``pk`` - ID of the transaction to edit
     """
 
-    model = Transaction
     form_class = TransactionEditForm
+    """:meta private:"""
+
+    model = Transaction
+    """:meta private:"""
+
     template_name = "transactions/edit.html"
+    """:meta private:"""
 
     def get_context_data(self, **kwargs):
         """
@@ -383,13 +388,13 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     *   ``bulk_transaction``
     """
 
+    context_object_name = "transactions"
+    """:meta private:"""
+
     model = Transaction
     """:meta private:"""
 
     template_name = "transactions/index.html"
-    """:meta private:"""
-
-    context_object_name = "transactions"
     """:meta private:"""
 
     def get_context_data(self, **kwargs):
@@ -452,10 +457,10 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, FormView):
         contain person filter parameters
     """
 
-    template_name = "transactions/create_bulk.html"
+    form_class = TransactionCreateBulkForm
     """:meta private:"""
 
-    form_class = TransactionCreateBulkForm
+    template_name = "transactions/create_bulk.html"
     """:meta private:"""
 
     def __init__(self, *args, **kwargs):
@@ -538,13 +543,13 @@ class TransactionAddTrainingPaymentView(
     *   ``event_id`` - ID of the training to create the bulk transaction for
     """
 
-    template_name = "transactions/create_training_transaction.html"
+    event_id_key = "event_id"
     """:meta private:"""
 
     form_class = TransactionAddTrainingPaymentForm
     """:meta private:"""
 
-    event_id_key = "event_id"
+    template_name = "transactions/create_training_transaction.html"
     """:meta private:"""
 
     def __init__(self, *args, **kwargs):
@@ -653,13 +658,13 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
     *   ``date_due`` - the due date of all the transactions
     """
 
-    template_name = "transactions/create_bulk_confirm.html"
+    success_message = _("Hromadná transakce byla přidána")
     """:meta private:"""
 
     success_url = reverse_lazy("transactions:index")
     """:meta private:"""
 
-    success_message = _("Hromadná transakce byla přidána")
+    template_name = "transactions/create_bulk_confirm.html"
     """:meta private:"""
 
     def create_transaction_infos(
@@ -714,13 +719,13 @@ class TransactionCreateTrainingBulkConfirmView(
     *   ``event_id`` - ID of the training to create the bulk transaction for
     """
 
-    template_name = "transactions/create_bulk_confirm.html"
+    event_id_key = "event_id"
     """:meta private:"""
 
     success_message = _("Hromadná transakce byla přidána")
     """:meta private:"""
 
-    event_id_key = "event_id"
+    template_name = "transactions/create_bulk_confirm.html"
     """:meta private:"""
 
     def __init__(self, *args, **kwargs):

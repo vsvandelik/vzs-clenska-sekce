@@ -1,17 +1,16 @@
 import csv
 import zoneinfo
+from collections.abc import Callable, Mapping
+from typing import Any, TypedDict, TypeVar, get_type_hints
 from urllib import parse
 
 from django.core.mail import send_mail
+from django.db.models.query import Q
 from django.http import HttpResponse
 from django.urls import reverse
-from django.utils import timezone, formats
+from django.utils import formats, timezone
 
 from vzs import settings
-
-
-def _date_prague(date):
-    return timezone.localdate(date, timezone=zoneinfo.ZoneInfo("Europe/Prague"))
 
 
 def export_queryset_csv(filename, queryset):
@@ -103,3 +102,35 @@ def qr_html_image(transaction, alt_text=None):
         alt_text = f'alt="{alt_text}"'
     qr_img_src = qr(transaction)
     return f'<img src="{qr_img_src}" {alt_text}>'
+
+
+_Q_TRUE = ~Q(pk__in=[])
+
+T = TypeVar("T")
+
+
+def _process_filter_transform(value: T | None, filter_transform: Callable[[T], Q]):
+    if value is None:
+        return _Q_TRUE
+
+    return filter_transform(value)
+
+
+def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]):
+    """
+    Creates a ``Q`` object according to the ``data`` dictionary.
+
+    Compounds the filters using logical AND.
+
+    :parameter Filter: Defines the filter. Inherits from :class:`typing.TypedDict`
+    and provides transformations using :class:`typing.Annotated`.
+    """
+
+    filter = _Q_TRUE
+
+    for key, annotated in get_type_hints(Filter, include_extras=True).items():
+        filter_transform = annotated.__metadata__[0]
+
+        filter &= _process_filter_transform(data.get(key), filter_transform)
+
+    return filter
