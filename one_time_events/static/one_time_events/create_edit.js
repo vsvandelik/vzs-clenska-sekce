@@ -152,7 +152,7 @@ function updateSingleHourCheckbox() {
         const hoursElm = inputs[i + 1]
         if (hour === undefined)
             hour = hoursElm.value
-        else if (hour !== hoursElm.value) {
+        else if (hour !== hoursElm.value && !hoursElm.disabled) {
             $('#single-hour-count-checkbox').prop('checked', false)
             break
         } else if (i + 2 >= inputs.length - 1)
