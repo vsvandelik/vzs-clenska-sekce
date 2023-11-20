@@ -65,13 +65,13 @@ class UserCreateView(UserCreateDeletePermissionMixin, SuccessMessageMixin, Creat
     * ``person``: The ID of the person for whom a user account should be created.
     """
 
-    template_name = "users/create.html"
-    """:meta private:"""
-
     form_class = UserCreateForm
     """:meta private:"""
 
     queryset = Person.objects.filter(user__isnull=True)
+    """:meta private:"""
+
+    template_name = "users/create.html"
     """:meta private:"""
 
     def get_success_url(self):
@@ -125,10 +125,10 @@ class UserDeleteView(UserCreateDeletePermissionMixin, SuccessMessageMixin, Delet
     *   ``pk``: The ID of the user to be deleted.
     """
 
-    model = User
+    context_object_name = "user_object"
     """:meta private:"""
 
-    context_object_name = "user_object"
+    model = User
     """:meta private:"""
 
     template_name = "users/delete.html"
@@ -170,10 +170,10 @@ class UserChangePasswordBaseMixin(UpdateView):
     whose user account's password was changed.
     """
 
-    model = User
+    context_object_name = "user_object"
     """:meta private:"""
 
-    context_object_name = "user_object"
+    model = User
     """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
@@ -211,8 +211,8 @@ class UserChangePasswordBaseMixin(UpdateView):
 class UserChangePasswordMixin(SuccessMessageMixin, UserChangePasswordBaseMixin):
     """:meta private:"""
 
-    template_name = "users/change_password.html"
     success_message = _("Heslo bylo úspěšně změněno.")
+    template_name = "users/change_password.html"
 
 
 class UserChangePasswordSelfView(UserChangePasswordMixin):
@@ -262,10 +262,10 @@ class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordMix
     *   ``pk`` - The ID of the person whose account password should be changed.
     """
 
-    permissions_required = ["superuser"]
+    form_class = UserChangePasswordRepeatForm
     """:meta private:"""
 
-    form_class = UserChangePasswordRepeatForm
+    permissions_required = ["superuser"]
     """:meta private:"""
 
 
@@ -291,10 +291,10 @@ class UserGenerateNewPasswordView(
     *   ``pk`` - The ID of the person whose account password should be changed.
     """
 
-    http_method_names = ["post"]
+    form_class = UserChangePasswordForm
     """:meta private:"""
 
-    form_class = UserChangePasswordForm
+    http_method_names = ["post"]
     """:meta private:"""
 
     success_message = _("Heslo bylo úspěšně vygenerováno a zasláno osobě e-mailem.")
@@ -347,13 +347,13 @@ class LoginView(BaseLoginView):
     *   ``password``
     """
 
-    template_name = "users/login.html"
-    """:meta private:"""
-
     authentication_form = LoginForm
     """:meta private:"""
 
     redirect_authenticated_user = True
+    """:meta private:"""
+
+    template_name = "users/login.html"
     """:meta private:"""
 
     def form_valid(self, form):
@@ -381,10 +381,10 @@ class ChangeActivePersonView(LoginRequiredMixin, BaseFormView):
     *   ``person``: The ID of the person to be set as the active person.
     """
 
-    http_method_names = ["post"]
+    form_class = ChangeActivePersonForm
     """:meta private:"""
 
-    form_class = ChangeActivePersonForm
+    http_method_names = ["post"]
     """:meta private:"""
 
     def form_valid(self, form):
@@ -417,13 +417,13 @@ class PermissionsView(UserManagePermissionsPermissionMixin, ListView):
     Users with the ``users.spravce_povoleni`` permission.
     """
 
+    context_object_name = "permissions"
+    """:meta private:"""
+
     model = Permission
     """:meta private:"""
 
     template_name = "users/permissions.html"
-    """:meta private:"""
-
-    context_object_name = "permissions"
     """:meta private:"""
 
 
@@ -549,10 +549,10 @@ class GoogleAuthView(RedirectURLMixin, View):
     http_method_names = ["get"]
     """:meta private:"""
 
-    redirect_field_name = "state"
+    next_page = LOGIN_REDIRECT_URL
     """:meta private:"""
 
-    next_page = LOGIN_REDIRECT_URL
+    redirect_field_name = "state"
     """:meta private:"""
 
     def _error(self, request, message):
@@ -615,10 +615,10 @@ class UserAssignPermissionView(MultipleObjectMixin, UserAssignRemovePermissionVi
     *   ``pk``: The ID of the person whose account's permissions should be changed.
     """
 
-    template_name = "users/assign_permission.html"
+    success_message = _("Povolení úspěšně přidáno.")
     """:meta private:"""
 
-    success_message = _("Povolení úspěšně přidáno.")
+    template_name = "users/assign_permission.html"
     """:meta private:"""
 
     def get_context_data(self, **kwargs):
@@ -697,19 +697,16 @@ class UserResetPasswordRequestView(SuccessMessageMixin, CreateView):
     *   ``email``
     """
 
-    template_name = "users/reset-password-request.html"
-    """:meta private:"""
-
     form_class = UserResetPasswordRequestForm
-    """:meta private:"""
-
-    success_url = reverse_lazy("users:login")
     """:meta private:"""
 
     success_message = _("E-mail s odkazem pro změnu hesla byl odeslán.")
     """:meta private:"""
 
-    object: ResetPasswordToken
+    success_url = reverse_lazy("users:login")
+    """:meta private:"""
+
+    template_name = "users/reset-password-request.html"
     """:meta private:"""
 
     def form_valid(self, form: UserResetPasswordRequestForm):
@@ -720,12 +717,14 @@ class UserResetPasswordRequestView(SuccessMessageMixin, CreateView):
         if form.user_found:
             token = self.object
 
+            link = (
+                f"{SERVER_PROTOCOL}://{SERVER_DOMAIN}"
+                f"{reverse('users:reset-password')}?token={token.key}"
+            )
+
             send_mail(
                 _("Zapomenuté heslo"),
-                _(
-                    f"Nasledujte následující odkaz pro změnu hesla: "
-                    f"{SERVER_PROTOCOL}://{SERVER_DOMAIN}{reverse('users:reset-password')}?token={token.key}"
-                ),
+                _("Nasledujte následující odkaz pro změnu hesla: {0}").format(link),
                 None,
                 [token.user.person.email],
                 fail_silently=False,
@@ -750,16 +749,16 @@ class UserResetPasswordView(SuccessMessageMixin, UpdateView):
     *   ``token``: The password reset token.
     """
 
-    template_name = "users/reset-password.html"
+    form_class = UserChangePasswordRepeatForm
     """:meta private:"""
 
-    form_class = UserChangePasswordRepeatForm
+    success_message = _("Heslo změněno.")
     """:meta private:"""
 
     success_url = reverse_lazy("users:login")
     """:meta private:"""
 
-    success_message = _("Heslo změněno.")
+    template_name = "users/reset-password.html"
     """:meta private:"""
 
     def get_object(self, queryset=None):

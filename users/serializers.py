@@ -10,7 +10,7 @@ from .models import User
 
 class UserSerializer(HyperlinkedModelSerializer):
     """
-    Provides serialization for the :class:`User` model.
+    Provides serialization for the :class:`users.models.User` model.
     """
 
     class Meta:

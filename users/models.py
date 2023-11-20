@@ -1,4 +1,6 @@
-from django.contrib.auth import models as auth_models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import Permission as BasePermission
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -11,7 +13,7 @@ from vzs import settings
 from vzs.models import RenderableModelMixin
 
 
-class UserManager(auth_models.BaseUserManager):
+class UserManager(BaseUserManager):
     """
     A custom manager for the :class:`User` model.
 
@@ -23,7 +25,7 @@ class UserManager(auth_models.BaseUserManager):
         Creates and saves a :class:`User` with the given person and password.
         """
 
-        if not person:
+        if person is None:
             raise ValueError("Users must have a person set")
 
         if not isinstance(person, Person):
@@ -39,8 +41,8 @@ class UserManager(auth_models.BaseUserManager):
         self, email, first_name, last_name, sex, person_type, password=None
     ):
         """
-        Creates and saves a :class:`Person` with the given attributes. Also creates
-        and saves a superuser for that person with the given password.
+        Creates and saves a :class:`persons.models.Person` with the given attributes.
+        Also creates and saves a superuser for that person with the given password.
         """
 
         person = Person.objects.create(
@@ -60,13 +62,12 @@ class UserManager(auth_models.BaseUserManager):
         return user
 
 
-class User(
-    RenderableModelMixin, auth_models.AbstractUser, auth_models.PermissionsMixin
-):
+class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
     """
     The model providing user functionality.
 
-    Each user is associated with a :class:`Person` instance, which is its primary key.
+    Each user is associated with a :class:`persons.models.Person` instance,
+    which is its primary key.
 
     Users also have a password and a set of permissions.
     """
@@ -78,15 +79,25 @@ class User(
     )
 
     username = None
+    """:meta private:"""
     first_name = None
+    """:meta private:"""
     last_name = None
+    """:meta private:"""
     email = None
+    """:meta private:"""
     date_joined = None
+    """:meta private:"""
 
     USERNAME_FIELD = "person"
+    """:meta private:"""
+
     REQUIRED_FIELDS = []
+    """:meta private:"""
 
     def clean(self):
+        """:meta private:"""
+
         # A workaround.
         # If clean_fields() fails because there is a required field missing,
         # clean() gets called anyways and raises an exception
@@ -102,7 +113,7 @@ class User(
         return f"Uživatel osoby {str(self.person)}"
 
 
-class Permission(RenderableModelMixin, auth_models.Permission):
+class Permission(RenderableModelMixin, BasePermission):
     """
     Custom permission model with added description field.
     """
