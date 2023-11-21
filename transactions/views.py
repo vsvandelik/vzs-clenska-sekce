@@ -198,9 +198,7 @@ class TransactionListView(TransactionListMixin):
     def get_queryset(self):
         """:meta private:"""
 
-        if self.request.active_person.get_user().has_perm(
-            "transactions.spravce_transakci"
-        ):
+        if self.request.active_person.get_user()("transactions.spravce_transakci"):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
