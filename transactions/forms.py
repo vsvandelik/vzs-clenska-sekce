@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping, MutableMapping
+from collections.abc import Iterable, MutableMapping
 from datetime import date
 from typing import Any
 
@@ -23,6 +23,7 @@ from events.models import Event, ParticipantEnrollment
 from persons.forms import PersonsFilterForm
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.utils import payment_email_html, send_notification_email
 from vzs.widgets import DatePickerWithIcon
@@ -32,6 +33,17 @@ from .utils import TransactionInfo, parse_transactions_filter_queryset
 
 
 class TransactionCreateEditMixin(ModelForm):
+    """
+    A mixin form for creating and editing transactions.
+
+    **Request parameters:**
+
+    *   ``amount``
+    *   ``reason``
+    *   ``date_due``
+    *   ``is_reward``
+    """
+
     class Meta:
         model = Transaction
         fields = ["amount", "reason", "date_due"]
@@ -45,6 +57,10 @@ class TransactionCreateEditMixin(ModelForm):
     is_reward = BooleanField(required=False, label=_("Je transakce odměna?"))
 
     def clean_date_due(self):
+        """
+        Validates that the due date is not in the past.
+        """
+
         date_due = self.cleaned_data["date_due"]
 
         if date_due < date.today():
@@ -53,6 +69,10 @@ class TransactionCreateEditMixin(ModelForm):
         return date_due
 
     def clean(self):
+        """
+        Saves the amount as a negative number if it is not a reward (=> a debt).
+        """
+
         cleaned_data = super().clean()
 
         amount = cleaned_data["amount"]
@@ -65,6 +85,19 @@ class TransactionCreateEditMixin(ModelForm):
 
 
 class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
+    """
+    Creates a transaction for a given person.
+
+    Used for creating a transaction when the person is known
+    from the path or query parameters.
+
+    :parameter person: The person to create the transaction for.
+
+    **Request parameters:**
+
+    *   all from :class:`TransactionCreateEditMixin`
+    """
+
     def __init__(self, person: Person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -73,6 +106,19 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
 
 
 class TransactionCreateBulkForm(TransactionCreateEditMixin):
+    """
+    Creates transactions for a set of persons.
+
+    The created transactions have the same parameters with only persons differing.
+
+    Uses :class:`PersonsFilterForm` for filtering persons.
+
+    **Request parameters:**
+
+    *   all from :class:`TransactionCreateEditMixin`
+    *   all from :class:`PersonsFilterForm`
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -105,6 +151,10 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
         )
 
     def clean(self):
+        """
+        Also cleans the person filter form.
+        """
+
         cleaned_data = super().clean()
         cleaned_data = PersonsFilterForm.clean_with_given_values(cleaned_data)
 
@@ -112,6 +162,25 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
 
 
 class TransactionAddTrainingPaymentForm(Form):
+    """
+    Form for collecting data for creation of a bulk debt transaction for a training.
+    Doesn't create the transactions.
+
+    Allows specifying different amounts for different
+    number of trainings attended per week.
+
+    Prefills the reason form field with a default value.
+
+    **Request parameters:**
+
+    *   ``reason``
+    *   ``date_due``
+    *   ``amount_{i}`` - the amount that should be paid
+        whent he person attends ``i`` occurences per week
+
+    :parameter event: The training to (eventually) create all the transactions for.
+    """
+
     date_due = DateField(
         label=Transaction._meta.get_field("date_due").verbose_name,
         widget=DatePickerWithIcon(),
@@ -119,7 +188,7 @@ class TransactionAddTrainingPaymentForm(Form):
     reason = CharField(label=Transaction._meta.get_field("reason").verbose_name)
 
     def __init__(
-        self, initial: MutableMapping[str, Any], event: Event, *args, **kwargs
+        self, initial: MutableMapping[str, Any], event: Training, *args, **kwargs
     ):
         initial["reason"] = _("Platba za tréninky - {0}").format(event)
         super().__init__(
@@ -128,9 +197,7 @@ class TransactionAddTrainingPaymentForm(Form):
             **kwargs,
         )
 
-        self.event = event
-
-        for i in range(self.event.weekly_occurs_count()):
+        for i in range(event.weekly_occurs_count()):
             self.fields[f"amount_{i}"] = IntegerField(
                 label=_("Suma za trénink {0}x týdně").format(i + 1),
                 min_value=1,
@@ -138,10 +205,19 @@ class TransactionAddTrainingPaymentForm(Form):
 
 
 class Label:
+    """
+    A crispy layout object for rendering a label.
+    """
+
     def __init__(self, text: Any | None = None):
         self.text = text
 
     def render(self, form, context, template_pack, extra_context=None, **kwargs):
+        """
+        Renders a label with class ``col-form-label``
+        and content of parameter ``text`` from ``__init__``.
+        """
+
         if self.text is None:
             return ""
 
@@ -149,6 +225,26 @@ class Label:
 
 
 class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
+    """
+    Creates a bulk debt transaction for a training. One :class:`BulkTransaction`
+    and multiple :class:`Transaction` instances are created.
+
+    Also notifies the persons about the created transactions.
+
+    **Request parameters:**
+
+    *   ``transactions-{pk}-amount`` - the transaction amount for
+        the person with primary key ``pk``
+    *   ``transactions-{pk}-date_due`` - the transaction due date for
+        the person with primary key ``pk``
+
+    :parameter event: The training to create all the transactions for.
+    :parameter reason: The reason for the transactions.
+
+    ``__init__`` parameters are applied to the created bulk transaction
+    and are also set the same for all created sub-transactions.
+    """
+
     class Meta:
         model = BulkTransaction
         fields = []
@@ -272,6 +368,10 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
         return cleaned_data
 
     def save(self, commit: bool = True):
+        """
+        Sends an email to each person a transaction was created for.
+        """
+
         bulk_transaction = super().save(False)
 
         if commit:
@@ -302,6 +402,18 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
 
 
 class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
+    """
+    A mixin for creating or editing a transaction.
+
+    The person is selected in the form and sent in the request body
+    in contrast to :class:`TransactionCreateFromPersonForm`.
+
+    **Request parameters:**
+
+    *   ``person`` - the primary key of the person to create the transaction for
+    *   all from :class:`TransactionCreateEditMixin`
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -315,10 +427,22 @@ class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
 
 
 class TransactionCreateForm(TransactionCreateEditPersonSelectMixin):
+    """
+    Creates a transaction for a given person.
+
+    See :class:`TransactionCreateEditPersonSelectMixin`.
+    """
+
     pass
 
 
 class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
+    """
+    Edits a transaction.
+
+    See :class:`TransactionCreateEditPersonSelectMixin`.
+    """
+
     def __init__(
         self, initial: MutableMapping[str, Any], instance: Transaction, *args, **kwargs
     ):
@@ -329,6 +453,24 @@ class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
 
 
 class TransactionFilterForm(Form):
+    """
+    Filters transactions based on simple predicates.
+
+    Use :func:`process_filter` to get the filtered transactions.
+
+    **Request parameters:**
+
+    *   ``person_name``
+    *   ``reason``
+    *   ``transaction_type``
+    *   ``is_settled``
+    *   ``amount_from``
+    *   ``amount_to``
+    *   ``date_due_from``
+    *   ``date_due_to``
+    *   ``bulk_transaction``
+    """
+
     person_name = CharField(label=_("Jméno osoby obsahuje"), required=False)
     reason = CharField(label=_("Popis obsahuje"), required=False)
     transaction_type = ChoiceField(
@@ -424,6 +566,11 @@ class TransactionFilterForm(Form):
             )
 
     def process_filter(self):
+        """
+        Processes the filter and returns a queryset of matching transactions.
+
+        Returns all transactions if the form is invalid.
+        """
         transactions = Transaction.objects.all()
 
         if not self.is_valid():
