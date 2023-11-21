@@ -198,7 +198,7 @@ class TransactionListView(TransactionListMixin):
     def get_queryset(self):
         """:meta private:"""
 
-        if self.request.user.has_perm("transactions.spravce_transakci"):
+        if self.request.active_person.get_user()("transactions.spravce_transakci"):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
@@ -237,7 +237,9 @@ class TransactionQRView(DetailView):
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
         )
-        if not self.request.user.has_perm("transactions.spravce_transakci"):
+        if not self.request.active_person.get_user().has_perm(
+            "transactions.spravce_transakci"
+        ):
             queryset = queryset.filter(
                 person__in=PersonPermissionMixin.get_queryset_by_permission(
                     self.request.user

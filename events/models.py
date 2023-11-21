@@ -159,7 +159,11 @@ class Event(PolymorphicModel):
         )
 
     def can_person_enroll_as_waiting(self, person):
-        if person is None or person in self.enrolled_participants.all():
+        if (
+            person is None
+            or person in self.enrolled_participants.all()
+            or self.capacity == 0
+        ):
             return False
 
         return self.does_participant_satisfy_requirements(person)
