@@ -1,0 +1,11 @@
+{% extends 'one_time_events/create_edit.html' %}
+{% block title %}Úprava duplikátu jednorázové události{% endblock %}
+{% block form_action %}{% url 'one_time_events:edit' event.id %}{% endblock %}
+{% block card_title %}Úprava{% endblock %}
+{% block savebtn_value %}Uložit{% endblock %}
+{% block delete_form %}
+    <form method="post" action="{% url 'events:delete' event.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Smazat</button>
+    </form>
+{% endblock %}

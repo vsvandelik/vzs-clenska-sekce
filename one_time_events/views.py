@@ -65,11 +65,13 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
+    OneTimeEventCreateDuplicateForm,
 )
 from .models import (
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
+    OneTimeEvent,
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
@@ -497,3 +499,15 @@ class OneTimeEventShowAttendanceView(
     generic.TemplateView,
 ):
     template_name = "one_time_events/detail_components/show_attendance.html"
+
+
+class OneTimeEventCreateDuplicateView(MessagesMixin, generic.UpdateView):
+    form_class = OneTimeEventCreateDuplicateForm
+    model = OneTimeEvent
+
+
+class OneTimeEventUpdateDuplicateView(
+    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventUpdateMixin
+):
+    template_name = "one_time_events/edit_duplicate.html"
+    form_class = OneTimeEventForm

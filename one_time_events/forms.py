@@ -1093,3 +1093,15 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
             participant_assignment.state = OneTimeEventAttendance.PRESENT
             if commit:
                 participant_assignment.save()
+
+
+class OneTimeEventCreateDuplicateForm(ModelForm):
+    class Meta:
+        model = OneTimeEvent
+        fields = []
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        if commit:
+            instance.save()
+        return instance
