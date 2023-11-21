@@ -7,7 +7,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.permissions import EventPermissionMixin
+from events.permissions import EventManagePermissionMixin
 from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnSuccessMixin,
@@ -243,10 +243,11 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, generic.edit.For
 
 
 class TransactionAddTrainingPaymentView(
-    EventPermissionMixin, InsertEventIntoModelFormKwargsMixin, generic.FormView
+    EventManagePermissionMixin, InsertEventIntoModelFormKwargsMixin, generic.FormView
 ):
     template_name = "transactions/create_training_transaction.html"
     form_class = TransactionAddTrainingPaymentForm
+    event_id_key = "event_id"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -341,12 +342,13 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
 
 
 class TransactionCreateTrainingBulkConfirmView(
-    EventPermissionMixin,
+    EventManagePermissionMixin,
     RedirectToEventDetailOnSuccessMixin,
     TransactionCreateBulkConfirmMixin,
 ):
     template_name = "transactions/create_bulk_confirm.html"
     success_message = _("Hromadná transakce byla přidána")
+    event_id_key = "event_id"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
