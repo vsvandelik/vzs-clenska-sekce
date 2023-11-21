@@ -1,5 +1,5 @@
 import csv
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, TypedDict, get_type_hints
 from urllib import parse
 
@@ -111,7 +111,7 @@ def qr_html_image(transaction, alt_text=None):
     return f'<img src="{qr_img_src}" {alt_text}>'
 
 
-def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]):
+def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
     """
     Creates a ``Q`` object according to the ``data`` dictionary.
 
@@ -140,7 +140,7 @@ def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]):
 
         if value is not None:
             # gets the first Annotated metadata value
-            transform = annotated.__metadata__[0]
+            transform: Callable[[Any], Q] = annotated.__metadata__[0]
 
             filter &= transform(value)
 
