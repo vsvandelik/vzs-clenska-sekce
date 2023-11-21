@@ -303,8 +303,10 @@ class OneTimeEventEnrollmentApprovedHooks(
             )
         if commit:
             instance.transaction.save()
-            old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
-            if instance.state != old_instance.state:
+            old_instance = OneTimeEventParticipantEnrollment.objects.filter(
+                id=instance.id
+            ).first()
+            if old_instance is not None and instance.state != old_instance.state:
                 self._enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
