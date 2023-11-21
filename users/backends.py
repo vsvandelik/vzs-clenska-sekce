@@ -6,7 +6,7 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 
 from persons.models import Person
-from vzs import settings
+from vzs.settings import GOOGLE_SECRETS_FILE
 
 UserModel = get_user_model()
 
@@ -31,16 +31,16 @@ class GoogleBackend(ModelBackend):
     """
 
     _flow = Flow.from_client_secrets_file(
-        settings.GOOGLE_SECRETS_FILE,
+        GOOGLE_SECRETS_FILE,
         scopes=["https://www.googleapis.com/auth/userinfo.email", "openid"],
     )
 
-    @classmethod
-    def _state_encode(cls, state):
+    @staticmethod
+    def _state_encode(state):
         return "x" + state
 
-    @classmethod
-    def state_decode(cls, state):
+    @staticmethod
+    def state_decode(state):
         """
         Decodes the state query parameter received from Google.
 

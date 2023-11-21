@@ -26,13 +26,13 @@ class TokenIndexView(APIPermissionRequiredMixin, ListView):
     Users with the ``api`` permission.
     """
 
+    context_object_name = "tokens"
+    """:meta private:"""
+
     model = Token
     """:meta private:"""
 
     template_name = "api/token/index.html"
-    """:meta private:"""
-
-    context_object_name = "tokens"
     """:meta private:"""
 
 
@@ -40,7 +40,7 @@ class TokenDeleteView(APIPermissionRequiredMixin, DeleteView):
     """
     Deletes a :class:`api.models.Token`.
 
-    **Success redirection view**: :class:`api.views.TokenIndexView`
+    **Success redirection view**: :class:`TokenIndexView`
 
     **Permissions**:
 
@@ -54,10 +54,10 @@ class TokenDeleteView(APIPermissionRequiredMixin, DeleteView):
     model = Token
     """:meta private:"""
 
-    template_name = "api/token/delete.html"
+    success_url = reverse_lazy("api:token:index")
     """:meta private:"""
 
-    success_url = reverse_lazy("api:token:index")
+    template_name = "api/token/delete.html"
     """:meta private:"""
 
 
@@ -65,18 +65,18 @@ class TokenGenerateView(APIPermissionRequiredMixin, CreateView):
     """
     Generates a new :class:`api.models.Token`.
 
-    **Success redirection view**: :class:`api.views.TokenIndexView`
+    **Success redirection view**: :class:`TokenIndexView`
 
     **Permissions**:
 
     Users with the ``api`` permission.
     """
 
-    template_name = "api/token/generate.html"
-    """:meta private:"""
-
     form_class = TokenGenerateForm
     """:meta private:"""
 
     success_url = reverse_lazy("api:token:index")
+    """:meta private:"""
+
+    template_name = "api/token/generate.html"
     """:meta private:"""

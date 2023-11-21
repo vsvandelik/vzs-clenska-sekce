@@ -4,6 +4,7 @@ from typing import Any
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Layout, Row, Submit
+from django.db.models import QuerySet
 from django.forms import (
     BooleanField,
     CharField,
@@ -24,12 +25,12 @@ from persons.forms import PersonsFilterForm
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
-from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import payment_email_html, send_notification_email
+from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
+from vzs.utils import create_filter, payment_email_html, send_notification_email
 from vzs.widgets import DatePickerWithIcon
 
 from .models import BulkTransaction, Transaction
-from .utils import TransactionInfo, parse_transactions_filter_queryset
+from .utils import TransactionFilter, TransactionInfo
 
 
 class TransactionCreateEditMixin(ModelForm):
@@ -84,7 +85,7 @@ class TransactionCreateEditMixin(ModelForm):
         return cleaned_data
 
 
-class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
+class TransactionCreateFromPersonForm(WithoutFormTagMixin, TransactionCreateEditMixin):
     """
     Creates a transaction for a given person.
 
@@ -102,7 +103,6 @@ class TransactionCreateFromPersonForm(TransactionCreateEditMixin):
         super().__init__(*args, **kwargs)
 
         self.instance.person = person
-        self.helper = WithoutFormTagFormHelper()
 
 
 class TransactionCreateBulkForm(TransactionCreateEditMixin):
@@ -224,7 +224,9 @@ class Label:
         return f"<label class='col-form-label'>{self.text}</label>"
 
 
-class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
+class TransactionCreateBulkConfirmForm(
+    WithoutFormTagMixin, InsertRequestIntoSelf, ModelForm
+):
     """
     Creates a bulk debt transaction for a training. One :class:`BulkTransaction`
     and multiple :class:`Transaction` instances are created.
@@ -269,7 +271,7 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
         self._create_fields(transaction_infos)
 
         layout_rows = self._create_layout_rows(transaction_infos)
-        self.helper = self._create_form_helper(layout_rows)
+        self._create_form_helper(self.helper, layout_rows)
 
     def _create_fields(self, transaction_infos: Iterable[TransactionInfo]):
         for transaction_info in transaction_infos:
@@ -300,9 +302,7 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
             )
 
     @staticmethod
-    def _create_form_helper(layout_divs: Iterable[Div]):
-        helper = WithoutFormTagFormHelper()
-
+    def _create_form_helper(helper: FormHelper, layout_divs: Iterable[Div]):
         helper.form_show_labels = False
         helper.layout = Layout(
             Row(
@@ -319,8 +319,6 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
             ),
             *layout_divs,
         )
-
-        return helper
 
     def _clean_impl(self, cleaned_data: MutableMapping[str, Any]):
         for transaction_info in self.transaction_infos:
@@ -401,7 +399,9 @@ class TransactionCreateBulkConfirmForm(InsertRequestIntoSelf, ModelForm):
         )
 
 
-class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
+class TransactionCreateEditPersonSelectMixin(
+    WithoutFormTagMixin, TransactionCreateEditMixin
+):
     """
     A mixin for creating or editing a transaction.
 
@@ -417,7 +417,6 @@ class TransactionCreateEditPersonSelectMixin(TransactionCreateEditMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.helper = WithoutFormTagFormHelper()
         self.helper.include_media = False
 
     class Meta(TransactionCreateEditMixin.Meta):
@@ -565,9 +564,9 @@ class TransactionFilterForm(Form):
                 _("Datum splatnosti od musí být menší nebo roven datumu splatnosti do.")
             )
 
-    def process_filter(self):
+    def process_filter(self) -> QuerySet[Transaction]:
         """
-        Processes the filter and returns a queryset of matching transactions.
+        Processes the filter and returns the matching transactions.
 
         Returns all transactions if the form is invalid.
         """
@@ -576,4 +575,4 @@ class TransactionFilterForm(Form):
         if not self.is_valid():
             return transactions
 
-        return parse_transactions_filter_queryset(self.cleaned_data, transactions)
+        return transactions.filter(create_filter(self.cleaned_data, TransactionFilter))

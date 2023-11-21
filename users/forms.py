@@ -15,7 +15,7 @@ from django.forms import (
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
-from vzs.forms import WithoutFormTagFormHelper
+from vzs.forms import WithoutFormTagMixin
 
 from .models import Permission, ResetPasswordToken, User
 
@@ -61,7 +61,7 @@ class UserBaseForm(ModelForm):
         return user
 
 
-class UserCreateForm(UserBaseForm):
+class UserCreateForm(WithoutFormTagMixin, UserBaseForm):
     """
     Creates a new user.
 
@@ -76,10 +76,8 @@ class UserCreateForm(UserBaseForm):
         super().__init__(*args, **kwargs)
         self.instance.person = person
 
-        self.helper = WithoutFormTagFormHelper()
 
-
-class UserChangePasswordForm(UserBaseForm):
+class UserChangePasswordForm(WithoutFormTagMixin, UserBaseForm):
     """
     Changes an existing user's password.
 
@@ -88,10 +86,7 @@ class UserChangePasswordForm(UserBaseForm):
     *   ``password``
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.helper = WithoutFormTagFormHelper()
+    pass
 
 
 class UserChangePasswordRepeatForm(UserChangePasswordForm):
@@ -163,7 +158,7 @@ class UserChangePasswordOldAndRepeatForm(UserChangePasswordRepeatForm):
         return password_old
 
 
-class LoginForm(AuthenticationForm):
+class LoginForm(WithoutFormTagMixin, AuthenticationForm):
     """
     Logs in users.
 
@@ -173,10 +168,10 @@ class LoginForm(AuthenticationForm):
     *   ``password``
     """
 
-    username = None
+    email = EmailField(label=_("E-mail"))
     """:meta private:"""
 
-    email = EmailField(label=_("E-mail"))
+    username = None
     """:meta private:"""
 
     error = ValidationError(
@@ -188,11 +183,9 @@ class LoginForm(AuthenticationForm):
     field_order = ["email", "password"]
     """:meta private:"""
 
-    def __init__(self, request=None, *args, **kwargs):
+    def __init__(self, request, *args, **kwargs):
         self.request = request
         self.user_cache: AbstractBaseUser | None = None
-
-        self.helper = WithoutFormTagFormHelper()
 
         Form.__init__(self, *args, **kwargs)
 
@@ -204,7 +197,7 @@ class LoginForm(AuthenticationForm):
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
 
-        if not email or not password:
+        if email is None or password is None:
             raise self.error
 
         user = authenticate(self.request, email=email, password=password)
