@@ -1,7 +1,17 @@
-from django import forms
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import ValidationError
+from django.forms import (
+    BooleanField,
+    CharField,
+    EmailField,
+    Form,
+    ModelChoiceField,
+    ModelForm,
+    PasswordInput,
+    ValidationError,
+)
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
@@ -10,17 +20,23 @@ from vzs.forms import WithoutFormTagFormHelper
 from .models import Permission, ResetPasswordToken, User
 
 
-class UserBaseForm(forms.ModelForm):
+class UserBaseForm(ModelForm):
     """
-    Common base for the *user create* and *change password* forms.
+    Common base for forms that create and edit users.
 
     Handles password validation and password saving.
+
+    **Request parameters**:
+
+    *   ``password``
     """
 
     class Meta:
+        """:meta private:"""
+
         model = User
         fields = ["password"]
-        widgets = {"password": forms.PasswordInput}
+        widgets = {"password": PasswordInput}
 
     def clean_password(self):
         """
@@ -47,9 +63,13 @@ class UserBaseForm(forms.ModelForm):
 
 class UserCreateForm(UserBaseForm):
     """
-    Form for creating a new user.
+    Creates a new user.
 
-    Accepts a person as a `__init__` parameter and a password in the request body.
+    :parameter person: The person associated with the new user.
+
+    **Request parameters**:
+
+    *   ``password``
     """
 
     def __init__(self, person, *args, **kwargs):
@@ -61,9 +81,11 @@ class UserCreateForm(UserBaseForm):
 
 class UserChangePasswordForm(UserBaseForm):
     """
-    Form for changing an existing user's password.
+    Changes an existing user's password.
 
-    Accepts a password in the request body.
+    **Request parameters**:
+
+    *   ``password``
     """
 
     def __init__(self, *args, **kwargs):
@@ -74,19 +96,24 @@ class UserChangePasswordForm(UserBaseForm):
 
 class UserChangePasswordRepeatForm(UserChangePasswordForm):
     """
-    Form for changing an existing user's password.
+    Changes an existing user's password.
 
-    Accepts a password and a repeated password in the request body.
+    **Request parameters**:
+
+    *   ``password``
+    *   ``password_repeat`` - For validation purposes only.
     """
 
     class Meta(UserBaseForm.Meta):
+        """:meta private:"""
+
         labels = {"password": _("Nové heslo")}
 
-    password_repeat = forms.CharField(
-        label=_("Zopakujte nové heslo"), widget=forms.PasswordInput
-    )
+    password_repeat = CharField(label=_("Zopakujte nové heslo"), widget=PasswordInput)
+    """:meta private:"""
 
     field_order = ["password", "password_repeat"]
+    """:meta private:"""
 
     def clean(self):
         """
@@ -106,17 +133,20 @@ class UserChangePasswordRepeatForm(UserChangePasswordForm):
 
 class UserChangePasswordOldAndRepeatForm(UserChangePasswordRepeatForm):
     """
-    Form for changing an existing user's password.
+    Changes an existing user's password.
 
-    Accepts the old password, a new password
-    and a repeated password in the request body.
+    **Request parameters**:
+
+    *   ``password``
+    *   ``password_repeat`` - For validation purposes only.
+    *   ``password_old`` - For validation purposes only.
     """
 
-    password_old = forms.CharField(
-        label=_("Vaše staré heslo"), widget=forms.PasswordInput
-    )
+    password_old = CharField(label=_("Vaše staré heslo"), widget=PasswordInput)
+    """:meta private:"""
 
     field_order = ["password_old", "password", "password_repeat"]
+    """:meta private:"""
 
     def clean_password_old(self):
         """
@@ -135,30 +165,36 @@ class UserChangePasswordOldAndRepeatForm(UserChangePasswordRepeatForm):
 
 class LoginForm(AuthenticationForm):
     """
-    Form for logging in.
+    Logs in users.
 
-    Accepts the request in the `__init__` method.
+    **Request parameters**:
 
-    Accepts an email and a password in the request body.
+    *   ``email``
+    *   ``password``
     """
 
     username = None
-    email = forms.EmailField(label=_("E-mail"))
+    """:meta private:"""
+
+    email = EmailField(label=_("E-mail"))
+    """:meta private:"""
 
     error = ValidationError(
         _("Prosím, zadejte správný e-mail a heslo"),
         code="invalid_login",
     )
+    """:meta private:"""
 
     field_order = ["email", "password"]
+    """:meta private:"""
 
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
-        self.user_cache = None
+        self.user_cache: AbstractBaseUser | None = None
 
         self.helper = WithoutFormTagFormHelper()
 
-        forms.Form.__init__(self, *args, **kwargs)
+        Form.__init__(self, *args, **kwargs)
 
     def clean(self):
         """
@@ -173,45 +209,56 @@ class LoginForm(AuthenticationForm):
 
         user = authenticate(self.request, email=email, password=password)
 
-        if not user:
+        if user is None:
             raise self.error
 
         self.user_cache = user
         return self.cleaned_data
 
 
-class UserAssignRemovePermissionForm(forms.Form):
+class UserAssignRemovePermissionForm(Form):
     """
     Form for permission assignment manipulation.
 
-    Accepts a permission in the request body.
+    **Request parameters**:
+
+    *   ``permission``
     """
 
-    permission = forms.ModelChoiceField(queryset=Permission.objects.all())
+    permission = ModelChoiceField(queryset=Permission.objects.all())
+    """:meta private:"""
 
 
-class ChangeActivePersonForm(forms.Form):
+class ChangeActivePersonForm(Form):
     """
     Form for changing the active person.
 
-    Accepts a person in the request body.
+    **Request parameters**:
+
+    *   ``person``
     """
 
-    person = forms.ModelChoiceField(queryset=Person.objects.all())
+    person = ModelChoiceField(queryset=Person.objects.all())
+    """:meta private:"""
 
 
-class UserResetPasswordRequestForm(forms.ModelForm):
+class UserResetPasswordRequestForm(ModelForm):
     """
     Form for requesting a password reset.
 
-    Accepts an email in the request body.
+    **Request parameters**:
+
+    *   ``email``
     """
 
     class Meta:
+        """:meta private:"""
+
         model = ResetPasswordToken
         fields = []
 
-    email = forms.EmailField(label=_("E-mail"))
+    email = EmailField(label=_("E-mail"))
+    """:meta private:"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -240,11 +287,13 @@ class UserResetPasswordRequestForm(forms.ModelForm):
         return token
 
 
-class LogoutForm(forms.Form):
+class LogoutForm(Form):
     """
     Form for loggin out.
 
-    Accepts a boolean whether to remember not to ask for confirmation again.
+    **Request parameters**:
+
+    *   ``remember`` - Whether to remember not to ask for logout confirmation again.
     """
 
-    remember = forms.BooleanField(required=False)
+    remember = BooleanField(required=False)
