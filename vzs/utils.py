@@ -1,14 +1,13 @@
 import csv
-import zoneinfo
-from collections.abc import Callable, Mapping
-from typing import Any, TypedDict, TypeVar, get_type_hints
+from collections.abc import Mapping
+from typing import Any, TypedDict, get_type_hints
 from urllib import parse
 
 from django.core.mail import send_mail
 from django.db.models.query import Q
 from django.http import HttpResponse
 from django.urls import reverse
-from django.utils import formats, timezone
+from django.utils import formats
 
 from vzs import settings
 
@@ -83,7 +82,15 @@ def payment_email_html(transaction, request):
 
     qr_link = f'<a href="{qr_uri}">{qr_uri}</a>'
 
-    return f'Prosím proveďte platbu:<ul><li>Číslo účtu: {settings.FIO_ACCOUNT_PRETTY}</li><li>Částka: {amount} Kč</li><li>Variabilní symbol: {transaction.id}</li><li>Datum splatnosti: {date_pretty(transaction.date_due)}</li></ul>{qr_html_image(transaction, "QR platba")}<p>Informace o této platbě naleznete v IS, odkaz: {qr_link}</p>'
+    return (
+        f"Prosím proveďte platbu:<ul>"
+        f"<li>Číslo účtu: {settings.FIO_ACCOUNT_PRETTY}</li>"
+        f"<li>Částka: {amount} Kč</li>"
+        f"<li>Variabilní symbol: {transaction.id}</li>"
+        f"<li>Datum splatnosti: {date_pretty(transaction.date_due)}</li></ul>"
+        f'{qr_html_image(transaction, "QR platba")}'
+        f"<p>Informace o této platbě naleznete v IS, odkaz: {qr_link}</p>"
+    )
 
 
 def qr(transaction):
@@ -104,33 +111,37 @@ def qr_html_image(transaction, alt_text=None):
     return f'<img src="{qr_img_src}" {alt_text}>'
 
 
-_Q_TRUE = ~Q(pk__in=[])
-
-T = TypeVar("T")
-
-
-def _process_filter_transform(value: T | None, filter_transform: Callable[[T], Q]):
-    if value is None:
-        return _Q_TRUE
-
-    return filter_transform(value)
-
-
 def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]):
     """
     Creates a ``Q`` object according to the ``data`` dictionary.
 
-    Compounds the filters using logical AND.
-
-    :parameter Filter: Defines the filter. Inherits from :class:`typing.TypedDict`
+    ``Filter`` defines the filter. It inherits from :class:`typing.TypedDict`
     and provides transformations using :class:`typing.Annotated`.
+
+    Transformation is a function that takes the value from the ``data`` dictionary
+    and returns a ``Q`` object.
+
+    Applies transformations to all fields of the dictionary specified by ``Filter``
+    and compounds the resulting `Q`` objects using logical AND.
+
+    Missing values are ignored.
+
+    Example: ::
+
+        class Filter(TypedDict, total=False):
+            field: Annotated[T, lambda value: Q(name=value)]
     """
 
-    filter = _Q_TRUE
+    filter = ~Q(pk__in=[])  # TRUE constant, evaluates as true for any instance
 
+    # iterates over the fields of ``Filter``
     for key, annotated in get_type_hints(Filter, include_extras=True).items():
-        filter_transform = annotated.__metadata__[0]
+        value = data.get(key)
 
-        filter &= _process_filter_transform(data.get(key), filter_transform)
+        if value is not None:
+            # gets the first Annotated metadata value
+            transform = annotated.__metadata__[0]
+
+            filter &= transform(value)
 
     return filter
