@@ -1,58 +1,69 @@
 from django.urls import path
 
-from . import views
+from .views import (
+    TransactionCreateBulkView,
+    TransactionCreateSameAmountBulkConfirmView,
+    TransactionCreateView,
+    TransactionDeleteView,
+    TransactionEditFromPersonView,
+    TransactionEditView,
+    TransactionExportView,
+    TransactionIndexView,
+    TransactionQRView,
+    TransactionSendEmailView,
+)
 
 app_name = "transactions"
 
 urlpatterns = [
     path(
         "",
-        views.TransactionIndexView.as_view(),
+        TransactionIndexView.as_view(),
         name="index",
     ),
     path(
         "exportovat/",
-        views.TransactionExportView.as_view(),
+        TransactionExportView.as_view(),
         name="export",
     ),
     path(
         "poslat-email/",
-        views.TransactionSendEmailView.as_view(),
+        TransactionSendEmailView.as_view(),
         name="send-email",
     ),
     path(
         "pridat-hromadne/",
-        views.TransactionCreateBulkView.as_view(),
+        TransactionCreateBulkView.as_view(),
         name="add-bulk",
     ),
     path(
         "pridat-hromadne/potvrdit/",
-        views.TransactionCreateSameAmountBulkConfirmView.as_view(),
+        TransactionCreateSameAmountBulkConfirmView.as_view(),
         name="add-bulk-confirm",
     ),
     path(
         "pridat/",
-        views.TransactionCreateView.as_view(),
+        TransactionCreateView.as_view(),
         name="add",
     ),
     path(
         "<int:pk>/qr/",
-        views.TransactionQRView.as_view(),
+        TransactionQRView.as_view(),
         name="qr",
     ),
     path(
         "<int:pk>/upravit-z-osoby/",
-        views.TransactionEditFromPersonView.as_view(),
+        TransactionEditFromPersonView.as_view(),
         name="edit-from-person",
     ),
     path(
         "<int:pk>/upravit/",
-        views.TransactionEditView.as_view(),
+        TransactionEditView.as_view(),
         name="edit",
     ),
     path(
         "<int:pk>/smazat/",
-        views.TransactionDeleteView.as_view(),
+        TransactionDeleteView.as_view(),
         name="delete",
     ),
 ]

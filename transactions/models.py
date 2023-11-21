@@ -1,20 +1,31 @@
 from datetime import datetime
 
-from django.db import models
-from django.db.models import Q
-from django.utils import timezone
+from django.db.models import (
+    CASCADE,
+    SET_NULL,
+    CharField,
+    DateField,
+    DateTimeField,
+    ForeignKey,
+    IntegerField,
+    Model,
+    OneToOneField,
+    PositiveIntegerField,
+    Q,
+)
+from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 
 from features.models import FeatureAssignment
 from persons.models import Person
-from vzs import models as vzs_models
+from vzs.models import DatabaseSettingsMixin, ExportableCSVMixin
 
 
-class BulkTransaction(models.Model):
-    reason = models.CharField(_("Popis transakce"), max_length=150)
-    event = models.ForeignKey(
+class BulkTransaction(Model):
+    reason = CharField(_("Popis transakce"), max_length=150)
+    event = ForeignKey(
         "events.Event",
-        on_delete=models.SET_NULL,
+        on_delete=SET_NULL,
         null=True,
         verbose_name=_("Událost"),
         related_name="event_transactions",
@@ -24,34 +35,30 @@ class BulkTransaction(models.Model):
         return self.reason
 
 
-class Transaction(vzs_models.ExportableCSVMixin, models.Model):
+class Transaction(ExportableCSVMixin, Model):
     class Meta:
         permissions = [("spravce_transakci", _("Správce transakcí"))]
 
-    amount = models.IntegerField(_("Suma"))
-    reason = models.CharField(_("Popis transakce"), max_length=150)
-    date_due = models.DateField(_("Datum splatnosti"))
-    person = models.ForeignKey(
+    amount = IntegerField(_("Suma"))
+    reason = CharField(_("Popis transakce"), max_length=150)
+    date_due = DateField(_("Datum splatnosti"))
+    person = ForeignKey(
         Person,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name="transactions",
         verbose_name=_("Osoba"),
     )
-    event = models.ForeignKey(
-        "events.Event", on_delete=models.SET_NULL, null=True, verbose_name=_("Událost")
+    event = ForeignKey(
+        "events.Event", on_delete=SET_NULL, null=True, verbose_name=_("Událost")
     )
-    feature_assigment = models.OneToOneField(
+    feature_assigment = OneToOneField(
         FeatureAssignment,
-        on_delete=models.SET_NULL,
+        on_delete=SET_NULL,
         null=True,
         verbose_name=_("Vybavení"),
     )
-    bulk_transaction = models.ForeignKey(
-        BulkTransaction, on_delete=models.SET_NULL, null=True
-    )
-    fio_transaction = models.ForeignKey(
-        "FioTransaction", on_delete=models.SET_NULL, null=True
-    )
+    bulk_transaction = ForeignKey(BulkTransaction, on_delete=SET_NULL, null=True)
+    fio_transaction = ForeignKey("FioTransaction", on_delete=SET_NULL, null=True)
 
     Q_debt = Q(amount__lt=0)
     Q_reward = Q(amount__gt=0)
@@ -84,12 +91,10 @@ class Transaction(vzs_models.ExportableCSVMixin, models.Model):
         return "Odměna" if self.is_reward else "Dluh"
 
 
-class FioTransaction(models.Model):
-    date_settled = models.DateField(null=True)
-    fio_id = models.PositiveIntegerField(unique=True)
+class FioTransaction(Model):
+    date_settled = DateField(null=True)
+    fio_id = PositiveIntegerField(unique=True)
 
 
-class FioSettings(vzs_models.DatabaseSettingsMixin):
-    last_fio_fetch_time = models.DateTimeField(
-        default=timezone.make_aware(datetime(1900, 1, 1))
-    )
+class FioSettings(DatabaseSettingsMixin):
+    last_fio_fetch_time = DateTimeField(default=make_aware(datetime(1900, 1, 1)))
