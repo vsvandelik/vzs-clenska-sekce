@@ -165,9 +165,8 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def clean(self):
         cleaned_data = super().clean()
-        if (
-            self.person is not None
-            and not self.event.does_participant_satisfy_requirements(self.person)
+        if self.person is not None and not self.event.can_person_enroll_as_waiting(
+            self.person
         ):
             self.add_error(
                 None,
