@@ -134,7 +134,7 @@ urlpatterns = [
         name="show-attendance",
     ),
     path(
-        "<int:event_id>/duplikovat/",
+        "<int:pk>/duplikovat/",
         views.OneTimeEventCreateDuplicateView.as_view(),
         name="create-duplicate",
     ),

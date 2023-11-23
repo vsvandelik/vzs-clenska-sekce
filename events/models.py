@@ -334,6 +334,13 @@ class EventPositionAssignment(models.Model):
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )
 
+    def duplicate(self, event):
+        position_assignment = EventPositionAssignment(
+            event=event, position=self.position, count=self.count
+        )
+        position_assignment.save()
+        return position_assignment
+
     class Meta:
         unique_together = ["event", "position"]
 

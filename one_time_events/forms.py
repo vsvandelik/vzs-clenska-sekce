@@ -4,9 +4,8 @@ from django import forms
 from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
-from django.urls import reverse
-from django_select2.forms import Select2Widget
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -1100,8 +1099,22 @@ class OneTimeEventCreateDuplicateForm(ModelForm):
         model = OneTimeEvent
         fields = []
 
-    def save(self, commit=True):
-        instance = super().save(False)
-        if commit:
-            instance.save()
-        return instance
+    # def save(self, commit=True):
+    #     instance = super().save(False)
+    #
+    #     if commit:
+    #         new_event = instance.duplicate()
+    #
+    #         position_assignments = []
+    #         for position_assignment in instance.eventpositionassignment_set.all():
+    #             position_assignments.append(position_assignment.duplicate(new_event))
+    #
+    #         occurrences = []
+    #         for occurrence in instance.eventoccurrence_set.all():
+    #             occurrences.append(occurrence.duplicate(new_event))
+    #
+    #         self.cleaned_data['event_id'] = new_event.id
+    #         return new_event
+    #
+    #     self.cleaned_data['event_id'] = instance.id
+    #     return instance

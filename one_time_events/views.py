@@ -1,12 +1,13 @@
 from datetime import datetime
+from http.client import HTTPResponse
 
 from django.http import Http404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
+from django.urls import reverse, resolve
 
 from events.models import ParticipantEnrollment
-from events.permissions import OccurrenceManagePermissionMixin
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -47,7 +48,6 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email
-
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -501,13 +501,36 @@ class OneTimeEventShowAttendanceView(
     template_name = "one_time_events/detail_components/show_attendance.html"
 
 
-class OneTimeEventCreateDuplicateView(MessagesMixin, generic.UpdateView):
+class OneTimeEventCreateDuplicateView(
+    MessagesMixin, generic.UpdateView, RedirectToEventDetailOnSuccessMixin
+):
     form_class = OneTimeEventCreateDuplicateForm
     model = OneTimeEvent
 
+    def form_valid(self, form):
+        instance = form.instance
+        new_event = instance.duplicate()
+
+        position_assignments = []
+        for position_assignment in instance.eventpositionassignment_set.all():
+            position_assignments.append(position_assignment.duplicate(new_event))
+
+        occurrences = []
+        for occurrence in instance.eventoccurrence_set.all():
+            occurrences.append(occurrence.duplicate(new_event))
+
+        self.event_id = new_event.id
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("one_time_events:edit-duplicate", args=[self.event_id])
+
 
 class OneTimeEventUpdateDuplicateView(
-    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventUpdateMixin
+    InsertRequestIntoModelFormKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventUpdateMixin,
+    RedirectToEventDetailOnSuccessMixin,
 ):
     template_name = "one_time_events/edit_duplicate.html"
     form_class = OneTimeEventForm

@@ -16,6 +16,7 @@ from events.models import (
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
+from django.contrib.contenttypes.models import ContentType
 from vzs import settings
 
 
@@ -174,6 +175,30 @@ class OneTimeEvent(Event):
             if occurrence.state == EventOrOccurrenceState.CLOSED:
                 return True
         return False
+
+    def duplicate(self):
+        event = OneTimeEvent(
+            name=f"{self.name}_duplikát",
+            description=self.description,
+            location=self.location,
+            date_start=self.date_start,
+            date_end=self.date_end,
+            participants_enroll_state=self.participants_enroll_state,
+            capacity=self.capacity,
+            min_age=self.min_age,
+            max_age=self.max_age,
+            group=self.group,
+            default_participation_fee=self.default_participation_fee,
+            category=self.category,
+            state=self.state,
+            training_category=self.training_category,
+        )
+        event.save()
+
+        for allowed_person_type in self.allowed_person_types.all():
+            event.allowed_person_types.add(allowed_person_type)
+
+        return event
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
@@ -336,6 +361,13 @@ class OneTimeEventOccurrence(EventOccurrence):
             self.can_attendance_be_filled()
             and self.state == EventOrOccurrenceState.CLOSED
         )
+
+    def duplicate(self, event):
+        occurrence = OneTimeEventOccurrence(
+            date=self.date, hours=self.hours, event=event, state=self.state
+        )
+        occurrence.save()
+        return occurrence
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):
