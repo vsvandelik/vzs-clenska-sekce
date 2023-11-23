@@ -8,6 +8,8 @@ class MinimumNumericValidator:
     """
 
     def validate(self, password, user=None):
+        """:meta private:"""
+
         numeric_count = sum(c.isdigit() for c in password)
 
         if numeric_count == 0:
@@ -17,6 +19,8 @@ class MinimumNumericValidator:
             )
 
     def get_help_text(self):
+        """:meta private:"""
+
         return _(f"Vaše heslo musí obsahovat alespoň jedno číslo.")
 
 
@@ -26,6 +30,8 @@ class MinimumCapitalValidator:
     """
 
     def validate(self, password, user=None):
+        """:meta private:"""
+
         capital_count = sum(c.isalpha() and c.isupper() for c in password)
 
         if capital_count == 0:
@@ -35,4 +41,6 @@ class MinimumCapitalValidator:
             )
 
     def get_help_text(self):
+        """:meta private:"""
+
         return _(f"Vaše heslo musí obsahovat alespoň jedno velkých písmeno.")

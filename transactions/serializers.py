@@ -1,11 +1,11 @@
-from .models import Transaction
-
-from events.models import Event
-
 from rest_framework.serializers import (
     HyperlinkedModelSerializer,
     PrimaryKeyRelatedField,
 )
+
+from events.models import Event
+
+from .models import Transaction
 
 
 class TransactionSerializer(HyperlinkedModelSerializer):
