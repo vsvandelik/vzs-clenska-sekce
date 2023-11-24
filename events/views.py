@@ -16,7 +16,6 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email
-
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
