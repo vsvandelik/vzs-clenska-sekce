@@ -178,7 +178,7 @@ class OneTimeEvent(Event):
 
     def duplicate(self):
         event = OneTimeEvent(
-            name=f"{self.name}_duplikát",
+            name=f"{self.name} duplikát",
             description=self.description,
             location=self.location,
             date_start=self.date_start,
