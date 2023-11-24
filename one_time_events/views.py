@@ -511,13 +511,11 @@ class OneTimeEventCreateDuplicateView(
         instance = form.instance
         new_event = instance.duplicate()
 
-        position_assignments = []
         for position_assignment in instance.eventpositionassignment_set.all():
-            position_assignments.append(position_assignment.duplicate(new_event))
+            position_assignment.duplicate(new_event)
 
-        occurrences = []
         for occurrence in instance.eventoccurrence_set.all():
-            occurrences.append(occurrence.duplicate(new_event))
+            occurrence.duplicate(new_event)
 
         self.event_id = new_event.id
         return super().form_valid(form)
