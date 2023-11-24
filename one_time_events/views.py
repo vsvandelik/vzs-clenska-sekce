@@ -1,11 +1,10 @@
 from datetime import datetime
-from http.client import HTTPResponse
 
 from django.http import Http404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
-from django.urls import reverse, resolve
 
 from events.models import ParticipantEnrollment
 from events.permissions import (

@@ -16,7 +16,6 @@ from events.models import (
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
-from django.contrib.contenttypes.models import ContentType
 from vzs import settings
 
 
