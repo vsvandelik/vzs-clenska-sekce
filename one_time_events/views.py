@@ -40,13 +40,15 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertEventIntoSelfObjectMixin,
 )
+from persons.models import Person
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.utils import send_notification_email
+from vzs.utils import send_notification_email, export_queryset_csv
 
 from .forms import (
     ApproveOccurrenceForm,
@@ -497,3 +499,15 @@ class OneTimeEventShowAttendanceView(
     generic.TemplateView,
 ):
     template_name = "one_time_events/detail_components/show_attendance.html"
+
+
+class OneTimeEventExportParticipantsView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    def get(self, request, *args, **kwargs):
+        approved_persons_id = self.event.onetimeeventparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_účastníci", Person.objects.filter(id__in=approved_persons_id)
+        )

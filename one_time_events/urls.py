@@ -133,4 +133,9 @@ urlpatterns = [
         views.OneTimeEventShowAttendanceView.as_view(),
         name="show-attendance",
     ),
+    path(
+        "<int:event_id>/exportovat-ucastniky/",
+        views.OneTimeEventExportParticipantsView.as_view(),
+        name="export-participants",
+    ),
 ]
