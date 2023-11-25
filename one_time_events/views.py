@@ -501,7 +501,10 @@ class OneTimeEventShowAttendanceView(
 
 
 class OneTimeEventCreateDuplicateView(
-    MessagesMixin, generic.UpdateView, RedirectToEventDetailOnSuccessMixin
+    EventManagePermissionMixin,
+    MessagesMixin,
+    generic.UpdateView,
+    RedirectToEventDetailOnSuccessMixin,
 ):
     form_class = OneTimeEventCreateDuplicateForm
     model = OneTimeEvent
