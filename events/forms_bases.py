@@ -8,11 +8,7 @@ from django_select2.forms import Select2Widget
 
 from events.models import (
     EventPersonTypeConstraint,
-    ParticipantEnrollment,
-    OrganizerAssignment,
-    EventPositionAssignment,
 )
-from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon

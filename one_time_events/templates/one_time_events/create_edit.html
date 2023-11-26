@@ -10,6 +10,9 @@
 {% block content %}
     <div class="row">
         <div class="col-12">
+            <div class="btn-group-md btn-group mb-3 elevation-2">
+                {% block delete_form %}{% endblock %}
+            </div>
             <div class="card">
                 <form method="POST"
                       action="{% block form_action %}{% endblock %}"
@@ -27,8 +30,10 @@
                             <div id="event-schedule" class="card-body">
                                 <div style="display: none" id="single-hour-count-div" class="row mb-4 ml-0">
                                     <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" id="single-hour-count-checkbox" class="custom-control-input" onclick="singleHourCountCheckboxClicked(this)">
-                                        <label for="single-hour-count-checkbox" class="custom-control-label">Jednotný počet hodin</label>
+                                        <input type="checkbox" id="single-hour-count-checkbox" class="custom-control-input"
+                                               onclick="singleHourCountCheckboxClicked(this)">
+                                        <label for="single-hour-count-checkbox" class="custom-control-label">Jednotný počet
+                                            hodin</label>
                                     </div>
                                 </div>
                                 <div id="event-schedule-row" class="row">

@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (

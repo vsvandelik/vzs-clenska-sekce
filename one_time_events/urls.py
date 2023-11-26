@@ -133,4 +133,14 @@ urlpatterns = [
         views.OneTimeEventShowAttendanceView.as_view(),
         name="show-attendance",
     ),
+    path(
+        "<int:pk>/duplikovat/",
+        views.OneTimeEventCreateDuplicateView.as_view(),
+        name="create-duplicate",
+    ),
+    path(
+        "<int:pk>/upravit-duplikat/",
+        views.OneTimeEventUpdateDuplicateView.as_view(),
+        name="edit-duplicate",
+    ),
 ]
