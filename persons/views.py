@@ -22,7 +22,7 @@ from .forms import (
     PersonHourlyRateForm,
     PersonsFilterForm,
 )
-from .models import Person
+from .models import Person, get_active_user
 from .utils import (
     extend_kwargs_of_assignment_features,
     parse_persons_filter_queryset,
@@ -40,7 +40,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             "persons.dospela_clenska_zakladna",
         )
         for permission in permission_required:
-            if self.request.active_person.get_user().has_perm(permission):
+            if get_active_user(self.request.active_person).has_perm(permission):
                 return True
 
         return False
@@ -92,13 +92,13 @@ class PersonPermissionMixin(PermissionRequiredMixin):
 
     def _filter_queryset_by_permission(self, queryset=None):
         return self.get_queryset_by_permission(
-            self.request.active_person.get_user(), queryset
+            get_active_user(self.request.active_person), queryset
         )
 
     def _get_available_person_types(self):
         available_person_types = set()
 
-        active_user = self.request.active_person.get_user()
+        active_user = get_active_user(self.request.active_person)
 
         if active_user.has_perm("persons.clenska_zakladna"):
             available_person_types.update(
