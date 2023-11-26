@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "mptt",
     "tempus_dominus",
     "rest_framework",
+    "django_crontab",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -273,6 +274,7 @@ PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
 NOTIFICATION_SENDER_EMAIL = "noreply@vzs-praha15.cz"
 MIN_PARTICIPANT_ABSENCE_SEND_MAIL = 3
+FEATURE_EXPIRE_HOURS_SEND_MAIL = 72
 
 # REST
 REST_FRAMEWORK = {
@@ -281,3 +283,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
+
+# CRONTAB
+CRONJOBS = [("0 3 * * *", "features.cron.features_expiry_send_mails")]
