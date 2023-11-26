@@ -234,7 +234,7 @@ ADMIN_EMAIL = "system@vzs-praha15.cz"
 
 # Settings for Google Integration
 
-GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
+GOOGLE_SERVICE_ACCOUNT_PATH = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
 
