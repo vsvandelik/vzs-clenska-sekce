@@ -146,8 +146,5 @@ package-lock.json
 google_integration/service_account_file.json
 google_integration/secrets_file.json
 
-# Reverse proxy
-!reverse_proxy/Caddyfile
-
 # Log
 log/
