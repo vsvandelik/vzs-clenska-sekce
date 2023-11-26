@@ -15,7 +15,6 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_prod.txt
 
-
 EXPOSE 8080
 
 CMD ["gunicorn", "vzs.wsgi:application", "--bind", "0.0.0.0:8080", "--log-level", "info", "--log-file", "/usr/src/app/log/gunicorn.log", "--access-logfile", "/usr/src/app/log/gunicorn-access.log"]

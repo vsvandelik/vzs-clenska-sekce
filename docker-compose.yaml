@@ -3,25 +3,57 @@ version: '3.1'
 services:
   backend:
     image: vzs-clenska-sekce
+    container_name: vzs-clenska-sekce-backend
+    restart: unless-stopped
     ports:
+      # DO NOT EXPOSE THIS ON THE INTERNET
       - 8080:8080
     volumes:
-      - ./log:/usr/src/app/log
-    env_file:
-      - ./.env
+      # Uncomment if you want to mount gunicorn log
+      # - ./log:/usr/src/app/log
+      - ./.env:/usr/src/app/.env
+      - staticfiles:/usr/src/app/staticfiles
+    depends_on:
+      - db
+      - beforestartup
 
-#   db:
-#     container_name: postgres
-#     image: postgres:15
-#     restart: unless-stopped
-#     environment:
-#       - POSTGRES_USER=root
-#       - POSTGRES_PASSWORD=supersecret
-#       - POSTGRES_DB=vzs-clenska-sekce
-#     volumes:
-#       - db:/var/lib/postgresql/data
-#     networks:
-#       default:
-#         ipv4_address: 10.10.1.10
-# volumes:
-#   db:
+  beforestartup:
+    image: vzs-clenska-sekce
+    container_name: vzs-clenska-sekce-beforestartup
+    command: sh -c "python3 manage.py collectstatic --clear --no-input && python3 manage.py makemigrations && python3 manage.py migrate"
+    volumes:
+      - staticfiles:/usr/src/app/staticfiles
+    depends_on:
+      - db
+
+  db:
+    container_name: postgres
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=vzs
+      - POSTGRES_PASSWORD=supersecret
+      - POSTGRES_DB=vzs-clenska-sekce
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  reverse_proxy:
+      environment:
+        - LOG_FILE=/data/access.log
+
+        # fill for automatic https
+        #- EMAIL=TODO
+      image: caddy:2
+      container_name: caddy
+      ports:
+        - 80:80
+
+        # uncomment for automatic https
+        #- 443:443
+      restart: unless-stopped
+      volumes:
+        - ./Caddyfile:/etc/caddy/Caddyfile:ro
+        - staticfiles:/var/www/staticfiles
+volumes:
+  db:
+  staticfiles:
