@@ -30,10 +30,7 @@ services:
     container_name: postgres
     image: postgres:15
     restart: unless-stopped
-    environment:
-      - POSTGRES_USER=vzs
-      - POSTGRES_PASSWORD=supersecret
-      - POSTGRES_DB=vzs-clenska-sekce
+    env_file: ./.env_psql
     volumes:
       - db:/var/lib/postgresql/data
 
