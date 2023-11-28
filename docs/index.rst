@@ -15,3 +15,6 @@ jsou zdrojové kódy v angličtině, je i tato dokumentace v angličtině.
    instalace
    highlevel
    Programátorská dokumentace [en] <_autodoc/modules>
+
+
+vygenerovat do PDF
