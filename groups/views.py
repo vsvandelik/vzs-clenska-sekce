@@ -1,52 +1,47 @@
-from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.messages import error as error_message
+from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy, reverse
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView, SingleObjectMixin
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
+
 from .forms import (
-    GroupForm,
     AddMembersGroupForm,
     AddPersonToGroupForm,
+    GroupForm,
     RemovePersonFromGroupForm,
 )
-from .models import Person, Group
+from .models import Group, Person
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
     permission_required = "groups.spravce_skupin"
 
 
-class GroupIndexView(GroupPermissionMixin, generic.ListView):
-    model = Group
+class GroupIndexView(GroupPermissionMixin, ListView):
     context_object_name = "groups"
+    model = Group
     template_name = "groups/index.html"
 
 
-class GroupDeleteView(
-    GroupPermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
-):
+class GroupDeleteView(GroupPermissionMixin, SuccessMessageMixin, DeleteView):
     model = Group
-    template_name = "groups/delete.html"
-    success_url = reverse_lazy("groups:index")
     success_message = "Skupina byla úspěšně smazána."
+    success_url = reverse_lazy("groups:index")
+    template_name = "groups/delete.html"
 
 
-class GroupDetailView(
-    GroupPermissionMixin,
-    SuccessMessageMixin,
-    generic.DetailView,
-    generic.edit.UpdateView,
-):
-    model = Group
-    form_class = AddMembersGroupForm
-    success_message = "Osoby byly úspěšně přidány."
+class GroupDetailView(GroupPermissionMixin, DetailView):
     template_name = "groups/detail.html"
 
     def get_context_data(self, **kwargs):
@@ -58,6 +53,12 @@ class GroupDetailView(
         )
 
         return super().get_context_data(**kwargs)
+
+
+class GroupAddMembersView(GroupPermissionMixin, SuccessMessageMixin, UpdateView):
+    form_class = AddMembersGroupForm
+    model = Group
+    success_message = "Osoby byly úspěšně přidány."
 
     def get_success_url(self):
         return reverse("groups:detail", args=(self.object.pk,))
@@ -76,139 +77,144 @@ class GroupDetailView(
                     new_member.email, form.instance.google_email
                 )
 
-        messages.success(self.request, self.success_message)
-
-        return redirect(self.get_success_url())
+        return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, _("Nepodařilo se přidat osoby."))
+        error_message(self.request, _("Nepodařilo se přidat osoby."))
         return super().form_invalid(form)
 
 
-class GroupEditView(GroupPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView):
-    model = Group
+class GroupCreateEditMixin(GroupPermissionMixin, SuccessMessageMixin):
     form_class = GroupForm
-    template_name = "groups/edit.html"
+    model = Group
     success_message = "Skupina byla úspěšně uložena."
-
-    def get_object(self, queryset=None):
-        try:
-            return super().get_object(queryset)
-        except AttributeError:
-            return None
+    template_name = "groups/edit.html"
 
     def get_success_url(self):
         return reverse(f"groups:detail", args=(self.object.pk,))
 
     def form_invalid(self, form):
-        messages.error(self.request, _("Skupinu se nepodařilo uložit."))
+        error_message(self.request, _("Skupinu se nepodařilo uložit."))
         return super().form_invalid(form)
 
 
-class GroupRemoveMemberView(GroupPermissionMixin, generic.View):
+class GroupCreateView(GroupCreateEditMixin, CreateView):
+    pass
+
+
+class GroupEditView(GroupCreateEditMixin, UpdateView):
+    pass
+
+
+class GroupRemoveMemberView(GroupPermissionMixin, SingleObjectMixin, View):
+    model = Group
+    pk_url_kwarg = "group_id"
     success_message = "Osoba byla odebrána."
 
     def get_success_url(self):
         return reverse("groups:detail", args=(self.kwargs["group"],))
 
-    def get(self, request, *args, **kwargs):
-        member_to_remove = self.kwargs["person"]
+    def get(self, request, *args, person_id, **kwargs):
+        group = self.get_object()
 
-        group = get_object_or_404(Group, id=self.kwargs["group"])
-        group.members.remove(member_to_remove)
+        member_to_remove_id = person_id
+
+        group.members.remove(member_to_remove_id)
 
         if group.google_email:
             google_directory.remove_member_from_group(
-                Person.objects.get(pk=member_to_remove).email, group.google_email
+                Person.objects.get(pk=member_to_remove_id).email, group.google_email
             )
 
-        messages.success(self.request, self.success_message)
+        success_message(request, self.success_message)
+
         return redirect(self.get_success_url())
 
 
-class SyncGroupMembersWithGoogleView(GroupPermissionMixin, generic.View):
+class SyncGroupMembersWithGoogleView(GroupPermissionMixin, SingleObjectMixin, View):
+    http_method_names = ["get"]
+    model = Group
+    pk_url_kwarg = "group_id"
+
+    def get(self, request, *args, **kwargs):
+        group = self.get_object()
+
+        if group.google_email is None:
+            error_message(
+                request,
+                _(
+                    "Zvolená skupina nemá zadanou google e-mailovou adresu, a proto nemůže být sychronizována."
+                ),
+            )
+
+            return redirect(reverse("groups:detail", args=[group.pk]))
+
+        sync_single_group_with_google(group)
+
+        success_message(
+            request,
+            _("Synchronizace skupiny {} s Google Workplace byla úspěšná.").format(
+                group.name
+            ),
+        )
+
+        return redirect(reverse("groups:detail", args=[group.pk]))
+
+
+class SyncGroupMembersWithGoogleAllView(GroupPermissionMixin, View):
     http_method_names = ["get"]
 
-    def get(self, request, group=None):
-        if group:
-            group_instance = get_object_or_404(Group, pk=group)
-            if not group_instance.google_email:
-                messages.error(
-                    request,
-                    _(
-                        "Zvolená skupina nemá zadanou google e-mailovou adresu, a proto nemůže být sychronizována."
-                    ),
-                )
-                return redirect(reverse("groups:detail", args=[group_instance.pk]))
+    def get(self, request, *args, **kwargs):
+        for group in Group.objects.filter(google_email__isnull=False):
+            sync_single_group_with_google(group)
 
-            sync_single_group_with_google(group_instance)
-            messages.success(
-                request,
-                _("Synchronizace skupiny %s s Google Workplace byla úspěšná.")
-                % group_instance.name,
-            )
-            return redirect(reverse("groups:detail", args=[group_instance.pk]))
+        success_message(
+            request,
+            _("Synchronizace všech skupin s Google Workplace byla úspěšná."),
+        )
 
-        else:
-            for group in Group.objects.filter(google_email__isnull=False):
-                sync_single_group_with_google(group)
-
-            messages.success(
-                request,
-                _("Synchronizace všech skupin s Google Workplace byla úspěšná."),
-            )
-            return redirect(reverse("groups:index"))
+        return redirect(reverse("groups:index"))
 
 
-class AddRemovePersonToGroupMixin(PersonPermissionMixin, generic.View):
+class AddRemovePersonToGroupMixin(PersonPermissionMixin, View):
     http_method_names = ["post"]
 
-    ADD_TO_GROUP = "add"
-    REMOVE_FROM_GROUP = "remove"
+    form_class: type
+    success_message_text: str
+    error_message_text: str
 
-    def process_form(
-        self, request, form, person_pk, op, success_message, error_message
-    ):
+    def members_operation(self, group, person_pk):
+        raise NotImplementedError
+
+    def post(self, request, pk):
+        form = self.form_class(request.POST, person=Person.objects.get(pk=pk))
+
         if form.is_valid():
             group = form.cleaned_data["group"]
 
-            if op == self.ADD_TO_GROUP:
-                group.members.add(person_pk)
-            else:
-                group.members.remove(person_pk)
+            self.members_operation(group, pk)
 
-            messages.success(request, success_message)
-
+            success_message(request, self.success_message_text)
         else:
             person_error_messages = " ".join(form.errors["group"])
-            messages.error(request, error_message + person_error_messages)
+            error_message(request, self.error_message_text + person_error_messages)
 
-        return redirect(reverse("persons:detail", args=[person_pk]))
+        return redirect(reverse("persons:detail", args=[pk]))
 
 
 class AddPersonToGroupView(AddRemovePersonToGroupMixin):
-    def post(self, request, pk):
-        form = AddPersonToGroupForm(request.POST, person=Person.objects.get(pk=pk))
+    form_class = AddPersonToGroupForm
+    success_message_text = _("Osoba byla úspěšně přidána do skupiny.")
+    error_message_text = _("Nepodařilo se přidat osobu do skupiny. ")
 
-        return self.process_form(
-            request,
-            form,
-            pk,
-            AddRemovePersonToGroupMixin.ADD_TO_GROUP,
-            _("Osoba byla úspěšně přidána do skupiny."),
-            _("Nepodařilo se přidat osobu do skupiny. "),
-        )
+    def members_operation(self, group, person_pk):
+        group.members.add(person_pk)
 
 
 class RemovePersonFromGroupView(AddRemovePersonToGroupMixin):
-    def post(self, request, pk):
-        form = RemovePersonFromGroupForm(request.POST, person=Person.objects.get(pk=pk))
+    form_class = RemovePersonFromGroupForm
+    success_message_text = _("Osoba byla úspěšně odebrána ze skupiny.")
+    error_message_text = _("Nepodařilo se odebrat osobu ze skupiny. ")
 
-        return self.process_form(
-            request,
-            form,
-            pk,
-            AddRemovePersonToGroupMixin.REMOVE_FROM_GROUP,
-            _("Osoba byla úspěšně odebrána ze skupiny."),
-            _("Nepodařilo se odebrat osobu ze skupiny. "),
-        )
+    def members_operation(self, group, person_pk):
+        group.members.remove(person_pk)
