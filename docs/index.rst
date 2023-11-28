@@ -14,6 +14,7 @@ Welcome to VZS Clenska sekce's documentation!
    :caption: Contents:
 
    _autodoc/modules
+   installation/index.rst
 
 Indices and tables
 ==================
