@@ -129,3 +129,83 @@ Nyní můžeme celý projekt spustit jedním příkazem
 ***************************************
 Produkční nasazení
 ***************************************
+Zde si popíšeme, co všechno je potřeba udělat, abychom mohli projekt bezpečně vystavit na Internet.
+
+Prerekvizity
+------------
+- docker ≥ 1.13.1
+
+Nejprve se pustíme do konfigurace. Nastavíme obsah souboru ``.env`` jako následující a doplníme zbylé nevyplněné proměnné.
+
+.. code-block:: console
+
+    DEBUG=False
+    SECRET_KEY=
+    GOOGLE_DOMAIN=
+    FIO_TOKEN=
+    SQL_ENGINE=django.db.backends.postgresql
+    SQL_DATABASE=vzs-clenska-sekce
+    SQL_USER=vzs
+    SQL_PASSWORD=
+    SQL_HOST=db
+    SQL_PORT=5432
+
+- Nastavení bezpečného hesla do proměnné ``SECRET_KEY`` je velmi důležité pro bezpečnost celé Django aplikace. Doporučujeme vygenerovat heslo pomocí příkazu
+
+.. code-block:: console
+
+    python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+- Proměnnou ``GOOGLE_DOMAIN`` není nutné vyplňovat, ale bez jejího nastavení na doménu pro Google Workspace nebude fungovat synchronizace skupin.
+
+- Proměnná ``FIO_TOKEN`` by měla obsahovat API token od Fio banky. Bez jejího korektního nastavení nebudou fungovat transakce.
+
+- Proměnnou ``SQL_PASSWORD`` je vhodné rozumně nastavit, doporučujeme program ``pwgen``.
+
+Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
+
+Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_psql`` na
+
+.. code-block:: console
+
+    POSTGRES_USER=vzs
+    POSTGRES_PASSWORD=
+    POSTGRES_DB=vzs-clenska-sekce
+
+- Proměnnou ``POSTGRES_PASSWORD`` nastavíme na stejnou hodnotu jako proměnnou ``SQL_PASSWORD`` ze souboru ``.env``
+
+Poslední části konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env_caddy`` nastavíme na 
+
+.. code-block:: console
+
+    LOG_FILE=/data/access.log
+    EMAIL=
+
+Do proměnné ``EMAIL`` doplníme email, který chceme používat pro ACME challenge při získávání HTTPS certifikátu.
+
+Poslední konfigurací je soubor ``Caddyfile``, kde nakonfigurujeme reverzní proxy na naši doménu a server pro statické soubory. Obsah soubor ``Caddyfile`` upravíme na
+
+.. code-block:: console
+
+    is.vzs-praha15.cz:443 {
+    tls admin@vzs-praha15.cz
+        handle_path /static/* {
+            root * /var/www/staticfiles
+            file_server
+        }
+    reverse_proxy vzs-clenska-sekce-backend:8080
+    }
+
+První řádek obsahující doménu a druhý řádek obsahující email vhodně upravíme.
+
+Poté můžeme sestavit docker image projektu.
+
+.. code-block:: console
+
+    ./docker-build.sh  (Linux)
+
+    docker-build.bat  (Windows)
+
+Projekt pro svoji funkčnost vyžaduje otevření pouze portu 80 a 443, je nutné zakázat přístup z Internetu zejména na port 5432 (PostgreSQL) a port 8080 (Gunicorn). Doporučujeme použít program ``ufw``.
+
+Pomocí příkazu ``docker compose up`` je možné vytvořit kontejnery a spustit server.
