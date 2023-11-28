@@ -8,7 +8,7 @@ V celém tomto dokumentu předpokládáme, že se v terminálu nacházíme v ko�
 ***************************************
 Lokální debug spuštění
 ***************************************
-Lokální debug spuštění je vhodné, pokud nám stačí projekt na spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
+Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
 
 Prerekvizity
 ------------
@@ -174,7 +174,7 @@ Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_p
 
 - Proměnnou ``POSTGRES_PASSWORD`` nastavíme na stejnou hodnotu jako proměnnou ``SQL_PASSWORD`` ze souboru ``.env``
 
-Poslední části konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env_caddy`` nastavíme na 
+Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env_caddy`` nastavíme na 
 
 .. code-block:: console
 
@@ -183,7 +183,7 @@ Poslední části konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env
 
 Do proměnné ``EMAIL`` doplníme email, který chceme používat pro ACME challenge při získávání HTTPS certifikátu.
 
-Poslední konfigurací je soubor ``Caddyfile``, kde nakonfigurujeme reverzní proxy na naši doménu a server pro statické soubory. Obsah soubor ``Caddyfile`` upravíme na
+Posledním souborem ke konfiguraci je ``Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``Caddyfile`` upravíme na
 
 .. code-block:: console
 
