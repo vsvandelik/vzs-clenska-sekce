@@ -35,11 +35,7 @@ services:
       - db:/var/lib/postgresql/data
 
   reverse_proxy:
-      environment:
-        - LOG_FILE=/data/access.log
-
-        # fill for automatic https
-        #- EMAIL=TODO
+      env_file: ./.env_caddy
       image: caddy:2
       container_name: caddy
       ports:
