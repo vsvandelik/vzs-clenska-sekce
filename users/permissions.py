@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import (
 )
 from django.core.exceptions import ImproperlyConfigured
 
+from persons.models import get_active_user
 from persons.views import PersonPermissionMixin
 
 
@@ -30,7 +31,7 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
                 f"{cls.__name__} is missing a permissions_required attribute."
             )
 
-        return active_person.get_user().has_perms(cls.permissions_required)
+        return get_active_user(active_person).has_perms(cls.permissions_required)
 
     def has_permission(self):
         """
@@ -60,7 +61,7 @@ class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
         """:meta private:"""
 
         person_pk = pk
-        return _user_can_manage_person(active_person.get_user(), person_pk)
+        return _user_can_manage_person(get_active_user(active_person), person_pk)
 
 
 class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
@@ -79,7 +80,7 @@ class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
         is_different_person = active_person.pk != person_pk
 
         return is_different_person and _user_can_manage_person(
-            active_person.get_user(), person_pk
+            get_active_user(active_person), person_pk
         )
 
 

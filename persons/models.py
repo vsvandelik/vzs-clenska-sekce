@@ -171,8 +171,12 @@ class Person(
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
 
-    def get_user(self):
-        return getattr(self, "user", AnonymousUser())
+
+def get_active_user(person: Person | None):
+    if person is None:
+        return AnonymousUser()
+
+    return getattr(person, "user", AnonymousUser())
 
 
 class PersonHourlyRate(models.Model):

@@ -21,7 +21,7 @@ from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnSuccessMixin,
 )
-from persons.models import Person
+from persons.models import Person, get_active_user
 from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
@@ -198,7 +198,9 @@ class TransactionListView(TransactionListMixin):
     def get_queryset(self):
         """:meta private:"""
 
-        if self.request.active_person.get_user()("transactions.spravce_transakci"):
+        if get_active_user(self.request.active_person).has_perm(
+            "transactions.spravce_transakci"
+        ):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
@@ -237,7 +239,7 @@ class TransactionQRView(DetailView):
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
         )
-        if not self.request.active_person.get_user().has_perm(
+        if not get_active_user(self.request.active_person).has_perm(
             "transactions.spravce_transakci"
         ):
             queryset = queryset.filter(
