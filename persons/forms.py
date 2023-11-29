@@ -2,9 +2,9 @@ import datetime
 import re
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, Fieldset
+from crispy_forms.layout import Div, Fieldset, Layout, Submit
 from django import forms
-from django.forms import ModelForm, ValidationError, Form
+from django.forms import Form, ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
@@ -12,6 +12,7 @@ from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import DatePickerWithIcon
+
 from .models import Person, PersonHourlyRate
 
 
@@ -79,40 +80,6 @@ class PersonForm(ModelForm):
             raise ValidationError(_("PSČ nemá platný formát."))
 
         return postcode
-
-    def clean(self):
-        cleaned_data = super().clean()
-        first_name = cleaned_data.get("first_name")
-        last_name = cleaned_data.get("last_name")
-        phone = cleaned_data.get("phone")
-        date_of_birth = cleaned_data.get("date_of_birth")
-
-        if (
-            first_name
-            and last_name
-            and phone
-            and Person.objects.filter(
-                first_name=first_name, last_name=last_name, phone=phone
-            ).count()
-        ):
-            raise ValidationError(
-                _(
-                    "Osoba s danými údaji již existuje (dle kontroly jména a telefonního čísla)."
-                )
-            )
-        elif (
-            first_name
-            and last_name
-            and date_of_birth
-            and Person.objects.filter(
-                first_name=first_name, last_name=last_name, date_of_birth=date_of_birth
-            ).count()
-        ):
-            raise ValidationError(
-                _(
-                    "Osoba s danými údaji již existuje (dle kontroly jména a data narození)."
-                )
-            )
 
 
 class MyProfileUpdateForm(PersonForm):
