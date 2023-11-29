@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from django.http import Http404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.models import ParticipantEnrollment
-from events.permissions import OccurrenceManagePermissionMixin
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -49,7 +49,6 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email, export_queryset_csv
-
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -67,11 +66,13 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
+    OneTimeEventCreateDuplicateForm,
 )
 from .models import (
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
+    OneTimeEvent,
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
@@ -511,3 +512,39 @@ class OneTimeEventExportParticipantsView(
         return export_queryset_csv(
             f"{self.event}_účastníci", Person.objects.filter(id__in=approved_persons_id)
         )
+
+
+class OneTimeEventCreateDuplicateView(
+    EventManagePermissionMixin,
+    MessagesMixin,
+    generic.UpdateView,
+    RedirectToEventDetailOnSuccessMixin,
+):
+    form_class = OneTimeEventCreateDuplicateForm
+    model = OneTimeEvent
+
+    def form_valid(self, form):
+        instance = form.instance
+        new_event = instance.duplicate()
+
+        for position_assignment in instance.eventpositionassignment_set.all():
+            position_assignment.duplicate(new_event)
+
+        for occurrence in instance.eventoccurrence_set.all():
+            occurrence.duplicate(new_event)
+
+        self.event_id = new_event.id
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("one_time_events:edit-duplicate", args=[self.event_id])
+
+
+class OneTimeEventUpdateDuplicateView(
+    InsertRequestIntoModelFormKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventUpdateMixin,
+    RedirectToEventDetailOnSuccessMixin,
+):
+    template_name = "one_time_events/edit_duplicate.html"
+    form_class = OneTimeEventForm

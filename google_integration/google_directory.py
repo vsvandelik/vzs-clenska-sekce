@@ -9,10 +9,13 @@ TUTORIAL HOW TO MAKE ENABLE GOOGLE ADMIN SDK
 """
 
 
+from collections.abc import Iterable, MutableSequence
+from dataclasses import dataclass
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-from vzs import settings
+from vzs.settings import GOOGLE_DOMAIN, GOOGLE_SERVICE_ACCOUNT_PATH
 
 USER_SCOPE = "https://www.googleapis.com/auth/admin.directory.user"
 GROUP_SCOPE = "https://www.googleapis.com/auth/admin.directory.group"
@@ -21,8 +24,9 @@ GROUP_MEMBERS_SCOPE = "https://www.googleapis.com/auth/admin.directory.group.mem
 
 def _get_service(scopes):
     credentials = service_account.Credentials.from_service_account_file(
-        settings.GOOGLE_SERVICE_ACCOUNT_FILE, scopes=scopes
+        GOOGLE_SERVICE_ACCOUNT_PATH, scopes=scopes
     )
+
     return build("admin", "directory_v1", credentials=credentials)
 
 
@@ -33,9 +37,7 @@ def get_list_of_users():
 
     while True:
         results = (
-            service.users()
-            .list(domain=settings.GOOGLE_DOMAIN, pageToken=page_token)
-            .execute()
+            service.users().list(domain=GOOGLE_DOMAIN, pageToken=page_token).execute()
         )
 
         for user in results.get("users", []):
@@ -48,43 +50,54 @@ def get_list_of_users():
             )
 
         page_token = results.get("nextPageToken")
-        if not page_token:
+
+        if page_token is None:
             break
 
     return users_list
 
 
-def get_list_of_groups():
+@dataclass
+class GroupInfo:
+    id: str
+    email: str
+    name: str
+
+
+def get_list_of_groups() -> Iterable[GroupInfo]:
     service = _get_service([GROUP_SCOPE])
-    groups_lists = []
+    groups_lists: MutableSequence[GroupInfo] = []
     page_token = None
 
     while True:
         results = (
-            service.groups()
-            .list(domain=settings.GOOGLE_DOMAIN, pageToken=page_token)
-            .execute()
+            service.groups().list(domain=GOOGLE_DOMAIN, pageToken=page_token).execute()
         )
 
         for group in results.get("groups", []):
             groups_lists.append(
-                {
-                    "id": group.get("id"),
-                    "email": group.get("email"),
-                    "name": group.get("name"),
-                }
+                GroupInfo(group.get("id"), group.get("email"), group.get("name"))
             )
 
         page_token = results.get("nextPageToken")
-        if not page_token:
+
+        if page_token is None:
             break
 
     return groups_lists
 
 
-def get_group_members(group_email):
+@dataclass
+class MemberInfo:
+    id: str
+    email: str
+    role: str
+    type: str
+
+
+def get_group_members(group_email) -> Iterable[MemberInfo]:
     service = _get_service([GROUP_MEMBERS_SCOPE])
-    members_list = []
+    members_list: MutableSequence[MemberInfo] = []
     page_token = None
 
     while True:
@@ -94,16 +107,17 @@ def get_group_members(group_email):
 
         for member in results.get("members", []):
             members_list.append(
-                {
-                    "id": member.get("id"),
-                    "email": member.get("email"),
-                    "role": member.get("role"),
-                    "type": member.get("type"),
-                }
+                MemberInfo(
+                    member.get("id"),
+                    member.get("email"),
+                    member.get("role"),
+                    member.get("type"),
+                )
             )
 
         page_token = results.get("nextPageToken")
-        if not page_token:
+
+        if page_token is None:
             break
 
     return members_list

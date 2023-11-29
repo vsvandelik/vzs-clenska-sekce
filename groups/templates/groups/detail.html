@@ -83,7 +83,7 @@
                 <div class="card-header">
                     <div class="card-title h5">Přidat členy</div>
                 </div>
-                <form method="post">
+                <form method="post" action="{% url "groups:add-members" group.pk %}">
                     <div class="card-body">
                         {% csrf_token %}
                         {{ form.non_field_errors }}
