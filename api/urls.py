@@ -1,19 +1,18 @@
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .views import TokenDeleteView, TokenGenerateView, TokenIndexView
 from .viewsets import (
-    PersonViewSet,
     FeatureViewSet,
     GroupViewSet,
     OneTimeEventViewSet,
-    TrainingViewSet,
+    PersonExistsView,
+    PersonViewSet,
     PositionViewSet,
+    TrainingViewSet,
     TransactionViewSet,
     UserViewSet,
 )
-from .views import TokenGenerateView, TokenIndexView, TokenDeleteView
-
-from rest_framework.routers import DefaultRouter
-
-from django.urls import path, include
-
 
 app_name = "api"
 
@@ -26,6 +25,7 @@ router.register("treninky", TrainingViewSet)
 router.register("pozice", PositionViewSet)
 router.register("transakce", TransactionViewSet)
 router.register("uzivatele", UserViewSet)
+
 
 token_urlpatterns = [
     path(
@@ -46,6 +46,7 @@ token_urlpatterns = [
 ]
 
 urlpatterns = [
+    path("osoby/existuje/", PersonExistsView.as_view()),
     path("", include(router.urls)),
     path("tokeny/", include((token_urlpatterns, "token"), namespace="token")),
 ]

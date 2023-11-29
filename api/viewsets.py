@@ -1,4 +1,6 @@
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from features.models import Feature
@@ -17,8 +19,10 @@ from transactions.models import Transaction
 from transactions.serializers import TransactionSerializer
 from users.models import User
 from users.serializers import UserSerializer
+from vzs.utils import create_filter
 
-from .permissions import TokenPermission, UserPermission
+from .permissions import PersonPermission, TokenPermission, UserPermission
+from .utils import PersonExistsFilter
 
 
 class APIPermissionMixin:
@@ -34,6 +38,31 @@ class APIPermissionMixin:
 class PersonViewSet(APIPermissionMixin, ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
+
+
+class PersonExistsView(APIView):
+    """
+    Checks if there are any persons matching the filter :class:`PersonAPIFilter`.
+
+    Filter gets its parameters from the query parameters.
+
+    **Query parameters:**
+
+    *   ``first_name`` - First name of the person.
+    *   ``last_name`` - Last name of the person.
+    """
+
+    permission_classes = [IsAuthenticated & PersonPermission]
+    """:meta private:"""
+
+    def get(self, request, format=None):
+        """:meta private:"""
+
+        filter_q = create_filter(request.GET, PersonExistsFilter)
+
+        does_exist = Person.objects.filter(filter_q).exists()
+
+        return Response(does_exist)
 
 
 class FeatureViewSet(APIPermissionMixin, ModelViewSet):

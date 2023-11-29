@@ -30,8 +30,9 @@ from .utils import (
 )
 
 
-class PersonPermissionMixin(PermissionRequiredMixin):
-    def has_permission(self):
+class PersonPermissionBaseMixin:
+    @staticmethod
+    def permission_predicate(request):
         permission_required = (
             "persons.clenska_zakladna",
             "persons.detska_clenska_zakladna",
@@ -40,10 +41,15 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             "persons.dospela_clenska_zakladna",
         )
         for permission in permission_required:
-            if get_active_user(self.request.active_person).has_perm(permission):
+            if get_active_user(request.active_person).has_perm(permission):
                 return True
 
         return False
+
+
+class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
+    def has_permission(self):
+        return self.permission_predicate(self.request)
 
     @staticmethod
     def get_queryset_by_permission(user, queryset=None):

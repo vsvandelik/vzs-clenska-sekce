@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 
+from persons.views import PersonPermissionBaseMixin
+
 
 class UserPermission(BasePermission):
     """
@@ -17,3 +19,12 @@ class TokenPermission(BasePermission):
 
     def has_permission(self, request, view):
         return request.auth is not None
+
+
+class PersonPermission(PersonPermissionBaseMixin, BasePermission):
+    """
+    Permits users who can manage at least one person membership type.
+    """
+
+    def has_permission(self, request, view):
+        return self.permission_predicate(request)
