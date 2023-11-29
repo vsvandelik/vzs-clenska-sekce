@@ -1,4 +1,4 @@
-{% if occurrence.organizers.count > 0 %}
+{% if occurrence.has_attending_organizer %}
     <div class="btn-group-md btn-group mb-3 elevation-2">
         <a href="{% url 'one_time_events:export-organizers-occurrence' event.id occurrence.id %}" class="btn btn-info">Vyexportovat organizátory</a>
     </div>

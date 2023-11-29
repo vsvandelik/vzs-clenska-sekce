@@ -255,6 +255,12 @@ class EventOccurrence(PolymorphicModel):
     def position_organizers(self, position_assignment):
         raise NotImplementedError
 
+    def has_attending_organizer(self):
+        raise NotImplementedError
+
+    def has_attending_participant(self):
+        raise NotImplementedError
+
     def has_position_free_spot(self, position_assignment):
         raise NotImplementedError
 

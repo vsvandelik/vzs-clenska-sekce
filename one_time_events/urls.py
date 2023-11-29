@@ -144,7 +144,7 @@ urlpatterns = [
         name="export-organizers",
     ),
     path(
-        "<int:event_id>/detail-dne/<int:pk>/exportovat-organizatory/",
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-organizatory/",
         views.OneTimeEventExportOrganizersOccurrenceView.as_view(),
         name="export-organizers-occurrence",
     ),

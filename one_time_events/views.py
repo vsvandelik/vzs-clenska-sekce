@@ -74,6 +74,7 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
     OneTimeEvent,
+    OneTimeEventAttendance,
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
@@ -509,11 +510,14 @@ class OneTimeEventExportParticipantsView(
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        approved_persons_id = self.event.onetimeeventparticipantenrollment_set.filter(
-            state=ParticipantEnrollment.State.APPROVED
-        ).values_list("person_id")
+        approved_participants_id = (
+            self.event.onetimeeventparticipantenrollment_set.filter(
+                state=ParticipantEnrollment.State.APPROVED
+            ).values_list("person_id")
+        )
         return export_queryset_csv(
-            f"{self.event}_účastníci", Person.objects.filter(id__in=approved_persons_id)
+            f"{self.event}_účastníci",
+            Person.objects.filter(id__in=approved_participants_id),
         )
 
 
@@ -542,7 +546,7 @@ class OneTimeEventExportOrganizersOccurrenceView(
 
     def get(self, request, *args, **kwargs):
         organizers_id = OrganizerOccurrenceAssignment.objects.filter(
-            occurrence=self.occurrence
+            occurrence=self.occurrence, state=OneTimeEventAttendance.PRESENT
         ).values_list("person_id")
         return export_queryset_csv(
             f"{self.occurrence.event}_{date_pretty(self.occurrence.date)}_organizátoři",

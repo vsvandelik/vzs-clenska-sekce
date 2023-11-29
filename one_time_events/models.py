@@ -295,6 +295,11 @@ class OneTimeEventOccurrence(EventOccurrence):
             position_assignment=position_assignment
         )
 
+    def has_attending_organizer(self):
+        return self.organizeroccurrenceassignment_set.filter(
+            state=OneTimeEventAttendance.PRESENT
+        ).exists()
+
     def has_position_free_spot(self, position_assignment):
         return (
             len(self.position_organizers(position_assignment))
