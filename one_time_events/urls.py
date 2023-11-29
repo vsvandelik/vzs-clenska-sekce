@@ -139,6 +139,16 @@ urlpatterns = [
         name="export-participants",
     ),
     path(
+        "<int:event_id>/exportovat-organizatory/",
+        views.OneTimeEventExportOrganizersView.as_view(),
+        name="export-organizers",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-organizatory/",
+        views.OneTimeEventExportOrganizersOccurrenceView.as_view(),
+        name="export-organizers-occurrence",
+    ),
+    path(
         "<int:pk>/duplikovat/",
         views.OneTimeEventCreateDuplicateView.as_view(),
         name="create-duplicate",

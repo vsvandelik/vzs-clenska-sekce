@@ -149,6 +149,12 @@ class Event(PolymorphicModel):
     def has_free_spot(self):
         return self.capacity is None
 
+    def has_approved_participant(self):
+        raise NotImplementedError
+
+    def has_organizer(self):
+        raise NotImplementedError
+
     def can_person_enroll_as_participant(self, person):
         return (
             self.can_person_enroll_as_waiting(person)

@@ -87,6 +87,17 @@ class OneTimeEvent(Event):
             raise NotImplementedError
         return True
 
+    def has_approved_participant(self):
+        return self.onetimeeventparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).exists()
+
+    def has_organizer(self):
+        for occurrence in self.eventoccurrence_set.all():
+            if occurrence.organizers.count() > 0:
+                return True
+        return False
+
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
             return False
