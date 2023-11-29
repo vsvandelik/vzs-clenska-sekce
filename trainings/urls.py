@@ -176,4 +176,24 @@ urlpatterns = [
         views.TrainingShowAttendanceView.as_view(),
         name="show-attendance",
     ),
+    path(
+        "<int:event_id>/exportovat-ucastniky/",
+        views.TrainingExportParticipantsView.as_view(),
+        name="export-participants",
+    ),
+    path(
+        "<int:event_id>/exportovat-trenery/",
+        views.TrainingExportCoachesView.as_view(),
+        name="export-coaches",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-ucastniky/",
+        views.TrainingExportParticipantsOccurrenceView.as_view(),
+        name="export-participants-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-organizatory/",
+        views.TrainingExportOrganizersOccurrenceView.as_view(),
+        name="export-organizers-occurrence",
+    ),
 ]

@@ -143,6 +143,14 @@ class Training(Event):
             return False
         return True
 
+    def has_approved_participant(self):
+        return self.trainingparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).exists()
+
+    def has_organizer(self):
+        return self.coaches.count() > 0
+
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
             return False
@@ -373,6 +381,16 @@ class TrainingOccurrence(EventOccurrence):
         return self.coachoccurrenceassignment_set.filter(
             position_assignment=position_assignment
         )
+
+    def has_attending_organizer(self):
+        return self.coachoccurrenceassignment_set.filter(
+            state=TrainingAttendance.PRESENT
+        ).exists()
+
+    def has_attending_participant(self):
+        return self.trainingparticipantattendance_set.filter(
+            state=TrainingAttendance.PRESENT
+        ).exists()
 
     def position_organizers_attending(self, position_assignment):
         return self.coachoccurrenceassignment_set.filter(

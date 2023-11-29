@@ -40,13 +40,16 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertEventIntoSelfObjectMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
 )
+from persons.models import Person
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.utils import send_notification_email
+from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -71,6 +74,7 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
     OneTimeEvent,
+    OneTimeEventAttendance,
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
@@ -498,6 +502,56 @@ class OneTimeEventShowAttendanceView(
     generic.TemplateView,
 ):
     template_name = "one_time_events/detail_components/show_attendance.html"
+
+
+class OneTimeEventExportParticipantsView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        approved_participants_id = (
+            self.event.onetimeeventparticipantenrollment_set.filter(
+                state=ParticipantEnrollment.State.APPROVED
+            ).values_list("person_id")
+        )
+        return export_queryset_csv(
+            f"{self.event}_účastníci",
+            Person.objects.filter(id__in=approved_participants_id),
+        )
+
+
+class OneTimeEventExportOrganizersView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        organizers_id = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence__event=self.event
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_organizátoři", Person.objects.filter(id__in=organizers_id)
+        )
+
+
+class OneTimeEventExportOrganizersOccurrenceView(
+    OccurrenceManagePermissionMixin2,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+    generic.View,
+):
+    http_method_names = ["get"]
+    occurrence_id_key = "pk"
+
+    def get(self, request, *args, **kwargs):
+        organizers_id = OrganizerOccurrenceAssignment.objects.filter(
+            occurrence=self.occurrence, state=OneTimeEventAttendance.PRESENT
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.occurrence.event}_{date_pretty(self.occurrence.date)}_organizátoři",
+            Person.objects.filter(id__in=organizers_id),
+        )
 
 
 class OneTimeEventCreateDuplicateView(
