@@ -63,7 +63,8 @@ def email_notification_recipient_set(person):
 
     persons_managing = person.managed_by.all()
     for person_managing in persons_managing:
-        emails.add(person_managing.email)
+        if person_managing.email is not None:
+            emails.add(person_managing.email)
     return emails
 
 

@@ -8,6 +8,7 @@ from django.utils import timezone
 from fiobank import FioBank
 
 from vzs import settings
+from vzs.utils import email_notification_recipient_set
 from .models import Transaction, FioTransaction
 
 _fio_client = FioBank(settings.FIO_TOKEN)
@@ -149,11 +150,12 @@ def send_email_transactions(transactions):
         html_message = render_to_string(
             "transactions/email.html", {"transaction": transaction}
         )
+        emails = email_notification_recipient_set(transaction.person)
         send_mail(
             "Informace o transakci",
             "",
             None,
-            [transaction.person.email],
+            emails,
             fail_silently=False,
             html_message=html_message,
         )

@@ -15,7 +15,6 @@ from django.views import generic
 
 from persons.models import Person
 from vzs import settings
-
 from . import forms
 from .backends import GoogleBackend
 from .models import Permission, ResetPasswordToken, User
@@ -51,6 +50,14 @@ class UserCreateView(
 
     def dispatch(self, request, *args, **kwargs):
         self.person = self.get_object()
+        if self.person.email is None:
+            messages.error(
+                request,
+                _(
+                    "Nelze vytvořit uživatelský účet, protože osoba nemá vyplněnou e-mailovou adresu."
+                ),
+            )
+            return HttpResponseRedirect(self.get_success_url())
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
