@@ -1,32 +1,39 @@
 from django.urls import path
 
-from . import views
+from groups.views import (
+    GroupAddMembersView,
+    GroupCreateView,
+    GroupDeleteView,
+    GroupDetailView,
+    GroupEditView,
+    GroupIndexView,
+    GroupRemoveMemberView,
+    SyncGroupMembersWithGoogleAllView,
+    SyncGroupMembersWithGoogleView,
+)
 
 app_name = "groups"
 
 urlpatterns = [
-    path("", views.GroupIndexView.as_view(), name="index"),
-    path("<int:pk>/", views.GroupDetailView.as_view(), name="detail"),
-    path("pridat/", views.GroupEditView.as_view(), name="add"),
+    path("", GroupIndexView.as_view(), name="index"),
+    path("<int:pk>/", GroupDetailView.as_view(), name="detail"),
+    path("pridat/", GroupCreateView.as_view(), name="add"),
+    path("<int:pk>/upravit/", GroupEditView.as_view(), name="edit"),
+    path("<int:pk>/pridat-cleny/", GroupAddMembersView.as_view(), name="add-members"),
     path(
-        "<int:pk>/upravit/",
-        views.GroupEditView.as_view(),
-        name="edit",
-    ),
-    path(
-        "<int:group>/odebrat-clena/<int:person>/",
-        views.GroupRemoveMemberView.as_view(),
+        "<int:group_id>/odebrat-clena/<int:person_id>/",
+        GroupRemoveMemberView.as_view(),
         name="remove-member",
     ),
-    path("<int:pk>/smazat/", views.GroupDeleteView.as_view(), name="delete"),
+    path("<int:pk>/smazat/", GroupDeleteView.as_view(), name="delete"),
     path(
         "synchronizovat-s-google/",
-        views.SyncGroupMembersWithGoogleView.as_view(),
+        SyncGroupMembersWithGoogleAllView.as_view(),
         name="sync-group-members-google",
     ),
     path(
-        "<int:group>/synchronizovat-s-google/",
-        views.SyncGroupMembersWithGoogleView.as_view(),
+        "<int:group_id>/synchronizovat-s-google/",
+        SyncGroupMembersWithGoogleView.as_view(),
         name="sync-group-members-google",
     ),
 ]

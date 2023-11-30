@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
@@ -10,6 +10,7 @@ from polymorphic.models import PolymorphicModel
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
+from vzs.models import RenderableModelMixin
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -35,7 +36,7 @@ class ParticipantEnrollment(PolymorphicModel):
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
-class Event(PolymorphicModel):
+class Event(RenderableModelMixin, PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"), null=True, blank=True)
     location = models.CharField(
@@ -149,6 +150,12 @@ class Event(PolymorphicModel):
     def has_free_spot(self):
         return self.capacity is None
 
+    def has_approved_participant(self):
+        raise NotImplementedError
+
+    def has_organizer(self):
+        raise NotImplementedError
+
     def can_person_enroll_as_participant(self, person):
         return (
             self.can_person_enroll_as_waiting(person)
@@ -159,7 +166,11 @@ class Event(PolymorphicModel):
         )
 
     def can_person_enroll_as_waiting(self, person):
-        if person is None or person in self.enrolled_participants.all():
+        if (
+            person is None
+            or person in self.enrolled_participants.all()
+            or self.capacity == 0
+        ):
             return False
 
         return self.does_participant_satisfy_requirements(person)
@@ -182,7 +193,7 @@ class Event(PolymorphicModel):
     def sorted_occurrences_list(self):
         raise NotImplementedError
 
-    def enrollments_by_Q(self, state):
+    def enrollments_by_Q(self, state) -> QuerySet[ParticipantEnrollment]:
         raise NotImplementedError
 
     def participants_by_Q(self, condition):
@@ -243,6 +254,12 @@ class EventOccurrence(PolymorphicModel):
         return self.organizeroccurrenceassignment_set.filter(person=person)
 
     def position_organizers(self, position_assignment):
+        raise NotImplementedError
+
+    def has_attending_organizer(self):
+        raise NotImplementedError
+
+    def has_attending_participant(self):
         raise NotImplementedError
 
     def has_position_free_spot(self, position_assignment):
@@ -329,6 +346,13 @@ class EventPositionAssignment(models.Model):
     count = models.PositiveSmallIntegerField(
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )
+
+    def duplicate(self, event):
+        position_assignment = EventPositionAssignment(
+            event=event, position=self.position, count=self.count
+        )
+        position_assignment.save()
+        return position_assignment
 
     class Meta:
         unique_together = ["event", "position"]

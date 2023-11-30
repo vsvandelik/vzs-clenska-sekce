@@ -8,3 +8,9 @@ class DefaultFormHelper(FormHelper):
 class WithoutFormTagFormHelper(FormHelper):
     disable_csrf = True
     form_tag = False
+
+
+class WithoutFormTagMixin:
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.helper = WithoutFormTagFormHelper()

@@ -8,11 +8,7 @@ from django_select2.forms import Select2Widget
 
 from events.models import (
     EventPersonTypeConstraint,
-    ParticipantEnrollment,
-    OrganizerAssignment,
-    EventPositionAssignment,
 )
-from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from vzs.widgets import DatePickerWithIcon
@@ -165,9 +161,8 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def clean(self):
         cleaned_data = super().clean()
-        if (
-            self.person is not None
-            and not self.event.does_participant_satisfy_requirements(self.person)
+        if self.person is not None and not self.event.can_person_enroll_as_waiting(
+            self.person
         ):
             self.add_error(
                 None,

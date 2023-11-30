@@ -1,13 +1,13 @@
 from datetime import date
 from itertools import chain
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import ExpressionWrapper, Case, When, Value, Q
+from django.db.models import Case, ExpressionWrapper, Q, Value, When
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from mptt.models import MPTTModel
 
 from features.models import Feature, FeatureAssignment
 from vzs import models as vzs_models
@@ -170,6 +170,13 @@ class Person(
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
+
+
+def get_active_user(person: Person | None):
+    if person is None:
+        return AnonymousUser()
+
+    return getattr(person, "user", AnonymousUser())
 
 
 class PersonHourlyRate(models.Model):

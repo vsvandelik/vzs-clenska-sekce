@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 import environ
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "mptt",
     "tempus_dominus",
     "rest_framework",
+    "django_crontab",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -106,7 +107,17 @@ WSGI_APPLICATION = "vzs.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
+    }
+}
+
 
 AUTH_USER_MODEL = "users.User"
 
@@ -166,7 +177,7 @@ DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 STATIC_ROOT = env.str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 
@@ -233,7 +244,7 @@ ADMIN_EMAIL = "system@vzs-praha15.cz"
 
 # Settings for Google Integration
 
-GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
+GOOGLE_SERVICE_ACCOUNT_PATH = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
 GOOGLE_MAPS_API_KEY = env.str("GOOGLE_MAPS_API_KEY", default=None)
@@ -274,6 +285,7 @@ PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
 NOTIFICATION_SENDER_EMAIL = "noreply@vzs-praha15.cz"
 MIN_PARTICIPANT_ABSENCE_SEND_MAIL = 3
+FEATURE_EXPIRE_HOURS_SEND_MAIL = 72
 
 # REST
 REST_FRAMEWORK = {
@@ -282,3 +294,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
+
+# CRONTAB
+CRONJOBS = [("0 3 * * *", "features.cron.features_expiry_send_mails")]

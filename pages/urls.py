@@ -1,11 +1,11 @@
 from django.urls import path
 
-from . import views
+from .views import HomeView, PageDetailView, PageEditView
 
 app_name = "pages"
 
 urlpatterns = [
-    path("", views.HomeView.as_view(), name="home"),
-    path("<slug:slug>/", views.PageDetailView.as_view(), name="detail"),
-    path("<slug:slug>/upravit", views.PageEditView.as_view(), name="edit"),
+    path("", HomeView.as_view(), name="home"),
+    path("<slug:slug>/", PageDetailView.as_view(), name="detail"),
+    path("<slug:slug>/upravit", PageEditView.as_view(), name="edit"),
 ]
