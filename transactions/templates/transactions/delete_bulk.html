@@ -1,0 +1,13 @@
+{% extends "modal_delete.html" %}
+
+{% block modal_title %}
+    Potvrzení smazání hromadné transakce
+{% endblock %}
+
+{% block modal_body %}
+    Opravdu chcete smazat hromadnou transakci s popisem "{{ bulk_transaction.reason }}"?
+{% endblock %}
+
+{% block delete_action %}
+    {% url "transactions:delete-bulk" bulk_transaction.pk %}
+{% endblock %}

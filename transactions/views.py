@@ -1,5 +1,6 @@
 from collections.abc import Iterable, Mapping
 from itertools import chain
+from sys import stderr
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -14,14 +15,14 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
-from django.views.generic.list import ListView
+from django.views.generic.list import BaseListView, ListView
 
 from events.permissions import EventManagePermissionMixin
 from events.views import (
     InsertEventIntoModelFormKwargsMixin,
     RedirectToEventDetailOnSuccessMixin,
 )
-from persons.models import Person
+from persons.models import Person, get_active_user
 from persons.utils import parse_persons_filter_queryset
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
@@ -37,7 +38,7 @@ from .forms import (
     TransactionEditForm,
     TransactionFilterForm,
 )
-from .models import Transaction
+from .models import BulkTransaction, Transaction
 from .utils import TransactionInfo, send_email_transactions
 
 
@@ -198,7 +199,9 @@ class TransactionListView(TransactionListMixin):
     def get_queryset(self):
         """:meta private:"""
 
-        if self.request.active_person.get_user()("transactions.spravce_transakci"):
+        if get_active_user(self.request.active_person).has_perm(
+            "transactions.spravce_transakci"
+        ):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
@@ -237,7 +240,7 @@ class TransactionQRView(DetailView):
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
         )
-        if not self.request.active_person.get_user().has_perm(
+        if not get_active_user(self.request.active_person).has_perm(
             "transactions.spravce_transakci"
         ):
             queryset = queryset.filter(
@@ -347,7 +350,7 @@ class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
     def form_valid(self, form):
         """:meta private:"""
 
-        # success_message is sent after object deletion so we need to save the data
+        # redirection is done after object deletion so we need to save the data
         # we will need later
         self.person = self.object.person
         return super().form_valid(form)
@@ -367,11 +370,21 @@ class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
 
+class BulkTransactionIndexView(BaseListView):
+    context_object_name = "bulk_transactions"
+    """:meta private:"""
+
+    model = BulkTransaction
+    """:meta private:"""
+
+
 class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     """
-    Displays a list of all transactions.
+    Displays a list of all transactions and bulk transactions.
 
-    Filters using :class:`TransactionFilterForm`.
+    Allow direct deletion using modals.
+
+    Filters regular transactions using :class:`TransactionFilterForm`.
 
     **Permissions**:
 
@@ -390,6 +403,9 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     *   ``bulk_transaction``
     """
 
+    bulk_transactions_view = BulkTransactionIndexView()
+    """:meta private:"""
+
     context_object_name = "transactions"
     """:meta private:"""
 
@@ -401,15 +417,19 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
 
     def get_context_data(self, **kwargs):
         """
-        *   ``form`` - the filter form
+        *   ``bulk_transactions`` - queryset of all bulk transactions
         *   ``filtered_get`` - url encoded GET parameters
             that were used to filter the transactions
+        *   ``form`` - the filter form
+        *   ``transactions`` - queryset of filtered transactions
         """
 
         kwargs.setdefault("form", self.filter_form)
         kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
-        return super().get_context_data(**kwargs)
+        return self.bulk_transactions_view.get_context_data(
+            object_list=self.bulk_transactions_view.get_queryset()
+        ) | super().get_context_data(**kwargs)
 
     def get(self, request: HttpRequest, *args, **kwargs):
         """:meta private:"""
@@ -868,3 +888,35 @@ class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
         """:meta private:"""
 
         return self.request.active_person
+
+
+class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
+    """
+    Deletes a bulk transaction. This means deleting
+    the :class:`BulkTransaction` instance
+    and also all the associated :class:`Transaction` instances.
+
+    **Permissions**:
+
+    Users with the ``transactions.spravce_transakci`` permission.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the bulk transaction to delete
+    """
+
+    context_object_name = "bulk_transaction"
+    """:meta private:"""
+
+    model = BulkTransaction
+    """:meta private:"""
+
+    template_name = "transactions/delete_bulk.html"
+    """:meta private:"""
+
+    success_url = reverse_lazy("transactions:index")
+
+    def form_valid(self, form):
+        self.object.transaction_set.all().delete()
+
+        return super().form_valid(form)

@@ -10,6 +10,7 @@ from polymorphic.models import PolymorphicModel
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
+from vzs.models import RenderableModelMixin
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -35,7 +36,7 @@ class ParticipantEnrollment(PolymorphicModel):
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
-class Event(PolymorphicModel):
+class Event(RenderableModelMixin, PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"), null=True, blank=True)
     location = models.CharField(
