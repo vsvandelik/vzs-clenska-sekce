@@ -1,29 +1,34 @@
-from .permissions import UserPermission, TokenPermission
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from persons.serializers import PersonSerializer
+from features.models import Feature
 from features.serializers import FeatureSerializer
+from groups.models import Group
 from groups.serializers import GroupSerializer
+from one_time_events.models import OneTimeEvent
 from one_time_events.serializers import OneTimeEventSerializer
-from trainings.serializers import TrainingSerializer
+from persons.models import Person
+from persons.serializers import PersonSerializer
+from positions.models import EventPosition
 from positions.serializers import PositionSerializer
+from trainings.models import Training
+from trainings.serializers import TrainingSerializer
+from transactions.models import Transaction
 from transactions.serializers import TransactionSerializer
+from users.models import User
 from users.serializers import UserSerializer
 
-from persons.models import Person
-from features.models import Feature
-from groups.models import Group
-from one_time_events.models import OneTimeEvent
-from trainings.models import Training
-from positions.models import EventPosition
-from transactions.models import Transaction
-from users.models import User
-
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from .permissions import TokenPermission, UserPermission
 
 
 class APIPermissionMixin:
+    """
+    Permits users with the ``api`` permission
+    and requests with a valid token in the header.
+    """
+
     permission_classes = [(IsAuthenticated & UserPermission) | TokenPermission]
+    """:meta private:"""
 
 
 class PersonViewSet(APIPermissionMixin, ModelViewSet):

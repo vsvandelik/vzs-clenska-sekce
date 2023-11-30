@@ -4,9 +4,8 @@ from django import forms
 from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
-from django.urls import reverse
-from django_select2.forms import Select2Widget
 from django.utils.translation import gettext_lazy as _
+from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -303,8 +302,10 @@ class OneTimeEventEnrollmentApprovedHooks(
             )
         if commit:
             instance.transaction.save()
-            old_instance = OneTimeEventParticipantEnrollment.objects.get(id=instance.id)
-            if instance.state != old_instance.state:
+            old_instance = OneTimeEventParticipantEnrollment.objects.filter(
+                id=instance.id
+            ).first()
+            if old_instance is not None and instance.state != old_instance.state:
                 self._enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
@@ -1091,3 +1092,9 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
             participant_assignment.state = OneTimeEventAttendance.PRESENT
             if commit:
                 participant_assignment.save()
+
+
+class OneTimeEventCreateDuplicateForm(ModelForm):
+    class Meta:
+        model = OneTimeEvent
+        fields = []

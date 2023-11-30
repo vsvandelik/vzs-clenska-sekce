@@ -5,6 +5,7 @@ from events.models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
+from persons.models import get_active_user
 from users.views import PermissionRequiredMixin
 
 
@@ -46,11 +47,10 @@ class EventPermissionMixin(ObjectPermissionMixin):
 
 class OccurrencePermissionMixin(ObjectPermissionMixin):
     @classmethod
-    def view_has_permission(
-        cls, logged_in_user, active_person, occurrence_id, **kwargs
-    ):
-        for occurrence in EventOccurrence.objects.filter(pk=occurrence_id):
-            return occurrence.event.can_user_manage(logged_in_user)
+    def permission_predicate(cls, occurrence, logged_in_user, active_person):
+        return occurrence.event.can_user_manage(get_active_user(active_person))
+
+    @classmethod
     def get_path_parameter_mapping(cls):
         return {"occurrence_id": (EventOccurrence, "occurrence")}
 
@@ -58,7 +58,7 @@ class OccurrencePermissionMixin(ObjectPermissionMixin):
 class OccurrenceManagePermissionMixin(OccurrencePermissionMixin):
     @classmethod
     def permission_predicate(cls, occurrence, logged_in_user, active_person):
-        return occurrence.can_user_manage(logged_in_user)
+        return occurrence.can_user_manage(get_active_user(active_person))
 
 
 class OccurrenceManagePermissionMixin2(OccurrenceManagePermissionMixin):
@@ -70,15 +70,15 @@ class OccurrenceManagePermissionMixin2(OccurrenceManagePermissionMixin):
 class EventManagePermissionMixin(EventPermissionMixin):
     @classmethod
     def permission_predicate(cls, event, logged_in_user, active_person):
-        return event.can_user_manage(logged_in_user)
+        return event.can_user_manage(get_active_user(active_person))
 
 
 class EventInteractPermissionMixin(EventPermissionMixin):
     @classmethod
     def permission_predicate(cls, event, logged_in_user, active_person):
-        return event.can_user_manage(logged_in_user) or event.can_person_interact_with(
-            active_person
-        )
+        return event.can_user_manage(
+            get_active_user(active_person)
+        ) or event.can_person_interact_with(active_person)
 
 
 class UnenrollMyselfPermissionMixin(ObjectPermissionMixin):

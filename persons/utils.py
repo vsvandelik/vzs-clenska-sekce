@@ -1,12 +1,18 @@
+from collections.abc import Mapping
+from typing import Any
+
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.shortcuts import redirect
 
 from events.models import Event
 from features.models import Feature, FeatureAssignment
-from vzs.utils import email_notification_recipient_set
+from persons.models import Person
 
 
-def parse_persons_filter_queryset(params_dict, persons):
+def parse_persons_filter_queryset(
+    params_dict: Mapping[str, Any], persons: QuerySet[Person]
+):
     name = params_dict.get("name")
     email = params_dict.get("email")
     qualification = params_dict.get("qualifications")

@@ -40,8 +40,11 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
+    InsertEventIntoSelfObjectMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
+from persons.models import Person
 from trainings.permissions import (
     OccurrenceEnrollMyselfParticipantPermissionMixin,
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
@@ -53,7 +56,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.utils import send_notification_email, date_pretty
+from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -85,6 +88,7 @@ from .models import (
     TrainingParticipantAttendance,
     TrainingParticipantEnrollment,
     TrainingReplaceabilityForParticipants,
+    TrainingAttendance,
 )
 
 
@@ -618,3 +622,69 @@ class TrainingShowAttendanceView(
     generic.TemplateView,
 ):
     template_name = "trainings/show_attendance.html"
+
+
+class TrainingExportParticipantsView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        approved_persons_id = self.event.trainingparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_účastníci", Person.objects.filter(id__in=approved_persons_id)
+        )
+
+
+class TrainingExportCoachesView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        coaches_id = CoachPositionAssignment.objects.filter(
+            training=self.event
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_trenéři", Person.objects.filter(id__in=coaches_id)
+        )
+
+
+class TrainingExportOrganizersOccurrenceView(
+    OccurrenceManagePermissionMixin2,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+    generic.View,
+):
+    http_method_names = ["get"]
+    occurrence_id_key = "pk"
+
+    def get(self, request, *args, **kwargs):
+        coaches_id = CoachOccurrenceAssignment.objects.filter(
+            occurrence=self.occurrence, state=TrainingAttendance.PRESENT
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.occurrence.event}_{date_pretty(self.occurrence.datetime_start)}_trenéři",
+            Person.objects.filter(id__in=coaches_id),
+        )
+
+
+class TrainingExportParticipantsOccurrenceView(
+    OccurrenceManagePermissionMixin2,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+    generic.View,
+):
+    http_method_names = ["get"]
+    occurrence_id_key = "pk"
+
+    def get(self, request, *args, **kwargs):
+        participants_id = TrainingParticipantAttendance.objects.filter(
+            occurrence=self.occurrence, state=TrainingAttendance.PRESENT
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.occurrence.event}_{date_pretty(self.occurrence.datetime_start)}_účastníci",
+            Person.objects.filter(id__in=participants_id),
+        )

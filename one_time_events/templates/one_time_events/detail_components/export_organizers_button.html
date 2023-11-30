@@ -1,0 +1,5 @@
+{% if event.has_organizer %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url 'one_time_events:export-organizers' event.id %}" class="btn btn-info">Vyexportovat organizátory</a>
+    </div>
+{% endif %}
