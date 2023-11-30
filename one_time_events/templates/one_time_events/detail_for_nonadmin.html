@@ -17,11 +17,26 @@
             {% include 'one_time_events/detail_components_nonadmin/enroll_unenroll_myslelf_organizer_button.html' %}
         </div>
     </div>
+    {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
+        <div class="alert alert-success mt-n4" role="alert">
+            Na tuto akci jste již přihlášen/a. Odhlášení je možné provádět jen prostřednictvím e-mailu z důvodu domluvení detailů odhlášky.
+        </div>
+    {% elif active_person_participant_enrollment.state == enrollment_states.SUBSTITUTE %}
+        <div class="alert alert-success" role="alert">
+            Na tuto akci jste již přihlášen/a jako náhradník. Počkejte prosím na manuální schválení administrátorem v případě volné kapacity.
+        </div>
+    {% endif %}
     <div class="row">
         {% include 'one_time_events/detail_components_nonadmin/overview.html' %}
         {% include 'one_time_events/detail_components_nonadmin/description.html' %}
         {% include 'one_time_events/detail_components_nonadmin/map.html' %}
     </div>
+
+    {% if active_person_is_organizer %}
+        <div class="row">
+            {% include 'one_time_events/detail_components_nonadmin/my_organizer_enrollment.html' %}
+        </div>
+    {% endif %}
 
     <div class="row">
         {% include 'one_time_events/detail_components_nonadmin/organizators.html' %}

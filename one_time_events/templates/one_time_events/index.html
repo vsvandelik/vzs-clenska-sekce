@@ -12,10 +12,10 @@
     </div>
 
     <div class="card">
-        <div class="card-header d-flex align-items-center">
+        <div class="card-header d-flex align-items-center border-0">
             <div class="card-title h5">Nadcházející akce</div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="row">
                 <div class="col-12">
                     <table id="one-time-events-table" class="table table-hover table-striped">
@@ -45,7 +45,6 @@
                                                     </a>
                                                     {% include "delete_button_icon.html" with id="delete-event-modal" pattern="events:delete" object=event %}
                                                 </div>
-                                                TODO: ELSE WITH POSSIBILITY TO SIGN UP FOR EVENT AND MORE INFO
                                             {% endifperm %}
                                         </td>
                                     </tr>

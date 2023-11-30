@@ -43,14 +43,14 @@ from events.views import (
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoSelfObjectMixin,
 )
-from persons.models import Person
+from persons.models import Person, get_active_user
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from vzs.settings import GOOGLE_MAPS_API_KEY
+from vzs.utils import export_queryset_csv, date_pretty
 from vzs.utils import send_notification_email
 from .forms import (
     ApproveOccurrenceForm,
@@ -101,15 +101,19 @@ class OneTimeEventDetailView(EventDetailBaseView):
             "active_person_is_organizer", self.object.is_organizer(active_person)
         )
         kwargs.setdefault(
+            "active_person_participant_enrollment",
+            self.object.get_participant_enrollment(active_person),
+        )
+        kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+        kwargs.setdefault(
             "map_is_available", GOOGLE_MAPS_API_KEY is not None and self.object.location
         )
         return super().get_context_data(**kwargs)
 
     def get_template_names(self):
         active_person = self.request.active_person
-        if hasattr(active_person, "user") and self.object.can_user_manage(
-            active_person.user
-        ):
+        active_user = get_active_user(active_person)
+        if self.object.can_user_manage(active_user):
             return "one_time_events/detail.html"
         else:
             return "one_time_events/detail_for_nonadmin.html"
@@ -120,8 +124,8 @@ class OneTimeEventListView(generic.ListView):
     context_object_name = "events"
 
     def get_queryset(self):
-        user = self.request.user
         active_person = self.request.active_person
+        user = get_active_user(active_person)
 
         visible_event_pks = [
             event.pk
