@@ -11,7 +11,7 @@ function handler(event) {
         last_name: last_name,
     });
 
-    fetch("/api/osoby/existuje/?" + query_parameters.toString())
+    fetch("/api/persons/exists/?" + query_parameters.toString())
         .then((does_exist) => does_exist.json())
         .then((does_exist) => {
             if (does_exist === true) {

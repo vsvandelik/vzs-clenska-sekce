@@ -17,14 +17,14 @@ from .viewsets import (
 app_name = "api"
 
 router = DefaultRouter()
-router.register("osoby", PersonViewSet)
-router.register("vlastnosti", FeatureViewSet)
-router.register("skupiny", GroupViewSet)
-router.register("jednorazove", OneTimeEventViewSet)
-router.register("treninky", TrainingViewSet)
-router.register("pozice", PositionViewSet)
-router.register("transakce", TransactionViewSet)
-router.register("uzivatele", UserViewSet)
+router.register("persons", PersonViewSet)
+router.register("features", FeatureViewSet)
+router.register("groups", GroupViewSet)
+router.register("one-time", OneTimeEventViewSet)
+router.register("trainings", TrainingViewSet)
+router.register("positions", PositionViewSet)
+router.register("transactions", TransactionViewSet)
+router.register("users", UserViewSet)
 
 
 token_urlpatterns = [
@@ -46,7 +46,7 @@ token_urlpatterns = [
 ]
 
 urlpatterns = [
-    path("osoby/existuje/", PersonExistsView.as_view()),
+    path("persons/exists/", PersonExistsView.as_view()),
     path("", include(router.urls)),
     path("tokeny/", include((token_urlpatterns, "token"), namespace="token")),
 ]
