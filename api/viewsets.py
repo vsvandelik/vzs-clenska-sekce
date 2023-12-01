@@ -55,10 +55,10 @@ class PersonExistsView(APIView):
     permission_classes = [IsAuthenticated & PersonPermission]
     """:meta private:"""
 
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         """:meta private:"""
 
-        filter_q = create_filter(request.GET, PersonExistsFilter)
+        filter_q = create_filter(request.POST, PersonExistsFilter)
 
         does_exist = Person.objects.filter(filter_q).exists()
 
