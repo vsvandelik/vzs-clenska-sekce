@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -86,6 +87,17 @@ class OneTimeEvent(Event):
                 return len(self.all_possible_participants()) < self.capacity
             raise NotImplementedError
         return True
+
+    def has_approved_participant(self):
+        return self.onetimeeventparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).exists()
+
+    def has_organizer(self):
+        for occurrence in self.eventoccurrence_set.all():
+            if occurrence.organizers.count() > 0:
+                return True
+        return False
 
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
@@ -283,6 +295,11 @@ class OneTimeEventOccurrence(EventOccurrence):
         return self.organizeroccurrenceassignment_set.filter(
             position_assignment=position_assignment
         )
+
+    def has_attending_organizer(self):
+        return self.organizeroccurrenceassignment_set.filter(
+            state=OneTimeEventAttendance.PRESENT
+        ).exists()
 
     def has_position_free_spot(self, position_assignment):
         return (

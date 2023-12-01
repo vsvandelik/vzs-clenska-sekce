@@ -3,9 +3,11 @@ from collections.abc import Callable, Mapping
 from typing import Any, TypedDict, get_type_hints
 from urllib import parse
 
+import unicodedata
 from django.core.mail import send_mail
 from django.db.models.query import Q
 from django.http import HttpResponse
+from urllib.parse import quote
 from django.urls import reverse
 from django.utils import formats
 
@@ -15,7 +17,7 @@ from vzs import settings
 def export_queryset_csv(filename, queryset):
     response = HttpResponse(
         content_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}.csv"'},
+        headers={"Content-Disposition": rfc5987_content_disposition(f"{filename}.csv")},
     )
     response.write("\ufeff".encode("utf8"))
 
@@ -27,6 +29,18 @@ def export_queryset_csv(filename, queryset):
         writer.writerow(instance.csv_row())
 
     return response
+
+
+def rfc5987_content_disposition(file_name):
+    ascii_name = (
+        unicodedata.normalize("NFKD", file_name).encode("ascii", "ignore").decode()
+    )
+    header = f'attachment; filename="{ascii_name}"'
+    if ascii_name != file_name:
+        quoted_name = quote(file_name)
+        header += "; filename*=UTF-8''{}".format(quoted_name)
+
+    return header
 
 
 def reverse_with_get_params(*args, **kwargs):

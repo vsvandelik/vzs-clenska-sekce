@@ -10,6 +10,7 @@ from polymorphic.models import PolymorphicModel
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
+from vzs.models import RenderableModelMixin
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -35,7 +36,7 @@ class ParticipantEnrollment(PolymorphicModel):
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
-class Event(PolymorphicModel):
+class Event(RenderableModelMixin, PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"), null=True, blank=True)
     location = models.CharField(
@@ -149,6 +150,12 @@ class Event(PolymorphicModel):
     def has_free_spot(self):
         return self.capacity is None
 
+    def has_approved_participant(self):
+        raise NotImplementedError
+
+    def has_organizer(self):
+        raise NotImplementedError
+
     def can_person_enroll_as_participant(self, person):
         return (
             self.can_person_enroll_as_waiting(person)
@@ -247,6 +254,12 @@ class EventOccurrence(PolymorphicModel):
         return self.organizeroccurrenceassignment_set.filter(person=person)
 
     def position_organizers(self, position_assignment):
+        raise NotImplementedError
+
+    def has_attending_organizer(self):
+        raise NotImplementedError
+
+    def has_attending_participant(self):
         raise NotImplementedError
 
     def has_position_free_spot(self, position_assignment):

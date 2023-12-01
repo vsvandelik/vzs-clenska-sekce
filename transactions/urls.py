@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    BulkTransactionDeleteView,
     TransactionCreateBulkView,
     TransactionCreateSameAmountBulkConfirmView,
     TransactionCreateView,
@@ -65,5 +66,10 @@ urlpatterns = [
         "<int:pk>/smazat/",
         TransactionDeleteView.as_view(),
         name="delete",
+    ),
+    path(
+        "<int:pk>/smazat-hromadnou/",
+        BulkTransactionDeleteView.as_view(),
+        name="delete-bulk",
     ),
 ]
