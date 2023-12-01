@@ -17,7 +17,7 @@ Prerekvizity
 
 Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislosti.
 
-1. Nastavíme obsah souboru ``.env`` jako
+1. Překopírujeme soubor ``.env.dist`` do ``.env`` a provedeme nastavení proměnných dle nápovědy u každé proměnné. Doporučujeme vycházet z následujícího nastavení proměnných, pokud jiné hodnoty nejsou k dispozici.
 
 .. code-block:: console
 
@@ -70,7 +70,7 @@ Prerekvizity
 
 Před vytvořením docker image je nutné provést konfiguraci.
 
-1. Nastavíme obsah souboru ``.env`` jako
+1. Překopírujeme soubor ``.env.dist`` do ``.env`` a provedeme nastavení proměnných dle nápovědy u každé proměnné. Doporučujeme vycházet z následujícího nastavení proměnných, pokud jiné hodnoty nejsou k dispozici.
 
 .. code-block:: console
 
@@ -135,7 +135,7 @@ Prerekvizity
 ------------
 - docker ≥ 1.13.1
 
-Nejprve se pustíme do konfigurace. Nastavíme obsah souboru ``.env`` jako následující a doplníme zbylé nevyplněné proměnné.
+Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze souboru ``.env.dist`` doplníme zbylé nevyplněné proměnné.
 
 .. code-block:: console
 
