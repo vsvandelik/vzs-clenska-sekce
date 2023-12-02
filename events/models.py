@@ -109,6 +109,9 @@ class Event(RenderableModelMixin, PolymorphicModel):
             return "∞"
         return self.capacity
 
+    def position_assignments_sorted(self):
+        return self.eventpositionassignment_set.order_by("position__name")
+
     @staticmethod
     def check_common_requirements(req_obj, person):
         person_with_age = Person.objects.with_age().get(id=person.id)

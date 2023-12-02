@@ -1,10 +1,11 @@
+{% load events_template_tags %}
 {% load one_time_events_template_tags %}
 {% load vzs_filters %}
 
 <div class="col-12">
     <div class="card">
         <div class="card-header border-0">
-            <div class="card-title h5">Organizátoři (TODO: realna data)</div>
+            <div class="card-title h5">Organizátoři</div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -12,29 +13,35 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th scope="col">9. 3. 2024</th>
-                            <th scope="col">10. 3. 2024</th>
-                            <th scope="col">23. 3. 2024</th>
-                            <th scope="col">24. 3. 2024</th>
+                            {% for occurrence in event.sorted_occurrences_list %}
+                                <th scope="col">{{ occurrence.date|date }}</th>
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <th scope="row">Velitel</th>
-                            <td style="padding-left:0.75rem">Jan Novák</td>
-                            <td>Jan Novák</td>
-                            <td>Petr Kučera</td>
-                            <td>Jan Novák</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Zdravotník</th>
-                            <td style="padding-left:0.75rem">Šimon Vomáčka</td>
-                            <td>Petr Ryšavý</td>
-                            <td>Jan Novák</td>
-                            <td>Petr Kučera</td>
-                        </tbody>
-                    </table>
-                </div>
+                        {% for position_assignment in event.position_assignments_sorted %}
+                            {% with position_count=position_assignment.count %}
+                                {% for i in 0|range:position_count %}
+                                    <tr>
+                                        <th scope="row">{{ position_assignment.position.name }}</th>
+                                        {% for occurrence in event.sorted_occurrences_list %}
+                                            {% with organizer_assignments=occurrence|occurrence_position_assignment_organizers:position_assignment %}
+                                                {% with organizer_assignment_i=organizer_assignments|index_safe:i %}
+                                                    {% if organizer_assignment_i is not None %}
+                                                        <td>{{ organizer_assignment_i.person }}</td>
+                                                    {% else %}
+                                                        <td>{% value_missing_symbol %}</td>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
