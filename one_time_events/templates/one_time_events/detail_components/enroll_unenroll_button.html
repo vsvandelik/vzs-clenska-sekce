@@ -2,7 +2,7 @@
     {% if active_person_can_enroll %}
         <form method="POST" action="{% url 'one_time_events:enroll-myself-participant' event.id %}">
             {% csrf_token %}
-            <button class="btn btn-info" type="submit">Přihlásit se</button>
+            <button class="btn btn-info" type="submit">Přihlásit se jako účastník</button>
         </form>
     {% elif active_person_can_unenroll %}
         {% include 'events/detail_components/unenroll_button.html' %}

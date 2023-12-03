@@ -14,7 +14,7 @@
                 </div>
             </div>
             {% include 'one_time_events/detail_components/enroll_unenroll_button.html' %}
-            {% include 'one_time_events/detail_components_nonadmin/enroll_unenroll_myslelf_organizer_button.html' %}
+            {% include 'one_time_events/detail_components_nonadmin/enroll_unenroll_myself_organizer_button.html' %}
         </div>
     </div>
     {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
@@ -31,12 +31,6 @@
         {% include 'one_time_events/detail_components_nonadmin/description.html' %}
         {% include 'one_time_events/detail_components_nonadmin/map.html' %}
     </div>
-
-    {% if active_person_is_organizer %}
-        <div class="row">
-            {% include 'one_time_events/detail_components_nonadmin/my_organizer_enrollment.html' %}
-        </div>
-    {% endif %}
 
     <div class="row">
         {% include 'one_time_events/detail_components_nonadmin/organizators.html' %}

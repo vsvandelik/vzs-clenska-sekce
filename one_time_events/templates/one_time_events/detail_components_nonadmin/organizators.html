@@ -28,11 +28,32 @@
                                             {% for occurrence in event.sorted_occurrences_list %}
                                                 {% with organizer_assignments=occurrence|occurrence_position_assignment_organizers:position_assignment %}
                                                     {% with organizer_assignment_i=organizer_assignments|index_safe:i %}
-                                                        {% if organizer_assignment_i is not None %}
-                                                            <td>{{ organizer_assignment_i.person }}</td>
-                                                        {% else %}
-                                                            <td>{% value_missing_symbol %}</td>
-                                                        {% endif %}
+                                                        <td>
+                                                            {% if organizer_assignment_i is not None %}
+                                                                {% if organizer_assignment_i.person == active_person %}
+                                                                    {% if occurrence|tuple:active_person|can_unenroll_position:position_assignment %}
+                                                                        <a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id organizer_assignment_i.id %}"
+                                                                           class="btn btn-secondary"
+                                                                           data-toggle="modal"
+                                                                           data-target="#unenroll-myself-organizer-occurrence-modal"
+                                                                           data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id organizer_assignment_i.id %}"
+                                                                        >Odhlásit se</a>
+                                                                    {% else %}
+                                                                        já
+                                                                    {% endif %}
+                                                                {% else %}{{ organizer_assignment_i.person }}{% endif %}
+                                                            {% else %}
+                                                                {% if occurrence|tuple:active_person|can_enroll_position:position_assignment %}
+                                                                    <form method="POST" style="display: inline"
+                                                                          action="{% url 'one_time_events:enroll-myself-organizer-occurrence' occurrence.id position_assignment.id %}">
+                                                                        {% csrf_token %}
+                                                                        <button class="btn btn-info" type="submit">Přihlásit se</button>
+                                                                    </form>
+                                                                {% else %}
+                                                                    {% value_missing_symbol %}
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </td>
                                                     {% endwith %}
                                                 {% endwith %}
                                             {% endfor %}

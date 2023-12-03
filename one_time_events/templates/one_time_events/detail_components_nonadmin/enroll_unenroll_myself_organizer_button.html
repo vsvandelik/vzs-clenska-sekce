@@ -3,8 +3,8 @@
         <a class="btn btn-secondary"
            data-action="{% url 'one_time_events:unenroll-myself-organizer' event.id %}"
            data-toggle="modal"
-           data-target="#unenroll-myself-organizer-modal">Odhlásit se ze všech dnů</a>
+           data-target="#unenroll-myself-organizer-modal">Odhlásit se ze všech dnů jako organizátor</a>
     {% elif not active_person_is_organizer and active_person_can_enroll_organizer %}
-        <a class="btn btn-info" href="{% url 'one_time_events:enroll-myself-organizer' event.id %}">Přihlásit se jako organizátor</a>
+        <a class="btn btn-info" href="{% url 'one_time_events:enroll-myself-organizer' event.id %}">Přihlásit se jako organizátor na více dnů</a>
     {% endif %}
 </div>
