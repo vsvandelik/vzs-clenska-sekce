@@ -26,7 +26,6 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
-
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -88,6 +87,14 @@ class UserCreateView(UserCreateDeletePermissionMixin, SuccessMessageMixin, Creat
         """:meta private:"""
 
         self.person = self.get_object()
+        if self.person.email is None:
+            error_message(
+                request,
+                _(
+                    "Nelze vytvořit uživatelský účet, protože osoba nemá vyplněnou e-mailovou adresu."
+                ),
+            )
+            return HttpResponseRedirect(self.get_success_url())
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):

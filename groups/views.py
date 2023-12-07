@@ -73,9 +73,10 @@ class GroupAddMembersView(GroupPermissionMixin, SuccessMessageMixin, UpdateView)
 
         if form.instance.google_email:
             for new_member in new_members:
-                google_directory.add_member_to_group(
-                    new_member.email, form.instance.google_email
-                )
+                if new_member.email is not None:
+                    google_directory.add_member_to_group(
+                        new_member.email, form.instance.google_email
+                    )
 
         return super().form_valid(form)
 

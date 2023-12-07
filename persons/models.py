@@ -81,7 +81,9 @@ class Person(
 
     objects = PersonsManager()
 
-    email = models.EmailField(_("E-mailová adressa"), unique=True)
+    email = models.EmailField(
+        _("E-mailová adressa"), unique=True, blank=True, null=True
+    )
     first_name = models.CharField(_("Křestní jméno"), max_length=50)
     last_name = models.CharField(_("Příjmení"), max_length=50)
     date_of_birth = models.DateField(_("Datum narození"), blank=True, null=True)

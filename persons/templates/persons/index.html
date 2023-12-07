@@ -45,7 +45,7 @@
                                     {% for person in persons %}
                                         <tr>
                                             <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
-                                            <td><a href="mailto:{{ person.email }}">{{ person.email }}</a></td>
+                                            <td>{% if person.email %}<a href="mailto:{{ person.email }}">{{ person.email }}</a>{% endif %}</td>
                                             <td>
                                                 <div class="btn-group">
                                                     <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
