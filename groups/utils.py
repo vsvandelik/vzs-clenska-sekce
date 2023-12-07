@@ -5,7 +5,7 @@ from persons.models import Person
 def sync_single_group_with_google(local_group):
     google_email = local_group.google_email
 
-    local_emails = {p.email for p in local_group.members.all()}
+    local_emails = {p.email for p in local_group.members.all() if p.email is not None}
     google_emails = {m.email for m in google_directory.get_group_members(google_email)}
 
     if not local_group.google_as_members_authority:

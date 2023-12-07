@@ -66,7 +66,19 @@ def parse_persons_filter_queryset(
 
 
 def send_email_to_selected_persons(selected_persons):
-    recipients = [f"{p.first_name} {p.last_name} <{p.email}>" for p in selected_persons]
+    recipients = []
+    for person in selected_persons:
+        if person.email is not None:
+            recipients.append(
+                f"{person.first_name} {person.last_name} <{person.email}>"
+            )
+
+        persons_managing = person.managed_by.all()
+        for person_managing in persons_managing:
+            if person_managing.email is not None:
+                recipients.append(
+                    f"{person_managing.first_name} {person_managing.last_name} <{person_managing.email}>"
+                )
 
     gmail_link = "https://mail.google.com/mail/?view=cm&to=" + ",".join(recipients)
 

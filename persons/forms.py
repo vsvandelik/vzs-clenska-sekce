@@ -2,9 +2,9 @@ import datetime
 import re
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, Fieldset
+from crispy_forms.layout import Div, Fieldset, Layout, Submit
 from django import forms
-from django.forms import ModelForm, ValidationError, Form
+from django.forms import Form, ModelForm, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
@@ -12,6 +12,7 @@ from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.widgets import DatePickerWithIcon
+
 from .models import Person, PersonHourlyRate
 
 
@@ -40,6 +41,18 @@ class PersonForm(ModelForm):
             raise ValidationError(_("Neplatné datum narození."))
 
         return date_of_birth
+
+    def clean_birth_number(self):
+        birth_number = self.cleaned_data["birth_number"]
+
+        if birth_number and Person.objects.filter(birth_number=birth_number).count():
+            raise ValidationError(
+                _(
+                    "Rodné číslo je již použito. Zkontrolujte prosím, jestli daná osoba již neexistuje."
+                )
+            )
+
+        return birth_number
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]

@@ -15,6 +15,9 @@ from fiobank import FioBank
 from events.models import ParticipantEnrollment
 from persons.models import Person
 from vzs.settings import FIO_TOKEN
+from vzs import settings
+from vzs.utils import email_notification_recipient_set
+from .models import Transaction, FioTransaction
 
 from .models import FioTransaction, Transaction
 
@@ -178,11 +181,12 @@ def send_email_transactions(transactions: Iterable[Transaction]):
         html_message = render_to_string(
             "transactions/email.html", {"transaction": transaction}
         )
+        emails = email_notification_recipient_set(transaction.person)
         send_mail(
             subject="Informace o transakci",
             message="",
             from_email=None,
-            recipient_list=[transaction.person.email],
+            recipient_list=emails,
             fail_silently=False,
             html_message=html_message,
         )
