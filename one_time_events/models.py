@@ -1,10 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
-from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -18,6 +16,7 @@ from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
+from vzs.settings import CURRENT_DATETIME
 
 
 class OneTimeEventAttendance(models.TextChoices):
@@ -312,7 +311,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_enroll:
             return False
         return (
-            datetime.now().date()
+            CURRENT_DATETIME.date()
             + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -324,7 +323,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_unenroll:
             return False
         return (
-            datetime.now().date()
+            CURRENT_DATETIME.date()
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -370,7 +369,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         return len(self.organizer_assignments_settled()) == 0
 
     def can_attendance_be_filled(self):
-        return datetime.now(tz=timezone.get_default_timezone()).date() >= self.date
+        return CURRENT_DATETIME.date() >= self.date
 
     def not_approved_when_should(self):
         return (

@@ -1,12 +1,12 @@
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from fiobank import ThrottlingError
 
 from transactions.models import FioSettings
 from transactions.utils import fetch_fio
+from vzs.settings import CURRENT_DATETIME
 
 
 class Command(BaseCommand):
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         settings = FioSettings.load()
-        now = timezone.now()
+        now = CURRENT_DATETIME
 
         days_argument = options["days"]
 
@@ -41,7 +41,7 @@ class Command(BaseCommand):
             )
         else:
             if not days_argument:
-                settings.last_fio_fetch_time = timezone.now()
+                settings.last_fio_fetch_time = CURRENT_DATETIME
                 settings.save()
 
             self.stdout.write(self.style.SUCCESS(_(f"Úspěšně stáhnuté transakce.")))

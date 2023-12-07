@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -11,6 +11,7 @@ from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
+from vzs.settings import CURRENT_DATETIME
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -160,7 +161,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and datetime.now().date()
+            and CURRENT_DATETIME.date()
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )

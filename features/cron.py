@@ -1,18 +1,17 @@
-from datetime import datetime, timedelta
-from django.utils import timezone
+from datetime import timedelta
 
-from features.models import FeatureAssignment, Feature
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 
+from features.models import FeatureAssignment, Feature
 from vzs import settings
+from vzs.settings import CURRENT_DATETIME
 from vzs.utils import send_notification_email
 
 
 def features_expiry_send_mails():
     observed_feature_assignments = FeatureAssignment.objects.annotate(
-        date_diff=F("date_expire")
-        - datetime.now(tz=timezone.get_default_timezone()).date()
+        date_diff=F("date_expire") - CURRENT_DATETIME.date()
     ).filter(
         date_diff__lte=timedelta(hours=settings.FEATURE_EXPIRE_HOURS_SEND_MAIL),
         expiry_email_sent=False,

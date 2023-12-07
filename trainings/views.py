@@ -1,11 +1,8 @@
-from datetime import datetime
-
 from django.contrib import messages
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -56,6 +53,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.settings import CURRENT_DATETIME
 from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
 from .forms import (
     CancelCoachExcuseForm,
@@ -560,7 +558,7 @@ class EnrollMyselfParticipantFromOccurrenceView(
 class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if datetime.now(tz=timezone.get_default_timezone()) < occurrence.datetime_start:
+        if CURRENT_DATETIME < occurrence.datetime_start:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
