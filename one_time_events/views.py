@@ -108,6 +108,8 @@ class OneTimeEventDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "map_is_available", GOOGLE_MAPS_API_KEY is not None and self.object.location
         )
+        kwargs.setdefault("organizers_positions", self._get_organizers_table())
+
         return super().get_context_data(**kwargs)
 
     def get_template_names(self):
@@ -117,6 +119,31 @@ class OneTimeEventDetailView(EventDetailBaseView):
             return "one_time_events/detail.html"
         else:
             return "one_time_events/detail_for_nonadmin.html"
+
+    def _get_organizers_table(self):
+        organizers_positions = []
+
+        for position_assignment in self.object.position_assignments_sorted():
+            max_length = 0
+            organizers_per_occurrences = {}
+
+            for occurrence in self.object.sorted_occurrences_list():
+                organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+                    occurrence=occurrence, position_assignment=position_assignment
+                )
+                organizers_per_occurrences[occurrence] = organizer_assignments
+                max_length = max(organizer_assignments.count(), max_length)
+
+            organizers_positions.append(
+                {
+                    "name": position_assignment.position.name,
+                    "position_assignment": position_assignment,
+                    "count": max_length,
+                    "organizers_per_occurrences": organizers_per_occurrences,
+                }
+            )
+
+        return organizers_positions
 
 
 class OneTimeEventListView(generic.ListView):
