@@ -24,7 +24,7 @@
                                 <th scope="col">Název</th>
                                 <th scope="col">Datum</th>
                                 <th scope="col">Místo konání</th>
-                                <th scope="col" style="width: 40px"></th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -34,17 +34,16 @@
                                         <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
                                         <td>{% display_date_range event %}</td>
                                         <td>{{ event.location }}</td>
-                                        <td>
-                                            {% ifperm 'one_time_events:edit' event.id as perm %}
-                                                <div class="btn-group">
-                                                    <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">
-                                                        <i class="fas fa-info"></i>
-                                                    </a>
-                                                    <a class="btn btn-success btn-sm" href="{% url 'one_time_events:edit' event.id %}">
-                                                        <i class="fas fa-pen"></i>
-                                                    </a>
-                                                    {% include "delete_button_icon.html" with id="delete-event-modal" pattern="events:delete" object=event %}
-                                                </div>
+                                        <td class="text-right">
+                                            {% ifperm 'one_time_events:enroll-myself-participant' event.id as perm %}
+                                                <a class="btn btn-info btn-sm" href="{{ perm.url }}">
+                                                    Přihlásit
+                                                </a>
+                                            {% endifperm %}
+                                            {% ifperm 'one_time_events:enroll-myself-organizer' event.id as perm %}
+                                                <a class="btn btn-info btn-sm" href="{{ perm.url }}">
+                                                    Přihlásit jako organizátor
+                                                </a>
                                             {% endifperm %}
                                         </td>
                                     </tr>
