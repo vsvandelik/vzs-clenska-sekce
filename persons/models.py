@@ -64,16 +64,16 @@ class Person(
         FORMER = "byvaly", _("bývalý člen")
 
     class HealthInsuranceCompany(models.TextChoices):
-        VZP = 111, "111 - Všeobecná zdravotní pojišťovna České republiky"
-        VOZP = 201, "201 - Vojenská zdravotní pojišťovna České republiky"
-        CPZP = 205, "205 - Česká průmyslová zdravotní pojišťovna"
+        VZP = "111", "111 - Všeobecná zdravotní pojišťovna České republiky"
+        VOZP = "201", "201 - Vojenská zdravotní pojišťovna České republiky"
+        CPZP = "205", "205 - Česká průmyslová zdravotní pojišťovna"
         OZP = (
-            207,
+            "207",
             "207 - Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
         )
-        ZPS = 209, "209 - Zaměstnanecká pojišťovna Škoda"
-        ZPMV = 211, "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
-        RBP = 213, "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
+        ZPS = "209", "209 - Zaměstnanecká pojišťovna Škoda"
+        ZPMV = "211", "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
+        RBP = "213", "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
 
     class Sex(models.TextChoices):
         M = "M", _("muž")
