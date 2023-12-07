@@ -177,7 +177,7 @@ DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
 
 current_datime_from_env = os.environ.get("CURRENT_DATETIME")
 if current_datime_from_env:
-    CURRENT_DATETIME = datetime.fromisoformat(current_datime_from_env)
+    CURRENT_DATETIME = datetime.fromisoformat(current_datime_from_env.strip())
 else:
     CURRENT_DATETIME = datetime.now(tz=timezone.get_default_timezone())
 
