@@ -107,11 +107,10 @@ def index(indexable, i):
 
 @register.filter
 def index_safe(indexable, i):
-    if indexable in [None, ""]:
-        return iter([])
-    if i in indexable:
+    try:
         return indexable[i]
-    return iter([])
+    except (ValueError, IndexError):
+        return None
 
 
 @register.filter
@@ -185,6 +184,11 @@ def value_missing_symbol():
 @register.filter
 def tuple(a, b):
     return a, b
+
+
+@register.filter(name="range")
+def filter_range(start, end):
+    return range(start, end)
 
 
 class _PermURLContextVariable:

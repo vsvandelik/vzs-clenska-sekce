@@ -254,6 +254,7 @@ ADMIN_EMAIL = "system@vzs-praha15.cz"
 GOOGLE_SERVICE_ACCOUNT_PATH = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
+GOOGLE_MAPS_API_KEY = env.str("GOOGLE_MAPS_API_KEY", default=None)
 
 # Settings for FIO bank
 

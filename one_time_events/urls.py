@@ -5,6 +5,7 @@ from . import views
 app_name = "one_time_events"
 
 urlpatterns = [
+    path("", views.OneTimeEventListView.as_view(), name="index"),
     path(
         "<int:pk>/",
         views.OneTimeEventDetailView.as_view(),

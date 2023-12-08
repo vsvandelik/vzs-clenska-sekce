@@ -1,0 +1,34 @@
+{% load one_time_events_template_tags %}
+{% load vzs_filters %}
+
+<div class="col-12 col-md-4">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Základní informace o akci</div>
+        </div>
+        <div class="card-body p-0">
+            <table class="mb-1 table">
+                <tbody>
+                    <tr>
+                        <td class="text-nowrap text-bold">Datum:</td>
+                        <td class="w-100">{% display_date_range event %}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Místo konání:</td>
+                        <td class="w-100">{{ event.location|handle_missing }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Obsazenost:</td>
+                        {% with substitute_participants=event.substitute_participants %}
+                            <td class="w-100">{{ event.approved_participants|length }} / {{ event.get_capacity_display }} {% if substitute_participants|length > 0 %}({{ substitute_participants|length }}){% endif %}</td>
+                        {% endwith %}
+                    </tr>
+                    <tr>
+                        <td class="text-nowrap text-bold">Účastnický poplatek:</td>
+                        <td class="w-100">{{ event.default_participation_fee|money|handle_missing }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

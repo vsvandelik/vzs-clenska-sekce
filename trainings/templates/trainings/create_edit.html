@@ -52,26 +52,29 @@
                                                                 <table class="mb-1 table">
                                                                     <tbody id="id_{{ day_shortcut }}_tbody">
                                                                         {% with dates_weekday=dates|index_safe:weekday %}
-                                                                            {% for date,checked in dates_weekday %}
-                                                                                <tr>
-                                                                                    {% with dateFormatted=date|date %}
-                                                                                        <td class="w-100">
-                                                                                            <div class="custom-control custom-checkbox">
-                                                                                                <input id="{{ dateFormatted }}"
-                                                                                                       type="checkbox" name="day"
-                                                                                                       class="custom-control-input"
-                                                                                                       {% if checked %}
-                                                                                                           checked {% endif %}
-                                                                                                       onchange="trainingDayToggled(this)"
-                                                                                                       value="{{ dateFormatted }}">
-                                                                                                <label class="font-weight-normal"
-                                                                                                       class="custom-control-label"
-                                                                                                       for="{{ dateFormatted }}">{{ dateFormatted }}</label>
-                                                                                            </div>
-                                                                                    {% endwith %}
-                                                                                </td>
-                                                                                </tr>
-                                                                            {% endfor %}
+                                                                            {% if dates_weekday is not None %}
+                                                                                {% for date,checked in dates_weekday %}
+                                                                                    <tr>
+                                                                                        {% with dateFormatted=date|date %}
+                                                                                            <td class="w-100">
+                                                                                                <div class="custom-control custom-checkbox">
+                                                                                                    <input id="{{ dateFormatted }}"
+                                                                                                           type="checkbox"
+                                                                                                           name="day"
+                                                                                                           class="custom-control-input"
+                                                                                                           {% if checked %}
+                                                                                                               checked {% endif %}
+                                                                                                           onchange="trainingDayToggled(this)"
+                                                                                                           value="{{ dateFormatted }}">
+                                                                                                    <label class="font-weight-normal"
+                                                                                                           class="custom-control-label"
+                                                                                                           for="{{ dateFormatted }}">{{ dateFormatted }}</label>
+                                                                                                </div>
+                                                                                        {% endwith %}
+                                                                                    </td>
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            {% endif %}
                                                                         {% endwith %}
                                                                     </tbody>
                                                                 </table>

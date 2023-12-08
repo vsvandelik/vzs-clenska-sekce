@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment
+from events.models import ParticipantEnrollment, Event
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -40,13 +40,13 @@ from events.views import (
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoSelfObjectMixin,
 )
-from persons.models import Person
+from persons.models import Person, get_active_user
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
 from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from .forms import (
     ApproveOccurrenceForm,
@@ -83,8 +83,6 @@ from .permissions import (
 
 
 class OneTimeEventDetailView(EventDetailBaseView):
-    template_name = "one_time_events/detail.html"
-
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         kwargs.setdefault(
@@ -98,7 +96,68 @@ class OneTimeEventDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "active_person_is_organizer", self.object.is_organizer(active_person)
         )
+        kwargs.setdefault(
+            "active_person_participant_enrollment",
+            self.object.get_participant_enrollment(active_person),
+        )
+        kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+        kwargs.setdefault(
+            "map_is_available", GOOGLE_MAPS_API_KEY is not None and self.object.location
+        )
+        kwargs.setdefault("organizers_positions", self._get_organizers_table())
+
         return super().get_context_data(**kwargs)
+
+    def get_template_names(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+        if self.object.can_user_manage(active_user):
+            return "one_time_events/detail.html"
+        else:
+            return "one_time_events/detail_for_nonadmin.html"
+
+    def _get_organizers_table(self):
+        organizers_positions = []
+
+        for position_assignment in self.object.position_assignments_sorted():
+            max_length = 0
+            organizers_per_occurrences = {}
+
+            for occurrence in self.object.sorted_occurrences_list():
+                organizer_assignments = OrganizerOccurrenceAssignment.objects.filter(
+                    occurrence=occurrence, position_assignment=position_assignment
+                )
+                organizers_per_occurrences[occurrence] = organizer_assignments
+                max_length = max(organizer_assignments.count(), max_length)
+
+            organizers_positions.append(
+                {
+                    "name": position_assignment.position.name,
+                    "position_assignment": position_assignment,
+                    "count": max_length,
+                    "organizers_per_occurrences": organizers_per_occurrences,
+                }
+            )
+
+        return organizers_positions
+
+
+class OneTimeEventListView(generic.ListView):
+    template_name = "one_time_events/index.html"
+    context_object_name = "events"
+
+    def get_queryset(self):
+        active_person = self.request.active_person
+        user = get_active_user(active_person)
+
+        visible_event_pks = [
+            event.pk
+            for event in Event.objects.all()
+            if event.can_user_manage(user)
+            or event.can_person_interact_with(active_person)
+        ]
+
+        return Event.objects.filter(pk__in=visible_event_pks)
 
 
 class OneTimeEventCreateView(
