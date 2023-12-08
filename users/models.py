@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import Token as BaseToken
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
+from vzs.settings import CURRENT_DATETIME
 
 
 class UserManager(BaseUserManager):
@@ -138,6 +139,6 @@ class ResetPasswordToken(BaseToken):
         """
 
         return Q(
-            created__lt=timezone.now()
+            created__lt=CURRENT_DATETIME
             - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
         )

@@ -1,9 +1,6 @@
-from datetime import datetime
-
 from django.db.models import Q
 from django.forms import ChoiceField
 from django.forms import ModelForm
-from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.models import (
@@ -11,6 +8,7 @@ from events.models import (
 )
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from vzs.settings import CURRENT_DATETIME
 from vzs.widgets import DatePickerWithIcon
 
 
@@ -148,7 +146,7 @@ class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
         if instance.id is not None:
             instance.person = self.person
         else:
-            instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
+            instance.created_datetime = CURRENT_DATETIME
 
         if commit:
             instance.save()
@@ -172,7 +170,7 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
+        instance.created_datetime = CURRENT_DATETIME
         instance.person = self.person
 
         if commit:

@@ -1,8 +1,5 @@
-from datetime import datetime
-
 from django.http import Http404
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -49,6 +46,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.settings import CURRENT_DATETIME
 from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from .forms import (
     ApproveOccurrenceForm,
@@ -389,7 +387,7 @@ class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
 class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if datetime.now(tz=timezone.get_default_timezone()).date() < occurrence.date:
+        if CURRENT_DATETIME.date() < occurrence.date:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
