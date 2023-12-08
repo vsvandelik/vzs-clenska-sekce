@@ -30,12 +30,15 @@ class OneTimeEvent(Event):
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
         FOR_CHILDREN = "pro-deti", _("pro děti")
+        SOCIAL = "spolecenska", _("společenská")
 
     class Meta:
         permissions = [
-            ("komercni", _("Správce komerčních akcí")),
+            ("komercni", _("Správce komerčních událostí")),
             ("kurz", _("Správce kurzů")),
-            ("prezentacni", _("Správce prezentačních akcí")),
+            ("prezentacni", _("Správce prezentačních událostí")),
+            ("pro-deti", _("Správce událostí pro děti")),
+            ("spolecenska", _("Správce společenských událostí")),
         ]
 
     enrolled_participants = models.ManyToManyField(

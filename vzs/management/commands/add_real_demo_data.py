@@ -340,7 +340,9 @@ class Command(BaseCommand):
             for i in range(random.randint(0, 4)):
                 existing_parents = Person.objects.filter(person_type="rodic").all()
 
-                if random.randint(0, 4) == 1:  # existing parent
+                if (
+                    existing_parents.exists() and random.randint(0, 4) == 1
+                ):  # existing parent
                     new_person.managed_by.add(random.choice(existing_parents))
                 else:
                     new_parent = Person.objects.create(
