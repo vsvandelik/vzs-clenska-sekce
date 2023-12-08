@@ -46,10 +46,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import GOOGLE_MAPS_API_KEY
-from vzs.utils import export_queryset_csv, date_pretty
-from vzs.utils import send_notification_email
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
 from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from .forms import (
     ApproveOccurrenceForm,
