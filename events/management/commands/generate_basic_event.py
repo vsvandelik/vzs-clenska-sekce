@@ -1,13 +1,15 @@
 import random
-from vzs.commands_utils import positive_int, non_negative_int, age_int
-from django.utils import timezone
-from django.core.management.base import CommandError
-from one_time_events.models import OneTimeEvent
-from trainings.models import Training
-from persons.models import Person
-from events.models import EventPersonTypeConstraint
 from datetime import datetime, timedelta, date
+
+from django.core.management.base import CommandError
+from django.utils import timezone
+
+from events.models import EventPersonTypeConstraint
 from groups.models import Group
+from one_time_events.models import OneTimeEvent
+from persons.models import Person
+from trainings.models import Training
+from vzs.commands_utils import positive_int, non_negative_int, age_int
 
 
 def _generate_age(min, max):

@@ -10,11 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import datetime
 from pathlib import Path
 
 import environ
 from dateutil.relativedelta import relativedelta
 from django.conf.locale.cs import formats as cs_formats
+from django.utils import timezone
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,7 +120,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = (
@@ -173,6 +174,12 @@ cs_formats.DATETIME_FORMAT = "j. n. Y H:i"
 cs_formats.TIME_FORMAT = "H:i"
 
 DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
+
+current_datime_from_env = os.environ.get("CURRENT_DATETIME")
+if current_datime_from_env:
+    CURRENT_DATETIME = datetime.fromisoformat(current_datime_from_env.strip())
+else:
+    CURRENT_DATETIME = datetime.now(tz=timezone.get_default_timezone())
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
