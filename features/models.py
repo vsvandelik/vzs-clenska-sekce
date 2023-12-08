@@ -177,3 +177,4 @@ class FeatureAssignment(models.Model):
     code = models.CharField(
         max_length=255, blank=True, null=True
     )  # Only for qualification + equipments
+    expiry_email_sent = models.BooleanField(default=False)

@@ -1,13 +1,13 @@
 from datetime import date
 from itertools import chain
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import ExpressionWrapper, Case, When, Value, Q
+from django.db.models import Case, ExpressionWrapper, Q, Value, When
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from mptt.models import MPTTModel
 
 from features.models import Feature, FeatureAssignment
 from vzs import models as vzs_models
@@ -64,16 +64,16 @@ class Person(
         FORMER = "byvaly", _("bývalý člen")
 
     class HealthInsuranceCompany(models.TextChoices):
-        VZP = 111, "111 - Všeobecná zdravotní pojišťovna České republiky"
-        VOZP = 201, "201 - Vojenská zdravotní pojišťovna České republiky"
-        CPZP = 205, "205 - Česká průmyslová zdravotní pojišťovna"
+        VZP = "111", "111 - Všeobecná zdravotní pojišťovna České republiky"
+        VOZP = "201", "201 - Vojenská zdravotní pojišťovna České republiky"
+        CPZP = "205", "205 - Česká průmyslová zdravotní pojišťovna"
         OZP = (
-            207,
+            "207",
             "207 - Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
         )
-        ZPS = 209, "209 - Zaměstnanecká pojišťovna Škoda"
-        ZPMV = 211, "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
-        RBP = 213, "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
+        ZPS = "209", "209 - Zaměstnanecká pojišťovna Škoda"
+        ZPMV = "211", "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
+        RBP = "213", "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
 
     class Sex(models.TextChoices):
         M = "M", _("muž")
@@ -81,7 +81,9 @@ class Person(
 
     objects = PersonsManager()
 
-    email = models.EmailField(_("E-mailová adressa"), unique=True)
+    email = models.EmailField(
+        _("E-mailová adressa"), unique=True, blank=True, null=True
+    )
     first_name = models.CharField(_("Křestní jméno"), max_length=50)
     last_name = models.CharField(_("Příjmení"), max_length=50)
     date_of_birth = models.DateField(_("Datum narození"), blank=True, null=True)
@@ -170,6 +172,13 @@ class Person(
 
     def get_managed_persons(self):
         return list(chain(self.managed_persons.all(), [self]))
+
+
+def get_active_user(person: Person | None):
+    if person is None:
+        return AnonymousUser()
+
+    return getattr(person, "user", AnonymousUser())
 
 
 class PersonHourlyRate(models.Model):

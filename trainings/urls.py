@@ -1,13 +1,16 @@
 from django.urls import path
 
 from transactions import views as transactions_views
+
 from . import views
 
 app_name = "trainings"
 
 urlpatterns = [
     path("<int:pk>/", views.TrainingDetailView.as_view(), name="detail"),
-    path("pridat/", views.TrainingCreateView.as_view(), name="add"),
+    path(
+        "pridat/", views.TrainingCreateView.as_view(), name="add"
+    ),  # TODO: permissions
     path(
         "<int:pk>/upravit/",
         views.TrainingUpdateView.as_view(),
@@ -172,5 +175,25 @@ urlpatterns = [
         "<int:event_id>/zobrazit-dochazku/",
         views.TrainingShowAttendanceView.as_view(),
         name="show-attendance",
+    ),
+    path(
+        "<int:event_id>/exportovat-ucastniky/",
+        views.TrainingExportParticipantsView.as_view(),
+        name="export-participants",
+    ),
+    path(
+        "<int:event_id>/exportovat-trenery/",
+        views.TrainingExportCoachesView.as_view(),
+        name="export-coaches",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-ucastniky/",
+        views.TrainingExportParticipantsOccurrenceView.as_view(),
+        name="export-participants-occurrence",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-organizatory/",
+        views.TrainingExportOrganizersOccurrenceView.as_view(),
+        name="export-organizers-occurrence",
     ),
 ]

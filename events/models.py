@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
@@ -10,6 +10,8 @@ from polymorphic.models import PolymorphicModel
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
+from vzs.models import RenderableModelMixin
+from vzs.settings import CURRENT_DATETIME
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -35,7 +37,7 @@ class ParticipantEnrollment(PolymorphicModel):
     state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
-class Event(PolymorphicModel):
+class Event(RenderableModelMixin, PolymorphicModel):
     name = models.CharField(_("Název"), max_length=50)
     description = models.TextField(_("Popis"), null=True, blank=True)
     location = models.CharField(
@@ -108,6 +110,9 @@ class Event(PolymorphicModel):
             return "∞"
         return self.capacity
 
+    def position_assignments_sorted(self):
+        return self.eventpositionassignment_set.order_by("position__name")
+
     @staticmethod
     def check_common_requirements(req_obj, person):
         person_with_age = Person.objects.with_age().get(id=person.id)
@@ -149,17 +154,27 @@ class Event(PolymorphicModel):
     def has_free_spot(self):
         return self.capacity is None
 
+    def has_approved_participant(self):
+        raise NotImplementedError
+
+    def has_organizer(self):
+        raise NotImplementedError
+
     def can_person_enroll_as_participant(self, person):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and datetime.now().date()
+            and CURRENT_DATETIME.date()
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )
 
     def can_person_enroll_as_waiting(self, person):
-        if person is None or person in self.enrolled_participants.all():
+        if (
+            person is None
+            or person in self.enrolled_participants.all()
+            or self.capacity == 0
+        ):
             return False
 
         return self.does_participant_satisfy_requirements(person)
@@ -182,7 +197,7 @@ class Event(PolymorphicModel):
     def sorted_occurrences_list(self):
         raise NotImplementedError
 
-    def enrollments_by_Q(self, state):
+    def enrollments_by_Q(self, state) -> QuerySet[ParticipantEnrollment]:
         raise NotImplementedError
 
     def participants_by_Q(self, condition):
@@ -239,7 +254,16 @@ class EventOccurrence(PolymorphicModel):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    def get_person_organizer_assignment(self, person):
+        return self.organizeroccurrenceassignment_set.filter(person=person)
+
     def position_organizers(self, position_assignment):
+        raise NotImplementedError
+
+    def has_attending_organizer(self):
+        raise NotImplementedError
+
+    def has_attending_participant(self):
         raise NotImplementedError
 
     def has_position_free_spot(self, position_assignment):
@@ -280,11 +304,9 @@ class EventOccurrence(PolymorphicModel):
 
     def can_enroll_position(self, person, position_assignment):
         no_free_spot = not self.has_position_free_spot(position_assignment)
-        organizer_of_position = self.is_organizer_of_position(
-            person, position_assignment
-        )
+        organizer_assignment = self.get_person_organizer_assignment(person)
 
-        if no_free_spot or organizer_of_position:
+        if no_free_spot or organizer_assignment.exists():
             return False
 
         return self.satisfies_position_requirements(person, position_assignment)
@@ -313,6 +335,12 @@ class EventOccurrence(PolymorphicModel):
     def is_approved(self):
         return self.state == EventOrOccurrenceState.COMPLETED
 
+    def can_user_manage(self, user):
+        return self.event.can_user_manage(user)
+
+    def can_user_fill_attendance(self, user):
+        return self.can_user_manage(user)  # TODO: implement
+
 
 class EventPositionAssignment(models.Model):
     event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
@@ -322,6 +350,13 @@ class EventPositionAssignment(models.Model):
     count = models.PositiveSmallIntegerField(
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )
+
+    def duplicate(self, event):
+        position_assignment = EventPositionAssignment(
+            event=event, position=self.position, count=self.count
+        )
+        position_assignment.save()
+        return position_assignment
 
     class Meta:
         unique_together = ["event", "position"]

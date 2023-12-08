@@ -1,0 +1,61 @@
+{% load events_template_tags %}
+{% load one_time_events_template_tags %}
+{% load vzs_filters %}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header border-0">
+            <div class="card-title h5">Organizátoři</div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                {% if event.eventpositionassignment_set.exists %}
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for occurrence in event.sorted_occurrences_list %}
+                                    <th scope="col">{{ occurrence.date|date }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for position in organizers_positions %}
+                                <tr>
+                                    <th scope="row">{{ position.name }}</th>
+                                    {% for occurrence, organizators_per_occurrence in position.organizers_per_occurrences.items %}
+                                        <td>
+                                            {% for organizator_assignment in organizators_per_occurrence %}
+                                                <div>
+                                                    {{ organizator_assignment.person }}
+                                                    {% if organizator_assignment.person == active_person and occurrence|tuple:active_person|can_unenroll_position:position.position_assignment %}
+                                                        <br/><a href="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id organizator_assignment.id %}"
+                                                                class="btn btn-secondary btn-xs"
+                                                                data-toggle="modal"
+                                                                data-target="#unenroll-myself-organizer-occurrence-modal"
+                                                                data-action="{% url 'one_time_events:unenroll-myself-organizer-occurrence' occurrence.id organizator_assignment.id %}"
+                                                        >Odhlásit se</a>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+
+                                            {% if occurrence|tuple:active_person|can_enroll_position:position.position_assignment %}
+                                                <form method="POST" style="display: inline"
+                                                      action="{% url 'one_time_events:enroll-myself-organizer-occurrence' occurrence.id position.position_assignment.id %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-info" type="submit">Přihlásit se</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted text-center">Žádné organizátorské pozice nejsou přiřazeny k události.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

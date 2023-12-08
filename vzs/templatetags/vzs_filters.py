@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs import settings
+from vzs.utils import qr as utils_qr
 
 register = template.Library()
 
@@ -48,14 +49,7 @@ def absolute(number):
 
 @register.simple_tag
 def qr(transaction):
-    return (
-        f"http://api.paylibo.com/paylibo/generator/czech/image"
-        f"?currency=CZK"
-        f"&accountNumber={settings.FIO_ACCOUNT_NUMBER}"
-        f"&bankCode={settings.FIO_BANK_NUMBER}"
-        f"&amount={abs(transaction.amount)}"
-        f"&vs={transaction.pk}"
-    )
+    return utils_qr(transaction)
 
 
 @register.filter
@@ -113,11 +107,10 @@ def index(indexable, i):
 
 @register.filter
 def index_safe(indexable, i):
-    if indexable in [None, ""]:
-        return iter([])
-    if i in indexable:
+    try:
         return indexable[i]
-    return iter([])
+    except (ValueError, IndexError):
+        return None
 
 
 @register.filter
@@ -191,6 +184,11 @@ def value_missing_symbol():
 @register.filter
 def tuple(a, b):
     return a, b
+
+
+@register.filter(name="range")
+def filter_range(start, end):
+    return range(start, end)
 
 
 class _PermURLContextVariable:

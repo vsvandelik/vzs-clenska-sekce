@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from persons.models import Person
+from vzs.settings import CURRENT_DATETIME
 
 
 class Command(BaseCommand):
@@ -19,7 +20,7 @@ class Command(BaseCommand):
                 first_name=f"Testovaci",
                 last_name=f"Osoba {i}",
                 date_of_birth=(
-                    timezone.now()
+                    CURRENT_DATETIME
                     - timezone.timedelta(weeks=random.randint(5, 50) * 52)
                 ).date(),
                 sex=random.choices(Person.Sex.values)[0],

@@ -18,3 +18,4 @@ django-mptt
 django-polymorphic
 djangorestframework
 unidecode
+django-crontab

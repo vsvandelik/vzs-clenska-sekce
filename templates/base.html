@@ -86,6 +86,7 @@
         </script>
 
     </body>
-
-    {% include "users/logout_modal.html" %}
+    {% if not logout_remember %}
+        {% include "users/logout_modal.html" %}
+    {% endif %}
 </html>

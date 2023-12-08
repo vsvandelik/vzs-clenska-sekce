@@ -6,31 +6,33 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
 from vzs.utils import export_queryset_csv
+
 from .forms import (
-    PersonForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
-    PersonsFilterForm,
     MyProfileUpdateForm,
+    PersonForm,
     PersonHourlyRateForm,
+    PersonsFilterForm,
 )
-from .models import Person
+from .models import Person, get_active_user
 from .utils import (
+    extend_kwargs_of_assignment_features,
     parse_persons_filter_queryset,
     send_email_to_selected_persons,
-    extend_kwargs_of_assignment_features,
 )
 
 
-class PersonPermissionMixin(PermissionRequiredMixin):
-    def has_permission(self):
+class PersonPermissionBaseMixin:
+    @staticmethod
+    def permission_predicate(request):
         permission_required = (
             "persons.clenska_zakladna",
             "persons.detska_clenska_zakladna",
@@ -39,10 +41,15 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             "persons.dospela_clenska_zakladna",
         )
         for permission in permission_required:
-            if self.request.user.has_perm(permission):
+            if get_active_user(request.active_person).has_perm(permission):
                 return True
 
         return False
+
+
+class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
+    def has_permission(self):
+        return self.permission_predicate(self.request)
 
     @staticmethod
     def get_queryset_by_permission(user, queryset=None):
@@ -90,12 +97,16 @@ class PersonPermissionMixin(PermissionRequiredMixin):
         return queryset.filter(reduce(lambda x, y: x | y, conditions))
 
     def _filter_queryset_by_permission(self, queryset=None):
-        return self.get_queryset_by_permission(self.request.user, queryset)
+        return self.get_queryset_by_permission(
+            get_active_user(self.request.active_person), queryset
+        )
 
     def _get_available_person_types(self):
         available_person_types = set()
 
-        if self.request.user.has_perm("persons.clenska_zakladna"):
+        active_user = get_active_user(self.request.active_person)
+
+        if active_user.has_perm("persons.clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -109,13 +120,13 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         if (
-            self.request.user.has_perm("persons.detska_clenska_zakladna")
-            or self.request.user.has_perm("persons.bazenova_clenska_zakladna")
-            or self.request.user.has_perm("persons.lezecka_clenska_zakladna")
+            active_user.has_perm("persons.detska_clenska_zakladna")
+            or active_user.has_perm("persons.bazenova_clenska_zakladna")
+            or active_user.has_perm("persons.lezecka_clenska_zakladna")
         ):
             available_person_types.update([Person.Type.CHILD, Person.Type.PARENT])
 
-        if self.request.user.has_perm("persons.dospela_clenska_zakladna"):
+        if active_user.has_perm("persons.dospela_clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,

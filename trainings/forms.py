@@ -4,6 +4,7 @@ from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
@@ -32,7 +33,9 @@ from trainings.utils import (
     day_shortcut_2_weekday,
 )
 from transactions.models import Transaction
+from vzs import settings
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.utils import send_notification_email, date_pretty, time_pretty
 from vzs.widgets import TimePickerWithIcon
 from .models import (
     Training,
@@ -482,9 +485,36 @@ class InitializeWeekdaysProvider:
             enrollment.weekdays.add(weekday_obj)
 
 
+class TrainingEnrollmentStateChangedSendMailProvider:
+    def enrollment_state_changed_send_mail(self, enrollment):
+        if enrollment.state == ParticipantEnrollment.State.APPROVED:
+            send_notification_email(
+                _("Změna stavu přihlášky"),
+                _(f"Vaše přihláška na trénink {enrollment.event} byla schválena"),
+                [enrollment.person],
+            )
+        elif enrollment.state == ParticipantEnrollment.State.SUBSTITUTE:
+            send_notification_email(
+                _("Změna stavu přihlášky"),
+                _(
+                    f"Vaší přihlášce na trénink {enrollment.event} byl změněn stav na NÁHRADNÍK"
+                ),
+                [enrollment.person],
+            )
+        elif enrollment.state == ParticipantEnrollment.State.REJECTED:
+            send_notification_email(
+                _("Odmítnutí účasti"),
+                _(f"Na tréninku {enrollment.event} vám byla zakázána účast"),
+                [enrollment.person],
+            )
+        else:
+            raise NotImplementedError
+
+
 class TrainingParticipantEnrollmentForm(
     TrainingWeekdaysSelectionMixin,
     ParticipantEnrollmentForm,
+    TrainingEnrollmentStateChangedSendMailProvider,
     InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
@@ -507,6 +537,11 @@ class TrainingParticipantEnrollmentForm(
         if instance.id is not None or commit:
             if instance.id is None:
                 instance.save()
+                super().enrollment_state_changed_send_mail(instance)
+            else:
+                old_instance = TrainingParticipantEnrollment.objects.get(id=instance.id)
+                if old_instance.state != instance.state:
+                    super().enrollment_state_changed_send_mail(instance)
             instance_weekdays_objs = instance.weekdays.all()
             for weekday_obj in instance_weekdays_objs:
                 if weekday_obj.weekday not in weekdays_cleaned:
@@ -524,6 +559,7 @@ class TrainingParticipantEnrollmentForm(
 class TrainingEnrollMyselfParticipantForm(
     TrainingWeekdaysSelectionMixin,
     EnrollMyselfParticipantForm,
+    TrainingEnrollmentStateChangedSendMailProvider,
     InitializeWeekdaysProvider,
     TrainingParticipantEnrollmentUpdateAttendanceProvider,
 ):
@@ -549,6 +585,7 @@ class TrainingEnrollMyselfParticipantForm(
         ):
             instance.state = ParticipantEnrollment.State.APPROVED
 
+        super().enrollment_state_changed_send_mail(instance)
         if commit:
             instance.save()
             super().initialize_weekdays(instance, weekdays)
@@ -558,7 +595,9 @@ class TrainingEnrollMyselfParticipantForm(
 
 
 class CoachAssignmentForm(
-    EventFormMixin, CoachAssignmentUpdateAttendanceProvider, OrganizerAssignmentForm
+    EventFormMixin,
+    CoachAssignmentUpdateAttendanceProvider,
+    OrganizerAssignmentForm,
 ):
     class Meta(OrganizerAssignmentForm.Meta):
         model = CoachPositionAssignment
@@ -597,6 +636,8 @@ class CoachAssignmentForm(
             instance.person = self.person
 
         if self.cleaned_data["main_coach_assignment"]:
+            if self.event.main_coach_assignment is not None:
+                self._no_longer_main_coach_send_mail(self.event.main_coach_assignment)
             self.event.main_coach_assignment = instance
         elif (
             self.event.main_coach_assignment is not None
@@ -604,11 +645,51 @@ class CoachAssignmentForm(
         ):
             self.event.main_coach_assignment = None
 
+        if instance.id is None:
+            self._assigned_send_mail(instance)
+        else:
+            old_instance = CoachPositionAssignment.objects.get(id=instance.id)
+            if (
+                old_instance.position_assignment != instance.position_assignment
+                or old_instance.is_main_coach() != instance.is_main_coach()
+            ):
+                self._assignment_changed_send_mail(instance, old_instance)
+
         if commit:
             super().coach_assignment_update_attendance(instance, self.event)
             instance.save()
             self.event.save()
         return instance
+
+    def _assigned_send_mail(self, assignment):
+        main_coach_txt = ""
+        if assignment.is_main_coach():
+            main_coach_txt = "garantující"
+        send_notification_email(
+            _("Přihlášení trenéra"),
+            _(
+                f"Byl(a) jste přihlášen jako {main_coach_txt} trenér na pozici {assignment.position_assignment.position} na trénink {assignment.training}"
+            ),
+            [assignment.person],
+        )
+
+    def _no_longer_main_coach_send_mail(self, assignment):
+        send_notification_email(
+            _("Úprava garanta tréninku"),
+            _(f"Byl vám odebrán status garanta tréninku {assignment.training}"),
+            [assignment.person],
+        )
+
+    def _assignment_changed_send_mail(self, new_assignment, old_assignment):
+        old_main_coach = "ANO" if old_assignment.is_main_coach() else "NE"
+        new_main_coach = "ANO" if new_assignment.is_main_coach() else "NE"
+        send_notification_email(
+            _("Úprava přihlášky trenéra"),
+            _(
+                f"Vaše přihláška na trenéra události {new_assignment.training} byla upravena. Pozice: {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}, garant: {old_main_coach} --> {new_main_coach}"
+            ),
+            [new_assignment.person],
+        )
 
 
 class CoachAssignmentDeleteForm(ModelForm):
@@ -618,6 +699,7 @@ class CoachAssignmentDeleteForm(ModelForm):
 
     def save(self, commit=True):
         instance = super().save(False)
+        self._assignment_delete_send_mail(instance)
         if commit:
             CoachOccurrenceAssignment.objects.filter(
                 person=instance.person, occurrence__event=instance.training
@@ -625,9 +707,20 @@ class CoachAssignmentDeleteForm(ModelForm):
             instance.delete()
         return instance
 
+    def _assignment_delete_send_mail(self, assignment):
+        send_notification_email(
+            _("Zrušení trenéra"),
+            _(
+                f"Byl(a) jste odebrán(a) z trenérské pozice {assignment.position_assignment.position} události {assignment.training}"
+            ),
+            [assignment.person],
+        )
+
 
 class TrainingBulkApproveParticipantsForm(
-    TrainingParticipantEnrollmentUpdateAttendanceProvider, BulkApproveParticipantsForm
+    TrainingParticipantEnrollmentUpdateAttendanceProvider,
+    TrainingEnrollmentStateChangedSendMailProvider,
+    BulkApproveParticipantsForm,
 ):
     class Meta(BulkApproveParticipantsForm.Meta):
         model = Training
@@ -638,6 +731,7 @@ class TrainingBulkApproveParticipantsForm(
 
         for enrollment in enrollments_2_approve:
             enrollment.state = ParticipantEnrollment.State.APPROVED
+            super().enrollment_state_changed_send_mail(enrollment)
             if commit:
                 enrollment.save()
                 super().participant_enrollment_update_attendance(enrollment)
@@ -667,6 +761,22 @@ class CancelExcuseForm(ModelForm):
 class CancelCoachExcuseForm(CancelExcuseForm):
     class Meta(CancelExcuseForm.Meta):
         model = CoachOccurrenceAssignment
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._cancel_excuse_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _cancel_excuse_send_mail(self, assignment):
+        send_notification_email(
+            _("Zrušení omluvenky trenéra"),
+            _(
+                f"Vaše omluvení neúčasti dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} bylo zrušeno administrátorem"
+            ),
+            [assignment.person],
+        )
 
 
 class ExcuseFormMixin:
@@ -698,7 +808,31 @@ class ExcuseCoachForm(ExcuseFormMixin, ModelForm):
         return instance
 
 
-class ExcuseMyselfCoachForm(ExcuseCoachForm):
+class TrainingPositionFreeSpotSendMailProvider:
+    def offer_free_training_position_send_mail(self, assignment):
+        category = assignment.occurrence.event.category
+        recipients = []
+        hourly_rates = PersonHourlyRate.objects.filter(event_type=category)
+        for hourly_rate in hourly_rates:
+            if (
+                hourly_rate.person == assignment.person
+                or not assignment.occurrence.can_enroll_position(
+                    hourly_rate.person, assignment.position_assignment
+                )
+            ):
+                continue
+            recipients.append(hourly_rate.person)
+
+        send_notification_email(
+            _("Nabídka volné trenérské pozice"),
+            _(
+                f"Jednorázově se uvolnila trenérská pozice {assignment.position_assignment.position} na tréninku {assignment.occurrence.event} dne {date_pretty(assignment.occurrence.datetime_start)} od {time_pretty(assignment.occurrence.datetime_start)} do {time_pretty(assignment.occurrence.datetime_end)}"
+            ),
+            recipients,
+        )
+
+
+class ExcuseMyselfCoachForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoachForm):
     class Meta(ExcuseCoachForm.Meta):
         pass
 
@@ -708,10 +842,44 @@ class ExcuseMyselfCoachForm(ExcuseCoachForm):
             self.add_error(None, "Již se není možné odhlásit z trenérské pozice")
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_myself_send_mail(instance)
+        if commit:
+            instance.save()
+        super().offer_free_training_position_send_mail(instance)
+        return instance
 
-class CoachExcuseForm(ExcuseCoachForm):
+    def _excuse_myself_send_mail(self, assignment):
+        send_notification_email(
+            _("Omluvení neúčasti trenéra"),
+            _(
+                f"Potvrzujeme nahlášení neúčasti dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
+            ),
+            [assignment.person],
+        )
+
+
+class CoachExcuseForm(TrainingPositionFreeSpotSendMailProvider, ExcuseCoachForm):
     class Meta(ExcuseCoachForm.Meta):
         pass
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_coach_send_mail(instance)
+        if commit:
+            instance.save()
+        super().offer_free_training_position_send_mail(instance)
+        return instance
+
+    def _excuse_coach_send_mail(self, assignment):
+        send_notification_email(
+            _("Omluvení neúčasti trenéra"),
+            _(
+                f"Administrátor zaevidoval vaši neúčast dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
+            ),
+            [assignment.person],
+        )
 
 
 class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenceForm):
@@ -721,14 +889,40 @@ class TrainingEnrollMyselfOrganizerOccurrenceForm(EnrollMyselfOrganizerOccurrenc
     def save(self, commit=True):
         instance = super().save(False)
         instance.state = TrainingAttendance.PRESENT
+        self._one_time_assignment_created(instance)
         if commit:
             instance.save()
         return instance
+
+    def _one_time_assignment_created(self, assignment):
+        send_notification_email(
+            _("Jednorázová trenérská účast"),
+            _(
+                f"Potvrzujeme vaši přihlášku jako jednorázový trenér na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event}"
+            ),
+            [assignment.person],
+        )
 
 
 class TrainingUnenrollMyselfOrganizerFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
     class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = CoachOccurrenceAssignment
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._one_time_assignment_deleted(instance)
+        if commit:
+            instance.delete()
+        return instance
+
+    def _one_time_assignment_deleted(self, assignment):
+        send_notification_email(
+            _("Zrušení jednorázové účasti trenéra"),
+            _(
+                f"Vaše jednorázová trenérská účast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} byla zrušena na vlastní žádost"
+            ),
+            [assignment.person],
+        )
 
 
 class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm):
@@ -755,9 +949,35 @@ class CoachOccurrenceAssignmentForm(OccurrenceFormMixin, OrganizerAssignmentForm
         instance.state = TrainingAttendance.PRESENT
         if instance.id is not None:
             instance.person = self.person
+            old_instance = CoachOccurrenceAssignment.objects.get(id=instance.id)
+            if (
+                old_instance.position_assignment.position
+                != instance.position_assignment.position
+            ):
+                self._one_time_coach_edit_send_mail(instance, old_instance)
+        else:
+            self._new_one_time_coach_added_send_mail(instance)
         if commit:
             instance.save()
         return instance
+
+    def _new_one_time_coach_added_send_mail(self, assignment):
+        send_notification_email(
+            _("Jednorázová trenérská účast"),
+            _(
+                f"Byl(a) jste přidán(a) jako jednorázový trenér na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} administrátorem"
+            ),
+            [assignment.person],
+        )
+
+    def _one_time_coach_edit_send_mail(self, new_assignment, old_assignment):
+        send_notification_email(
+            _("Úprava jednorázové trenérské účasti"),
+            _(
+                f"Vaše přihláška na jednorázového trenéra dne {date_pretty(new_assignment.occurrence.datetime_start)} tréninku byla upravena: pozice {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position}"
+            ),
+            [new_assignment.person],
+        )
 
 
 class ExcuseParticipantForm(ExcuseFormMixin, ModelForm):
@@ -780,10 +1000,42 @@ class ParticipantExcuseForm(ExcuseParticipantForm):
     class Meta(ExcuseParticipantForm.Meta):
         pass
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_participant_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _excuse_participant_send_mail(self, attendance):
+        send_notification_email(
+            _("Omluvení neúčasti účastníka"),
+            _(
+                f"Administrátor zaevidoval vaši neúčast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
+
 
 class CancelParticipantExcuseForm(CancelExcuseForm):
     class Meta(CancelExcuseForm.Meta):
         model = TrainingParticipantAttendance
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._cancel_excuse_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _cancel_excuse_send_mail(self, attendance):
+        send_notification_email(
+            _("Zrušení omluvenky účastníka"),
+            _(
+                f"Vaše omluvení neúčasti dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} bylo zrušeno administrátorem"
+            ),
+            [attendance.person],
+        )
 
 
 class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
@@ -796,10 +1048,42 @@ class ExcuseMyselfParticipantForm(ExcuseParticipantForm):
             self.add_error(None, "Již se není možné odhlásit jako účastník")
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._excuse_myself_send_mail(instance)
+        if commit:
+            instance.save()
+        return instance
+
+    def _excuse_myself_send_mail(self, attendance):
+        send_notification_email(
+            _("Omluvení neúčasti účastníka"),
+            _(
+                f"Potvrzujeme nahlášení neúčasti dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
+
 
 class TrainingUnenrollMyselfParticipantFromOccurrenceForm(UnenrollMyselfOccurrenceForm):
     class Meta(UnenrollMyselfOccurrenceForm.Meta):
         model = TrainingParticipantAttendance
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        self._one_time_attendance_deleted(instance)
+        if commit:
+            instance.delete()
+        return instance
+
+    def _one_time_attendance_deleted(self, attendance):
+        send_notification_email(
+            _("Zrušení jednorázové účasti účastníka"),
+            _(
+                f"Vaše jednorázová účast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} byla zrušena na vlastní žádost"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
@@ -820,11 +1104,21 @@ class TrainingParticipantAttendanceForm(OccurrenceFormMixin, ModelForm):
         instance = super().save(False)
         instance.occurrence = self.occurrence
         instance.state = TrainingAttendance.PRESENT
+        self._new_one_time_participant_added_send_mail(instance)
         if instance.id is not None:
             instance.person = self.person
         if commit:
             instance.save()
         return instance
+
+    def _new_one_time_participant_added_send_mail(self, attendance):
+        send_notification_email(
+            _("Jednorázová účast účastníka"),
+            _(
+                f"Byl(a) jste přidán(a) jako jednorázový účastník dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} administrátorem"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingEnrollMyselfParticipantOccurrenceForm(
@@ -847,9 +1141,19 @@ class TrainingEnrollMyselfParticipantOccurrenceForm(
         instance.person = self.person
         instance.occurrence = self.occurrence
         instance.state = TrainingAttendance.PRESENT
+        self._one_time_attendance_created(instance)
         if commit:
             instance.save()
         return instance
+
+    def _one_time_attendance_created(self, attendance):
+        send_notification_email(
+            _("Jednorázová účast na tréninku"),
+            _(
+                f"Potvrzujeme vaši přihlášku jako jednorázový účastník dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event}"
+            ),
+            [attendance.person],
+        )
 
 
 class TrainingFillAttendanceForm(ModelForm):
@@ -988,7 +1292,54 @@ class TrainingFillAttendanceForm(ModelForm):
 
         if commit:
             instance.save()
+        self._check_repeating_absence(instance)
         return instance
+
+    def _check_repeating_absence(self, occurrence):
+        event = occurrence.event
+        sorted_occurrences = event.sorted_occurrences_list()
+        idx = self._index(sorted_occurrences, occurrence)
+        for (
+            participant_attendance
+        ) in occurrence.trainingparticipantattendance_set.all():
+            absence_count = self._count_participant_absence_in_row(
+                participant_attendance.person, sorted_occurrences, idx
+            )
+            if (
+                absence_count >= settings.MIN_PARTICIPANT_ABSENCE_SEND_MAIL
+                and event.main_coach_assignment is not None
+            ):
+                send_notification_email(
+                    _("Opakovaná absence účastníka tréninku"),
+                    _(
+                        f"Na tréninku {event}, kde jste garantujícím trenérem, byl účastník {participant_attendance.person} {absence_count}x za sebou nepřítomen"
+                    ),
+                    [event.main_coach_assignment.person],
+                )
+
+    def _count_participant_absence_in_row(self, person, sorted_occurrences, stop_idx):
+        idx = stop_idx
+        count = 0
+        while idx >= 0:
+            occurrence = sorted_occurrences[idx]
+            participant_attendance = (
+                occurrence.trainingparticipantattendance_set.filter(
+                    person=person
+                ).first()
+            )
+            if participant_attendance is not None:
+                if participant_attendance.state != TrainingAttendance.PRESENT:
+                    count += 1
+                else:
+                    return count
+            idx -= 1
+        return count
+
+    def _index(self, polymorphic_queryset, item):
+        for i in range(len(polymorphic_queryset)):
+            if polymorphic_queryset[i] == item:
+                return i
+        return -1
 
 
 class ReopenTrainingOccurrenceForm(ReopenOccurrenceMixin, ModelForm):

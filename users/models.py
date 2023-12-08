@@ -1,8 +1,8 @@
-from django.contrib.auth import models as auth_models
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import Permission as BasePermission
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.db.models import Q
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import classproperty
 from django.utils.translation import gettext_lazy as _
@@ -11,11 +11,22 @@ from rest_framework.authtoken.models import Token as BaseToken
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
+from vzs.settings import CURRENT_DATETIME
 
 
-class UserManager(auth_models.BaseUserManager):
+class UserManager(BaseUserManager):
+    """
+    A custom manager for the :class:`User` model.
+
+    Provides utility methods for creating regular users and superusers.
+    """
+
     def create_user(self, person, password=None):
-        if not person:
+        """
+        Creates and saves a :class:`User` with the given person and password.
+        """
+
+        if person is None:
             raise ValueError("Users must have a person set")
 
         if not isinstance(person, Person):
@@ -30,6 +41,11 @@ class UserManager(auth_models.BaseUserManager):
     def create_superuser(
         self, email, first_name, last_name, sex, person_type, password=None
     ):
+        """
+        Creates and saves a :class:`persons.models.Person` with the given attributes.
+        Also creates and saves a superuser for that person with the given password.
+        """
+
         person = Person.objects.create(
             email=email,
             first_name=first_name,
@@ -47,9 +63,16 @@ class UserManager(auth_models.BaseUserManager):
         return user
 
 
-class User(
-    RenderableModelMixin, auth_models.AbstractUser, auth_models.PermissionsMixin
-):
+class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
+    """
+    The model providing user functionality.
+
+    Each user is associated with a :class:`persons.models.Person` instance,
+    which is its primary key.
+
+    Users also have a password and a set of permissions.
+    """
+
     objects = UserManager()
 
     person = models.OneToOneField(
@@ -57,15 +80,25 @@ class User(
     )
 
     username = None
+    """:meta private:"""
     first_name = None
+    """:meta private:"""
     last_name = None
+    """:meta private:"""
     email = None
+    """:meta private:"""
     date_joined = None
+    """:meta private:"""
 
     USERNAME_FIELD = "person"
+    """:meta private:"""
+
     REQUIRED_FIELDS = []
+    """:meta private:"""
 
     def clean(self):
+        """:meta private:"""
+
         # A workaround.
         # If clean_fields() fails because there is a required field missing,
         # clean() gets called anyways and raises an exception
@@ -81,7 +114,11 @@ class User(
         return f"Uživatel osoby {str(self.person)}"
 
 
-class Permission(RenderableModelMixin, auth_models.Permission):
+class Permission(RenderableModelMixin, BasePermission):
+    """
+    Custom permission model with added description field.
+    """
+
     class Meta:
         permissions = [("spravce_povoleni", _("Správce povolení"))]
 
@@ -89,11 +126,19 @@ class Permission(RenderableModelMixin, auth_models.Permission):
 
 
 class ResetPasswordToken(BaseToken):
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    """
+    Token for resetting a user's password through clicking a link in an email.
+    """
+
+    user: "User" = models.ForeignKey("users.User", on_delete=models.CASCADE)  # type: ignore
 
     @classproperty
     def has_expired(cls):
+        """
+        Returns a Q object for filtering expired tokens.
+        """
+
         return Q(
-            created__lt=timezone.now()
+            created__lt=CURRENT_DATETIME
             - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
         )

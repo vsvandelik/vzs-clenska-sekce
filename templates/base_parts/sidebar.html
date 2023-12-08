@@ -20,17 +20,28 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
-                <li class="nav-item">
-                    <a href="{% url "my-profile:index" %}" class="nav-link {% active_link "my-profile:index" strict=False %}">
+                <li class="nav-item {% active_link "my-profile:index || my-transactions" "menu-open" strict=False %}">
+                    <a href="#" class="nav-link {% active_link "my-profile:index || my-transactions" %}">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Můj profil</p>
+                        <p>
+                            {{ active_person }}
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url "my-transactions" %}" class="nav-link {% active_link "my-transactions" strict=False %}">
-                        <i class="nav-icon fas fa-money-check-alt"></i>
-                        <p>Moje transakce</p>
-                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{% url "my-profile:index" %}" class="nav-link {% active_link "my-profile:index" %}">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Profil</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url "my-transactions" %}" class="nav-link {% active_link "my-transactions" %}">
+                                <i class="nav-icon fas fa-money-check-alt"></i>
+                                <p>Transakce</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index || transactions:index" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index || transactions:index" %}">
@@ -84,6 +95,12 @@
                             </a>
                         </li>
                     </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url "one_time_events:index" %}" class="nav-link {% active_link "one_time_events:index" %}">
+                        <i class="fas fa-calendar nav-icon"></i>
+                        <p>Akce</p>
+                    </a>
                 </li>
                 <li class="nav-item {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" %}">

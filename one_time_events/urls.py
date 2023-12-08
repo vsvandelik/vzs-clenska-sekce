@@ -1,15 +1,19 @@
 from django.urls import path
+
 from . import views
 
 app_name = "one_time_events"
 
 urlpatterns = [
+    path("", views.OneTimeEventListView.as_view(), name="index"),
     path(
         "<int:pk>/",
         views.OneTimeEventDetailView.as_view(),
         name="detail",
     ),
-    path("pridat/", views.OneTimeEventCreateView.as_view(), name="add"),
+    path(
+        "pridat/", views.OneTimeEventCreateView.as_view(), name="add"
+    ),  # TODO: permissions
     path(
         "<int:pk>/upravit/",
         views.OneTimeEventUpdateView.as_view(),
@@ -129,5 +133,30 @@ urlpatterns = [
         "<int:event_id>/zobrazit-dochazku/",
         views.OneTimeEventShowAttendanceView.as_view(),
         name="show-attendance",
+    ),
+    path(
+        "<int:event_id>/exportovat-ucastniky/",
+        views.OneTimeEventExportParticipantsView.as_view(),
+        name="export-participants",
+    ),
+    path(
+        "<int:event_id>/exportovat-organizatory/",
+        views.OneTimeEventExportOrganizersView.as_view(),
+        name="export-organizers",
+    ),
+    path(
+        "<int:event_id>/detail-dne/<int:pk>/exportovat-pritomne-organizatory/",
+        views.OneTimeEventExportOrganizersOccurrenceView.as_view(),
+        name="export-organizers-occurrence",
+    ),
+    path(
+        "<int:pk>/duplikovat/",
+        views.OneTimeEventCreateDuplicateView.as_view(),
+        name="create-duplicate",
+    ),
+    path(
+        "<int:pk>/upravit-duplikat/",
+        views.OneTimeEventUpdateDuplicateView.as_view(),
+        name="edit-duplicate",
     ),
 ]

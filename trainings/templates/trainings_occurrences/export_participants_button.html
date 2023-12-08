@@ -1,0 +1,5 @@
+{% if occurrence.has_attending_participant %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url 'trainings:export-participants-occurrence' event.id occurrence.id %}" class="btn btn-info">Vyexportovat přítomné účastníky</a>
+    </div>
+{% endif %}

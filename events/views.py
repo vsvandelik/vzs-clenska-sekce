@@ -3,16 +3,19 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
+from one_time_events.permissions import OccurrenceDetailPermissionMixin
 from persons.models import Person
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.utils import send_notification_email
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -355,7 +358,10 @@ class ParticipantEnrollmentCreateMixin(
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
 
-class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
+class ParticipantEnrollmentUpdateMixin(
+    ParticipantEnrollmentMixin,
+    generic.UpdateView,
+):
     success_message = "Změna přihlášky proběhla úspěšně"
 
     def get_form_kwargs(self):
@@ -369,8 +375,11 @@ class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.Updat
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.DeleteView):
+class ParticipantEnrollmentDeleteMixin(
+    EventManagePermissionMixin, ParticipantEnrollmentMixin, generic.DeleteView
+):
     model = ParticipantEnrollment
+    event_id_key = "event_id"
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
@@ -399,6 +408,17 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+    def form_valid(self, form):
+        enrollment = self.object
+        send_notification_email(
+            _("Odhlášení z události"),
+            _(
+                f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
+            ),
+            [enrollment.person],
+        )
+        return super().form_valid(form)
 
 
 class BulkApproveParticipantsMixin(
@@ -453,6 +473,7 @@ class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
 
 
 class OccurrenceDetailBaseView(
+    OccurrenceDetailPermissionMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,

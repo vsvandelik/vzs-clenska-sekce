@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -13,11 +12,11 @@ from events.models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from features.models import Feature, FeatureAssignment
 from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
+from vzs.settings import CURRENT_DATETIME
 
 
 class OneTimeEventAttendance(models.TextChoices):
@@ -87,6 +86,17 @@ class OneTimeEvent(Event):
                 return len(self.all_possible_participants()) < self.capacity
             raise NotImplementedError
         return True
+
+    def has_approved_participant(self):
+        return self.onetimeeventparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).exists()
+
+    def has_organizer(self):
+        for occurrence in self.eventoccurrence_set.all():
+            if occurrence.organizers.count() > 0:
+                return True
+        return False
 
     def can_participant_unenroll(self, person):
         if not super().can_participant_unenroll(person):
@@ -176,6 +186,30 @@ class OneTimeEvent(Event):
                 return True
         return False
 
+    def duplicate(self):
+        event = OneTimeEvent(
+            name=f"{self.name} duplikát",
+            description=self.description,
+            location=self.location,
+            date_start=self.date_start,
+            date_end=self.date_end,
+            participants_enroll_state=self.participants_enroll_state,
+            capacity=self.capacity,
+            min_age=self.min_age,
+            max_age=self.max_age,
+            group=self.group,
+            default_participation_fee=self.default_participation_fee,
+            category=self.category,
+            state=self.state,
+            training_category=self.training_category,
+        )
+        event.save()
+
+        for allowed_person_type in self.allowed_person_types.all():
+            event.allowed_person_types.add(allowed_person_type)
+
+        return event
+
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
     position_assignment = models.ForeignKey(
@@ -261,6 +295,11 @@ class OneTimeEventOccurrence(EventOccurrence):
             position_assignment=position_assignment
         )
 
+    def has_attending_organizer(self):
+        return self.organizeroccurrenceassignment_set.filter(
+            state=OneTimeEventAttendance.PRESENT
+        ).exists()
+
     def has_position_free_spot(self, position_assignment):
         return (
             len(self.position_organizers(position_assignment))
@@ -272,7 +311,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_enroll:
             return False
         return (
-            datetime.now().date()
+            CURRENT_DATETIME.date()
             + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -284,7 +323,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_unenroll:
             return False
         return (
-            datetime.now().date()
+            CURRENT_DATETIME.date()
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -330,13 +369,20 @@ class OneTimeEventOccurrence(EventOccurrence):
         return len(self.organizer_assignments_settled()) == 0
 
     def can_attendance_be_filled(self):
-        return datetime.now(tz=timezone.get_default_timezone()).date() >= self.date
+        return CURRENT_DATETIME.date() >= self.date
 
     def not_approved_when_should(self):
         return (
             self.can_attendance_be_filled()
             and self.state == EventOrOccurrenceState.CLOSED
         )
+
+    def duplicate(self, event):
+        occurrence = OneTimeEventOccurrence(
+            date=self.date, hours=self.hours, event=event, state=self.state
+        )
+        occurrence.save()
+        return occurrence
 
 
 class OneTimeEventParticipantEnrollment(ParticipantEnrollment):

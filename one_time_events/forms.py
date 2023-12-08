@@ -4,6 +4,7 @@ from django import forms
 from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.forms import ModelForm, CheckboxSelectMultiple, Form
+from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
@@ -19,6 +20,7 @@ from events.forms_bases import (
     EnrollMyselfOrganizerOccurrenceForm,
     UnenrollMyselfOccurrenceForm,
     ReopenOccurrenceMixin,
+    InsertRequestIntoSelf,
 )
 from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
@@ -31,6 +33,7 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.utils import send_notification_email, date_pretty, payment_email_html
 from .models import (
     OneTimeEvent,
     OneTimeEventOccurrence,
@@ -271,10 +274,21 @@ class TrainingCategoryForm(ModelForm):
         self.fields["training_category"].required = False
 
 
+class OneTimeEventEnrollmentSubstituteSendMailProvider:
+    def enrollment_substitute_send_mail(self, enrollment):
+        send_notification_email(
+            _("Změna stavu přihlášky"),
+            _(
+                f"Vaší přihlášce na jednorázovou událost {enrollment.event} byl změněn stav na NÁHRADNÍK"
+            ),
+            [enrollment.person],
+        )
+
+
 class OneTimeEventEnrollmentApprovedHooks(
     OneTimeEventParticipantEnrollmentUpdateAttendanceProvider
 ):
-    def approved_hooks(self, instance, event):
+    def approved_hooks(self, commit, instance, event):
         if instance.transaction is not None:
             if not instance.transaction.is_settled:
                 instance.transaction.amount = -instance.agreed_participation_fee
@@ -286,16 +300,38 @@ class OneTimeEventEnrollmentApprovedHooks(
                     instance, event
                 )
             )
+        if commit:
+            instance.transaction.save()
+            old_instance = OneTimeEventParticipantEnrollment.objects.filter(
+                id=instance.id
+            ).first()
+            if old_instance is not None and instance.state != old_instance.state:
+                self._enrollment_approve_send_mail(instance)
 
     def save_enrollment(self, instance):
-        if instance.transaction is not None:
-            instance.transaction.save()
         instance.save()
         super().participant_enrollment_update_attendance(instance)
 
+    def _enrollment_approve_send_mail(self, enrollment):
+        payment_html = ""
+        if not enrollment.transaction.is_settled:
+            payment_html = "<br><br>" + payment_email_html(
+                enrollment.transaction, self.request
+            )
+        send_notification_email(
+            _("Schválení přihlášky"),
+            _(
+                f"Vaše přihláška na jednorázovou událost {enrollment.event} byla schválena{payment_html}"
+            ),
+            [enrollment.person],
+        )
+
 
 class OneTimeEventParticipantEnrollmentForm(
-    ParticipantEnrollmentForm, OneTimeEventEnrollmentApprovedHooks
+    InsertRequestIntoSelf,
+    ParticipantEnrollmentForm,
+    OneTimeEventEnrollmentSubstituteSendMailProvider,
+    OneTimeEventEnrollmentApprovedHooks,
 ):
     class Meta(ParticipantEnrollmentForm.Meta):
         model = OneTimeEventParticipantEnrollment
@@ -312,6 +348,9 @@ class OneTimeEventParticipantEnrollmentForm(
             and self.instance.transaction.is_settled
         ):
             self.fields["agreed_participation_fee"].widget.attrs["readonly"] = True
+            self.fields["agreed_participation_fee"].widget.attrs["value"] = abs(
+                self.instance.transaction.amount
+            )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -324,11 +363,19 @@ class OneTimeEventParticipantEnrollmentForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-
         if instance.state == ParticipantEnrollment.State.APPROVED:
-            super().approved_hooks(instance, self.event)
+            super().approved_hooks(commit, instance, self.event)
         else:
             instance.agreed_participation_fee = None
+            if (
+                instance.id is None
+                or instance.state
+                != OneTimeEventParticipantEnrollment.objects.get(id=instance.id).state
+            ):
+                if instance.state == ParticipantEnrollment.State.SUBSTITUTE:
+                    super().enrollment_substitute_send_mail(instance)
+                else:
+                    self._enrollment_refused_send_mail(instance)
             if instance.transaction is not None and not instance.transaction.is_settled:
                 instance.transaction.delete()
                 instance.transaction = None
@@ -337,9 +384,17 @@ class OneTimeEventParticipantEnrollmentForm(
             super().save_enrollment(instance)
         return instance
 
+    def _enrollment_refused_send_mail(self, enrollment):
+        send_notification_email(
+            _("Odmítnutí účasti"),
+            _(f"Na jednorázové události {enrollment.event} vám byla zakázána účast"),
+            [enrollment.person],
+        )
+
 
 class OneTimeEventEnrollMyselfParticipantForm(
     EnrollMyselfParticipantForm,
+    OneTimeEventEnrollmentSubstituteSendMailProvider,
     OneTimeEventParticipantEnrollmentUpdateAttendanceProvider,
 ):
     class Meta(EnrollMyselfParticipantForm.Meta):
@@ -362,6 +417,7 @@ class OneTimeEventEnrollMyselfParticipantForm(
             instance.state = ParticipantEnrollment.State.APPROVED
         else:
             instance.state = ParticipantEnrollment.State.SUBSTITUTE
+            super().enrollment_substitute_send_mail(instance)
 
         if (
             self.event.participants_enroll_state == ParticipantEnrollment.State.APPROVED
@@ -389,8 +445,22 @@ class OccurrenceOpenRestrictionMixin:
         return cleaned_data
 
 
+class OrganizerOccurrenceAssignedSendMailProvider:
+    def assigned_send_mail(self, organizer_assignment):
+        send_notification_email(
+            _("Přihlášení organizátora"),
+            _(
+                f"Byl(a) jste úspěšně přihlášen(a) jako {organizer_assignment.position_assignment.position} dne {organizer_assignment.occurrence.date} na události {organizer_assignment.occurrence.event}"
+            ),
+            [organizer_assignment.person],
+        )
+
+
 class OrganizerOccurrenceAssignmentForm(
-    OccurrenceFormMixin, OccurrenceOpenRestrictionMixin, OrganizerAssignmentForm
+    OccurrenceFormMixin,
+    OrganizerOccurrenceAssignedSendMailProvider,
+    OccurrenceOpenRestrictionMixin,
+    OrganizerAssignmentForm,
 ):
     class Meta(OrganizerAssignmentForm.Meta):
         model = OrganizerOccurrenceAssignment
@@ -415,9 +485,42 @@ class OrganizerOccurrenceAssignmentForm(
         instance.state = OneTimeEventAttendance.PRESENT
         if instance.id is not None:
             instance.person = self.person
+            old_instance = OrganizerOccurrenceAssignment.objects.get(id=instance.id)
+            if (
+                old_instance.position_assignment.position
+                != instance.position_assignment.position
+            ):
+                self._assignment_changed_send_mail(instance, old_instance)
+        else:
+            super().assigned_send_mail(instance)
         if commit:
             instance.save()
         return instance
+
+    def _assignment_changed_send_mail(self, new_assignment, old_assignment):
+        send_notification_email(
+            _("Změna přihlášky organizátora"),
+            _(
+                f"Došlo ke změně organizátorské pozice, na kterou jste přihlášen(a): {old_assignment.position_assignment.position} --> {new_assignment.position_assignment.position} dne {new_assignment.occurrence.date} na události {new_assignment.occurrence.event}"
+            ),
+            [new_assignment.person],
+        )
+
+
+class BulkAddOrganizerSendMailProvider:
+    def organizer_added_send_mail(self, occurrences, organizer_assignment):
+        dates = []
+        for occurrence in occurrences:
+            dates.append(date_pretty(occurrence.date))
+        dates_pretty = ", ".join(dates)
+
+        send_notification_email(
+            _("Přihlášení organizátora"),
+            _(
+                f"Byl(a) jste přihlášen jako organizátor na pozici {organizer_assignment.position_assignment} dny {dates_pretty} události {occurrences[0].event}"
+            ),
+            [organizer_assignment.person],
+        )
 
 
 class BulkDeleteOrganizerFromOneTimeEventForm(EventFormMixin, Form):
@@ -481,7 +584,9 @@ class BulkAddOrganizerToOneTimeEventMixin(EventFormMixin):
 
 
 class BulkAddOrganizerToOneTimeEventForm(
-    BulkAddOrganizerToOneTimeEventMixin, OrganizerAssignmentForm
+    BulkAddOrganizerToOneTimeEventMixin,
+    BulkAddOrganizerSendMailProvider,
+    OrganizerAssignmentForm,
 ):
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
 
@@ -499,17 +604,22 @@ class BulkAddOrganizerToOneTimeEventForm(
 
     def save(self, commit=True):
         instance = super().save(False)
-        for occurrence in self.cleaned_data["occurrences"]:
+        cleaned_occurrences = self.cleaned_data["occurrences"]
+        for occurrence in cleaned_occurrences:
             instance.pk = None
             instance.id = None
             instance.occurrence = occurrence
             if commit:
                 instance.save()
+        if cleaned_occurrences:
+            super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
 
 class OneTimeEventBulkApproveParticipantsForm(
-    OneTimeEventEnrollmentApprovedHooks, BulkApproveParticipantsForm
+    InsertRequestIntoSelf,
+    OneTimeEventEnrollmentApprovedHooks,
+    BulkApproveParticipantsForm,
 ):
     class Meta(BulkApproveParticipantsForm.Meta):
         model = OneTimeEvent
@@ -543,7 +653,7 @@ class OneTimeEventBulkApproveParticipantsForm(
         for enrollment in enrollments_2_approve:
             enrollment.agreed_participation_fee = fee
             enrollment.state = ParticipantEnrollment.State.APPROVED
-            super().approved_hooks(enrollment, instance)
+            super().approved_hooks(commit, enrollment, instance)
             if commit:
                 super().save_enrollment(enrollment)
 
@@ -552,7 +662,7 @@ class OneTimeEventBulkApproveParticipantsForm(
 
 
 class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
-    EnrollMyselfOrganizerOccurrenceForm
+    OrganizerOccurrenceAssignedSendMailProvider, EnrollMyselfOrganizerOccurrenceForm
 ):
     class Meta(EnrollMyselfOrganizerOccurrenceForm.Meta):
         model = OrganizerOccurrenceAssignment
@@ -562,6 +672,7 @@ class OneTimeEventEnrollMyselfOrganizerOccurrenceForm(
         instance.state = OneTimeEventAttendance.PRESENT
         if commit:
             instance.save()
+        super().assigned_send_mail(instance)
         return instance
 
 
@@ -592,6 +703,7 @@ class OneTimeEventUnenrollMyselfOrganizerForm(
 class OneTimeEventEnrollMyselfOrganizerForm(
     ActivePersonFormMixin,
     BulkAddOrganizerToOneTimeEventMixin,
+    BulkAddOrganizerSendMailProvider,
     OrganizerEnrollMyselfForm,
 ):
     occurrences = MultipleChoiceFieldNoValidation(widget=CheckboxSelectMultiple)
@@ -630,12 +742,15 @@ class OneTimeEventEnrollMyselfOrganizerForm(
     def save(self, commit=True):
         instance = super().save(False)
         instance.person = self.person
-        for occurrence in self.cleaned_data["occurrences"]:
+        cleaned_occurrences = self.cleaned_data["occurrences"]
+        for occurrence in cleaned_occurrences:
             instance.pk = None
             instance.id = None
             instance.occurrence = occurrence
             if commit:
                 instance.save()
+        if cleaned_occurrences:
+            super().organizer_added_send_mail(cleaned_occurrences, instance)
         return instance
 
 
@@ -977,3 +1092,9 @@ class CancelOccurrenceApprovementForm(ReopenOccurrenceMixin, ModelForm):
             participant_assignment.state = OneTimeEventAttendance.PRESENT
             if commit:
                 participant_assignment.save()
+
+
+class OneTimeEventCreateDuplicateForm(ModelForm):
+    class Meta:
+        model = OneTimeEvent
+        fields = []
