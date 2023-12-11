@@ -146,7 +146,7 @@ class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
         if instance.id is not None:
             instance.person = self.person
         else:
-            instance.created_datetime = CURRENT_DATETIME
+            instance.created_datetime = CURRENT_DATETIME()
 
         if commit:
             instance.save()
@@ -170,7 +170,7 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.created_datetime = CURRENT_DATETIME
+        instance.created_datetime = CURRENT_DATETIME()
         instance.person = self.person
 
         if commit:
