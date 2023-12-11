@@ -1,4 +1,6 @@
-{% extends "modal_delete.html" %}
+{% extends "modal.html" %}
+
+{% block modal_footer_classes %}justify-content-center{% endblock %}
 
 {% block modal_title %}
     Potvrzení smazání pozice
@@ -10,7 +12,7 @@
     </div>
     {% if position.required_features.all|length > 0 %}
         <div class="row">
-            <div class="alert alert-warning" style="display: inline">
+            <div class="alert alert-secondary" style="display: inline">
                 Tato pozice zahrnuje
                 <ul>
                     <li>Kvalifikace: {{ position.required_qualifications|length }}</li>
@@ -20,8 +22,27 @@
             </div>
         </div>
     {% endif %}
+    {% if position.events_using|length > 0 %}
+        <div class="row">
+            <div class="alert alert-warning" style="display: inline">
+                Tato pozice je využívána následujícími událostmi:
+                <ul>
+                    {% for event in position.events_using %}
+                        <li><a class="alert-link" target="_blank" href="{% if event.is_one_time_event %}{% url 'one_time_events:detail' event.id %}{% else %}{% url 'trainings:detail' event.id %}{% endif %}">{{ event.name }}</a></li>
+                    {% endfor %}
+                </ul>
+                Dokud je pozice využívána událostmi, není ji možné smazat.
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
-{% block delete_action %}
-    {% url "positions:delete" position.pk %}
+
+{% block modal_footer %}
+    <form method="post" action="{% url "positions:delete" position.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" {% if position.events_using|length > 0 %}disabled{% endif %}>
+            Smazat
+        </button>
+    </form>
 {% endblock %}
