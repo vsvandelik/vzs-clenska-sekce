@@ -91,9 +91,8 @@ from .models import (
 
 
 class TrainingDetailView(EventDetailBaseView):
-    template_name = "trainings/detail.html"
-
     def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
         trainings_for_replacement_to_choose = (
             Training.objects.filter(
                 category=self.object.category,
@@ -112,7 +111,21 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "selected_replaceable_trainings", selected_replaceable_trainings
         )
+        kwargs.setdefault(
+            "active_person_participant_enrollment",
+            self.object.get_participant_enrollment(active_person),
+        )
+        kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+
         return super().get_context_data(**kwargs)
+
+    def get_template_names(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+        if self.object.can_user_manage(active_user):
+            return "trainings/detail.html"
+        else:
+            return "trainings/detail_for_nonadmin.html"
 
 
 class TrainingListView(generic.ListView):

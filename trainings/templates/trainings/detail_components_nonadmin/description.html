@@ -1,0 +1,13 @@
+{% load one_time_events_template_tags %}
+{% load vzs_filters %}
+
+<div class="col-12 col-md-8">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Popis tréninku</div>
+        </div>
+        <div class="card-body">
+            {{ event.description|linebreaksbr }}
+        </div>
+    </div>
+</div>
