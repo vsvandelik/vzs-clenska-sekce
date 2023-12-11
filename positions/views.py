@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import reverse
 from django.urls import reverse_lazy
 from django.views import generic
@@ -59,6 +60,12 @@ class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
 
     def get_success_message(self, cleaned_data):
         return f"Pozice {self.object.name} úspěšně smazána"
+
+    def dispatch(self, request, *args, **kwargs):
+        position = self.get_object()
+        if position.events_using().exists():
+            raise Http404("Tato stránka není dostupná")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class PositionDetailView(

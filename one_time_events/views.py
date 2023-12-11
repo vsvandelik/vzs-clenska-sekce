@@ -541,7 +541,7 @@ class CancelOccurrenceApprovementView(
 
 
 class OneTimeEventOpenOccurrencesOverviewView(
-    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/open_occurrences_overview.html"
 

@@ -167,7 +167,7 @@ urlpatterns = [
         name="reopen-occurrence",
     ),
     path(
-        "<int:event_id>/zobrazit-dny-k-zavreni/",
+        "<int:event_id>/zobrazit-dny-k-uzavreni/",
         views.TrainingOpenOccurrencesOverviewView.as_view(),
         name="open-occurrences-overview",
     ),

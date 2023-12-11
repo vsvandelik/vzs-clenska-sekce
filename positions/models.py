@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+from events.models import Event
 from features.models import Feature
 from persons.models import Person
 from django.utils.translation import gettext_lazy as _
@@ -39,6 +41,9 @@ class EventPosition(models.Model):
 
     def required_equipment(self):
         return self.required_features.filter(feature_type=Feature.Type.EQUIPMENT)
+
+    def events_using(self):
+        return Event.objects.filter(positions__id__contains=self.id)
 
     def __str__(self):
         return self.name
