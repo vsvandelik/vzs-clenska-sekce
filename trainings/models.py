@@ -308,9 +308,21 @@ class Training(Event):
 
         return chosen_enrollments
 
+    def does_person_satisfy_position_requirements(self, person, position):
+        return position.does_person_satisfy_requirements(
+            person, timezone.localtime(self.datetime_start).date()
+        )
+
     def can_person_interact_with(self, person):
-        if (
-            not super().can_person_interact_with(person)
+        return (
+            self.trainingparticipantenrollment_set.filter(
+                Q(person=person)
+                & (
+                    Q(state=ParticipantEnrollment.State.APPROVED)
+                    | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+                )
+            ).exists()
+            or super().can_person_interact_with(person)
             or TrainingParticipantAttendance.objects.filter(
                 person=person, occurrence__event=self
             ).exists()
@@ -320,10 +332,7 @@ class Training(Event):
                     for training in self.replaces_training_list()
                 ]
             )
-        ):
-            return False
-
-        return True
+        )
 
 
 class CoachPositionAssignment(models.Model):
@@ -427,27 +436,10 @@ class TrainingOccurrence(EventOccurrence):
             < position_assignment.count
         )
 
-    def can_enroll_position(self, person, position_assignment):
-        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
-        if not can_possibly_enroll:
-            return False
-        return CURRENT_DATETIME() + timedelta(
-            days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS
-        ) <= timezone.localtime(self.datetime_start)
-
     def can_unenroll_position(self, person, position_assignment):
-        can_possibly_unenroll = super().can_unenroll_position(
-            person, position_assignment
-        )
-        if not can_possibly_unenroll:
+        if self.event.coaches.contains(person):
             return False
-        return not self.event.coaches.contains(
-            person
-        ) and CURRENT_DATETIME() + timedelta(
-            days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
-        ) <= timezone.localtime(
-            self.datetime_start
-        )
+        return super().can_unenroll_position(person, position_assignment)
 
     def attending_participants_attendance(self):
         return self.trainingparticipantattendance_set.filter(
@@ -637,6 +629,16 @@ class TrainingOccurrence(EventOccurrence):
 
     def can_be_reopened(self):
         return len(self.coach_assignments_settled()) == 0
+
+    def can_position_be_still_enrolled(self):
+        return CURRENT_DATETIME() + timedelta(
+            days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS
+        ) <= timezone.localtime(self.datetime_start)
+
+    def can_position_be_still_unenrolled(self):
+        return CURRENT_DATETIME() + timedelta(
+            days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
+        ) <= timezone.localtime(self.datetime_start)
 
     @property
     def hours(self):
