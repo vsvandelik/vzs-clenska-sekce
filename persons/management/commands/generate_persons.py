@@ -20,7 +20,7 @@ class Command(BaseCommand):
                 first_name=f"Testovaci",
                 last_name=f"Osoba {i}",
                 date_of_birth=(
-                    CURRENT_DATETIME
+                    CURRENT_DATETIME()
                     - timezone.timedelta(weeks=random.randint(5, 50) * 52)
                 ).date(),
                 sex=random.choices(Person.Sex.values)[0],
