@@ -172,8 +172,9 @@ class Event(RenderableModelMixin, PolymorphicModel):
     def can_person_enroll_as_waiting(self, person):
         if (
             person is None
-            or person in self.enrolled_participants.all()
+            or self.enrolled_participants.contains(person)
             or self.capacity == 0
+            or CURRENT_DATETIME().date() > self.date_end
         ):
             return False
 
@@ -232,10 +233,10 @@ class Event(RenderableModelMixin, PolymorphicModel):
 
     def can_person_interact_with(self, person):
         return (
-            self.can_person_enroll_as_waiting(person)
-            or self.can_person_enroll_as_participant(person)
-            or self.can_participant_unenroll(person)
-            or person in self.enrolled_participants.all()
+            self.is_organizer(person)
+            or self.enrolled_participants.contains(person)
+            or self.can_person_enroll_as_waiting(person)
+            or self.can_enroll_organizer(person)
         )
 
     def can_user_manage(self, user):
@@ -248,6 +249,19 @@ class Event(RenderableModelMixin, PolymorphicModel):
                 for occurrence in self.eventoccurrence_set.all()
             )
         )
+
+    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
+        if person is None:
+            return False
+
+        for occurrence in self.eventoccurrence_set.all():
+            for position_assignment in self.eventpositionassignment_set.all():
+                if enroll_unenroll_func(occurrence, person, position_assignment):
+                    return True
+        return False
+
+    def is_organizer(self, person):
+        return NotImplementedError
 
 
 class EventOccurrence(PolymorphicModel):

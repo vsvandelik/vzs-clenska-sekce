@@ -30,12 +30,15 @@ class OneTimeEvent(Event):
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
         FOR_CHILDREN = "pro-deti", _("pro děti")
+        SOCIAL = "spolecenska", _("společenská")
 
     class Meta:
         permissions = [
-            ("komercni", _("Správce komerčních akcí")),
+            ("komercni", _("Správce komerčních událostí")),
             ("kurz", _("Správce kurzů")),
-            ("prezentacni", _("Správce prezentačních akcí")),
+            ("prezentacni", _("Správce prezentačních událostí")),
+            ("pro-deti", _("Správce událostí pro děti")),
+            ("spolecenska", _("Správce společenských událostí")),
         ]
 
     enrolled_participants = models.ManyToManyField(
@@ -148,16 +151,6 @@ class OneTimeEvent(Event):
             take = self.capacity - len(self.approved_participants())
         return enrollments[:take]
 
-    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
-        if person is None:
-            return False
-
-        for occurrence in self.eventoccurrence_set.all():
-            for position_assignment in self.eventpositionassignment_set.all():
-                if enroll_unenroll_func(occurrence, person, position_assignment):
-                    return True
-        return False
-
     def can_unenroll_organizer(self, person):
         return self.can_enroll_unenroll_organizer(
             person, OneTimeEventOccurrence.can_unenroll_position
@@ -172,13 +165,6 @@ class OneTimeEvent(Event):
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence__event=self, person=person
         ).exists()
-
-    def can_person_interact_with(self, person):
-        return (
-            self.can_enroll_organizer(person)
-            or self.can_unenroll_organizer(person)
-            or super().can_person_interact_with(person)
-        )
 
     def exists_closed_occurrence(self):
         for occurrence in self.eventoccurrence_set.all():
