@@ -314,7 +314,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_enroll:
             return False
         return (
-            CURRENT_DATETIME.date()
+            CURRENT_DATETIME().date()
             + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -326,7 +326,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         if not can_possibly_unenroll:
             return False
         return (
-            CURRENT_DATETIME.date()
+            CURRENT_DATETIME().date()
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.event.date_start
         )
@@ -372,7 +372,7 @@ class OneTimeEventOccurrence(EventOccurrence):
         return len(self.organizer_assignments_settled()) == 0
 
     def can_attendance_be_filled(self):
-        return CURRENT_DATETIME.date() >= self.date
+        return CURRENT_DATETIME().date() >= self.date
 
     def not_approved_when_should(self):
         return (
