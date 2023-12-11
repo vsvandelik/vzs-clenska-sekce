@@ -139,6 +139,6 @@ class ResetPasswordToken(BaseToken):
         """
 
         return Q(
-            created__lt=CURRENT_DATETIME
+            created__lt=CURRENT_DATETIME()
             - timezone.timedelta(hours=settings.RESET_PASSWORD_TOKEN_TTL_HOURS)
         )

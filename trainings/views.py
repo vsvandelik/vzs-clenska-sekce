@@ -559,7 +559,7 @@ class EnrollMyselfParticipantFromOccurrenceView(
 class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME < timezone.localtime(occurrence.datetime_start):
+        if CURRENT_DATETIME() < timezone.localtime(occurrence.datetime_start):
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 

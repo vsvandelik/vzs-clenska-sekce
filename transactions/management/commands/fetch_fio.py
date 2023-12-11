@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         settings = FioSettings.load()
-        now = CURRENT_DATETIME
+        now = CURRENT_DATETIME()
 
         days_argument = options["days"]
 
@@ -41,7 +41,7 @@ class Command(BaseCommand):
             )
         else:
             if not days_argument:
-                settings.last_fio_fetch_time = CURRENT_DATETIME
+                settings.last_fio_fetch_time = CURRENT_DATETIME()
                 settings.save()
 
             self.stdout.write(self.style.SUCCESS(_(f"Úspěšně stáhnuté transakce.")))

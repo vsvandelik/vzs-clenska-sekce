@@ -11,7 +11,7 @@ from vzs.utils import send_notification_email
 
 def features_expiry_send_mails():
     observed_feature_assignments = FeatureAssignment.objects.annotate(
-        date_diff=F("date_expire") - CURRENT_DATETIME.date()
+        date_diff=F("date_expire") - CURRENT_DATETIME().date()
     ).filter(
         date_diff__lte=timedelta(hours=settings.FEATURE_EXPIRE_HOURS_SEND_MAIL),
         expiry_email_sent=False,
