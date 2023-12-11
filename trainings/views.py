@@ -41,7 +41,7 @@ from events.views import (
     InsertOccurrenceIntoSelfObjectMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
-from persons.models import Person
+from persons.models import Person, get_active_user
 from trainings.permissions import (
     OccurrenceEnrollMyselfParticipantPermissionMixin,
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
@@ -113,6 +113,35 @@ class TrainingDetailView(EventDetailBaseView):
             "selected_replaceable_trainings", selected_replaceable_trainings
         )
         return super().get_context_data(**kwargs)
+
+
+class TrainingListView(generic.ListView):
+    template_name = "trainings/index.html"
+
+    def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
+        user = get_active_user(active_person)
+
+        visible_event_pks = [
+            event.pk
+            for event in Training.objects.all()
+            if event.can_user_manage(user)
+            or event.can_person_interact_with(active_person)
+        ]
+
+        events = Training.objects.filter(pk__in=visible_event_pks)
+
+        upcoming_occurrences = TrainingOccurrence.objects.filter(
+            datetime_start__gte=CURRENT_DATETIME(), event__in=visible_event_pks
+        ).order_by("datetime_start")
+
+        kwargs.setdefault("upcoming_trainings_occurrences", upcoming_occurrences)
+        kwargs.setdefault("events", events)
+
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return []
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):

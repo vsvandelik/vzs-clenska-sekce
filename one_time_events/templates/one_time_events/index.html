@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load events_template_tags %}
 {% load one_time_events_template_tags %}
 
 {% load static %}
@@ -29,25 +30,23 @@
                         </thead>
                         <tbody>
                             {% for event in events %}
-                                {% if event.is_one_time_event %}
-                                    <tr>
-                                        <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
-                                        <td>{% display_date_range event %}</td>
-                                        <td>{{ event.location }}</td>
-                                        <td class="text-right">
-                                            {% ifperm 'one_time_events:enroll-myself-participant' event.id as perm %}
-                                                <a class="btn btn-info btn-sm" href="{{ perm.url }}">
-                                                    Přihlásit
-                                                </a>
-                                            {% endifperm %}
-                                            {% ifperm 'one_time_events:enroll-myself-organizer' event.id as perm %}
-                                                <a class="btn btn-info btn-sm" href="{{ perm.url }}">
-                                                    Přihlásit jako organizátor
-                                                </a>
-                                            {% endifperm %}
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                <tr>
+                                    <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
+                                    <td>{% display_date_range event %}</td>
+                                    <td>{{ event.location }}</td>
+                                    <td class="text-right">
+                                        {% ifperm 'one_time_events:enroll-myself-participant' event.id as perm %}
+                                            <a class="btn btn-info btn-sm" href="{{ perm.url }}">
+                                                Přihlásit
+                                            </a>
+                                        {% endifperm %}
+                                        {% ifperm 'one_time_events:enroll-myself-organizer' event.id as perm %}
+                                            <a class="btn btn-info btn-sm" href="{{ perm.url }}">
+                                                Přihlásit jako organizátor
+                                            </a>
+                                        {% endifperm %}
+                                    </td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>

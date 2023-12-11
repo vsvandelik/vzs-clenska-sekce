@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load events_template_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Tréninky{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="card col-12">
+            <div class="card-header d-flex align-items-center border-0">
+                <div class="card-title h5">Vaše tréninky</div>
+            </div>
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-12">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Název</th>
+                                    <th scope="col">Čas konání</th>
+                                    <th scope="col">Místo konání</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                    <tr>
+                                        <td><a href="{% url 'trainings:detail' event.id %}">{{ event.name }}</a></td>
+                                        <td>
+                                            {% for weekday in event.weekdays_list %}
+                                                {% include 'trainings/components/weekday.html' %}
+                                                {% if not forloop.last %} <br> {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ event.location }}</td>
+                                        <td class="text-right">
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card col-12">
+            <div class="card-header d-flex align-items-center">
+                <div class="card-title h5">Nadcházející tréninky</div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <table id="upcoming-trainings-occurrences" class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Název</th>
+                                    <th scope="col">Den</th>
+                                    <th scope="col">Datum</th>
+                                    <th scope="col">Čas</th>
+                                    <th scope="col">Místo konání</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for upcoming_occurrence in upcoming_trainings_occurrences %}
+                                    <tr>
+                                        <td>{{ upcoming_occurrence.event.name }}</td>
+                                        <td>{{ upcoming_occurrence.datetime_start|date:"l" }}</td>
+                                        <td>{{ upcoming_occurrence.datetime_start|date:"d. m. Y" }}</td>
+                                        <td>{{ upcoming_occurrence.datetime_start|date:"H:i" }} - {{ upcoming_occurrence.datetime_end|date:"H:i" }}</td>
+                                        <td>{{ upcoming_occurrence.event.location }}</td>
+                                        <td class="text-right">
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("upcoming-trainings-occurrences", [], [])
+    </script>
+{% endblock %}
