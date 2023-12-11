@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -558,7 +559,7 @@ class EnrollMyselfParticipantFromOccurrenceView(
 class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME < occurrence.datetime_start:
+        if CURRENT_DATETIME < timezone.localtime(occurrence.datetime_start):
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
