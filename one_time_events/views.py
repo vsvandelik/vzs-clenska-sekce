@@ -446,7 +446,7 @@ class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
 class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME.date() < occurrence.date:
+        if CURRENT_DATETIME().date() < occurrence.date:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 

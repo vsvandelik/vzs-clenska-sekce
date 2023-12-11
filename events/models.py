@@ -164,7 +164,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and CURRENT_DATETIME.date()
+            and CURRENT_DATETIME().date()
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )
