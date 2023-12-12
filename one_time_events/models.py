@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -30,12 +31,15 @@ class OneTimeEvent(Event):
         COURSE = "kurz", _("kurz")
         PRESENTATION = "prezentacni", _("prezentační")
         FOR_CHILDREN = "pro-deti", _("pro děti")
+        SOCIAL = "spolecenska", _("společenská")
 
     class Meta:
         permissions = [
-            ("komercni", _("Správce komerčních akcí")),
+            ("komercni", _("Správce komerčních událostí")),
             ("kurz", _("Správce kurzů")),
-            ("prezentacni", _("Správce prezentačních akcí")),
+            ("prezentacni", _("Správce prezentačních událostí")),
+            ("pro-deti", _("Správce událostí pro děti")),
+            ("spolecenska", _("Správce společenských událostí")),
         ]
 
     enrolled_participants = models.ManyToManyField(
@@ -148,16 +152,6 @@ class OneTimeEvent(Event):
             take = self.capacity - len(self.approved_participants())
         return enrollments[:take]
 
-    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
-        if person is None:
-            return False
-
-        for occurrence in self.eventoccurrence_set.all():
-            for position_assignment in self.eventpositionassignment_set.all():
-                if enroll_unenroll_func(occurrence, person, position_assignment):
-                    return True
-        return False
-
     def can_unenroll_organizer(self, person):
         return self.can_enroll_unenroll_organizer(
             person, OneTimeEventOccurrence.can_unenroll_position
@@ -172,13 +166,6 @@ class OneTimeEvent(Event):
         return OrganizerOccurrenceAssignment.objects.filter(
             occurrence__event=self, person=person
         ).exists()
-
-    def can_person_interact_with(self, person):
-        return (
-            self.can_enroll_organizer(person)
-            or self.can_unenroll_organizer(person)
-            or super().can_person_interact_with(person)
-        )
 
     def exists_closed_occurrence(self):
         for occurrence in self.eventoccurrence_set.all():
@@ -209,6 +196,18 @@ class OneTimeEvent(Event):
             event.allowed_person_types.add(allowed_person_type)
 
         return event
+
+    def does_person_satisfy_position_requirements(self, person, position):
+        return position.does_person_satisfy_requirements(person, self.date_start)
+
+    def can_person_interact_with(self, person):
+        return self.onetimeeventparticipantenrollment_set.filter(
+            Q(person=person)
+            & (
+                Q(state=ParticipantEnrollment.State.APPROVED)
+                | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+            )
+        ).exists() or super().can_person_interact_with(person)
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
@@ -290,6 +289,9 @@ class OneTimeEventOccurrence(EventOccurrence):
         _("Počet hodin"), validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
 
+    def get_person_organizer_assignment(self, person):
+        return self.organizeroccurrenceassignment_set.filter(person=person)
+
     def position_organizers(self, position_assignment):
         return self.organizeroccurrenceassignment_set.filter(
             position_assignment=position_assignment
@@ -304,28 +306,6 @@ class OneTimeEventOccurrence(EventOccurrence):
         return (
             len(self.position_organizers(position_assignment))
             < position_assignment.count
-        )
-
-    def can_enroll_position(self, person, position_assignment):
-        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
-        if not can_possibly_enroll:
-            return False
-        return (
-            CURRENT_DATETIME().date()
-            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
-            <= self.event.date_start
-        )
-
-    def can_unenroll_position(self, person, position_assignment):
-        can_possibly_unenroll = super().can_unenroll_position(
-            person, position_assignment
-        )
-        if not can_possibly_unenroll:
-            return False
-        return (
-            CURRENT_DATETIME().date()
-            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
-            <= self.event.date_start
         )
 
     def attending_participants_attendance(self):
@@ -367,6 +347,20 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def can_be_reopened(self):
         return len(self.organizer_assignments_settled()) == 0
+
+    def can_position_be_still_enrolled(self):
+        return (
+            CURRENT_DATETIME().date()
+            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
+            <= self.date
+        )
+
+    def can_position_be_still_unenrolled(self):
+        return (
+            CURRENT_DATETIME().date()
+            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            <= self.date
+        )
 
     def can_attendance_be_filled(self):
         return CURRENT_DATETIME().date() >= self.date

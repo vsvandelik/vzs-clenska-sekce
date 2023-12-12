@@ -3,10 +3,12 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q, QuerySet
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
+from events.utils import check_common_requirements
 from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
@@ -113,43 +115,8 @@ class Event(RenderableModelMixin, PolymorphicModel):
     def position_assignments_sorted(self):
         return self.eventpositionassignment_set.order_by("position__name")
 
-    @staticmethod
-    def check_common_requirements(req_obj, person):
-        person_with_age = Person.objects.with_age().get(id=person.id)
-
-        missing_age = person_with_age.age is None and (
-            req_obj.min_age is not None or req_obj.max_age is not None
-        )
-
-        min_age_out = req_obj.min_age is not None and (
-            missing_age or req_obj.min_age > person_with_age.age
-        )
-        max_age_out = req_obj.max_age is not None and (
-            missing_age or req_obj.max_age < person_with_age.age
-        )
-        group_unsatisfied = (
-            req_obj.group is not None and req_obj.group not in person.groups.all()
-        )
-        allowed_person_types_unsatisfied = (
-            req_obj.allowed_person_types.exists()
-            and not req_obj.allowed_person_types.contains(
-                EventPersonTypeConstraint.get_or_create(person.person_type)
-            )
-        )
-
-        if (
-            missing_age
-            or min_age_out
-            or max_age_out
-            or group_unsatisfied
-            or allowed_person_types_unsatisfied
-        ):
-            return False
-
-        return True
-
     def does_participant_satisfy_requirements(self, person):
-        return self.check_common_requirements(self, person)
+        return check_common_requirements(self, person)
 
     def has_free_spot(self):
         return self.capacity is None
@@ -172,8 +139,9 @@ class Event(RenderableModelMixin, PolymorphicModel):
     def can_person_enroll_as_waiting(self, person):
         if (
             person is None
-            or person in self.enrolled_participants.all()
+            or self.enrolled_participants.contains(person)
             or self.capacity == 0
+            or CURRENT_DATETIME().date() > self.date_end
         ):
             return False
 
@@ -232,10 +200,14 @@ class Event(RenderableModelMixin, PolymorphicModel):
 
     def can_person_interact_with(self, person):
         return (
-            self.can_person_enroll_as_waiting(person)
-            or self.can_person_enroll_as_participant(person)
-            or self.can_participant_unenroll(person)
-            or person in self.enrolled_participants.all()
+            self.is_organizer(person)
+            or self.can_person_enroll_as_waiting(person)
+            or any(
+                [
+                    position.does_person_satisfy_requirements(person, self.date_start)
+                    for position in self.positions.all()
+                ]
+            )
         )
 
     def can_user_manage(self, user):
@@ -248,6 +220,22 @@ class Event(RenderableModelMixin, PolymorphicModel):
                 for occurrence in self.eventoccurrence_set.all()
             )
         )
+
+    def can_enroll_unenroll_organizer(self, person, enroll_unenroll_func):
+        if person is None:
+            return False
+
+        for occurrence in self.eventoccurrence_set.all():
+            for position_assignment in self.eventpositionassignment_set.all():
+                if enroll_unenroll_func(occurrence, person, position_assignment):
+                    return True
+        return False
+
+    def is_organizer(self, person):
+        return NotImplementedError
+
+    def does_person_satisfy_position_requirements(self, person, position):
+        raise NotImplementedError
 
 
 class EventOccurrence(PolymorphicModel):
@@ -269,32 +257,6 @@ class EventOccurrence(PolymorphicModel):
     def has_position_free_spot(self, position_assignment):
         raise NotImplementedError
 
-    def satisfies_position_requirements(self, person, position_assignment):
-        if not Event.check_common_requirements(position_assignment.position, person):
-            return False
-
-        features = position_assignment.position.required_features
-
-        feature_type_conditions = [
-            Q(feature_type=Feature.Type.QUALIFICATION),
-            Q(feature_type=Feature.Type.PERMISSION),
-            Q(feature_type=Feature.Type.EQUIPMENT),
-        ]
-
-        for condition in feature_type_conditions:
-            observed_features = features.filter(condition)
-            if observed_features.exists():
-                assignment = FeatureAssignment.objects.filter(
-                    Q(feature__in=observed_features)
-                    & Q(person=person)
-                    & Q(date_assigned__lte=self.event.date_start)
-                    & Q(date_returned=None)
-                    & (Q(date_expire=None) | Q(date_expire__gte=self.event.date_start))
-                ).first()
-                if assignment is None:
-                    return False
-        return True
-
     def is_organizer_of_position(self, person, position_assignment):
         return self.get_organizer_assignment(person, position_assignment) is not None
 
@@ -303,16 +265,25 @@ class EventOccurrence(PolymorphicModel):
         return assignments.filter(person=person).first()
 
     def can_enroll_position(self, person, position_assignment):
-        no_free_spot = not self.has_position_free_spot(position_assignment)
-        organizer_assignment = self.get_person_organizer_assignment(person)
-
-        if no_free_spot or organizer_assignment.exists():
+        if (
+            not self.can_position_be_still_enrolled()
+            or not self.has_position_free_spot(position_assignment)
+            or self.get_person_organizer_assignment(person).exists()
+        ):
             return False
 
-        return self.satisfies_position_requirements(person, position_assignment)
+        return self.event.does_person_satisfy_position_requirements(
+            person, position_assignment.position
+        )
 
     def can_unenroll_position(self, person, position_assignment):
-        return self.is_organizer_of_position(person, position_assignment)
+        if (
+            not self.can_position_be_still_unenrolled()
+            or not self.is_organizer_of_position(person, position_assignment)
+        ):
+            return False
+
+        return True
 
     def attending_participants_attendance(self):
         raise NotImplementedError
@@ -322,6 +293,12 @@ class EventOccurrence(PolymorphicModel):
             self.can_attendance_be_filled()
             and self.state == EventOrOccurrenceState.OPEN
         )
+
+    def can_position_be_still_enrolled(self):
+        raise NotImplementedError
+
+    def can_position_be_still_unenrolled(self):
+        raise NotImplementedError
 
     @property
     def is_opened(self):
