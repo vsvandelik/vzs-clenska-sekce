@@ -62,9 +62,10 @@ class PositionDeleteView(MessagesMixin, PositionMixin, generic.DeleteView):
         return f"Pozice {self.object.name} úspěšně smazána"
 
     def dispatch(self, request, *args, **kwargs):
-        position = self.get_object()
-        if position.events_using().exists():
-            raise Http404("Tato stránka není dostupná")
+        if request.method == "POST":
+            position = self.get_object()
+            if position.events_using().exists():
+                raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
 
