@@ -301,7 +301,8 @@ class OneTimeEventEnrollmentApprovedHooks(
                 )
             )
         if commit:
-            instance.transaction.save()
+            if instance.transaction is not None:
+                instance.transaction.save()
             old_instance = OneTimeEventParticipantEnrollment.objects.filter(
                 id=instance.id
             ).first()

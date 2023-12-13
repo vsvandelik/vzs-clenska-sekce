@@ -645,14 +645,6 @@ class TrainingOccurrence(EventOccurrence):
         td = self.datetime_end - self.datetime_start
         return td.seconds / 3600
 
-    def can_person_interact_with(self, person):
-        return (
-            self.can_participant_enroll(person)
-            or self.can_participant_unenroll(person)
-            or self.can_participant_excuse(person)
-            or self.can_coach_excuse(person)
-        )
-
 
 class TrainingParticipantAttendance(models.Model):
     enrollment = models.ForeignKey(
