@@ -20,33 +20,33 @@ from .models import EventPosition
 
 
 class PositionMixin:
-    model = EventPosition
     context_object_name = "position"
+    model = EventPosition
 
 
 class PositionCreateUpdateMixin(MessagesMixin, PositionMixin):
-    template_name = "positions/create_edit.html"
     form_class = PositionForm
+    template_name = "positions/create_edit.html"
 
 
 class PositionIndexView(PositionMixin, ListView):
-    template_name = "positions/index.html"
     context_object_name = "positions"
+    template_name = "positions/index.html"
 
 
 class PositionCreateView(PositionCreateUpdateMixin, CreateView):
-    template_name = "positions/create.html"
     success_message = "Pozice %(name)s úspěšně přidána"
+    template_name = "positions/create.html"
 
 
 class PositionUpdateView(PositionCreateUpdateMixin, UpdateView):
-    template_name = "positions/edit.html"
     success_message = "Pozice %(name)s úspěšně upravena"
+    template_name = "positions/edit.html"
 
 
 class PositionDeleteView(MessagesMixin, PositionMixin, DeleteView):
-    template_name = "positions/modals/delete.html"
     success_url = reverse_lazy("positions:index")
+    template_name = "positions/modals/delete.html"
 
     def get_success_message(self, cleaned_data):
         return f"Pozice {self.object.name} úspěšně smazána"
@@ -88,15 +88,15 @@ class RemoveFeatureRequirementPositionView(AddRemoveFeatureRequirementPositionMi
 
 
 class EditAgeLimitView(PositionMixin, MessagesMixin, UpdateView):
-    template_name = "events/edit_age_limit.html"
     form_class = PositionAgeLimitForm
+    template_name = "events/edit_age_limit.html"
     success_message = "Změna věkového omezení uložena"
 
 
 class EditGroupMembershipView(PositionMixin, MessagesMixin, UpdateView):
-    template_name = "events/edit_group_membership.html"
     form_class = PositionGroupMembershipForm
     success_message = "Změna členství ve skupině uložena"
+    template_name = "events/edit_group_membership.html"
 
 
 class AddRemoveAllowedPersonTypeToPositionView(
