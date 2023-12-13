@@ -1,8 +1,10 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import Q
 
 from events.models import Event
-from features.models import Feature
+from events.utils import check_common_requirements
+from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from django.utils.translation import gettext_lazy as _
 
@@ -44,6 +46,32 @@ class EventPosition(models.Model):
 
     def events_using(self):
         return Event.objects.filter(positions__id__contains=self.id)
+
+    def does_person_satisfy_requirements(self, person, date):
+        if not check_common_requirements(self, person):
+            return False
+
+        features = self.required_features
+
+        feature_type_conditions = [
+            Q(feature_type=Feature.Type.QUALIFICATION),
+            Q(feature_type=Feature.Type.PERMISSION),
+            Q(feature_type=Feature.Type.EQUIPMENT),
+        ]
+
+        for condition in feature_type_conditions:
+            observed_features = features.filter(condition)
+            if observed_features.exists():
+                assignment = FeatureAssignment.objects.filter(
+                    Q(feature__in=observed_features)
+                    & Q(person=person)
+                    & Q(date_assigned__lte=date)
+                    & Q(date_returned=None)
+                    & (Q(date_expire=None) | Q(date_expire__gte=date))
+                ).first()
+                if assignment is None:
+                    return False
+        return True
 
     def __str__(self):
         return self.name

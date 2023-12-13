@@ -256,6 +256,24 @@ class Training(Event):
             position_assignment=position_assignment
         )
 
+    def can_unenroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, TrainingOccurrence.can_unenroll_position
+        )
+
+    def can_enroll_organizer(self, person):
+        return self.can_enroll_unenroll_organizer(
+            person, TrainingOccurrence.can_enroll_position
+        )
+
+    def is_organizer(self, person):
+        return (
+            self.coaches.contains(person)
+            or CoachOccurrenceAssignment.objects.filter(
+                occurrence__event=self, person=person
+            ).exists()
+        )
+
     def __str__(self):
         return self.name
 
@@ -290,16 +308,30 @@ class Training(Event):
 
         return chosen_enrollments
 
-    def _can_person_interact_with_nonrecursive(self, person):
-        return super().can_person_interact_with(person) or any(
-            occurrence.can_person_interact_with(person)
-            for occurrence in self._occurrences_list()
+    def does_person_satisfy_position_requirements(self, person, position):
+        return position.does_person_satisfy_requirements(
+            person, timezone.localtime(self.datetime_start).date()
         )
 
     def can_person_interact_with(self, person):
-        return any(
-            training._can_person_interact_with_nonrecursive(person)
-            for training in iter_chain(self.replaces_training_list(), [self])
+        return (
+            self.trainingparticipantenrollment_set.filter(
+                Q(person=person)
+                & (
+                    Q(state=ParticipantEnrollment.State.APPROVED)
+                    | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+                )
+            ).exists()
+            or super().can_person_interact_with(person)
+            or TrainingParticipantAttendance.objects.filter(
+                person=person, occurrence__event=self
+            ).exists()
+            or any(
+                [
+                    training.enrolled_participants.contains(person)
+                    for training in self.replaces_training_list()
+                ]
+            )
         )
 
 
@@ -404,27 +436,10 @@ class TrainingOccurrence(EventOccurrence):
             < position_assignment.count
         )
 
-    def can_enroll_position(self, person, position_assignment):
-        can_possibly_enroll = super().can_enroll_position(person, position_assignment)
-        if not can_possibly_enroll:
-            return False
-        return CURRENT_DATETIME() + timedelta(
-            days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS
-        ) <= timezone.localtime(self.datetime_start)
-
     def can_unenroll_position(self, person, position_assignment):
-        can_possibly_unenroll = super().can_unenroll_position(
-            person, position_assignment
-        )
-        if not can_possibly_unenroll:
+        if self.event.coaches.contains(person):
             return False
-        return not self.event.coaches.contains(
-            person
-        ) and CURRENT_DATETIME() + timedelta(
-            days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
-        ) <= timezone.localtime(
-            self.datetime_start
-        )
+        return super().can_unenroll_position(person, position_assignment)
 
     def attending_participants_attendance(self):
         return self.trainingparticipantattendance_set.filter(
@@ -572,7 +587,7 @@ class TrainingOccurrence(EventOccurrence):
     def can_participant_enroll(self, person):
         no_free_spot_for_participant = not self.has_free_participant_spot()
         is_attending_occurrence = self.get_participant_attendance(person) is not None
-        is_regular_participant = person in self.event.enrolled_participants.all()
+        is_regular_participant = self.event.enrolled_participants.contains(person)
         is_past_deadline = CURRENT_DATETIME() + timedelta(
             days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS
         ) > timezone.localtime(self.datetime_start)
@@ -614,6 +629,16 @@ class TrainingOccurrence(EventOccurrence):
 
     def can_be_reopened(self):
         return len(self.coach_assignments_settled()) == 0
+
+    def can_position_be_still_enrolled(self):
+        return CURRENT_DATETIME() + timedelta(
+            days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS
+        ) <= timezone.localtime(self.datetime_start)
+
+    def can_position_be_still_unenrolled(self):
+        return CURRENT_DATETIME() + timedelta(
+            days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
+        ) <= timezone.localtime(self.datetime_start)
 
     @property
     def hours(self):
