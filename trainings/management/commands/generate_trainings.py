@@ -1,5 +1,5 @@
 import random
-from datetime import timedelta, datetime, time
+from datetime import datetime, time, timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -11,6 +11,7 @@ from one_time_events.management.commands.generate_one_time_events import (
 )
 from trainings.models import Training, TrainingOccurrence
 from trainings.utils import weekday_2_day_shortcut
+from vzs.utils import combine_date_and_time
 
 
 class Command(BaseCommand):
@@ -46,28 +47,16 @@ class Command(BaseCommand):
 
             while date_start <= date_end:
                 if date_start == date_end or random.randint(1, 10) <= 9:
-                    occurrence_start = datetime(
-                        year=date_start.year,
-                        month=date_start.month,
-                        day=date_start.day,
-                        hour=time_start.hour,
-                        minute=time_start.minute,
-                        tzinfo=timezone.get_default_timezone(),
-                    )
-                    occurrence_end = datetime(
-                        year=date_end.year,
-                        month=date_end.month,
-                        day=date_end.day,
-                        hour=time_end.hour,
-                        minute=time_end.minute,
-                        tzinfo=timezone.get_default_timezone(),
-                    )
+                    occurrence_start = combine_date_and_time(date_start, time_start)
+                    occurrence_end = combine_date_and_time(date_end, time_end)
+
                     occurrence = TrainingOccurrence(
                         event=event,
                         state=EventOrOccurrenceState.OPEN,
                         datetime_start=occurrence_start,
                         datetime_end=occurrence_end,
                     )
+
                     occurrence.save()
 
                 date_start += timedelta(days=7)

@@ -1,7 +1,7 @@
 import random
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import localdate, timedelta
 
 from persons.models import Person
 from vzs.settings import CURRENT_DATETIME
@@ -19,10 +19,9 @@ class Command(BaseCommand):
                 email=f"email.osoba.{i}@email.cz",
                 first_name=f"Testovaci",
                 last_name=f"Osoba {i}",
-                date_of_birth=(
-                    CURRENT_DATETIME()
-                    - timezone.timedelta(weeks=random.randint(5, 50) * 52)
-                ).date(),
+                date_of_birth=localdate(
+                    CURRENT_DATETIME() - timedelta(weeks=random.randint(5, 50) * 52)
+                ),
                 sex=random.choices(Person.Sex.values)[0],
                 person_type=random.choices(Person.Type.values)[0],
             )

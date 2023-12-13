@@ -1,15 +1,17 @@
 import csv
+import unicodedata
 from collections.abc import Callable, Mapping
+from datetime import datetime
 from typing import Any, TypedDict, get_type_hints
 from urllib import parse
+from urllib.parse import quote
 
-import unicodedata
 from django.core.mail import send_mail
 from django.db.models.query import Q
 from django.http import HttpResponse
-from urllib.parse import quote
 from django.urls import reverse
 from django.utils import formats
+from django.utils.timezone import make_aware
 
 from vzs import settings
 
@@ -160,3 +162,7 @@ def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
             filter &= transform(value)
 
     return filter
+
+
+def combine_date_and_time(date, time):
+    return make_aware(datetime.combine(date, time))

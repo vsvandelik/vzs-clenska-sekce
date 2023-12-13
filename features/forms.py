@@ -1,30 +1,30 @@
-import datetime
+from datetime import date
 
-from django import forms
-from django.forms import ModelForm, widgets, ValidationError
+from django.forms import DateField, IntegerField, ModelForm, ValidationError, widgets
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
-from vzs import settings
-from vzs.forms import WithoutFormTagFormHelper
+from vzs.forms import WithoutFormTagMixin
+from vzs.settings import VZS_DEFAULT_DUE_DATE
 from vzs.widgets import DatePickerWithIcon
-from .models import FeatureAssignment, Feature
+
+from .models import Feature, FeatureAssignment
 
 
 class FeatureAssignmentBaseFormMixin(ModelForm):
-    fee = forms.IntegerField(label=_("Poplatek"), required=False, min_value=0)
-    due_date = forms.DateField(
+    fee = IntegerField(label=_("Poplatek"), required=False, min_value=0)
+    due_date = DateField(
         label=_("Datum splatnosti poplatku"),
         required=False,
-        initial=datetime.date.today() + settings.VZS_DEFAULT_DUE_DATE,
+        initial=date.today() + VZS_DEFAULT_DUE_DATE,
         widget=DatePickerWithIcon(),
     )
 
     class Meta:
-        model = FeatureAssignment
         fields = ["date_assigned", "date_expire", "date_returned", "issuer", "code"]
+        model = FeatureAssignment
         widgets = {
             "date_assigned": DatePickerWithIcon(),
             "date_expire": DatePickerWithIcon(),
@@ -90,6 +90,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
 
     def clean_feature(self):
         feature = self.cleaned_data.get("feature")
+
         if feature is None:
             raise ValidationError(_("Položka k přiřazení není správně vyplněna."))
 
@@ -171,7 +172,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
                 _("Datum vrácení může být vyplněno pouze u vlastnosti typu vybavení.")
             )
 
-        if date_returned and date_returned > datetime.date.today():
+        if date_returned and date_returned > date.today():
             raise ValidationError(_("Datum vrácení nemůže být v budoucnosti."))
 
         return date_returned
@@ -266,7 +267,9 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
         return True
 
 
-class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
+class FeatureAssignmentByPersonForm(
+    WithoutFormTagMixin, FeatureAssignmentBaseFormMixin
+):
     class Meta(FeatureAssignmentBaseFormMixin.Meta):
         fields = ["feature"] + FeatureAssignmentBaseFormMixin.Meta.fields
         widgets = FeatureAssignmentBaseFormMixin.Meta.widgets
@@ -275,24 +278,22 @@ class FeatureAssignmentByPersonForm(FeatureAssignmentBaseFormMixin):
     def __init__(self, feature_type, person, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.helper = WithoutFormTagFormHelper()
-
+        queryset = Feature.objects.filter(feature_type=feature_type, assignable=True)
         if feature_type == Feature.Type.PERMISSION:
-            self.fields["feature"].queryset = Feature.objects.filter(
-                feature_type=feature_type, assignable=True
-            ).exclude(featureassignment__person=person)
-        else:
-            self.fields["feature"].queryset = Feature.objects.filter(
-                feature_type=feature_type, assignable=True
-            )
+            queryset = queryset.exclude(featureassignment__person=person)
+
+        self.fields["feature"].queryset = queryset
 
         if self.instance.pk:
             self._remove_not_collected_field(self.instance.feature)
+
         self._remove_non_valid_fields_by_type(feature_type)
         self._setup_fee_field()
 
 
-class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
+class FeatureAssignmentByFeatureForm(
+    WithoutFormTagMixin, FeatureAssignmentBaseFormMixin
+):
     class Meta(FeatureAssignmentBaseFormMixin.Meta):
         fields = ["person"] + FeatureAssignmentBaseFormMixin.Meta.fields
 
@@ -300,8 +301,6 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
         super().__init__(*args, **kwargs)
 
         self.instance.feature = feature
-
-        self.helper = WithoutFormTagFormHelper()
 
         self._remove_not_collected_field(self.instance.feature)
         self._remove_non_valid_fields_by_type(self.instance.feature.feature_type)
@@ -316,7 +315,7 @@ class FeatureAssignmentByFeatureForm(FeatureAssignmentBaseFormMixin):
             self.fields["fee"].initial = feature.fee
 
 
-class FeatureForm(ModelForm):
+class FeatureForm(WithoutFormTagMixin, ModelForm):
     class Meta:
         model = Feature
         fields = [
@@ -340,8 +339,6 @@ class FeatureForm(ModelForm):
         super().__init__(*args, **kwargs)
         if not feature_type:
             return
-
-        self.helper = WithoutFormTagFormHelper()
 
         features = Feature.objects.filter(feature_type=feature_type)
 

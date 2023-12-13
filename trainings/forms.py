@@ -1,52 +1,56 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta, timezone
 
 from django import forms
 from django.db.models import Q
 from django.forms import ModelForm
 from django.utils import timezone
+from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
-    EventForm,
-    ParticipantEnrollmentForm,
-    EnrollMyselfParticipantForm,
-    BulkApproveParticipantsForm,
-    EventFormMixin,
-    OrganizerAssignmentForm,
-    EnrollMyselfOrganizerOccurrenceForm,
-    UnenrollMyselfOccurrenceForm,
-    OccurrenceFormMixin,
-    PersonMetaMixin,
     ActivePersonFormMixin,
+    BulkApproveParticipantsForm,
+    EnrollMyselfOrganizerOccurrenceForm,
+    EnrollMyselfParticipantForm,
+    EventForm,
+    EventFormMixin,
+    OccurrenceFormMixin,
+    OrganizerAssignmentForm,
+    ParticipantEnrollmentForm,
+    PersonMetaMixin,
     ReopenOccurrenceMixin,
+    UnenrollMyselfOccurrenceForm,
 )
-from events.models import (
-    EventOrOccurrenceState,
-    ParticipantEnrollment,
-)
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.utils import parse_czech_date
 from persons.models import Person, PersonHourlyRate
 from trainings.utils import (
-    weekday_2_day_shortcut,
-    days_shortcut_list,
     day_shortcut_2_weekday,
+    days_shortcut_list,
+    weekday_2_day_shortcut,
 )
 from transactions.models import Transaction
 from vzs import settings
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, date_pretty, time_pretty
+from vzs.utils import (
+    combine_date_and_time,
+    date_pretty,
+    send_notification_email,
+    time_pretty,
+)
 from vzs.widgets import TimePickerWithIcon
+
 from .models import (
-    Training,
-    TrainingOccurrence,
-    TrainingReplaceabilityForParticipants,
-    TrainingParticipantEnrollment,
-    TrainingWeekdays,
-    CoachPositionAssignment,
     CoachOccurrenceAssignment,
-    TrainingParticipantAttendance,
+    CoachPositionAssignment,
+    Training,
     TrainingAttendance,
+    TrainingOccurrence,
+    TrainingParticipantAttendance,
+    TrainingParticipantEnrollment,
+    TrainingReplaceabilityForParticipants,
+    TrainingWeekdays,
 )
 
 
@@ -226,9 +230,7 @@ class TrainingForm(
         days = {d for d in days_shortcut_list() if self.cleaned_data[d]}
         number_of_chosen_days = len(days)
         if number_of_chosen_days in [1, 2, 3]:
-            training_dates = [
-                parse_czech_date(x).date() for x in self.cleaned_data["day"]
-            ]
+            training_dates = [parse_czech_date(x) for x in self.cleaned_data["day"]]
             self.cleaned_data["weekdays"] = {x.weekday() for x in training_dates}
             weekdays_shortcut = {
                 weekday_2_day_shortcut(x) for x in self.cleaned_data["weekdays"]
@@ -320,25 +322,15 @@ class TrainingForm(
 
     def _create_training_datetime(self, date_raw):
         date = parse_czech_date(date_raw)
+
         day_short = weekday_2_day_shortcut(date.weekday())
+
         time_from = self.cleaned_data[f"{day_short}_from"]
         time_to = self.cleaned_data[f"{day_short}_to"]
-        datetime_start = datetime(
-            year=date.year,
-            month=date.month,
-            day=date.day,
-            hour=time_from.hour,
-            minute=time_from.minute,
-            tzinfo=timezone.get_default_timezone(),
-        )
-        datetime_end = datetime(
-            year=date.year,
-            month=date.month,
-            day=date.day,
-            hour=time_to.hour,
-            minute=time_to.minute,
-            tzinfo=timezone.get_default_timezone(),
-        )
+
+        datetime_start = combine_date_and_time(date, time_from)
+        datetime_end = combine_date_and_time(date, time_to)
+
         return datetime_start, datetime_end
 
     def generate_dates(self):
@@ -353,8 +345,7 @@ class TrainingForm(
             start_submitted = self.cleaned_data["date_start"]
             end_submitted = self.cleaned_data["date_end"]
             dates_submitted = [
-                parse_czech_date(date_raw).date()
-                for date_raw in self.cleaned_data["day"]
+                parse_czech_date(date_raw) for date_raw in self.cleaned_data["day"]
             ]
             days_list = [
                 d
@@ -1256,7 +1247,7 @@ class TrainingFillAttendanceForm(ModelForm):
                 if entity_assignment in assignments[i]:
                     entity_assignment.state = TrainingAttendance.PRESENT
                     if type(entity_assignment) is CoachOccurrenceAssignment:
-                        occurrence_date = instance.datetime_start.date()
+                        occurrence_date = localdate(instance.datetime_start)
                         person_rates = PersonHourlyRate.get_person_hourly_rates(
                             entity_assignment.person
                         )

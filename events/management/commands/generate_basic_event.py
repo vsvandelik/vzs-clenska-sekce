@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 from django.core.management.base import CommandError
 from django.utils import timezone
@@ -9,7 +9,7 @@ from groups.models import Group
 from one_time_events.models import OneTimeEvent
 from persons.models import Person
 from trainings.models import Training
-from vzs.commands_utils import positive_int, non_negative_int, age_int
+from vzs.commands_utils import age_int, non_negative_int, positive_int
 
 
 def _generate_age(min, max):
@@ -177,17 +177,13 @@ def add_common_args(parser):
     parser.add_argument(
         "-s",
         "--date-start",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d")
-        .replace(tzinfo=timezone.get_default_timezone())
-        .date(),
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
         help="the date when the events start in 'Y-m-d' format",
     )
     parser.add_argument(
         "-e",
         "--date-end",
-        type=lambda s: datetime.strptime(s, "%Y-%m-%d")
-        .replace(tzinfo=timezone.get_default_timezone())
-        .date(),
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
         help="the date when the events end in 'Y-m-d' format",
     )
     parser.add_argument(
