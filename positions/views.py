@@ -52,11 +52,10 @@ class PositionDeleteView(MessagesMixin, PositionMixin, DeleteView):
         return f"Pozice {self.object.name} úspěšně smazána"
 
     def dispatch(self, request, *args, **kwargs):
-        position = self.get_object()
-
-        if position.events_using().exists():
-            raise Http404("Tato stránka není dostupná")
-
+        if request.method == "POST":
+            position = self.get_object()
+            if position.events_using().exists():
+                raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -66,10 +65,11 @@ class PositionDetailView(
     template_name = "positions/detail.html"
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("qualifications", Feature.qualifications.all())
-        kwargs.setdefault("permissions", Feature.permissions.all())
-        kwargs.setdefault("equipment", Feature.equipments.all())
-
+        kwargs.setdefault(
+            "qualifications", Feature.qualifications.filter(assignable=True)
+        )
+        kwargs.setdefault("permissions", Feature.permissions.filter(assignable=True))
+        kwargs.setdefault("equipment", Feature.equipments.filter(assignable=True))
         return super().get_context_data(**kwargs)
 
 

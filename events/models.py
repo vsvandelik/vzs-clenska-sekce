@@ -201,11 +201,16 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.is_organizer(person)
             or self.can_person_enroll_as_waiting(person)
-            or any(
-                [
-                    position.does_person_satisfy_requirements(person, self.date_start)
-                    for position in self.positions.all()
-                ]
+            or (
+                timezone.localdate(CURRENT_DATETIME()) <= self.date_end
+                and any(
+                    [
+                        position.does_person_satisfy_requirements(
+                            person, self.date_start
+                        )
+                        for position in self.positions.all()
+                    ]
+                )
             )
         )
 

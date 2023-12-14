@@ -302,7 +302,8 @@ class OneTimeEventEnrollmentApprovedHooks(
                 )
             )
         if commit:
-            instance.transaction.save()
+            if instance.transaction is not None:
+                instance.transaction.save()
             old_instance = OneTimeEventParticipantEnrollment.objects.filter(
                 id=instance.id
             ).first()
@@ -315,7 +316,7 @@ class OneTimeEventEnrollmentApprovedHooks(
 
     def _enrollment_approve_send_mail(self, enrollment):
         payment_html = ""
-        if not enrollment.transaction.is_settled:
+        if enrollment.transaction is not None and not enrollment.transaction.is_settled:
             payment_html = "<br><br>" + payment_email_html(
                 enrollment.transaction, self.request
             )
