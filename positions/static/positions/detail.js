@@ -24,7 +24,7 @@ function addEquipmentClicked() {
 }
 
 function getModalTitleElement() {
-    return document.getElementById('modal-title')
+    return document.getElementById('modal-title-feature')
 }
 
 function getQualificationBody() {
