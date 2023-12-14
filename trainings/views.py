@@ -164,6 +164,10 @@ class TrainingListView(generic.ListView):
         active_person = self.request.active_person
         user = get_active_user(active_person)
 
+        enrolled_trainings = Training.objects.filter(
+            trainingparticipantenrollment__person=active_person,
+        )
+
         visible_event_pks = [
             event.pk
             for event in Training.objects.all()
@@ -171,14 +175,17 @@ class TrainingListView(generic.ListView):
             or event.can_person_interact_with(active_person)
         ]
 
-        events = Training.objects.filter(pk__in=visible_event_pks)
+        available_trainings = Training.objects.filter(pk__in=visible_event_pks).exclude(
+            pk__in=enrolled_trainings
+        )
 
         upcoming_occurrences = TrainingOccurrence.objects.filter(
-            datetime_start__gte=CURRENT_DATETIME(), event__in=visible_event_pks
+            datetime_start__gte=CURRENT_DATETIME(), event__in=enrolled_trainings
         ).order_by("datetime_start")
 
         kwargs.setdefault("upcoming_trainings_occurrences", upcoming_occurrences)
-        kwargs.setdefault("events", events)
+        kwargs.setdefault("enrolled_trainings", enrolled_trainings)
+        kwargs.setdefault("available_trainings", available_trainings)
 
         return super().get_context_data(**kwargs)
 

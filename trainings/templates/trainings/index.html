@@ -7,88 +7,34 @@
 {% block title %}Tréninky{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="card col-12">
-            <div class="card-header d-flex align-items-center border-0">
-                <div class="card-title h5">Vaše tréninky</div>
-            </div>
-            <div class="card-body p-0">
-                <div class="row">
-                    <div class="col-12">
-                        <table class="table table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Název</th>
-                                    <th scope="col">Čas konání</th>
-                                    <th scope="col">Místo konání</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for event in events %}
-                                    <tr>
-                                        <td><a href="{% url 'trainings:detail' event.id %}">{{ event.name }}</a></td>
-                                        <td>
-                                            {% for weekday in event.weekdays_list %}
-                                                {% include 'trainings/components/weekday.html' %}
-                                                {% if not forloop.last %} <br> {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>{{ event.location }}</td>
-                                        <td class="text-right">
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    {% if enrolled_trainings %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/enrolled_trainings.html" %}
         </div>
-    </div>
-    <div class="row">
-        <div class="card col-12">
-            <div class="card-header d-flex align-items-center">
-                <div class="card-title h5">Nadcházející tréninky</div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <table id="upcoming-trainings-occurrences" class="table table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Název</th>
-                                    <th scope="col">Den</th>
-                                    <th scope="col">Datum</th>
-                                    <th scope="col">Čas</th>
-                                    <th scope="col">Místo konání</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for upcoming_occurrence in upcoming_trainings_occurrences %}
-                                    <tr>
-                                        <td>{{ upcoming_occurrence.event.name }}</td>
-                                        <td>{{ upcoming_occurrence.datetime_start|date:"l" }}</td>
-                                        <td>{{ upcoming_occurrence.datetime_start|date:"d. m. Y" }}</td>
-                                        <td>{{ upcoming_occurrence.datetime_start|date:"H:i" }} - {{ upcoming_occurrence.datetime_end|date:"H:i" }}</td>
-                                        <td>{{ upcoming_occurrence.event.location }}</td>
-                                        <td class="text-right">
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    {% endif %}
+
+    {% if available_trainings %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/available_trainings.html" %}
         </div>
-    </div>
+    {% endif %}
+
+    {% if upcoming_trainings_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/upcoming_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
         datatableEnable("upcoming-trainings-occurrences", [], [])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('enroll-myself-participant-modal')
     </script>
 {% endblock %}
