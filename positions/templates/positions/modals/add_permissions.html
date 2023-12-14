@@ -1,0 +1,9 @@
+{% extends 'positions/modals/add_feature.html' %}
+{% block div_id %}add-permission{% endblock %}
+{% block modal_title %}Přidat oprávnění{% endblock %}
+{% block table_id %}add-permission-table{% endblock %}
+{% block table_body %}
+    <tbody id="permissions-body" style="display: none">
+        {% include 'positions/feature_tbody.html' with features=permissions features_required=position.required_permissions detail_name='permissions:detail' %}
+    </tbody>
+{% endblock %}

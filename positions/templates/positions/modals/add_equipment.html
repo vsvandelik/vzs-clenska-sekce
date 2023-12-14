@@ -1,0 +1,9 @@
+{% extends 'positions/modals/add_feature.html' %}
+{% block div_id %}add-equipment{% endblock %}
+{% block modal_title %}Přidat vybavení{% endblock %}
+{% block table_id %}add-equipment-table{% endblock %}
+{% block table_body %}
+    <tbody id="equipment-body" style="display: none">
+        {% include 'positions/feature_tbody.html' with features=equipment features_required=position.required_equipment detail_name='equipments:detail' %}
+    </tbody>
+{% endblock %}

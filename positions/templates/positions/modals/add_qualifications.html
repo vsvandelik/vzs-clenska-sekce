@@ -1,0 +1,9 @@
+{% extends 'positions/modals/add_feature.html' %}
+{% block div_id %}add-qualification{% endblock %}
+{% block modal_title %}Přidat kvalifikaci{% endblock %}
+{% block table_id %}add-qualification-table{% endblock %}
+{% block table_body %}
+    <tbody id="qualifications-body" style="display: none">
+        {% include 'positions/feature_tbody.html' with features=qualifications features_required=position.required_qualifications detail_name='qualifications:detail' %}
+    </tbody>
+{% endblock %}
