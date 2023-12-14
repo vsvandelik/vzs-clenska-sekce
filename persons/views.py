@@ -1,14 +1,18 @@
 from functools import reduce
 
-from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.messages import error as error_message
+from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
@@ -140,7 +144,7 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
         return list(available_person_types)
 
 
-class PersonIndexView(PersonPermissionMixin, generic.ListView):
+class PersonIndexView(PersonPermissionMixin, ListView):
     model = Person
     template_name = "persons/index.html"
     context_object_name = "persons"
@@ -166,7 +170,7 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
             return persons_objects
 
 
-class PersonDetailView(PersonPermissionMixin, generic.DetailView):
+class PersonDetailView(PersonPermissionMixin, DetailView):
     model = Person
     template_name = "persons/detail.html"
 
@@ -192,16 +196,14 @@ class PersonDetailView(PersonPermissionMixin, generic.DetailView):
         return self._filter_queryset_by_permission()
 
 
-class PersonCreateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.CreateView
-):
+class PersonCreateView(PersonPermissionMixin, SuccessMessageMixin, CreateView):
     model = Person
     template_name = "persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně vytvořena")
 
     def form_invalid(self, form):
-        messages.error(
+        error_message(
             self.request,
             _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři."),
         )
@@ -213,16 +215,14 @@ class PersonCreateView(
         return kwargs
 
 
-class PersonUpdateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
+class PersonUpdateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView):
     model = Person
     template_name = "persons/edit.html"
     form_class = PersonForm
     success_message = _("Osoba byla úspěšně upravena")
 
     def form_invalid(self, form):
-        messages.error(
+        error_message(
             self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
         )
         return super().form_invalid(form)
@@ -236,7 +236,7 @@ class PersonUpdateView(
         return kwargs
 
 
-class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
+class PersonDeleteView(PersonPermissionMixin, DeleteView):
     model = Person
     template_name = "persons/delete.html"
     success_url = reverse_lazy("persons:index")
@@ -246,10 +246,12 @@ class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
         return self._filter_queryset_by_permission()
 
 
-class AddDeleteManagedPersonMixin(PersonPermissionMixin, generic.View):
+class AddDeleteManagedPersonMixin(PersonPermissionMixin, View):
     http_method_names = ["post"]
 
-    def process_form(self, request, form, pk, op, success_message, error_message):
+    def process_form(
+        self, request, form, pk, op, success_message_text, error_message_text
+    ):
         if form.is_valid():
             managing_person = form.cleaned_data["managing_person_instance"]
             new_managed_person = form.cleaned_data["managed_person_instance"]
@@ -264,11 +266,11 @@ class AddDeleteManagedPersonMixin(PersonPermissionMixin, generic.View):
             else:
                 managing_person.managed_persons.remove(new_managed_person)
 
-            messages.success(request, success_message)
+            success_message(request, success_message_text)
 
         else:
             person_error_messages = " ".join(form.errors["person"])
-            messages.error(request, error_message + person_error_messages)
+            error_message(request, error_message_text + person_error_messages)
 
         return redirect(reverse("persons:detail", args=[pk]))
 
@@ -301,9 +303,7 @@ class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
         )
 
 
-class EditHourlyRateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
+class EditHourlyRateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView):
     model = Person
     form_class = PersonHourlyRateForm
     template_name = "persons/edit_hourly_rate.html"
@@ -313,7 +313,7 @@ class EditHourlyRateView(
         return reverse("persons:detail", args=[self.kwargs["pk"]])
 
 
-class SendEmailToSelectedPersonsView(generic.View):
+class SendEmailToSelectedPersonsView(View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
@@ -327,7 +327,7 @@ class SendEmailToSelectedPersonsView(generic.View):
         return send_email_to_selected_persons(selected_persons)
 
 
-class ExportSelectedPersonsView(generic.View):
+class ExportSelectedPersonsView(View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
@@ -341,7 +341,7 @@ class ExportSelectedPersonsView(generic.View):
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
-class MyProfileView(generic.DetailView):
+class MyProfileView(DetailView):
     model = Person
     template_name = "persons/my_profile.html"
 
@@ -355,7 +355,7 @@ class MyProfileView(generic.DetailView):
         return super().get_context_data(**kwargs)
 
 
-class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
+class MyProfileUpdateView(SuccessMessageMixin, UpdateView):
     model = Person
     template_name = "persons/my_profile_edit.html"
     form_class = MyProfileUpdateForm
@@ -366,7 +366,7 @@ class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
         return self.request.active_person
 
     def form_invalid(self, form):
-        messages.error(
+        error_message(
             self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
         )
         return super().form_invalid(form)
