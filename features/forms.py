@@ -2,6 +2,7 @@ import datetime
 
 from django import forms
 from django.forms import ModelForm, widgets, ValidationError
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person
@@ -9,6 +10,7 @@ from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs import settings
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.settings import CURRENT_DATETIME
 from vzs.widgets import DatePickerWithIcon
 from .models import FeatureAssignment, Feature
 
@@ -18,7 +20,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
     due_date = forms.DateField(
         label=_("Datum splatnosti poplatku"),
         required=False,
-        initial=datetime.date.today() + settings.VZS_DEFAULT_DUE_DATE,
+        initial=timezone.localdate(CURRENT_DATETIME()) + settings.VZS_DEFAULT_DUE_DATE,
         widget=DatePickerWithIcon(),
     )
 
@@ -171,7 +173,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
                 _("Datum vrácení může být vyplněno pouze u vlastnosti typu vybavení.")
             )
 
-        if date_returned and date_returned > datetime.date.today():
+        if date_returned and date_returned > timezone.localdate(CURRENT_DATETIME()):
             raise ValidationError(_("Datum vrácení nemůže být v budoucnosti."))
 
         return date_returned

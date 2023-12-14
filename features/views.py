@@ -9,11 +9,13 @@ from django.db.models import Exists, OuterRef
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
+from vzs.settings import CURRENT_DATETIME
 from .forms import (
     FeatureForm,
     FeatureAssignmentByPersonForm,
@@ -75,7 +77,7 @@ class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, generic.View):
         if assigned_equipment.date_returned:
             raise BadRequest("Vybavení již bylo vráceno.")
 
-        assigned_equipment.date_returned = datetime.today()
+        assigned_equipment.date_returned = timezone.localdate(CURRENT_DATETIME())
         assigned_equipment.save()
 
         return redirect(reverse("persons:detail", args=[self.person]))
