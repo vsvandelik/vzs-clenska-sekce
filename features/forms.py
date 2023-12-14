@@ -8,6 +8,7 @@ from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagMixin
 from vzs.settings import VZS_DEFAULT_DUE_DATE
+from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
 
 from .models import Feature, FeatureAssignment
@@ -18,7 +19,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
     due_date = DateField(
         label=_("Datum splatnosti poplatku"),
         required=False,
-        initial=date.today() + VZS_DEFAULT_DUE_DATE,
+        initial=today() + VZS_DEFAULT_DUE_DATE,
         widget=DatePickerWithIcon(),
     )
 
@@ -172,7 +173,7 @@ class FeatureAssignmentBaseFormMixin(ModelForm):
                 _("Datum vrácení může být vyplněno pouze u vlastnosti typu vybavení.")
             )
 
-        if date_returned and date_returned > date.today():
+        if date_returned and date_returned > today():
             raise ValidationError(_("Datum vrácení nemůže být v budoucnosti."))
 
         return date_returned

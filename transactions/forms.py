@@ -26,7 +26,7 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
-from vzs.utils import create_filter, payment_email_html, send_notification_email
+from vzs.utils import create_filter, payment_email_html, send_notification_email, today
 from vzs.widgets import DatePickerWithIcon
 
 from .models import BulkTransaction, Transaction
@@ -64,7 +64,7 @@ class TransactionCreateEditMixin(ModelForm):
 
         date_due = self.cleaned_data["date_due"]
 
-        if date_due < date.today():
+        if date_due < today():
             raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
 
         return date_due
@@ -341,7 +341,7 @@ class TransactionCreateBulkConfirmForm(
                 )
                 continue
 
-            if date_due < date.today():
+            if date_due < today():
                 self.add_error(
                     field_name_date_due, _("Datum splatnosti nemůže být v minulosti.")
                 )

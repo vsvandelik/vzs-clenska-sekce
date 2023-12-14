@@ -18,6 +18,7 @@ from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
+from vzs.utils import today
 
 from .forms import (
     FeatureAssignmentByFeatureForm,
@@ -81,7 +82,7 @@ class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, View):
         if assigned_equipment.date_returned:
             raise BadRequest("Vybavení již bylo vráceno.")
 
-        assigned_equipment.date_returned = datetime.today()
+        assigned_equipment.date_returned = today()
         assigned_equipment.save()
 
         return redirect(reverse("persons:detail", args=[self.person]))

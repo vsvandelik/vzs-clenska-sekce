@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature, FeatureAssignment
 from vzs import models as vzs_models
+from vzs.utils import today
 
 
 class PersonsManager(models.Manager):
@@ -20,13 +21,13 @@ class PersonsManager(models.Manager):
     def with_age(self):
         return self.get_queryset().annotate(
             age=ExpressionWrapper(
-                date.today().year
+                today().year
                 - ExtractYear("date_of_birth")
                 - Case(
-                    When(Q(date_of_birth__month__gt=date.today().month), then=Value(1)),
+                    When(Q(date_of_birth__month__gt=today().month), then=Value(1)),
                     When(
-                        Q(date_of_birth__month=date.today().month)
-                        & Q(date_of_birth__day__gt=date.today().day),
+                        Q(date_of_birth__month=today().month)
+                        & Q(date_of_birth__day__gt=today().day),
                         then=Value(1),
                     ),
                     default=Value(0),

@@ -11,9 +11,10 @@ from django.db.models.query import Q
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import formats
-from django.utils.timezone import make_aware
+from django.utils.timezone import localdate, make_aware
 
 from vzs import settings
+from vzs.settings import CURRENT_DATETIME
 
 
 def export_queryset_csv(filename, queryset):
@@ -166,3 +167,7 @@ def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
 
 def combine_date_and_time(date, time):
     return make_aware(datetime.combine(date, time))
+
+
+def today():
+    return localdate(CURRENT_DATETIME())
