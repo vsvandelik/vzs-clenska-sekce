@@ -2,8 +2,10 @@
 {% load static %}
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
-    <script>datatableEnable("add-feature-table",[0],[0])</script>
-    <script src="{% static 'positions/detail.js' %}"></script>
+    <script>datatableEnable("add-qualification-table",[0],[0])</script>
+    <script>datatableEnable("add-permission-table",[0],[0])</script>
+    <script>datatableEnable("add-equipment-table",[0],[0])</script>
+    <script>datatableEnable('add-person-type-table', [0],[0])</script>
 {% endblock %}
 {% block title %}
     Detail pozice
@@ -36,7 +38,9 @@
         {% include 'positions/detail_components/person_type.html' %}
     </div>
 
-    {% include 'positions/modals/add_feature.html' %}
+    {% include 'positions/modals/add_qualifications.html' %}
+    {% include 'positions/modals/add_permissions.html' %}
+    {% include 'positions/modals/add_equipment.html' %}
 
     {% include "modal_include.html" with id="delete-position-modal" template="positions/modals/delete.html" %}
 {% endblock %}

@@ -549,7 +549,7 @@ class OneTimeEventOpenOccurrencesOverviewView(
 
 
 class OneTimeEventClosedOccurrencesOverviewView(
-    OccurrenceManagePermissionMixin2, InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "one_time_events/modals/closed_occurrences_overview.html"
 
