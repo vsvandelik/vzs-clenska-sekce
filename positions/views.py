@@ -75,9 +75,11 @@ class PositionDetailView(
     template_name = "positions/detail.html"
 
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("qualifications", Feature.qualifications.all())
-        kwargs.setdefault("permissions", Feature.permissions.all())
-        kwargs.setdefault("equipment", Feature.equipments.all())
+        kwargs.setdefault(
+            "qualifications", Feature.qualifications.filter(assignable=True)
+        )
+        kwargs.setdefault("permissions", Feature.permissions.filter(assignable=True))
+        kwargs.setdefault("equipment", Feature.equipments.filter(assignable=True))
         return super().get_context_data(**kwargs)
 
 
