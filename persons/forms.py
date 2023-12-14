@@ -18,6 +18,11 @@ from features.models import Feature
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.mixin_extensions import (
+    RelatedAddMixin,
+    RelatedAddOrRemoveFormMixin,
+    RelatedRemoveMixin,
+)
 from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
 
@@ -45,7 +50,7 @@ class PersonForm(ModelForm):
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
 
-        if date_of_birth and date_of_birth > today():
+        if date_of_birth is not None and date_of_birth > today():
             raise ValidationError(_("Neplatné datum narození."))
 
         return date_of_birth
@@ -53,10 +58,14 @@ class PersonForm(ModelForm):
     def clean_birth_number(self):
         birth_number = self.cleaned_data["birth_number"]
 
-        if birth_number and Person.objects.filter(birth_number=birth_number).count():
+        if (
+            birth_number is not None
+            and Person.objects.filter(birth_number=birth_number).exists()
+        ):
             raise ValidationError(
                 _(
-                    "Rodné číslo je již použito. Zkontrolujte prosím, jestli daná osoba již neexistuje."
+                    "Rodné číslo je již použito. Zkontrolujte prosím,"
+                    "jestli daná osoba již neexistuje."
                 )
             )
 
@@ -64,8 +73,9 @@ class PersonForm(ModelForm):
 
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
-        if not phone:
-            return phone
+
+        if phone is None:
+            return None
 
         phone = regex_sub(r"\D", "", phone)  # remove non digits
 
@@ -81,8 +91,9 @@ class PersonForm(ModelForm):
 
     def clean_postcode(self):
         postcode = self.cleaned_data["postcode"]
-        if not postcode:
-            return postcode
+
+        if postcode is None:
+            return None
 
         if len(str(postcode)) != 5:
             raise ValidationError(_("PSČ nemá platný formát."))
@@ -103,52 +114,32 @@ class MyProfileUpdateForm(PersonForm):
         ]
 
 
-class AddDeleteManagedPersonForm(Form):
-    person = IntegerField()
+class AddDeleteManagedPersonFormMixin(RelatedAddOrRemoveFormMixin):
+    class Meta:
+        fields = []
+        model = Person
 
-    def __init__(self, *args, **kwargs):
-        self.managing_person = kwargs.pop("managing_person", None)
-        super().__init__(*args, **kwargs)
+    managed_person = ModelChoiceField(queryset=Person.objects.all())
+    instance_to_add_or_remove_field_name = "managed_person"
 
-    def clean_person(self):
-        managed_person_pk = self.cleaned_data.get("person")
+    def _get_instances(self):
+        return self.instance.managed_persons
 
-        try:
-            managing_person_instance = Person.objects.get(pk=self.managing_person)
-            self.cleaned_data["managing_person_instance"] = managing_person_instance
-        except Person.DoesNotExist:
-            raise ValidationError(_("Daná osoba neexistuje."))
 
-        try:
-            managed_person_instance = Person.objects.get(pk=managed_person_pk)
-            self.cleaned_data["managed_person_instance"] = managed_person_instance
-        except Person.DoesNotExist:
-            raise ValidationError(_("Daná osoba neexistuje."))
+class AddManagedPersonForm(RelatedAddMixin, AddDeleteManagedPersonFormMixin):
+    error_message = _("Daný vztah spravované osoby je již zadán.")
 
-        if (
-            managed_person_pk
-            and self.managing_person
-            and managed_person_pk == self.managing_person
-        ):
+    def clean_managed_person(self):
+        managed_person = self.cleaned_data["managed_person"]
+
+        if managed_person == self.instance:
             raise ValidationError(_("Osoba nemůže spravovat samu sebe."))
 
-        return managed_person_pk
+        return managed_person
 
 
-class AddManagedPersonForm(AddDeleteManagedPersonForm):
-    def clean_person(self):
-        result = super().clean_person()
-
-        if self.cleaned_data["managing_person_instance"].managed_persons.contains(
-            self.cleaned_data["managed_person_instance"]
-        ):
-            raise ValidationError(_("Daný vztah spravované osoby je již zadán."))
-
-        return result
-
-
-class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
-    pass
+class DeleteManagedPersonForm(RelatedRemoveMixin, AddDeleteManagedPersonFormMixin):
+    error_message = _("Daný vztah spravované osoby neexistuje.")
 
 
 class PersonsFilterForm(Form):

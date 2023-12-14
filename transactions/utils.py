@@ -130,7 +130,7 @@ class TransactionFilter(TypedDict, total=False):
     """
     Defines a filter for transactions.
 
-    Use with :func:`vzs.utils.create_filter`.
+    Use with :func:`vzs.utils.filter_queryset`.
     """
 
     person_name: Annotated[

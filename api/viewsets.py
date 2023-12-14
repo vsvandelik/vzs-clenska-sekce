@@ -19,7 +19,7 @@ from transactions.models import Transaction
 from transactions.serializers import TransactionSerializer
 from users.models import User
 from users.serializers import UserSerializer
-from vzs.utils import create_filter
+from vzs.utils import filter_queryset
 
 from .permissions import PersonPermission, TokenPermission, UserPermission
 from .utils import PersonExistsFilter
@@ -58,9 +58,9 @@ class PersonExistsView(APIView):
     def post(self, request, format=None):
         """:meta private:"""
 
-        filter_q = create_filter(request.POST, PersonExistsFilter)
-
-        does_exist = Person.objects.filter(filter_q).exists()
+        does_exist = filter_queryset(
+            Person.objects, request.POST, PersonExistsFilter
+        ).exists()
 
         return Response(does_exist)
 

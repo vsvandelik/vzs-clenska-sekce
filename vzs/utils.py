@@ -2,12 +2,13 @@ import csv
 import unicodedata
 from collections.abc import Callable, Mapping
 from datetime import datetime
-from typing import Any, TypedDict, get_type_hints
+from typing import Any, TypedDict, TypeVar, get_type_hints
 from urllib import parse
 from urllib.parse import quote
 
 from django.core.mail import send_mail
-from django.db.models.query import Q
+from django.db.models import Model
+from django.db.models.query import Q, QuerySet
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import formats
@@ -129,26 +130,36 @@ def qr_html_image(transaction, alt_text=None):
     return f'<img src="{qr_img_src}" {alt_text}>'
 
 
-def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
+T = TypeVar("T", bound=Model)
+
+
+def filter_queryset(
+    queryset: QuerySet[T], data: Mapping[str, Any] | None, Filter: type[TypedDict]
+) -> QuerySet[T]:
     """
-    Creates a ``Q`` object according to the ``data`` dictionary.
+    Filters ``queryset`` with a ``Q`` object constructed from the ``data`` mapping.
 
     ``Filter`` defines the filter. It inherits from :class:`typing.TypedDict`
     and provides transformations using :class:`typing.Annotated`.
 
-    Transformation is a function that takes the value from the ``data`` dictionary
+    Transformation is a function that takes the value from the ``data`` mapping
     and returns a ``Q`` object.
 
-    Applies transformations to all fields of the dictionary specified by ``Filter``
+    Applies transformations to all fields of the mapping specified by ``Filter``
     and compounds the resulting `Q`` objects using logical AND.
 
     Missing values are ignored.
+
+    If ``data`` is ``None``, returns ``queryset`` unchanged.
 
     Example: ::
 
         class Filter(TypedDict, total=False):
             field: Annotated[T, lambda value: Q(name=value)]
     """
+
+    if data is None:
+        return queryset
 
     filter = ~Q(pk__in=[])  # TRUE constant, evaluates as true for any instance
 
@@ -162,7 +173,7 @@ def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
 
             filter &= transform(value)
 
-    return filter
+    return queryset.filter(filter)
 
 
 def combine_date_and_time(date, time):

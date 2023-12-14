@@ -26,7 +26,12 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
-from vzs.utils import create_filter, payment_email_html, send_notification_email, today
+from vzs.utils import (
+    filter_queryset,
+    payment_email_html,
+    send_notification_email,
+    today,
+)
 from vzs.widgets import DatePickerWithIcon
 
 from .models import BulkTransaction, Transaction
@@ -572,7 +577,8 @@ class TransactionFilterForm(Form):
         """
         transactions = Transaction.objects.all()
 
-        if not self.is_valid():
-            return transactions
-
-        return transactions.filter(create_filter(self.cleaned_data, TransactionFilter))
+        return filter_queryset(
+            transactions,
+            self.cleaned_data if self.is_valid() else None,
+            TransactionFilter,
+        )

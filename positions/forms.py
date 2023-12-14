@@ -6,7 +6,7 @@ from positions.models import EventPosition
 from vzs.forms import WithoutFormTagMixin
 from vzs.mixin_extensions import (
     RelatedAddMixin,
-    RelatedAddOrRemoveMixin,
+    RelatedAddOrRemoveFormMixin,
     RelatedRemoveMixin,
 )
 
@@ -21,35 +21,29 @@ class PositionForm(WithoutFormTagMixin, ModelForm):
         self.fields["wage_hour"].widget.attrs["min"] = 1
 
 
-class AddRemoveFeatureRequirementPositionMixin(RelatedAddOrRemoveMixin, ModelForm):
+class AddRemoveFeatureRequirementPositionMixin(RelatedAddOrRemoveFormMixin):
     class Meta:
         fields = []
         model = EventPosition
 
     feature = ModelChoiceField(queryset=Feature.objects.all())
+    instance_to_add_or_remove_field_name = "feature"
 
-    def save(self, commit=True):
-        instance = super().save(False)
-
-        feature = self.cleaned_data["feature"]
-
-        self._process_related_add_or_remove(instance.required_features, feature)
-
-        if commit:
-            instance.save()
-
-        return instance
+    def _get_instances(self):
+        return self.instance.required_features
 
 
 class AddFeatureRequirementPositionForm(
     RelatedAddMixin, AddRemoveFeatureRequirementPositionMixin
 ):
+    # TODO: error message
     pass
 
 
 class RemoveFeatureRequirementPositionForm(
     RelatedRemoveMixin, AddRemoveFeatureRequirementPositionMixin
 ):
+    # TODO: error message
     pass
 
 

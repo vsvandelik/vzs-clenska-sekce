@@ -7,7 +7,7 @@ class PersonExistsFilter(TypedDict, total=False):
     """
     Filters persons with the given first and last name.
 
-    Use with :func:`vzs.utils.create_filter`.
+    Use with :func:`vzs.utils.filter_queryset`.
     """
 
     first_name: Annotated[str, lambda first_name: Q(first_name=first_name)]
