@@ -11,11 +11,11 @@
                             <div class="card-title h5 text-bold text-center">{{ occurrence.datetime_start|date:"l" }}<br/>{{ occurrence.datetime_start|date:"j. n. y" }}</div>
                         </div>
                         <div class="card-body pt-0 mx-auto">
-                            {% if occurrence.is_opened %}
+                            {% if occurrence.is_opened and occurrence.can_excuse %}
                                 <div class="btn-group">
                                     <a class="btn btn-secondary btn-sm"
                                        data-toggle="modal"
-                                       data-target="#excuse-participant-modal"
+                                       data-target="#excuse-myself-participant-modal"
                                        data-action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}">
                                         <i class="fas fa-sign-out-alt"></i>
                                     </a>

@@ -30,21 +30,27 @@
         {% include 'trainings/detail_components_nonadmin/description.html' %}
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            {% include 'trainings/detail_components_nonadmin/future_trainings.html' %}
+    {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
+        <div class="row">
+            <div class="col-12">
+                {% include 'trainings/detail_components_nonadmin/future_trainings.html' %}
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-12">
-            {% include 'trainings/detail_components_nonadmin/past_trainings.html' %}
+        <div class="row">
+            <div class="col-12">
+                {% include 'trainings/detail_components_nonadmin/past_trainings.html' %}
+            </div>
         </div>
-    </div>
+    {% endif %}
 
+    {% include 'modal_include.html' with id='excuse-myself-participant-modal' %}
 
 {% endblock %}
 
 {% block scripts %}
-
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('excuse-myself-participant-modal');
+    </script>
 {% endblock %}
