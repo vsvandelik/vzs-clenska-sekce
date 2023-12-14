@@ -106,14 +106,13 @@ class TrainingDetailView(EventDetailBaseView):
         )[:10]
         for occurrence in upcoming_occurrences:
             occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
-            if (
-                occurrence.get_participant_attendance(active_person)
-                and occurrence.get_participant_attendance(active_person).state
-                == TrainingAttendance.EXCUSED
-            ):
-                occurrence.excused = True
-            else:
-                occurrence.excused = False
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance
+                and participant_attendance.state == TrainingAttendance.EXCUSED
+            )
 
         past_occurrences = self.object.sorted_occurrences_list().filter(
             datetime_start__lte=CURRENT_DATETIME()
@@ -182,6 +181,15 @@ class TrainingListView(generic.ListView):
         upcoming_occurrences = TrainingOccurrence.objects.filter(
             datetime_start__gte=CURRENT_DATETIME(), event__in=enrolled_trainings
         ).order_by("datetime_start")
+        for occurrence in upcoming_occurrences:
+            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance
+                and participant_attendance.state == TrainingAttendance.EXCUSED
+            )
 
         kwargs.setdefault("upcoming_trainings_occurrences", upcoming_occurrences)
         kwargs.setdefault("enrolled_trainings", enrolled_trainings)
