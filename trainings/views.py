@@ -101,6 +101,20 @@ class TrainingDetailView(EventDetailBaseView):
             .exclude(replaceable_training_2__training_1=self.object)
         )
 
+        upcoming_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__gte=CURRENT_DATETIME()
+        )[:10]
+        past_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__lte=CURRENT_DATETIME()
+        )[:20]
+        for occurrence in past_occurrences:
+            if occurrence.is_closed:
+                occurrence.participant_attendance = (
+                    occurrence.get_participant_attendance(active_person).state
+                )
+            else:
+                occurrence.participant_attendance = "not_closed"
+
         selected_replaceable_trainings = (
             TrainingReplaceabilityForParticipants.objects.filter(training_1=self.object)
         )
@@ -116,6 +130,8 @@ class TrainingDetailView(EventDetailBaseView):
             self.object.get_participant_enrollment(active_person),
         )
         kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+        kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
+        kwargs.setdefault("past_occurrences", past_occurrences)
 
         return super().get_context_data(**kwargs)
 

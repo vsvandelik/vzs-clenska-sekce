@@ -1,0 +1,33 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Nadcházející tréninky</div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for occurrence in upcoming_occurrences %}
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header border-0 mx-auto text-nowrap">
+                            <div class="card-title h5 text-bold text-center">{{ occurrence.datetime_start|date:"l" }}<br/>{{ occurrence.datetime_start|date:"j. n. y" }}</div>
+                        </div>
+                        <div class="card-body pt-0 mx-auto">
+                            {% if occurrence.is_opened %}
+                                <div class="btn-group">
+                                    <a class="btn btn-secondary btn-sm"
+                                       data-toggle="modal"
+                                       data-target="#excuse-participant-modal"
+                                       data-action="{% url 'trainings:excuse-myself-participant' event.id occurrence.id %}">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="row ">
+            <p class="text-muted text-right d-block ml-auto p-0 m-0">Zobrazuje se maximálně 10 nadcházejících tréninků.</p>
+        </div>
+    </div>
+</div>
