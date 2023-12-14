@@ -3,7 +3,7 @@
 {% block modal_title %}Přidat vybavení{% endblock %}
 {% block table_id %}add-equipment-table{% endblock %}
 {% block table_body %}
-    <tbody id="equipment-body" style="display: none">
+    <tbody id="equipment-body">
         {% include 'positions/feature_tbody.html' with features=equipment features_required=position.required_equipment detail_name='equipments:detail' %}
     </tbody>
 {% endblock %}
