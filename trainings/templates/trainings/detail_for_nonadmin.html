@@ -13,6 +13,7 @@
                         style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
                 </div>
             </div>
+            {% include 'trainings/detail_components/enroll_unenroll_button.html' %}
 
         </div>
     </div>
@@ -44,7 +45,7 @@
         </div>
     {% endif %}
 
-    {% include 'modal_include.html' with id='excuse-myself-participant-modal' %}
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
 
 {% endblock %}
 
@@ -52,5 +53,6 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal('excuse-myself-participant-modal');
+        registerModal('unenroll-myself-participant-modal');
     </script>
 {% endblock %}

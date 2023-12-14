@@ -105,7 +105,15 @@ class TrainingDetailView(EventDetailBaseView):
             datetime_start__gte=CURRENT_DATETIME()
         )[:10]
         for occurrence in upcoming_occurrences:
-            occurrence.can_excuse = (occurrence.can_participant_excuse(active_person),)
+            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
+            if (
+                occurrence.get_participant_attendance(active_person)
+                and occurrence.get_participant_attendance(active_person).state
+                == TrainingAttendance.EXCUSED
+            ):
+                occurrence.excused = True
+            else:
+                occurrence.excused = False
 
         past_occurrences = self.object.sorted_occurrences_list().filter(
             datetime_start__lte=CURRENT_DATETIME()
