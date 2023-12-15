@@ -26,6 +26,7 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
+
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -222,7 +223,7 @@ class UserChangePasswordMixin(SuccessMessageMixin, UserChangePasswordBaseMixin):
     template_name = "users/change_password.html"
 
 
-class UserChangePasswordSelfView(UserChangePasswordMixin):
+class UserChangePasswordSelfView(LoginRequiredMixin, UserChangePasswordMixin):
     """
     Changes the password of the currently logged in user.
 
