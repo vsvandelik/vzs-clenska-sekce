@@ -309,9 +309,7 @@ class Training(Event):
         return chosen_enrollments
 
     def does_person_satisfy_position_requirements(self, person, position):
-        return position.does_person_satisfy_requirements(
-            person, timezone.localtime(self.datetime_start).date()
-        )
+        return position.does_person_satisfy_requirements(person, self.date_start)
 
     def can_person_interact_with(self, person):
         return (
