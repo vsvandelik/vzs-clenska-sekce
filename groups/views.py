@@ -14,6 +14,11 @@ from django.views.generic.list import ListView
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
+from vzs.mixin_extensions import (
+    RelatedAddMixin,
+    RelatedAddOrRemoveMixin,
+    RelatedRemoveMixin,
+)
 
 from .forms import (
     AddMembersGroupForm,
@@ -177,15 +182,12 @@ class SyncGroupMembersWithGoogleAllView(GroupPermissionMixin, View):
         return redirect(reverse("groups:index"))
 
 
-class AddRemovePersonToGroupMixin(PersonPermissionMixin, View):
+class AddRemovePersonToGroupMixin(RelatedAddOrRemoveMixin, PersonPermissionMixin, View):
     http_method_names = ["post"]
 
     form_class: type
     success_message_text: str
     error_message_text: str
-
-    def members_operation(self, group, person_pk):
-        raise NotImplementedError
 
     def post(self, request, pk):
         form = self.form_class(request.POST, person=Person.objects.get(pk=pk))
@@ -193,7 +195,7 @@ class AddRemovePersonToGroupMixin(PersonPermissionMixin, View):
         if form.is_valid():
             group = form.cleaned_data["group"]
 
-            self.members_operation(group, pk)
+            self._process_related_add_or_remove(group.members, pk)
 
             success_message(request, self.success_message_text)
         else:
@@ -203,19 +205,13 @@ class AddRemovePersonToGroupMixin(PersonPermissionMixin, View):
         return redirect(reverse("persons:detail", args=[pk]))
 
 
-class AddPersonToGroupView(AddRemovePersonToGroupMixin):
+class AddPersonToGroupView(RelatedAddMixin, AddRemovePersonToGroupMixin):
     form_class = AddPersonToGroupForm
     success_message_text = _("Osoba byla úspěšně přidána do skupiny.")
     error_message_text = _("Nepodařilo se přidat osobu do skupiny. ")
 
-    def members_operation(self, group, person_pk):
-        group.members.add(person_pk)
 
-
-class RemovePersonFromGroupView(AddRemovePersonToGroupMixin):
+class RemovePersonFromGroupView(RelatedRemoveMixin, AddRemovePersonToGroupMixin):
     form_class = RemovePersonFromGroupForm
     success_message_text = _("Osoba byla úspěšně odebrána ze skupiny.")
     error_message_text = _("Nepodařilo se odebrat osobu ze skupiny. ")
-
-    def members_operation(self, group, person_pk):
-        group.members.remove(person_pk)

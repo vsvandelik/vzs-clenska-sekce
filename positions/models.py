@@ -1,39 +1,47 @@
-from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models import Q
+from django.db.models import (
+    SET_NULL,
+    CharField,
+    ForeignKey,
+    ManyToManyField,
+    Model,
+    PositiveIntegerField,
+    PositiveSmallIntegerField,
+    Q,
+)
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 from events.models import Event
 from events.utils import check_common_requirements
 from features.models import Feature, FeatureAssignment
-from persons.models import Person
-from django.utils.translation import gettext_lazy as _
 
 
-class EventPosition(models.Model):
-    name = models.CharField(
+class EventPosition(Model):
+    name = CharField(
         _("Název"),
         max_length=50,
         unique=True,
         error_messages={"unique": "Pozice s tímto názvem již existuje."},
     )
-    wage_hour = models.PositiveIntegerField(
+    wage_hour = PositiveIntegerField(
         _("Hodinová sazba"), validators=[MinValueValidator(1)]
     )
-    required_features = models.ManyToManyField(Feature)
-    min_age = models.PositiveSmallIntegerField(
+    required_features = ManyToManyField(Feature)
+    min_age = PositiveSmallIntegerField(
         _("Minimální věk"),
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    max_age = models.PositiveSmallIntegerField(
+    max_age = PositiveSmallIntegerField(
         _("Maximální věk"),
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    group = models.ForeignKey("groups.Group", null=True, on_delete=models.SET_NULL)
-    allowed_person_types = models.ManyToManyField("events.EventPersonTypeConstraint")
+    group = ForeignKey("groups.Group", null=True, on_delete=SET_NULL)
+    allowed_person_types = ManyToManyField("events.EventPersonTypeConstraint")
 
     def required_qualifications(self):
         return self.required_features.filter(feature_type=Feature.Type.QUALIFICATION)
@@ -61,6 +69,7 @@ class EventPosition(models.Model):
 
         for condition in feature_type_conditions:
             observed_features = features.filter(condition)
+
             if observed_features.exists():
                 assignment = FeatureAssignment.objects.filter(
                     Q(feature__in=observed_features)
@@ -69,9 +78,14 @@ class EventPosition(models.Model):
                     & Q(date_returned=None)
                     & (Q(date_expire=None) | Q(date_expire__gte=date))
                 ).first()
+
                 if assignment is None:
                     return False
+
         return True
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("positions:detail", args=[self.pk])

@@ -34,3 +34,21 @@ class InsertActivePersonIntoModelFormKwargsMixin:
         kwargs = super().get_form_kwargs()
         kwargs["active_person"] = self.request.active_person
         return kwargs
+
+
+class RelatedAddOrRemoveMixin:
+    @staticmethod
+    def _process_related_add_or_remove(instances, instance):
+        raise NotImplementedError
+
+
+class RelatedAddMixin:
+    @staticmethod
+    def _process_related_add_or_remove(instances, instance):
+        instances.add(instance)
+
+
+class RelatedRemoveMixin:
+    @staticmethod
+    def _process_related_add_or_remove(instances, instance):
+        instances.remove(instance)

@@ -30,5 +30,5 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            self.style.SUCCESS(f'Successfully created {options["N"]} new transactions.')
+            self.style.SUCCESS(f"Successfully created {count} new transactions.")
         )
