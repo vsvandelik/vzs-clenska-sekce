@@ -7,10 +7,12 @@ from django.db import models
 from django.db.models import Case, ExpressionWrapper, Q, Value, When
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature, FeatureAssignment
 from vzs import models as vzs_models
+from vzs.settings import CURRENT_DATETIME
 
 
 class PersonsManager(models.Manager):
@@ -18,15 +20,16 @@ class PersonsManager(models.Manager):
         return super().get_queryset()
 
     def with_age(self):
+        date = timezone.localdate(CURRENT_DATETIME())
         return self.get_queryset().annotate(
             age=ExpressionWrapper(
-                date.today().year
+                date.year
                 - ExtractYear("date_of_birth")
                 - Case(
-                    When(Q(date_of_birth__month__gt=date.today().month), then=Value(1)),
+                    When(Q(date_of_birth__month__gt=date.month), then=Value(1)),
                     When(
-                        Q(date_of_birth__month=date.today().month)
-                        & Q(date_of_birth__day__gt=date.today().day),
+                        Q(date_of_birth__month=date.month)
+                        & Q(date_of_birth__day__gt=date.day),
                         then=Value(1),
                     ),
                     default=Value(0),
