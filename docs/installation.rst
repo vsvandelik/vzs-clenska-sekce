@@ -47,7 +47,11 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 
     pip install -r requirements.txt
 
+5. Spustíme migrace
 
+.. code-block:: console
+
+    python manage.py migrate
 |
 
 Nyní je možné spustit webový server Djanga.

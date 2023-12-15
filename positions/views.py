@@ -54,8 +54,10 @@ class PositionDeleteView(MessagesMixin, PositionMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         if request.method == "POST":
             position = self.get_object()
+
             if position.events_using().exists():
                 raise Http404("Tato stránka není dostupná")
+
         return super().dispatch(request, *args, **kwargs)
 
 
