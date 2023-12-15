@@ -1,7 +1,7 @@
 from functools import reduce
 
 from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
 from django.http import Http404
@@ -341,7 +341,7 @@ class ExportSelectedPersonsView(generic.View):
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
-class MyProfileView(generic.DetailView):
+class MyProfileView(LoginRequiredMixin, generic.DetailView):
     model = Person
     template_name = "persons/my_profile.html"
 
@@ -355,7 +355,9 @@ class MyProfileView(generic.DetailView):
         return super().get_context_data(**kwargs)
 
 
-class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
+class MyProfileUpdateView(
+    LoginRequiredMixin, SuccessMessageMixin, generic.edit.UpdateView
+):
     model = Person
     template_name = "persons/my_profile_edit.html"
     form_class = MyProfileUpdateForm
