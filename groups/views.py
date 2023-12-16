@@ -75,7 +75,8 @@ class GroupAddMembersView(GroupPermissionMixin, SuccessMessageMixin, UpdateView)
         existing_members = self.object.members.all()
         combined_members = existing_members | new_members
 
-        form.cleaned_data["members"] = combined_members
+        form.instance.members.set(combined_members)
+        del form.cleaned_data["members"]
 
         if form.instance.google_email:
             for new_member in new_members:
