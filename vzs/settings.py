@@ -183,6 +183,8 @@ if current_datime_from_env:
 else:
     CURRENT_DATETIME = lambda: datetime.now(tz=timezone.get_default_timezone())
 
+CURRENT_DATE = lambda: timezone.localdate(CURRENT_DATETIME())
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 

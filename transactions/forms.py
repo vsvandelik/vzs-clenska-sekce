@@ -1,5 +1,4 @@
 from collections.abc import Iterable, MutableMapping
-from datetime import date
 from typing import Any
 
 from crispy_forms.helper import FormHelper
@@ -16,7 +15,6 @@ from django.forms import (
     ModelForm,
     ValidationError,
 )
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
@@ -27,10 +25,9 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATE
 from vzs.utils import create_filter, payment_email_html, send_notification_email
 from vzs.widgets import DatePickerWithIcon
-
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 
@@ -66,7 +63,7 @@ class TransactionCreateEditMixin(ModelForm):
 
         date_due = self.cleaned_data["date_due"]
 
-        if date_due < timezone.localdate(CURRENT_DATETIME()):
+        if date_due < CURRENT_DATE():
             raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
 
         return date_due
@@ -343,7 +340,7 @@ class TransactionCreateBulkConfirmForm(
                 )
                 continue
 
-            if date_due < timezone.localdate(CURRENT_DATETIME()):
+            if date_due < CURRENT_DATE():
                 self.add_error(
                     field_name_date_due, _("Datum splatnosti nemůže být v minulosti.")
                 )

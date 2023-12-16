@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment, Event
+from events.models import ParticipantEnrollment
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -46,7 +46,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
+from vzs.settings import GOOGLE_MAPS_API_KEY, CURRENT_DATE
 from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
 from .forms import (
     ApproveOccurrenceForm,
@@ -446,7 +446,7 @@ class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
 class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME().date() < occurrence.date:
+        if CURRENT_DATE() < occurrence.date:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 

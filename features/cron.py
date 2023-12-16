@@ -5,13 +5,13 @@ from django.utils.translation import gettext_lazy as _
 
 from features.models import FeatureAssignment, Feature
 from vzs import settings
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATE
 from vzs.utils import send_notification_email
 
 
 def features_expiry_send_mails():
     observed_feature_assignments = FeatureAssignment.objects.annotate(
-        date_diff=F("date_expire") - CURRENT_DATETIME().date()
+        date_diff=F("date_expire") - CURRENT_DATE()
     ).filter(
         date_diff__lte=timedelta(hours=settings.FEATURE_EXPIRE_HOURS_SEND_MAIL),
         expiry_email_sent=False,
