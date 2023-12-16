@@ -47,6 +47,7 @@ class GroupDeleteView(GroupPermissionMixin, SuccessMessageMixin, DeleteView):
 
 
 class GroupDetailView(GroupPermissionMixin, DetailView):
+    model = Group
     template_name = "groups/detail.html"
 
     def get_context_data(self, **kwargs):
@@ -74,7 +75,7 @@ class GroupAddMembersView(GroupPermissionMixin, SuccessMessageMixin, UpdateView)
         existing_members = self.object.members.all()
         combined_members = existing_members | new_members
 
-        form.instance.members.set(combined_members)
+        form.cleaned_data["members"] = combined_members
 
         if form.instance.google_email:
             for new_member in new_members:
@@ -118,7 +119,9 @@ class GroupRemoveMemberView(GroupPermissionMixin, SingleObjectMixin, View):
     success_message = "Osoba byla odebrána."
 
     def get_success_url(self):
-        return reverse("groups:detail", args=(self.kwargs["group"],))
+        return reverse(
+            "groups:detail", args=(self.kwargs[GroupRemoveMemberView.pk_url_kwarg],)
+        )
 
     def get(self, request, *args, person_id, **kwargs):
         group = self.get_object()
