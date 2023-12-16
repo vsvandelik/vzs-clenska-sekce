@@ -104,6 +104,12 @@
                         <p>Akce</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{% url "trainings:index" %}" class="nav-link {% active_link "trainings:index" %}">
+                        <i class="fas fa-calendar nav-icon"></i>
+                        <p>Tréninky</p>
+                    </a>
+                </li>
                 <li class="nav-item {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" "menu-open" strict=False %}">
                     <a href="#" class="nav-link {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" %}">
                         <i class="nav-icon fas fa-calendar"></i>

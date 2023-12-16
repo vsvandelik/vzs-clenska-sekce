@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load events_template_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Tréninky{% endblock %}
+
+{% block content %}
+    {% if enrolled_trainings %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/enrolled_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if available_trainings %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/available_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if upcoming_trainings_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/upcoming_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("upcoming-trainings-occurrences", [], [])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('enroll-myself-participant-modal')
+    </script>
+{% endblock %}

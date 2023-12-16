@@ -42,7 +42,7 @@ from events.views import (
     InsertOccurrenceIntoSelfObjectMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
-from persons.models import Person
+from persons.models import Person, get_active_user
 from trainings.permissions import (
     OccurrenceEnrollMyselfParticipantPermissionMixin,
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
@@ -92,9 +92,8 @@ from .models import (
 
 
 class TrainingDetailView(EventDetailBaseView):
-    template_name = "trainings/detail.html"
-
     def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
         trainings_for_replacement_to_choose = (
             Training.objects.filter(
                 category=self.object.category,
@@ -102,6 +101,32 @@ class TrainingDetailView(EventDetailBaseView):
             .exclude(pk=self.object.pk)
             .exclude(replaceable_training_2__training_1=self.object)
         )
+
+        upcoming_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__gte=CURRENT_DATETIME()
+        )[:10]
+        for occurrence in upcoming_occurrences:
+            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance
+                and participant_attendance.state == TrainingAttendance.EXCUSED
+            )
+
+        past_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__lte=CURRENT_DATETIME()
+        )[:20]
+        for occurrence in past_occurrences:
+            if occurrence.is_closed and occurrence.get_participant_attendance(
+                active_person
+            ):
+                occurrence.participant_attendance = (
+                    occurrence.get_participant_attendance(active_person).state
+                )
+            else:
+                occurrence.participant_attendance = "not_closed"
 
         selected_replaceable_trainings = (
             TrainingReplaceabilityForParticipants.objects.filter(training_1=self.object)
@@ -113,7 +138,68 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "selected_replaceable_trainings", selected_replaceable_trainings
         )
+        kwargs.setdefault(
+            "active_person_participant_enrollment",
+            self.object.get_participant_enrollment(active_person),
+        )
+        kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+        kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
+        kwargs.setdefault("past_occurrences", past_occurrences)
+
         return super().get_context_data(**kwargs)
+
+    def get_template_names(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+        if self.object.can_user_manage(active_user):
+            return "trainings/detail.html"
+        else:
+            return "trainings/detail_for_nonadmin.html"
+
+
+class TrainingListView(generic.ListView):
+    template_name = "trainings/index.html"
+
+    def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
+        user = get_active_user(active_person)
+
+        enrolled_trainings = Training.objects.filter(
+            trainingparticipantenrollment__person=active_person,
+        )
+
+        visible_event_pks = [
+            event.pk
+            for event in Training.objects.all()
+            if event.can_user_manage(user)
+            or event.can_person_interact_with(active_person)
+        ]
+
+        available_trainings = Training.objects.filter(pk__in=visible_event_pks).exclude(
+            pk__in=enrolled_trainings
+        )
+
+        upcoming_occurrences = TrainingOccurrence.objects.filter(
+            datetime_start__gte=CURRENT_DATETIME(), event__in=enrolled_trainings
+        ).order_by("datetime_start")
+        for occurrence in upcoming_occurrences:
+            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance
+                and participant_attendance.state == TrainingAttendance.EXCUSED
+            )
+
+        kwargs.setdefault("upcoming_trainings_occurrences", upcoming_occurrences)
+        kwargs.setdefault("enrolled_trainings", enrolled_trainings)
+        kwargs.setdefault("available_trainings", available_trainings)
+
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return []
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):

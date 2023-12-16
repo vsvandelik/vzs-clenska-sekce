@@ -1,0 +1,50 @@
+<div class="col-12">
+    <div class="card ">
+        <div class="card-header d-flex align-items-center">
+            <div class="card-title h5">Nadcházející tréninky</div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <table id="upcoming-trainings-occurrences" class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Název</th>
+                                <th scope="col">Den</th>
+                                <th scope="col">Datum</th>
+                                <th scope="col">Čas</th>
+                                <th scope="col">Místo konání</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for occurrence in upcoming_trainings_occurrences %}
+                                <tr>
+                                    <td>{{ occurrence.event.name }}</td>
+                                    <td>{{ occurrence.datetime_start|date:"l" }}</td>
+                                    <td>{{ occurrence.datetime_start|date:"d. m. Y" }}</td>
+                                    <td>{{ occurrence.datetime_start|date:"H:i" }} - {{ occurrence.datetime_end|date:"H:i" }}</td>
+                                    <td>{{ occurrence.event.location }}</td>
+                                    <td class="text-center">
+                                        {% if occurrence.excused %}omluven/a{% endif %}
+                                        {% if occurrence.is_opened and occurrence.can_excuse %}
+                                            <div class="btn-group">
+                                                <a class="btn btn-secondary btn-sm"
+                                                   data-toggle="modal"
+                                                   data-target="#excuse-myself-participant-modal"
+                                                   data-action="{% url 'trainings:excuse-myself-participant' occurrence.event.id occurrence.id %}">
+                                                    <i class="fas fa-sign-out-alt"></i>
+                                                </a>
+                                            </div>
+                                            {% include 'modal_include.html' with id='excuse-myself-participant-modal' template="trainings_occurrences/modals/excuse_myself_participant.html" event=occurrence.event %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

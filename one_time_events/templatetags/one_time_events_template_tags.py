@@ -16,17 +16,6 @@ def occurrence_person_2_organizer_assignment(occurrence, person):
     return None
 
 
-@register.simple_tag
-def display_date_range(event):
-    if event.date_start == event.date_end:
-        return event.date_start.strftime("%d. %m. %Y")
-    else:
-        return "%s - %s" % (
-            event.date_start.strftime("%d. %m. %Y"),
-            event.date_end.strftime("%d. %m. %Y"),
-        )
-
-
 @register.filter
 def as_google_map_src(location):
     encoded_location = urllib.parse.quote_plus(location)
