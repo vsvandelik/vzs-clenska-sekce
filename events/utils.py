@@ -1,9 +1,12 @@
 from datetime import datetime
+
+from django.utils.timezone import localdate
+
 from persons.models import Person
 
 
 def parse_czech_date(date_str):
-    return datetime.strptime(date_str, "%d. %m. %Y")
+    return datetime.strptime(date_str, "%d. %m. %Y").date()
 
 
 def check_common_requirements(req_obj, person):

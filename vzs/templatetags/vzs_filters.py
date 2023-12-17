@@ -80,7 +80,7 @@ def indentation_by_level(level):
     return "—" * level + " "
 
 
-numeric_test = re.compile("^\d+$")
+numeric_test = re.compile(r"^\d+$")
 
 
 @register.filter
@@ -109,7 +109,7 @@ def index(indexable, i):
 def index_safe(indexable, i):
     try:
         return indexable[i]
-    except (ValueError, IndexError):
+    except (ValueError, IndexError, KeyError):
         return None
 
 

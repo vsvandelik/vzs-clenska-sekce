@@ -3,16 +3,16 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q, QuerySet
+from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from events.utils import check_common_requirements
-from features.models import Feature, FeatureAssignment
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
-from vzs.settings import CURRENT_DATE
+from vzs.settings import CURRENT_DATETIME
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -130,7 +130,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and CURRENT_DATE()
+            and localdate(CURRENT_DATETIME())
             + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )
@@ -140,7 +140,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
             person is None
             or self.enrolled_participants.contains(person)
             or self.capacity == 0
-            or CURRENT_DATE() > self.date_end
+            or localdate(CURRENT_DATETIME()) > self.date_end
         ):
             return False
 
@@ -202,7 +202,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
             self.is_organizer(person)
             or self.can_person_enroll_as_waiting(person)
             or (
-                CURRENT_DATE() <= self.date_end
+                timezone.localdate(CURRENT_DATETIME()) <= self.date_end
                 and any(
                     [
                         position.does_person_satisfy_requirements(

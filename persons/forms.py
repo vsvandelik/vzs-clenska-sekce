@@ -4,13 +4,14 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Fieldset, Layout, Submit
 from django import forms
 from django.forms import Form, ModelForm, ValidationError
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.settings import CURRENT_DATE
+from vzs.settings import CURRENT_DATETIME
 from vzs.widgets import DatePickerWithIcon
 from .models import Person, PersonHourlyRate
 
@@ -36,7 +37,7 @@ class PersonForm(ModelForm):
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
 
-        if date_of_birth and date_of_birth > CURRENT_DATE():
+        if date_of_birth and date_of_birth > timezone.localdate(CURRENT_DATETIME()):
             raise ValidationError(_("Neplatné datum narození."))
 
         return date_of_birth

@@ -1,5 +1,8 @@
-from django.contrib import messages
+from datetime import datetime
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.messages import error as error_message
+from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import BadRequest
 from django.db import IntegrityError
@@ -7,28 +10,30 @@ from django.db.models import Exists, OuterRef
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-from vzs.settings import CURRENT_DATE
+from vzs.settings import CURRENT_DATETIME
+
 from .forms import (
-    FeatureForm,
-    FeatureAssignmentByPersonForm,
     FeatureAssignmentByFeatureForm,
+    FeatureAssignmentByPersonForm,
+    FeatureForm,
 )
-from .models import (
-    FeatureAssignment,
-    Feature,
-    FeatureTypeTexts,
-)
+from .models import Feature, FeatureAssignment, FeatureTypeTexts
 from .utils import extend_form_of_labels
 
 
 class FeaturePermissionMixin(PermissionRequiredMixin):
     def __init__(self):
         super().__init__()
+
         self.feature_type = None
         self.feature_type_texts = None
         self.person = None
@@ -36,12 +41,15 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
     def dispatch(self, request, feature_type, *args, **kwargs):
         self.feature_type = feature_type
         self.feature_type_texts = FeatureTypeTexts[feature_type]
+
         if "person" in kwargs:
             self.person = kwargs["person"]
+
         return super().dispatch(request, feature_type, *args, **kwargs)
 
     def has_permission(self):
         user = self.request.user
+
         return user.has_perm(self.feature_type_texts.permission_name)
 
     def get_context_data(self, **kwargs):
@@ -59,7 +67,7 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
             raise Http404()
 
 
-class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, generic.View):
+class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, View):
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
@@ -71,18 +79,19 @@ class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, generic.View):
             feature__feature_type=Feature.Type.EQUIPMENT,
             person=self.person,
         )
+
         if assigned_equipment.date_returned:
             raise BadRequest("Vybavení již bylo vráceno.")
 
-        assigned_equipment.date_returned = CURRENT_DATE()
+        assigned_equipment.date_returned = timezone.localdate(CURRENT_DATETIME())
         assigned_equipment.save()
 
         return redirect(reverse("persons:detail", args=[self.person]))
 
 
-class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
-    model = FeatureAssignment
+class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
     form_class = FeatureAssignmentByPersonForm
+    model = FeatureAssignment
     template_name = "features_assignment/edit.html"
 
     def get_success_url(self):
@@ -106,46 +115,49 @@ class FeatureAssignEditView(FeaturePermissionMixin, generic.edit.UpdateView):
         return super().get_context_data(**kwargs)
 
     def get_form(self, form_class=None):
-        return extend_form_of_labels(
-            super().get_form(form_class), self.feature_type_texts.form_labels
-        )
+        form = super().get_form(form_class)
+
+        return extend_form_of_labels(form, self.feature_type_texts.form_labels)
 
     def form_valid(self, form):
         form.instance.person = self.get_person_with_permission_check()
 
         if not form.instance.pk:
-            success_message = self.feature_type_texts.success_message_assigned
+            success_message_text = self.feature_type_texts.success_message_assigned
         else:
-            success_message = self.feature_type_texts.success_message_assigning_updated
+            success_message_text = (
+                self.feature_type_texts.success_message_assigning_updated
+            )
 
         try:
             response = super().form_valid(form)
             form.add_transaction_if_necessary()
-            messages.success(self.request, success_message)
+            success_message(self.request, success_message_text)
             return response
 
         except IntegrityError:
-            messages.error(
+            error_message(
                 self.request, self.feature_type_texts.duplicated_message_assigning
             )
             return super().form_invalid(form)
 
     def form_invalid(self, form):
         feature_name_4 = self.feature_type_texts.name_4
-        messages.error(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
+
+        error_message(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
 
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         kwargs["feature_type"] = self.feature_type_texts.shortcut
         kwargs["person"] = self.get_person_with_permission_check()
+
         return kwargs
 
 
-class FeatureAssignDeleteView(
-    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
-):
+class FeatureAssignDeleteView(FeaturePermissionMixin, SuccessMessageMixin, DeleteView):
     model = FeatureAssignment
     template_name = "features_assignment/delete.html"
 
@@ -170,19 +182,17 @@ class FeatureAssignDeleteView(
         return super().form_valid(form)
 
 
-class FeatureIndexView(FeaturePermissionMixin, generic.ListView):
-    model = Feature
+class FeatureIndexView(FeaturePermissionMixin, ListView):
     context_object_name = "features"
-
-    def get_template_names(self):
-        return f"features/index.html"
+    model = Feature
+    template_name = "features/index.html"
 
     def get_queryset(self):
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
-class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
+class FeatureDetailView(FeaturePermissionMixin, DetailView):
     model = Feature
 
     def get_context_data(self, **kwargs):
@@ -237,12 +247,10 @@ class FeatureDetailView(FeaturePermissionMixin, generic.DetailView):
         return features_assignment_matrix
 
 
-class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):
-    model = Feature
+class FeatureEditView(FeaturePermissionMixin, UpdateView):
     form_class = FeatureForm
-
-    def get_template_names(self):
-        return f"features/edit.html"
+    model = Feature
+    template_name = "features/edit.html"
 
     def get_object(self, queryset=None):
         try:
@@ -251,24 +259,30 @@ class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):
             return None
 
     def get_success_url(self):
-        return reverse(f"{self.feature_type}:detail", args=(self.object.pk,))
+        return reverse(f"{self.feature_type}:detail", args=[self.object.pk])
 
     def form_valid(self, form):
         feature_type_texts = self.feature_type_texts
+
         form.instance.feature_type = feature_type_texts.shortcut
-        messages.success(self.request, feature_type_texts.success_message_save)
+
+        success_message(self.request, feature_type_texts.success_message_save)
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(
+        error_message(
             self.request,
             _("Formulář se nepodařilo uložit. Opravte chyby a zkuste to znovu."),
         )
+
         return super().form_invalid(form)
 
     def get_form(self, form_class=None):
-        feature_type_texts = self.feature_type_texts
         form = super().get_form(form_class)
+
+        feature_type_texts = self.feature_type_texts
+
         if feature_type_texts.form_labels:
             for field, label in feature_type_texts.form_labels.items():
                 if field in form.fields:
@@ -278,13 +292,13 @@ class FeatureEditView(FeaturePermissionMixin, generic.edit.UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         kwargs["feature_type"] = self.feature_type_texts.shortcut
+
         return kwargs
 
 
-class FeatureDeleteView(
-    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.DeleteView
-):
+class FeatureDeleteView(FeaturePermissionMixin, SuccessMessageMixin, DeleteView):
     model = Feature
 
     def get_template_names(self):
@@ -298,15 +312,16 @@ class FeatureDeleteView(
 
 
 class FeatureAssignToSelectedPersonView(
-    FeaturePermissionMixin, SuccessMessageMixin, generic.edit.CreateView
+    FeaturePermissionMixin, SuccessMessageMixin, CreateView
 ):
-    model = FeatureAssignment
     form_class = FeatureAssignmentByFeatureForm
-    template_name = "features_assignment/assign_to_selected_person.html"
+    model = FeatureAssignment
     success_message = _("Vlastnost byla úspěšně přiřazena.")
+    template_name = "features_assignment/assign_to_selected_person.html"
 
     def dispatch(self, request, feature_type, pk, *args, **kwargs):
         self.feature = get_object_or_404(Feature, pk=pk)
+
         return super().dispatch(request, feature_type, pk, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -316,20 +331,22 @@ class FeatureAssignToSelectedPersonView(
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         kwargs["feature"] = self.feature
 
         return kwargs
 
     def get_form(self, form_class=None):
-        return extend_form_of_labels(
-            super().get_form(form_class), self.feature_type_texts.form_labels
-        )
+        form = super().get_form(form_class)
+
+        return extend_form_of_labels(form, self.feature_type_texts.form_labels)
 
     def get_success_url(self):
-        return reverse(self.feature_type + ":detail", args=[self.feature.pk])
+        return reverse(f"{self.feature_type}:detail", args=[self.feature.pk])
 
-    def form_valid(self, form):
+    def form_valid(self, form: FeatureAssignmentByFeatureForm):
         response = super().form_valid(form)
+
         form.add_transaction_if_necessary()
 
         return response

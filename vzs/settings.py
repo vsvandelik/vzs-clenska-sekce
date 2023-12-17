@@ -16,7 +16,7 @@ from pathlib import Path
 import environ
 from dateutil.relativedelta import relativedelta
 from django.conf.locale.cs import formats as cs_formats
-from django.utils import timezone
+from django.utils.timezone import now
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,13 +177,16 @@ DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
 
 current_datime_from_env = os.environ.get("CURRENT_DATETIME")
 if current_datime_from_env:
-    CURRENT_DATETIME = lambda: datetime.fromisoformat(
-        current_datime_from_env.strip()
-    ).replace(tzinfo=timezone.get_default_timezone())
-else:
-    CURRENT_DATETIME = lambda: datetime.now(tz=timezone.get_default_timezone())
+    _CURRENT_DATETIME = datetime.fromisoformat(current_datime_from_env.strip())
 
-CURRENT_DATE = lambda: timezone.localdate(CURRENT_DATETIME())
+    def CURRENT_DATETIME():
+        return _CURRENT_DATETIME
+
+else:
+
+    def CURRENT_DATETIME():
+        return now()
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
