@@ -80,7 +80,7 @@ def indentation_by_level(level):
     return "—" * level + " "
 
 
-numeric_test = re.compile("^\d+$")
+numeric_test = re.compile(r"^\d+$")
 
 
 @register.filter
