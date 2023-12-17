@@ -1,9 +1,10 @@
 from django.http import Http404
 from django.urls import reverse
+from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment, Event
+from events.models import Event, ParticipantEnrollment
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -21,8 +22,10 @@ from events.views import (
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoContextData,
     InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
     OccurrenceIsApprovedRestrictionMixin,
@@ -37,8 +40,6 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceDetailOnFailureMixin,
     RedirectToOccurrenceDetailOnSuccessMixin,
-    InsertEventIntoSelfObjectMixin,
-    InsertOccurrenceIntoSelfObjectMixin,
 )
 from persons.models import Person, get_active_user
 from vzs.mixin_extensions import (
@@ -47,13 +48,15 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
-from vzs.utils import send_notification_email, export_queryset_csv, date_pretty
+from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
+
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
     BulkDeleteOrganizerFromOneTimeEventForm,
     CancelOccurrenceApprovementForm,
     OneTimeEventBulkApproveParticipantsForm,
+    OneTimeEventCreateDuplicateForm,
     OneTimeEventEnrollMyselfOrganizerForm,
     OneTimeEventEnrollMyselfOrganizerOccurrenceForm,
     OneTimeEventEnrollMyselfParticipantForm,
@@ -65,14 +68,13 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
-    OneTimeEventCreateDuplicateForm,
 )
 from .models import (
+    OneTimeEvent,
+    OneTimeEventAttendance,
     OneTimeEventOccurrence,
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
-    OneTimeEvent,
-    OneTimeEventAttendance,
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
@@ -446,7 +448,7 @@ class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
 class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME().date() < occurrence.date:
+        if localdate(CURRENT_DATETIME()) < occurrence.date:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 

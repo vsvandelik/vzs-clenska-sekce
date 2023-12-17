@@ -38,5 +38,7 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "persons/person_exists.js" %}"></script>
+    {% if not person %}
+        <script src="{% static "persons/person_exists.js" %}"></script>
+    {% endif %}
 {% endblock %}
