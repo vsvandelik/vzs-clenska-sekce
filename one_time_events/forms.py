@@ -3,44 +3,45 @@ from datetime import timedelta
 from django import forms
 from django.core.validators import MinValueValidator
 from django.db.models import Q
-from django.forms import ModelForm, CheckboxSelectMultiple, Form
+from django.forms import CheckboxSelectMultiple, Form, ModelForm
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
 from events.forms import MultipleChoiceFieldNoValidation
 from events.forms_bases import (
-    EventForm,
-    EnrollMyselfParticipantForm,
-    BulkApproveParticipantsForm,
     ActivePersonFormMixin,
+    BulkApproveParticipantsForm,
+    EnrollMyselfOrganizerOccurrenceForm,
+    EnrollMyselfParticipantForm,
+    EventForm,
     EventFormMixin,
+    InsertRequestIntoSelf,
+    OccurrenceFormMixin,
     OrganizerAssignmentForm,
     OrganizerEnrollMyselfForm,
-    OccurrenceFormMixin,
-    EnrollMyselfOrganizerOccurrenceForm,
-    UnenrollMyselfOccurrenceForm,
+    ParticipantEnrollmentForm,
     ReopenOccurrenceMixin,
-    InsertRequestIntoSelf,
+    UnenrollMyselfOccurrenceForm,
 )
-from events.forms_bases import ParticipantEnrollmentForm
 from events.models import (
     EventOrOccurrenceState,
-    ParticipantEnrollment,
     EventPositionAssignment,
+    ParticipantEnrollment,
 )
 from events.utils import parse_czech_date
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import send_notification_email, date_pretty, payment_email_html
+from vzs.utils import date_pretty, payment_email_html, send_notification_email
+
 from .models import (
     OneTimeEvent,
+    OneTimeEventAttendance,
     OneTimeEventOccurrence,
+    OneTimeEventParticipantAttendance,
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
-    OneTimeEventParticipantAttendance,
-    OneTimeEventAttendance,
 )
 
 
@@ -129,7 +130,7 @@ class OneTimeEventForm(
 
     def _check_occurrence_date(self, date_raw):
         try:
-            date = parse_czech_date(date_raw).date()
+            date = parse_czech_date(date_raw)
         except:
             self.add_error(None, "Neplatný datum konání tréninku")
             return False, None

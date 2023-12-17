@@ -15,9 +15,7 @@ from fiobank import FioBank
 from events.models import ParticipantEnrollment
 from persons.models import Person
 from vzs.settings import FIO_TOKEN
-from vzs import settings
 from vzs.utils import email_notification_recipient_set
-from .models import Transaction, FioTransaction
 
 from .models import FioTransaction, Transaction
 

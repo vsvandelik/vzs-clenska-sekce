@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
+from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -350,20 +350,20 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def can_position_be_still_enrolled(self):
         return (
-            CURRENT_DATETIME().date()
+            localdate(CURRENT_DATETIME())
             + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
             <= self.date
         )
 
     def can_position_be_still_unenrolled(self):
         return (
-            CURRENT_DATETIME().date()
+            localdate(CURRENT_DATETIME())
             + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.date
         )
 
     def can_attendance_be_filled(self):
-        return CURRENT_DATETIME().date() >= self.date
+        return localdate(CURRENT_DATETIME()) >= self.date
 
     def not_approved_when_should(self):
         return (

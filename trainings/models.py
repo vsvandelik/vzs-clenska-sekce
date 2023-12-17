@@ -235,9 +235,9 @@ class Training(Event):
     def does_training_take_place_on_date(self, date):
         for occurrence in self.occurrences_list():
             if (
-                timezone.localtime(occurrence.datetime_start).date()
+                timezone.localdate(occurrence.datetime_start)
                 <= date
-                <= timezone.localtime(occurrence.datetime_end).date()
+                <= timezone.localdate(occurrence.datetime_end)
             ):
                 return True
         return False
