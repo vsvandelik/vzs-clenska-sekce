@@ -58,10 +58,11 @@ class PersonForm(ModelForm):
     def clean_birth_number(self):
         birth_number = self.cleaned_data["birth_number"]
 
-        if (
-            birth_number is not None
-            and Person.objects.filter(birth_number=birth_number).exists()
-        ):
+        persons_with_same_birth_number = Person.objects.filter(
+            birth_number=birth_number
+        ).exclude(pk=self.instance.pk)
+
+        if birth_number is not None and persons_with_same_birth_number.exists():
             raise ValidationError(
                 _(
                     "Rodné číslo je již použito. Zkontrolujte prosím,"

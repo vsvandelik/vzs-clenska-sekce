@@ -40,7 +40,7 @@ class GroupForm(WithoutFormTagMixin, ModelForm):
         google_as_members_authority = cleaned_data.get("google_as_members_authority")
         google_email = cleaned_data.get("google_email")
 
-        if google_as_members_authority is not None and google_email is None:
+        if google_as_members_authority is True and google_email is None:
             raise ValidationError(
                 _(
                     "Google nemůže být jako autorita členů skupiny v situaci, "

@@ -1,6 +1,5 @@
-from datetime import date
-
 from django.forms import DateField, IntegerField, ModelForm, ValidationError, widgets
+from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 
 from persons.models import Person

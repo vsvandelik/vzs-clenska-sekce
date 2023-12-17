@@ -1,6 +1,6 @@
 from functools import reduce
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
 from django.urls import reverse_lazy
@@ -300,7 +300,7 @@ class ExportSelectedPersonsView(SelectedPersonsMixin):
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
-class MyProfileView(DetailView):
+class MyProfileView(LoginRequiredMixin, DetailView):
     model = Person
     template_name = "persons/my_profile.html"
 
@@ -314,7 +314,7 @@ class MyProfileView(DetailView):
         return super().get_context_data(**kwargs)
 
 
-class MyProfileUpdateView(MessagesMixin, UpdateView):
+class MyProfileUpdateView(LoginRequiredMixin, MessagesMixin, UpdateView):
     error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
     form_class = MyProfileUpdateForm
     model = Person

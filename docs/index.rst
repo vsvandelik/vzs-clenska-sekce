@@ -15,6 +15,8 @@ Welcome to VZS Clenska sekce's documentation!
 
    _autodoc/modules
    installation.rst
+   
+   testing.rst
 
 Indices and tables
 ==================

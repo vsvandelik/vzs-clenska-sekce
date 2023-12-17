@@ -154,12 +154,12 @@ class OneTimeEventListView(generic.ListView):
 
         visible_event_pks = [
             event.pk
-            for event in Event.objects.all()
+            for event in OneTimeEvent.objects.all()
             if event.can_user_manage(user)
             or event.can_person_interact_with(active_person)
         ]
 
-        return Event.objects.filter(pk__in=visible_event_pks)
+        return OneTimeEvent.objects.filter(pk__in=visible_event_pks)
 
 
 class OneTimeEventCreateView(
