@@ -128,6 +128,12 @@ def qr_html_image(transaction, alt_text=None):
     return f'<img src="{qr_img_src}" {alt_text}>'
 
 
+Q_TRUE = ~Q(pk__in=[])
+"""
+TRUE constant, evaluates as true for any instance
+"""
+
+
 def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
     """
     Creates a ``Q`` object according to the ``data`` dictionary.
@@ -149,7 +155,7 @@ def create_filter(data: Mapping[str, Any], Filter: type[TypedDict]) -> Q:
             field: Annotated[T, lambda value: Q(name=value)]
     """
 
-    filter = ~Q(pk__in=[])  # TRUE constant, evaluates as true for any instance
+    filter = Q_TRUE
 
     # iterates over the fields of ``Filter``
     for key, annotated in get_type_hints(Filter, include_extras=True).items():
