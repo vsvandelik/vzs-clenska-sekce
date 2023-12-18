@@ -29,7 +29,6 @@ from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
 from vzs.settings import CURRENT_DATETIME
 from vzs.utils import create_filter, payment_email_html, send_notification_email
 from vzs.widgets import DatePickerWithIcon
-
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 

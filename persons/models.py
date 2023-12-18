@@ -1,4 +1,3 @@
-from datetime import date
 from itertools import chain
 
 from django.contrib.auth.models import AnonymousUser

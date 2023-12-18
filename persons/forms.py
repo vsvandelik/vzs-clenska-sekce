@@ -1,4 +1,3 @@
-import datetime
 import re
 
 from crispy_forms.helper import FormHelper
@@ -14,7 +13,6 @@ from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.settings import CURRENT_DATETIME
 from vzs.widgets import DatePickerWithIcon
-
 from .models import Person, PersonHourlyRate
 
 
