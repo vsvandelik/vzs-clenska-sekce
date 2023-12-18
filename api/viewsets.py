@@ -58,7 +58,7 @@ class PersonExistsView(APIView):
     def post(self, request, format=None):
         """:meta private:"""
 
-        filter_q = create_filter(request.POST, PersonExistsFilter)
+        filter_q = create_filter(request.data, PersonExistsFilter)
 
         does_exist = Person.objects.filter(filter_q).exists()
 
