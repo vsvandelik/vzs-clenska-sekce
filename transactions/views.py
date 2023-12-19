@@ -1,6 +1,5 @@
 from collections.abc import Iterable, Mapping
 from itertools import chain
-from sys import stderr
 from typing import Any
 from venv import create
 

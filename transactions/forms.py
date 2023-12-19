@@ -1,5 +1,4 @@
 from collections.abc import Iterable, MutableMapping
-from datetime import date
 from typing import Any
 
 from crispy_forms.helper import FormHelper
@@ -34,7 +33,6 @@ from vzs.utils import (
     today,
 )
 from vzs.widgets import DatePickerWithIcon
-
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 

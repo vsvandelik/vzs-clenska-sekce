@@ -130,6 +130,12 @@ def qr_html_image(transaction, alt_text=None):
     return f'<img src="{qr_img_src}" {alt_text}>'
 
 
+Q_TRUE = ~Q(pk__in=[])
+"""
+TRUE constant, evaluates as true for any instance
+"""
+
+
 T = TypeVar("T", bound=Model)
 
 
@@ -161,7 +167,7 @@ def filter_queryset(
     if data is None:
         return queryset
 
-    filter = ~Q(pk__in=[])  # TRUE constant, evaluates as true for any instance
+    filter = Q_TRUE
 
     # iterates over the fields of ``Filter``
     for key, annotated in get_type_hints(Filter, include_extras=True).items():

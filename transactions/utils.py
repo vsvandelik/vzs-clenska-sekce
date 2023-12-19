@@ -15,7 +15,7 @@ from fiobank import FioBank
 from events.models import ParticipantEnrollment
 from persons.models import Person
 from vzs.settings import FIO_TOKEN
-from vzs.utils import email_notification_recipient_set
+from vzs.utils import Q_TRUE, email_notification_recipient_set
 
 from .models import FioTransaction, Transaction
 
@@ -144,12 +144,21 @@ class TransactionFilter(TypedDict, total=False):
     transaction_type: Annotated[
         str,
         lambda transaction_type: (
-            Transaction.Q_reward if transaction_type == "reward" else Transaction.Q_debt
+            Q_TRUE
+            if transaction_type == ""
+            else (
+                Transaction.Q_reward
+                if transaction_type == "reward"
+                else Transaction.Q_debt
+            )
         ),
     ]
 
     is_settled: Annotated[
-        bool, lambda is_settled: Q(fio_transaction__isnull=not is_settled)
+        str,
+        lambda is_settled: Q_TRUE
+        if is_settled == ""
+        else Q(fio_transaction__isnull=is_settled != "paid"),
     ]
 
     amount_from: Annotated[

@@ -109,7 +109,7 @@ def index(indexable, i):
 def index_safe(indexable, i):
     try:
         return indexable[i]
-    except (ValueError, IndexError):
+    except (ValueError, IndexError, KeyError):
         return None
 
 

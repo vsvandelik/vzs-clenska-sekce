@@ -22,4 +22,4 @@ Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`./i
 ***************************************
 Nastavení času
 ***************************************
-Některé úkony není možné provést pokud jiná akce neproběhla. Pro důkladné ověření funkcionality je zapotřebí přepsat aktuální čas. To je možné provést nastavením proměnné ``CURRENT_DATETIME`` v souboru ``.env`` na vhodný čas ve formátu ISO 8601. Na začátek můžeme doporučit nastavení ``CURRENT_DATETIME=2023-09-01``, kdy existují proběhnuté i nadcházející události.
+Některé úkony není možné provést pokud jiná akce neproběhla. Pro důkladné ověření funkcionality je zapotřebí přepsat aktuální čas. To je možné provést nastavením proměnné ``CURRENT_DATETIME`` v souboru ``.env`` na vhodný čas s časovým pásmem ve formátu ISO 8601. Na začátek můžeme doporučit nastavení ``CURRENT_DATETIME=2023-09-01T00:00:00+01:00``, kdy existují proběhlé i nadcházející události.

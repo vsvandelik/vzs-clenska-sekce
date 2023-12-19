@@ -59,7 +59,7 @@ class PersonExistsView(APIView):
         """:meta private:"""
 
         does_exist = filter_queryset(
-            Person.objects, request.POST, PersonExistsFilter
+            Person.objects, request.data, PersonExistsFilter
         ).exists()
 
         return Response(does_exist)
