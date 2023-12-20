@@ -1,11 +1,11 @@
-from .models import Person
-
-from features.models import Feature
-
 from rest_framework.serializers import (
     HyperlinkedModelSerializer,
     HyperlinkedRelatedField,
 )
+
+from features.models import Feature
+
+from .models import Person
 
 
 class PersonSerializer(HyperlinkedModelSerializer):

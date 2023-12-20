@@ -5,6 +5,11 @@ from google_integration import google_directory
 from groups.models import Group
 from persons.models import Person
 from vzs.forms import WithoutFormTagMixin
+from vzs.mixin_extensions import (
+    RelatedAddMixin,
+    RelatedAddOrRemoveFormMixin,
+    RelatedRemoveMixin,
+)
 
 
 class GroupForm(WithoutFormTagMixin, ModelForm):
@@ -50,29 +55,21 @@ class AddMembersGroupForm(ModelForm):
         fields = ["members"]
 
 
-class AddRemovePersonToGroupFormMixin(Form):
+class AddRemovePersonToGroupFormMixin(RelatedAddOrRemoveFormMixin):
+    class Meta:
+        fields = []
+        model = Person
+
     group = ModelChoiceField(queryset=Group.objects.all())
+    instance_to_add_or_remove_field_name = "group"
 
-    def __init__(self, *args, person: Person, **kwargs):
-        self.person = person
-        super().__init__(*args, **kwargs)
-
-
-class AddPersonToGroupForm(AddRemovePersonToGroupFormMixin):
-    def clean_group(self):
-        group = self.cleaned_data["group"]
-
-        if group.members.contains(self.person):
-            raise ValidationError(_("Daná osoba je již ve skupině."))
-
-        return group
+    def _get_instances(self):
+        return self.instance.groups
 
 
-class RemovePersonFromGroupForm(AddRemovePersonToGroupFormMixin):
-    def clean_group(self):
-        group = self.cleaned_data["group"]
+class AddPersonToGroupForm(RelatedAddMixin, AddRemovePersonToGroupFormMixin):
+    error_message = _("Daná osoba je již ve skupině.")
 
-        if not group.members.contains(self.person):
-            raise ValidationError(_("Daná osoba není ve skupině přiřazena."))
 
-        return group
+class RemovePersonFromGroupForm(RelatedRemoveMixin, AddRemovePersonToGroupFormMixin):
+    error_message = _("Daná osoba není ve skupině přiřazena.")

@@ -26,8 +26,12 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
-from vzs.settings import CURRENT_DATETIME
-from vzs.utils import create_filter, payment_email_html, send_notification_email
+from vzs.utils import (
+    filter_queryset,
+    payment_email_html,
+    send_notification_email,
+    today,
+)
 from vzs.widgets import DatePickerWithIcon
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
@@ -64,7 +68,7 @@ class TransactionCreateEditMixin(ModelForm):
 
         date_due = self.cleaned_data["date_due"]
 
-        if date_due < timezone.localdate(CURRENT_DATETIME()):
+        if date_due < today():
             raise ValidationError(_("Datum splatnosti nemůže být v minulosti."))
 
         return date_due
@@ -341,7 +345,7 @@ class TransactionCreateBulkConfirmForm(
                 )
                 continue
 
-            if date_due < timezone.localdate(CURRENT_DATETIME()):
+            if date_due < today():
                 self.add_error(
                     field_name_date_due, _("Datum splatnosti nemůže být v minulosti.")
                 )
@@ -572,7 +576,8 @@ class TransactionFilterForm(Form):
         """
         transactions = Transaction.objects.all()
 
-        if not self.is_valid():
-            return transactions
-
-        return transactions.filter(create_filter(self.cleaned_data, TransactionFilter))
+        return filter_queryset(
+            transactions,
+            self.cleaned_data if self.is_valid() else None,
+            TransactionFilter,
+        )

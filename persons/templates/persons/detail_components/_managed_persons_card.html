@@ -20,7 +20,7 @@
                             <td class="text-center">
                                 <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
                                     {% csrf_token %}
-                                    <input type="hidden" name="person" value="{{ person.pk }}">
+                                    <input type="hidden" name="managed_person" value="{{ person.pk }}">
                                     <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
                                 </form>
                             </td>

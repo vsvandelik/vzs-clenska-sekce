@@ -1,18 +1,19 @@
 from functools import reduce
 
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404
-from django.shortcuts import redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
-from vzs.utils import export_queryset_csv
+from vzs.mixin_extensions import MessagesMixin
+from vzs.utils import export_queryset_csv, filter_queryset
 
 from .forms import (
     AddManagedPersonForm,
@@ -24,8 +25,8 @@ from .forms import (
 )
 from .models import Person, get_active_user
 from .utils import (
+    PersonsFilter,
     extend_kwargs_of_assignment_features,
-    parse_persons_filter_queryset,
     send_email_to_selected_persons,
 )
 
@@ -140,10 +141,15 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
         return list(available_person_types)
 
 
-class PersonIndexView(PersonPermissionMixin, generic.ListView):
+class PersonPermissionQuerysetMixin:
+    def get_queryset(self):
+        return self._filter_queryset_by_permission()
+
+
+class PersonIndexView(PersonPermissionMixin, ListView):
+    context_object_name = "persons"
     model = Person
     template_name = "persons/index.html"
-    context_object_name = "persons"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -160,188 +166,141 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
 
         self.filter_form = PersonsFilterForm(self.request.GET)
 
-        if self.filter_form.is_valid():
-            return parse_persons_filter_queryset(self.request.GET, persons_objects)
-        else:
-            return persons_objects
+        filter_dict = self.request.GET if self.filter_form.is_valid() else None
+
+        return filter_queryset(persons_objects, filter_dict, PersonsFilter).order_by(
+            "last_name"
+        )
 
 
-class PersonDetailView(PersonPermissionMixin, generic.DetailView):
+class PersonDetailView(
+    PersonPermissionQuerysetMixin, PersonPermissionMixin, DetailView
+):
     model = Person
     template_name = "persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        extend_kwargs_of_assignment_features(self.kwargs["pk"], kwargs)
+        person: Person = self.object
+
+        extend_kwargs_of_assignment_features(person, kwargs)
 
         kwargs.setdefault(
             "persons_to_manage",
             self._filter_queryset_by_permission()
-            .exclude(managed_by=self.kwargs["pk"])
-            .exclude(pk=self.kwargs["pk"])
+            .exclude(managed_by=person)
+            .exclude(pk=person.pk)
             .order_by("last_name", "first_name"),
         )
 
-        user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
-        kwargs.setdefault("available_groups", Group.objects.exclude(pk__in=user_groups))
+        kwargs.setdefault(
+            "available_groups", Group.objects.exclude(pk__in=person.groups.all())
+        )
 
         kwargs.setdefault("features_texts", FeatureTypeTexts)
 
         return super().get_context_data(**kwargs)
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
 
-
-class PersonCreateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.CreateView
-):
+class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
+    form_class = PersonForm
     model = Person
     template_name = "persons/edit.html"
-    form_class = PersonForm
-    success_message = _("Osoba byla úspěšně vytvořena")
-
-    def form_invalid(self, form):
-        messages.error(
-            self.request,
-            _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři."),
-        )
-        return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         kwargs["available_person_types"] = self._get_available_person_types()
+
         return kwargs
+
+
+class PersonCreateView(PersonCreateUpdateMixin, CreateView):
+    error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
+    success_message = _("Osoba byla úspěšně vytvořena")
 
 
 class PersonUpdateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
+    PersonPermissionQuerysetMixin, PersonCreateUpdateMixin, UpdateView
 ):
-    model = Person
-    template_name = "persons/edit.html"
-    form_class = PersonForm
+    error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
     success_message = _("Osoba byla úspěšně upravena")
 
-    def form_invalid(self, form):
-        messages.error(
-            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
-        )
-        return super().form_invalid(form)
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["available_person_types"] = self._get_available_person_types()
-        return kwargs
-
-
-class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
+class PersonDeleteView(
+    PersonPermissionQuerysetMixin, PersonPermissionMixin, DeleteView
+):
     model = Person
-    template_name = "persons/delete.html"
-    success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
+    success_url = reverse_lazy("persons:index")
+    template_name = "persons/delete.html"
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
 
-
-class AddDeleteManagedPersonMixin(PersonPermissionMixin, generic.View):
+class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
+    error_message: str
     http_method_names = ["post"]
+    model = Person
 
-    def process_form(self, request, form, pk, op, success_message, error_message):
-        if form.is_valid():
-            managing_person = form.cleaned_data["managing_person_instance"]
-            new_managed_person = form.cleaned_data["managed_person_instance"]
-
-            try:
-                self._filter_queryset_by_permission().get(pk=new_managed_person.pk)
-            except Person.DoesNotExist:
-                raise Http404()
-
-            if op == "add":
-                managing_person.managed_persons.add(new_managed_person)
-            else:
-                managing_person.managed_persons.remove(new_managed_person)
-
-            messages.success(request, success_message)
-
-        else:
-            person_error_messages = " ".join(form.errors["person"])
-            messages.error(request, error_message + person_error_messages)
-
-        return redirect(reverse("persons:detail", args=[pk]))
+    def get_error_message(self, errors):
+        return self.error_message + " ".join(errors["managed_person"])
 
 
 class AddManagedPersonView(AddDeleteManagedPersonMixin):
-    def post(self, request, pk):
-        form = AddManagedPersonForm(request.POST, managing_person=pk)
-
-        return self.process_form(
-            request,
-            form,
-            pk,
-            "add",
-            _("Nová spravovaná osoba byla přidána."),
-            _("Nepodařilo se uložit novou spravovanou osobu. "),
-        )
+    error_message = _("Nepodařilo se uložit novou spravovanou osobu. ")
+    form_class = AddManagedPersonForm
+    success_message = _("Nová spravovaná osoba byla přidána.")
 
 
 class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
-    def post(self, request, pk):
-        form = DeleteManagedPersonForm(request.POST, managing_person=pk)
-
-        return self.process_form(
-            request,
-            form,
-            pk,
-            "delete",
-            _("Odebrání spravované osoby bylo úspěšné."),
-            _("Nepodařilo se odebrat spravovanou osobu. "),
-        )
+    error_message = _("Nepodařilo se odebrat spravovanou osobu. ")
+    form_class = DeleteManagedPersonForm
+    success_message = _("Odebrání spravované osoby bylo úspěšné.")
 
 
-class EditHourlyRateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
-    model = Person
+class EditHourlyRateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView):
     form_class = PersonHourlyRateForm
-    template_name = "persons/edit_hourly_rate.html"
+    model = Person
     success_message = _("Hodinové sazby byly úspěšně upraveny.")
-
-    def get_success_url(self):
-        return reverse("persons:detail", args=[self.kwargs["pk"]])
+    template_name = "persons/edit_hourly_rate.html"
 
 
-class SendEmailToSelectedPersonsView(generic.View):
+class SelectedPersonsMixin(View):
     http_method_names = ["get"]
 
+    def _get_queryset(self):
+        raise NotImplementedError
+
+    def _process_selected_persons(self, selected_persons):
+        raise NotImplementedError
+
     def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(
-            self.request.GET,
+        selected_persons = filter_queryset(
             PersonPermissionMixin.get_queryset_by_permission(
-                self.request.user, Person.objects.with_age()
+                self.request.user, self._get_queryset()
             ),
+            request.GET,
+            PersonsFilter,
         )
 
+        return self._process_selected_persons(selected_persons)
+
+
+class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
+    def _get_queryset(self):
+        return Person.objects.all()
+
+    def _process_selected_persons(self, selected_persons):
         return send_email_to_selected_persons(selected_persons)
 
 
-class ExportSelectedPersonsView(generic.View):
-    http_method_names = ["get"]
+class ExportSelectedPersonsView(SelectedPersonsMixin):
+    def _get_queryset(self):
+        return Person.objects.with_age()
 
-    def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(
-            self.request.GET,
-            PersonPermissionMixin.get_queryset_by_permission(
-                self.request.user, Person.objects.with_age()
-            ),
-        )
-
+    def _process_selected_persons(self, selected_persons):
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
-class MyProfileView(LoginRequiredMixin, generic.DetailView):
+class MyProfileView(LoginRequiredMixin, DetailView):
     model = Person
     template_name = "persons/my_profile.html"
 
@@ -355,20 +314,13 @@ class MyProfileView(LoginRequiredMixin, generic.DetailView):
         return super().get_context_data(**kwargs)
 
 
-class MyProfileUpdateView(
-    LoginRequiredMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
-    model = Person
-    template_name = "persons/my_profile_edit.html"
+class MyProfileUpdateView(LoginRequiredMixin, MessagesMixin, UpdateView):
+    error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
     form_class = MyProfileUpdateForm
+    model = Person
     success_message = _("Váš profil byl úspěšně upraven.")
     success_url = reverse_lazy("my-profile:index")
+    template_name = "persons/my_profile_edit.html"
 
     def get_object(self, queryset=None):
         return self.request.active_person
-
-    def form_invalid(self, form):
-        messages.error(
-            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
-        )
-        return super().form_invalid(form)

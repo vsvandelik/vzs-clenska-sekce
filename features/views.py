@@ -19,7 +19,7 @@ from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-from vzs.settings import CURRENT_DATETIME
+from vzs.utils import today
 
 from .forms import (
     FeatureAssignmentByFeatureForm,
@@ -83,7 +83,7 @@ class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, View):
         if assigned_equipment.date_returned:
             raise BadRequest("Vybavení již bylo vráceno.")
 
-        assigned_equipment.date_returned = timezone.localdate(CURRENT_DATETIME())
+        assigned_equipment.date_returned = today()
         assigned_equipment.save()
 
         return redirect(reverse("persons:detail", args=[self.person]))

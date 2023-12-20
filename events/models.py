@@ -13,6 +13,7 @@ from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
 from vzs.settings import CURRENT_DATETIME
+from vzs.utils import today
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -130,8 +131,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and localdate(CURRENT_DATETIME())
-            + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
+            and today() + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )
 
@@ -140,7 +140,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
             person is None
             or self.enrolled_participants.contains(person)
             or self.capacity == 0
-            or localdate(CURRENT_DATETIME()) > self.date_end
+            or today() > self.date_end
         ):
             return False
 

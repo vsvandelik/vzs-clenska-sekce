@@ -14,11 +14,7 @@ from django.views.generic.list import ListView
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
-from vzs.mixin_extensions import (
-    RelatedAddMixin,
-    RelatedAddOrRemoveMixin,
-    RelatedRemoveMixin,
-)
+from vzs.mixin_extensions import MessagesMixin
 
 from .forms import (
     AddMembersGroupForm,
@@ -186,36 +182,25 @@ class SyncGroupMembersWithGoogleAllView(GroupPermissionMixin, View):
         return redirect(reverse("groups:index"))
 
 
-class AddRemovePersonToGroupMixin(RelatedAddOrRemoveMixin, PersonPermissionMixin, View):
+class AddRemovePersonToGroupMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
+    error_message: str
     http_method_names = ["post"]
-
     form_class: type
-    success_message_text: str
-    error_message_text: str
 
-    def post(self, request, pk):
-        form = self.form_class(request.POST, person=Person.objects.get(pk=pk))
+    def get_success_url(self) -> str:
+        return reverse("persons:detail", args=[self.object])
 
-        if form.is_valid():
-            group = form.cleaned_data["group"]
-
-            self._process_related_add_or_remove(group.members, pk)
-
-            success_message(request, self.success_message_text)
-        else:
-            person_error_messages = " ".join(form.errors["group"])
-            error_message(request, self.error_message_text + person_error_messages)
-
-        return redirect(reverse("persons:detail", args=[pk]))
+    def get_error_message(self, errors):
+        return self.error_message + " ".join(errors["group"])
 
 
-class AddPersonToGroupView(RelatedAddMixin, AddRemovePersonToGroupMixin):
+class AddPersonToGroupView(AddRemovePersonToGroupMixin):
     form_class = AddPersonToGroupForm
-    success_message_text = _("Osoba byla úspěšně přidána do skupiny.")
-    error_message_text = _("Nepodařilo se přidat osobu do skupiny. ")
+    success_message = _("Osoba byla úspěšně přidána do skupiny.")
+    error_message = _("Nepodařilo se přidat osobu do skupiny. ")
 
 
-class RemovePersonFromGroupView(RelatedRemoveMixin, AddRemovePersonToGroupMixin):
+class RemovePersonFromGroupView(AddRemovePersonToGroupMixin):
     form_class = RemovePersonFromGroupForm
-    success_message_text = _("Osoba byla úspěšně odebrána ze skupiny.")
-    error_message_text = _("Nepodařilo se odebrat osobu ze skupiny. ")
+    success_message = _("Osoba byla úspěšně odebrána ze skupiny.")
+    error_message = _("Nepodařilo se odebrat osobu ze skupiny. ")

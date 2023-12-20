@@ -18,6 +18,7 @@ from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
 from vzs.settings import CURRENT_DATETIME
+from vzs.utils import today
 
 
 class OneTimeEventAttendance(models.TextChoices):
@@ -350,20 +351,18 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def can_position_be_still_enrolled(self):
         return (
-            localdate(CURRENT_DATETIME())
-            + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
+            today() + timedelta(days=settings.ORGANIZER_ENROLL_DEADLINE_DAYS)
             <= self.date
         )
 
     def can_position_be_still_unenrolled(self):
         return (
-            localdate(CURRENT_DATETIME())
-            + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
+            today() + timedelta(days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS)
             <= self.date
         )
 
     def can_attendance_be_filled(self):
-        return localdate(CURRENT_DATETIME()) >= self.date
+        return today() >= self.date
 
     def not_approved_when_should(self):
         return (

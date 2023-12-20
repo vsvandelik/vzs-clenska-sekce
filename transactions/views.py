@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Mapping
 from itertools import chain
 from typing import Any
+from venv import create
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -22,11 +23,11 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
 )
 from persons.models import Person, get_active_user
-from persons.utils import parse_persons_filter_queryset
+from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
-from vzs.utils import export_queryset_csv, reverse_with_get_params
+from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 
 from .forms import (
     TransactionAddTrainingPaymentForm,
@@ -695,11 +696,12 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
         Filters the persons and creates transaction infos accordingly.
         """
 
-        selected_persons = parse_persons_filter_queryset(
-            query_parameters,
+        selected_persons = filter_queryset(
             PersonPermissionMixin.get_queryset_by_permission(
                 self.request.user, Person.objects.with_age()
             ),
+            query_parameters,
+            PersonsFilter,
         )
 
         for person in selected_persons:

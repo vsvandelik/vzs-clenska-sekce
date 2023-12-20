@@ -48,7 +48,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
-from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
+from vzs.utils import date_pretty, export_queryset_csv, send_notification_email, today
 
 from .forms import (
     ApproveOccurrenceForm,
@@ -448,7 +448,7 @@ class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
 class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if localdate(CURRENT_DATETIME()) < occurrence.date:
+        if today() < occurrence.date:
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
