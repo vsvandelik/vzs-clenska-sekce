@@ -5,6 +5,7 @@ from functools import reduce
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db import connection, connections
 from django.db.models import Q
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -17,9 +18,9 @@ from features.models import FeatureTypeTexts
 from groups.models import Group
 from one_time_events.models import (
     OneTimeEvent,
-    OrganizerOccurrenceAssignment,
     OneTimeEventAttendance,
 )
+from trainings.models import Training
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today
 from .forms import (
@@ -231,6 +232,7 @@ class PersonStatsView(PersonPermissionMixin, UpdateView):
     model = Person
     template_name = "persons/stats.html"
     form_class = PersonStatsForm
+    http_method_names = ["get"]
 
     def _get_parse_dates(self):
         year = today().year
@@ -269,16 +271,48 @@ class PersonStatsView(PersonPermissionMixin, UpdateView):
         return kwargs
 
     def _get_stats(self):
-        one_time_event_categories = OneTimeEvent.Category.choices
         person = self.object
-        for category in one_time_event_categories:
-            value = category[0]
-            label = category[1]
-        pass
+        one_time_event_categories = OneTimeEvent.Category.choices
+        one_time_event_categories = sorted(
+            one_time_event_categories, key=lambda x: x[1], reverse=False
+        )
+        one_time_events_query = """
+                select SUM(one_time_event_occurrence.hours) from one_time_events_organizeroccurrenceassignment as organizer_assignment
+                join persons_person as person on organizer_assignment.person_id = person.id
+                join events_eventoccurrence as occurrence on organizer_assignment.occurrence_id = occurrence.id
+                join one_time_events_onetimeeventoccurrence as one_time_event_occurrence on occurrence.id = one_time_event_occurrence.eventoccurrence_ptr_id
+                join events_event as event on event.id = occurrence.event_id
+                join one_time_events_onetimeevent as one_time_event on one_time_event.event_ptr_id = event.id
+                where 
+                organizer_assignment.state = %s
+                and person.id = %s
+                and one_time_event.category = %s
+                and one_time_event_occurrence.date between %s and %s
+        """
+        one_time_events_out = []
+        with connection.cursor() as cursor:
+            for category in one_time_event_categories:
+                value = category[0]
+                label = category[1]
+                cursor.execute(
+                    one_time_events_query,
+                    [
+                        OneTimeEventAttendance.PRESENT.value,
+                        person.id,
+                        value,
+                        str(self.date_start),
+                        str(self.date_end),
+                    ],
+                )
+                row = cursor.fetchone()
+                sum = row[0] if row[0] is not None else 0
+                one_time_events_out.append((label, sum))
+
+            return one_time_events_out
 
     def get_context_data(self, **kwargs):
         self.date_start, self.date_end = self._get_parse_dates()
-        self._get_stats()
+        kwargs.setdefault("stats", self._get_stats())
         return super().get_context_data(**kwargs)
 
 
