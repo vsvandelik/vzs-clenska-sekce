@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q, QuerySet
-from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
@@ -12,7 +11,6 @@ from events.utils import check_common_requirements
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
-from vzs.settings import CURRENT_DATETIME
 from vzs.utils import today
 
 
@@ -202,7 +200,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
             self.is_organizer(person)
             or self.can_person_enroll_as_waiting(person)
             or (
-                timezone.localdate(CURRENT_DATETIME()) <= self.date_end
+                today() <= self.date_end
                 and any(
                     [
                         position.does_person_satisfy_requirements(
