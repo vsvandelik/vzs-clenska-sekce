@@ -34,7 +34,6 @@ class PersonsManager(Manager):
         return super().get_queryset()
 
     def with_age(self):
-        date = today()
         return self.get_queryset().annotate(
             age=ExpressionWrapper(
                 today().year

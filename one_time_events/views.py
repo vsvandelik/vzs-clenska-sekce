@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -146,9 +147,24 @@ class OneTimeEventListView(generic.ListView):
     template_name = "one_time_events/index.html"
     context_object_name = "events"
 
-    def get_queryset(self):
+    def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         user = get_active_user(active_person)
+
+        enrolled_events_organizers = OrganizerOccurrenceAssignment.objects.filter(
+            person_id=active_person
+        ).values_list("occurrence__event", flat=True)
+        enrolled_events_organizers = set(enrolled_events_organizers)
+
+        enrolled_events = OneTimeEvent.objects.filter(
+            Q(onetimeeventparticipantenrollment__person=active_person)
+            | Q(pk__in=enrolled_events_organizers)
+        ).distinct()
+
+        for enrolled_event in enrolled_events:
+            enrolled_event.active_person_enrollment = (
+                enrolled_event.get_participant_enrollment(active_person)
+            )
 
         visible_event_pks = [
             event.pk
@@ -157,7 +173,17 @@ class OneTimeEventListView(generic.ListView):
             or event.can_person_interact_with(active_person)
         ]
 
-        return OneTimeEvent.objects.filter(pk__in=visible_event_pks)
+        available_events = OneTimeEvent.objects.filter(
+            pk__in=visible_event_pks
+        ).exclude(pk__in=enrolled_events)
+
+        kwargs.setdefault("enrolled_events", enrolled_events)
+        kwargs.setdefault("available_events", available_events)
+
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return []
 
 
 class OneTimeEventCreateView(
