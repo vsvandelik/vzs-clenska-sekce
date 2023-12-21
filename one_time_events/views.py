@@ -1,10 +1,9 @@
 from django.http import Http404
 from django.urls import reverse
-from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import Event, ParticipantEnrollment
+from events.models import ParticipantEnrollment
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -47,9 +46,8 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import CURRENT_DATETIME, GOOGLE_MAPS_API_KEY
+from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import date_pretty, export_queryset_csv, send_notification_email, today
-
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,

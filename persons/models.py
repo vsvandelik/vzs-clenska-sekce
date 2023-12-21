@@ -22,7 +22,6 @@ from django.db.models import (
 )
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature, FeatureAssignment
@@ -35,7 +34,7 @@ class PersonsManager(Manager):
         return super().get_queryset()
 
     def with_age(self):
-        date = timezone.localdate(CURRENT_DATETIME())
+        date = today()
         return self.get_queryset().annotate(
             age=ExpressionWrapper(
                 today().year

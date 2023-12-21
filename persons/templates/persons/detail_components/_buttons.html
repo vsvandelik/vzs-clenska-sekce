@@ -1,8 +1,4 @@
-<div class="elevation-2 card">
-    <div class="card-header">
-        <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ person.first_name }} {{ person.last_name }}</span></div>
-    </div>
-</div>
+{% include 'persons/detail_components/_person_title.html' %}
 <div class="btn-group-md btn-group mb-3 elevation-2">
     <a href="{% url 'persons:edit' person.id %}" class="btn btn-success">Upravit osobu</a>
     {% include "delete_button_text.html" with id="delete-person-modal" additional_text="osobu" %}
@@ -23,4 +19,8 @@
     {% if perms.transactions.spravce_transakci %}
         <a href="{% url 'persons:transaction-add' person.id %}" class="btn btn-info">Přidat transakci</a>
     {% endif %}
+</div>
+
+<div class="btn-group-md btn-group mb-3 elevation-2">
+    <a href="{% url 'persons:stats' person.id %}" class="btn btn-info">Zobrazit statistiky</a>
 </div>

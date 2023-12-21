@@ -202,7 +202,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
             self.is_organizer(person)
             or self.can_person_enroll_as_waiting(person)
             or (
-                timezone.localdate(CURRENT_DATETIME()) <= self.date_end
+                today() <= self.date_end
                 and any(
                     [
                         position.does_person_satisfy_requirements(
