@@ -1,9 +1,4 @@
-.. VZS Clenska sekce documentation master file, created by
-   sphinx-quickstart on Tue Nov 14 10:59:37 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to VZS Clenska sekce's documentation!
+Vítejte na dokumentaci systému VZS Praha 15
 =============================================
 
 .. automodule:: vzs
@@ -11,14 +6,14 @@ Welcome to VZS Clenska sekce's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Obsah:
 
    _autodoc/modules
    installation.rst
    
    testing.rst
 
-Indices and tables
+Index
 ==================
 
 * :ref:`genindex`
