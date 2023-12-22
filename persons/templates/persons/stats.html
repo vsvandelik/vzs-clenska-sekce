@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Statistiky osoby{% endblock %}
+
+{% block content %}
+    {% include 'persons/detail_components/_person_title.html' %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Nastavení rozsahu</div>
+                </div>
+                <form method="GET" action="{% url 'persons:stats' person.id %}">
+                    <div class="card-body">
+                        {{ form.date_start|as_crispy_field }}
+                        {{ form.date_end|as_crispy_field }}
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="submit" class="btn btn-primary">Zobrazit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Počty hodin organizování jednorázových událostí dle druhu</div>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                {% for cat_stat in stats %}
+                                    <th scope="col">{{ cat_stat|index:0 }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for cat_stat in stats %}
+                                    <td>{{ cat_stat|index:1 }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

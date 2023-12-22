@@ -1,7 +1,11 @@
+import datetime
+from datetime import date
+from datetime import datetime
 from functools import reduce
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db import connection, connections
 from django.db.models import Q
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -12,9 +16,13 @@ from django.views.generic.list import ListView
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
+from one_time_events.models import (
+    OneTimeEvent,
+    OneTimeEventAttendance,
+)
+from trainings.models import Training
 from vzs.mixin_extensions import MessagesMixin
-from vzs.utils import export_queryset_csv, filter_queryset
-
+from vzs.utils import export_queryset_csv, filter_queryset, today
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -22,6 +30,7 @@ from .forms import (
     PersonForm,
     PersonHourlyRateForm,
     PersonsFilterForm,
+    PersonStatsForm,
 )
 from .models import Person, get_active_user
 from .utils import (
@@ -217,6 +226,94 @@ class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
 class PersonCreateView(PersonCreateUpdateMixin, CreateView):
     error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
     success_message = _("Osoba byla úspěšně vytvořena")
+
+
+class PersonStatsView(PersonPermissionMixin, UpdateView):
+    model = Person
+    template_name = "persons/stats.html"
+    form_class = PersonStatsForm
+    http_method_names = ["get"]
+
+    def _get_parse_dates(self):
+        year = today().year
+        default_dates = [
+            date(year=year, month=1, day=1),
+            date(year=year, month=12, day=31),
+        ]
+        start = self.request.GET.get("date_start", default_dates[0])
+        end = self.request.GET.get("date_end", default_dates[1])
+        dates = [start, end]
+        invalid = 0
+        for i in range(len(dates)):
+            if type(dates[i]) is str:
+                try:
+                    d = datetime.strptime(dates[i], "%d. %m. %Y").date()
+                    dates[i] = d
+                except ValueError:
+                    dates[i] = default_dates[i]
+                    invalid += 1
+        if dates[0] > dates[1] and (len(self.request.GET) == 1 or invalid == 1):
+            if dates[0] != default_dates[0]:
+                dates[1] = date(
+                    year=dates[0].year, month=dates[1].month, day=dates[1].day
+                )
+            else:
+                dates[0] = date(
+                    year=dates[1].year, month=dates[0].month, day=dates[0].day
+                )
+
+        return dates[0], dates[1]
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["date_start"] = self.date_start
+        kwargs["date_end"] = self.date_end
+        return kwargs
+
+    def _get_stats(self):
+        person = self.object
+        one_time_event_categories = OneTimeEvent.Category.choices
+        one_time_event_categories = sorted(
+            one_time_event_categories, key=lambda x: x[1], reverse=False
+        )
+        one_time_events_query = """
+                select SUM(one_time_event_occurrence.hours) from one_time_events_organizeroccurrenceassignment as organizer_assignment
+                join persons_person as person on organizer_assignment.person_id = person.id
+                join events_eventoccurrence as occurrence on organizer_assignment.occurrence_id = occurrence.id
+                join one_time_events_onetimeeventoccurrence as one_time_event_occurrence on occurrence.id = one_time_event_occurrence.eventoccurrence_ptr_id
+                join events_event as event on event.id = occurrence.event_id
+                join one_time_events_onetimeevent as one_time_event on one_time_event.event_ptr_id = event.id
+                where 
+                organizer_assignment.state = %s
+                and person.id = %s
+                and one_time_event.category = %s
+                and one_time_event_occurrence.date between %s and %s
+        """
+        one_time_events_out = []
+        with connection.cursor() as cursor:
+            for category in one_time_event_categories:
+                value = category[0]
+                label = category[1]
+                cursor.execute(
+                    one_time_events_query,
+                    [
+                        OneTimeEventAttendance.PRESENT.value,
+                        person.id,
+                        value,
+                        str(self.date_start),
+                        str(self.date_end),
+                    ],
+                )
+                row = cursor.fetchone()
+                sum = row[0] if row[0] is not None else 0
+                one_time_events_out.append((label, sum))
+
+            return one_time_events_out
+
+    def get_context_data(self, **kwargs):
+        self.date_start, self.date_end = self._get_parse_dates()
+        kwargs.setdefault("stats", self._get_stats())
+        return super().get_context_data(**kwargs)
 
 
 class PersonUpdateView(

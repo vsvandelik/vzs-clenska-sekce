@@ -11,6 +11,7 @@ from django.forms import (
     ModelChoiceField,
     ModelForm,
     ValidationError,
+    DateField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -279,3 +280,19 @@ class PersonHourlyRateForm(Form):
         ).delete()
 
         return self.person_instance.hourly_rates
+
+
+class PersonStatsForm(ModelForm):
+    date_start = DateField(label="Datum začátku", widget=DatePickerWithIcon())
+    date_end = DateField(label="Datum konce", widget=DatePickerWithIcon())
+
+    class Meta:
+        model = Person
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        date_start = kwargs.pop("date_start")
+        date_end = kwargs.pop("date_end")
+        super().__init__(*args, **kwargs)
+        self.initial["date_start"] = str(date_start)
+        self.initial["date_end"] = str(date_end)
