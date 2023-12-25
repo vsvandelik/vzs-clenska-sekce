@@ -1,6 +1,5 @@
 import datetime
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 from functools import reduce
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -16,13 +15,11 @@ from django.views.generic.list import ListView
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
-from one_time_events.models import (
-    OneTimeEvent,
-    OneTimeEventAttendance,
-)
+from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
 from trainings.models import Training
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today
+
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -64,7 +61,7 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
     @staticmethod
     def get_queryset_by_permission(user, queryset=None):
         if queryset is None:
-            queryset = Person.objects
+            queryset = Person.objects.all()
 
         if user.has_perm("persons.clenska_zakladna"):
             return queryset
