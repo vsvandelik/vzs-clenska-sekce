@@ -154,7 +154,9 @@ def filter_queryset(
     Applies transformations to all fields of the mapping specified by ``Filter``
     and compounds the resulting `Q`` objects using logical AND.
 
-    Missing values are ignored.
+    Values from ``data`` are converted to the type specified by ``Filter``.
+
+    Missing values and empty strings are ignored.
 
     If ``data`` is ``None``, returns ``queryset`` unchanged.
 
@@ -173,9 +175,14 @@ def filter_queryset(
     for key, annotated in get_type_hints(Filter, include_extras=True).items():
         value = data.get(key)
 
-        if value is not None:
+        if value is not None and value != "":
             # gets the first Annotated metadata value
             transform: Callable[[Any], Q] = annotated.__metadata__[0]
+
+            type = annotated.__args__[0]
+
+            if not isinstance(value, type):
+                value = type(value)
 
             filter &= transform(value)
 

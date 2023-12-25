@@ -20,31 +20,31 @@ class PersonsFilter(TypedDict, total=False):
     ]
     email: Annotated[str, lambda email: Q(email__icontains=email)]
     qualification: Annotated[
-        str,
+        int,
         lambda qualification: Q(
             featureassignment__feature__feature_type=Feature.Type.QUALIFICATION.value
         )
         & Q(featureassignment__feature__id=qualification),
     ]
     permission: Annotated[
-        str,
+        int,
         lambda permission: Q(
             featureassignment__feature__feature_type=Feature.Type.PERMISSION.value
         )
         & Q(featureassignment__feature__id=permission),
     ]
     equipment: Annotated[
-        str,
+        int,
         lambda equipment: Q(
             featureassignment__feature__feature_type=Feature.Type.EQUIPMENT.value
         )
         & Q(featureassignment__feature__id=equipment),
     ]
     person_type: Annotated[str, lambda person_type: Q(person_type=person_type)]
-    age_from: Annotated[str, lambda age_from: Q(age__gte=age_from)]
-    age_to: Annotated[str, lambda age_to: Q(age__lte=age_to)]
+    age_from: Annotated[int, lambda age_from: Q(age__gte=age_from)]
+    age_to: Annotated[int, lambda age_to: Q(age__lte=age_to)]
     event_id: Annotated[
-        str,
+        int,
         lambda event_id: Q(
             id__in=[
                 p.pk for p in Event.objects.get(pk=event_id).approved_participants()
