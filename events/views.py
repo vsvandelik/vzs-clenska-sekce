@@ -16,6 +16,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email
+
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -24,6 +25,7 @@ from .forms import (
 )
 from .models import Event, EventOccurrence, EventPositionAssignment
 from .permissions import (
+    EventCreatePermissionMixin,
     EventInteractPermissionMixin,
     EventManagePermissionMixin,
     UnenrollMyselfPermissionMixin,
@@ -186,7 +188,9 @@ class EventCreateUpdateMixin(
     pass
 
 
-class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
+class EventCreateMixin(
+    EventCreatePermissionMixin, EventCreateUpdateMixin, generic.CreateView
+):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
