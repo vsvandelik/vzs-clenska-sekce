@@ -1,0 +1,37 @@
+{% load vzs_filters %}
+{% load trainings_template_tags %}
+<div class="col-12 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Trenéři</div>
+        </div>
+        <div class="card-body">
+            <table id="coaches-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Osoba</th>
+                        <th>Pozice</th>
+                        <th>Garant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coach in event.coachpositionassignment_set.all %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'persons:detail' coach.person.id %}">{{ coach.person }}</a>
+                            </td>
+                            <td><a href="{% url 'positions:detail' coach.position_assignment.position.id %}">{{ coach.position_assignment.position }}</a></td>
+                            <td>
+                                {% if coach.training.main_coach_assignment == coach %}
+                                    {% value_present_symbol %}
+                                {% else %}
+                                    {% value_missing_symbol %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

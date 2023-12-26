@@ -410,6 +410,11 @@ class TrainingOccurrence(EventOccurrence):
         related_name="training_participants_attendance_set",
     )
 
+    def is_person_coach(self, person):
+        return self.coachoccurrenceassignment_set.filter(
+            person=person, state=TrainingAttendance.PRESENT
+        ).exists()
+
     def get_person_organizer_assignment(self, person):
         return self.coachoccurrenceassignment_set.filter(person=person)
 
@@ -620,6 +625,13 @@ class TrainingOccurrence(EventOccurrence):
 
     def can_attendance_be_filled(self):
         return CURRENT_DATETIME() > timezone.localtime(self.datetime_start)
+
+    def can_user_fill_attendance(self, user):
+        return self.can_user_manage(user) or (
+            self.can_attendance_be_filled()
+            and self.is_person_coach(user.person)
+            and self.is_opened
+        )
 
     def coach_assignments_settled(self):
         return CoachOccurrenceAssignment.objects.filter(

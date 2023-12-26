@@ -148,15 +148,28 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
         kwargs.setdefault("past_occurrences", past_occurrences)
 
+        self._add_coaches_detail_kwargs(kwargs)
+
         return super().get_context_data(**kwargs)
 
     def get_template_names(self):
         active_person = self.request.active_person
         active_user = get_active_user(active_person)
         if self.object.can_user_manage(active_user):
-            return "trainings/detail.html"
+            return "trainings/detail_admin.html"
+        elif self.object.is_organizer(active_person):
+            return "trainings/detail_coach.html"
         else:
-            return "trainings/detail_for_nonadmin.html"
+            return "trainings/detail_participant.html"
+
+    def _add_coaches_detail_kwargs(self, kwargs):
+        occurrences = self.object.sorted_occurrences_list()
+        for occurrence in occurrences:
+            if occurrence.datetime_start >= CURRENT_DATETIME():
+                occurrence.nearest_occurrence = True
+                break
+
+        kwargs.setdefault("occurrences", occurrences)
 
 
 class TrainingListView(generic.ListView):
