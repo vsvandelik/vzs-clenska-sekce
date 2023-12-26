@@ -5,9 +5,6 @@ from tinymce.models import HTMLField
 
 
 class Page(Model):
-    class Meta:
-        permissions = [("stranky", _("Správce textových stránek"))]
-
     title = CharField(_("Titulek"), max_length=255)
     content = HTMLField(_("Obsah"), blank=True, null=True)
     slug = SlugField(_("URL"), max_length=255, unique=True)

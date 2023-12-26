@@ -26,7 +26,7 @@ from .models import Group, Person
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
-    permission_required = "groups.spravce_skupin"
+    permission_required = "skupiny"
 
 
 class GroupIndexView(GroupPermissionMixin, ListView):

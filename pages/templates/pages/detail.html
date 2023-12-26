@@ -4,7 +4,7 @@
 
 
 {% block buttons %}
-    {% if perms.pages.stranky %}
+    {% if perms.stranky %}
         <div class="btn-group-md btn-group mb-3 elevation-2">
             <a href="{% url 'pages:edit' object.slug %}" class="btn btn-info">Upravit stránku</a>
         </div>

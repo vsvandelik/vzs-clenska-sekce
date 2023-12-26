@@ -30,13 +30,6 @@ class EquipmentsManager(Manager):
 
 
 class Feature(MPTTModel):
-    class Meta:
-        permissions = [
-            ("spravce_kvalifikaci", _("Správce kvalifikací")),
-            ("spravce_opravneni", _("Správce oprávnění")),
-            ("spravce_vybaveni", _("Správce vybavení")),
-        ]
-
     class Type(TextChoices):
         QUALIFICATION = "K", _("kvalifikace")
         EQUIPMENT = "V", _("vybavení")
@@ -124,7 +117,7 @@ FeatureTypeTexts = {
         _("Přiřazení kvalifikace bylo úspěšně upraveno."),
         _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
-        "features.spravce_kvalifikaci",
+        "kvalifikace",
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
@@ -144,7 +137,7 @@ FeatureTypeTexts = {
         _("Přiřazení oprávnění bylo úspěšně upraveno."),
         _("Přiřazení oprávnění bylo úspěšně odstraněno."),
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
-        "features.spravce_opravneni",
+        "opravneni",
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
@@ -168,7 +161,7 @@ FeatureTypeTexts = {
         _("Přiřazení vybavení bylo úspěšně upraveno."),
         _("Přiřazení vybavení bylo úspěšně odstraněno."),
         _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
-        "features.spravce_vybaveni",
+        "vybaveni",
     ),
 }
 
