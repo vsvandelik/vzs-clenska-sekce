@@ -5,9 +5,6 @@ from persons.models import Person
 
 
 class Group(Model):
-    class Meta:
-        permissions = [("spravce_skupin", _("Správce skupin"))]
-
     name = CharField(_("Název skupiny"), max_length=255)
     google_email = EmailField(
         _("E-mailová adresa skupiny v Google Workspace"),

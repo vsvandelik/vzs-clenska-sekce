@@ -12,7 +12,6 @@ from .models import (
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from .utils import user_can_manage_event_category
 
 
 class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
@@ -22,11 +21,7 @@ class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
         if request.method != "POST":
             return True
 
-        event_type = type(self).form_class._meta.model
-
-        return user_can_manage_event_category(
-            get_active_user(request.active_person), event_type, request.POST["category"]
-        )
+        return get_active_user(request.active_person).has_perm(request.POST["category"])
 
 
 class ObjectPermissionMixin(PermissionRequiredMixin):

@@ -53,21 +53,6 @@ class PersonsManager(Manager):
 
 
 class Person(ExportableCSVMixin, RenderableModelMixin, Model):
-    class Meta:
-        permissions = [
-            ("clenska_zakladna", _("Správce členské základny")),
-            ("detska_clenska_zakladna", _("Správce dětské členské základny")),
-            (
-                "bazenova_clenska_zakladna",
-                _("Správce bazénové dětské členské základny"),
-            ),
-            (
-                "lezecka_clenska_zakladna",
-                _("Správce lezecké dětské členské základny"),
-            ),
-            ("dospela_clenska_zakladna", _("Správce dospělé členské základny")),
-        ]
-
     class Type(TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")

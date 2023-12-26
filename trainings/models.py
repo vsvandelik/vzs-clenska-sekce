@@ -46,13 +46,6 @@ class Training(Event):
         SWIMMING = "plavecky", _("plavecký")
         MEDICAL = "zdravoveda", _("zdravověda")
 
-    class Meta:
-        permissions = [
-            ("lezecky", _("Správce lezeckých tréninků")),
-            ("plavecky", _("Správce plaveckých tréninků")),
-            ("zdravoveda", _("Správce zdravovědy")),
-        ]
-
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
         through="trainings.TrainingParticipantEnrollment",
