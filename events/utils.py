@@ -44,3 +44,7 @@ def check_common_requirements(req_obj, person):
         return False
 
     return True
+
+
+def user_can_manage_event_category(user, event_type, category):
+    return user.has_perm(f"{event_type._meta.app_label}.{category}")
