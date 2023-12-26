@@ -38,8 +38,8 @@ from events.views import (
     ParticipantEnrollmentUpdateMixin,
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoSelfObjectMixin,
 )
@@ -419,7 +419,7 @@ class CoachOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
@@ -440,7 +440,7 @@ class CancelCoachExcuseView(
 
 class ExcuseMyselfCoachView(
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -473,7 +473,7 @@ class CoachExcuseView(
 
 class EnrollMyselfOrganizerForOccurrenceView(
     OccurrenceEnrollOrganizerPermissionMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
@@ -511,7 +511,7 @@ class OneTimeCoachDeleteView(
 
 class UnenrollMyselfOrganizerFromOccurrenceView(
     OccurrenceUnenrollOrganizerPermissionMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -538,7 +538,7 @@ class AddOneTimeCoachView(
 class EditOneTimeCoachView(
     OccurrenceManagePermissionMixin,
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.UpdateView,
@@ -565,7 +565,7 @@ class ParticipantOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
@@ -596,7 +596,7 @@ class CancelParticipantExcuseView(
 
 class ExcuseMyselfParticipantView(
     OccurrenceExcuseMyselfParticipantPermissionMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -619,7 +619,7 @@ class ExcuseMyselfParticipantView(
 
 class UnenrollMyselfParticipantFromOccurrenceView(
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -666,8 +666,8 @@ class OneTimeParticipantDeleteView(
 class EnrollMyselfParticipantFromOccurrenceView(
     OccurrenceEnrollMyselfParticipantPermissionMixin,
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
@@ -691,7 +691,7 @@ class TrainingFillAttendanceView(
     OccurrenceFillAttendancePermissionMixin,
     MessagesMixin,
     TrainingOccurrenceAttendanceCanBeFilledMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
     InsertRequestIntoModelFormKwargsMixin,
@@ -718,8 +718,8 @@ class ReopenTrainingOccurrenceView(
     OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceNotOpenedRestrictionMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
     generic.UpdateView,
