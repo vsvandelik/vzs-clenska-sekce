@@ -422,7 +422,7 @@ class PermissionsView(UserManagePermissionsPermissionMixin, ListView):
 
     **Permissions**:
 
-    Users with the ``users.spravce_povoleni`` permission.
+    Users with the ``povoleni`` permission.
     """
 
     context_object_name = "permissions"
@@ -441,7 +441,7 @@ class PermissionDetailView(UserManagePermissionsPermissionMixin, DetailView):
 
     **Permissions**:
 
-    Users with the ``users.spravce_povoleni`` permission.
+    Users with the ``povoleni`` permission.
 
     **Path parameters**:
 
@@ -469,7 +469,7 @@ class UserAssignRemovePermissionView(
 
     **Permissions**:
 
-    Users with the ``users.spravce_povoleni`` permission.
+    Users with the ``povoleni`` permission.
 
     **Request body parameters**:
 
@@ -612,7 +612,7 @@ class UserAssignPermissionView(MultipleObjectMixin, UserAssignRemovePermissionVi
 
     **Permissions**:
 
-    Users with the ``users.spravce_povoleni`` permission.
+    Users with the ``povoleni`` permission.
 
     **Request body parameters**:
 
@@ -666,7 +666,7 @@ class UserRemovePermissionView(UserAssignRemovePermissionView):
 
     **Permissions**:
 
-    Users with the ``users.spravce_povoleni`` permission.
+    Users with the ``povoleni`` permission.
 
     **Request body parameters**:
 
