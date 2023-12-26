@@ -179,6 +179,15 @@ class TrainingListView(generic.ListView):
             datetime_start__gte=CURRENT_DATETIME(), coaches=active_person
         ).order_by("datetime_start")
 
+        for occurrence in upcoming_occurrences:
+            attendance = occurrence.get_person_organizer_assignment(active_person)
+
+            excused = False
+            if len(attendance) == 1 and attendance.first().is_excused:
+                excused = True
+
+            occurrence.excused = excused
+
         kwargs.setdefault("coach_regular_trainings", regular_trainings)
         kwargs.setdefault("coach_upcoming_occurrences", upcoming_occurrences)
 
@@ -189,13 +198,14 @@ class TrainingListView(generic.ListView):
         ).order_by("datetime_start")
 
         for occurrence in upcoming_occurrences:
-            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
             participant_attendance = occurrence.get_participant_attendance(
                 active_person
             )
             occurrence.excused = (
-                participant_attendance
-                and participant_attendance.state == TrainingAttendance.EXCUSED
+                participant_attendance and participant_attendance.is_excused
+            )
+            occurrence.is_one_time_presence = (
+                participant_attendance.is_one_time_presence
             )
 
         non_enrolled_trainings = Training.objects.exclude(id__in=enrolled_trainings)

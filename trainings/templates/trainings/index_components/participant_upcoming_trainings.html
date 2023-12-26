@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12">
     <div class="card ">
         <div class="card-header d-flex align-items-center">
@@ -27,17 +28,18 @@
                                     <td>{{ occurrence.event.location }}</td>
                                     <td class="text-center">
                                         {% if occurrence.excused %}omluven/a{% endif %}
-                                        {% if occurrence.is_opened and occurrence.can_excuse %}
+                                        {% if occurrence.is_one_time_presence %}náhrada{% endif %}
+                                        {% ifperm 'trainings:excuse-myself-participant' occurrence.event.id occurrence.id as perm %}
                                             <div class="btn-group">
                                                 <a class="btn btn-secondary btn-sm"
                                                    data-toggle="modal"
                                                    data-target="#excuse-myself-participant-modal"
-                                                   data-action="{% url 'trainings:excuse-myself-participant' occurrence.event.id occurrence.id %}">
+                                                   data-action="{{ perm.url }}">
                                                     <i class="fas fa-sign-out-alt"></i>
                                                 </a>
                                             </div>
                                             {% include 'modal_include.html' with id='excuse-myself-participant-modal' template="trainings_occurrences/modals/excuse_myself_participant.html" event=occurrence.event %}
-                                        {% endif %}
+                                        {% endifperm %}
                                     </td>
                                 </tr>
                             {% endfor %}

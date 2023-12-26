@@ -45,6 +45,7 @@
     {% endif %}
 
     {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="excuse-myself-coach-modal" %}
 {% endblock %}
 
 {% block scripts %}
@@ -55,5 +56,6 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal('enroll-myself-participant-modal')
+        registerModal('excuse-myself-coach-modal')
     </script>
 {% endblock %}

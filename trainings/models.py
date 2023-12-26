@@ -674,6 +674,13 @@ class TrainingParticipantAttendance(models.Model):
     def is_unexcused(self):
         return self.state == TrainingAttendance.UNEXCUSED
 
+    @property
+    def is_one_time_presence(self):
+        return (
+            self.state == TrainingAttendance.PRESENT
+            and self.person not in self.occurrence.event.enrolled_participants.all()
+        )
+
     class Meta:
         unique_together = ["person", "occurrence"]
 
