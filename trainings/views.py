@@ -192,14 +192,42 @@ class TrainingListView(generic.ListView):
                 and participant_attendance.state == TrainingAttendance.EXCUSED
             )
 
+        (
+            count_of_trainings_to_replace,
+            replaceable_occurrences,
+        ) = self.replaceable_occurrences(active_person, enrolled_trainings)
+
         kwargs.setdefault("upcoming_trainings_occurrences", upcoming_occurrences)
         kwargs.setdefault("enrolled_trainings", enrolled_trainings)
         kwargs.setdefault("available_trainings", available_trainings)
+        kwargs.setdefault(
+            "count_of_trainings_to_replace", count_of_trainings_to_replace
+        )
+        kwargs.setdefault("replaceable_occurrences", replaceable_occurrences)
 
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return []
+
+    def replaceable_occurrences(self, active_person, enrolled_trainings):
+        count_of_trainings_to_replace = (
+            TrainingParticipantAttendance.count_of_trainings_to_replace(active_person)
+        )
+
+        if count_of_trainings_to_replace <= 0:
+            return count_of_trainings_to_replace, []
+
+        replaceable_trainings = []
+
+        for enrolled_training in enrolled_trainings:
+            replaceable_trainings += enrolled_training.replaces_training_list()
+
+        replaceable_occurrences = TrainingOccurrence.objects.filter(
+            datetime_start__gte=CURRENT_DATETIME(), event__in=replaceable_trainings
+        ).order_by("datetime_start")[:10]
+
+        return count_of_trainings_to_replace, replaceable_occurrences
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):
