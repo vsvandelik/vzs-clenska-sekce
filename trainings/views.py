@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.db.models import Q
 from django.http import Http404
@@ -54,7 +56,7 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATETIME, PARTICIPANT_ENROLL_DEADLINE_DAYS
 from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
 from .forms import (
     CancelCoachExcuseForm,
@@ -223,9 +225,12 @@ class TrainingListView(generic.ListView):
         for enrolled_training in enrolled_trainings:
             replaceable_trainings += enrolled_training.replaces_training_list()
 
+        date_start = CURRENT_DATETIME() + timedelta(
+            days=PARTICIPANT_ENROLL_DEADLINE_DAYS
+        )
         replaceable_occurrences = (
             TrainingOccurrence.objects.filter(
-                datetime_start__gte=CURRENT_DATETIME(), event__in=replaceable_trainings
+                datetime_start__gte=date_start, event__in=replaceable_trainings
             )
             .exclude(participants=active_person)
             .order_by("datetime_start")[:10]
