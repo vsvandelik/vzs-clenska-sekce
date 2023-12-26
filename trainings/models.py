@@ -1,6 +1,5 @@
 from collections import defaultdict
 from datetime import timedelta
-from itertools import chain as iter_chain
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -598,14 +597,12 @@ class TrainingOccurrence(EventOccurrence):
         ):
             return False
 
-        observed = TrainingParticipantAttendance.objects.filter(person=person)
-
-        excused = observed.filter(
-            state=TrainingAttendance.EXCUSED,
-            occurrence__datetime_start__lt=self.datetime_start
-            # occurrence__state = EventOrOccurrenceState.COMPLETED
+        (
+            excused,
+            one_time_attendances,
+        ) = TrainingParticipantAttendance.get_excused_onetime_attendance_occurrences(
+            person, self.datetime_start
         )
-        one_time_attendances = observed.filter(enrollment=None)
 
         if excused.count() <= one_time_attendances.count():
             return False
@@ -673,6 +670,32 @@ class TrainingParticipantAttendance(models.Model):
 
     class Meta:
         unique_together = ["person", "occurrence"]
+
+    @staticmethod
+    def get_excused_onetime_attendance_occurrences(person, datetime_start=None):
+        datetime_start = datetime_start or CURRENT_DATETIME()
+
+        observed = TrainingParticipantAttendance.objects.filter(person=person)
+
+        excused = observed.filter(
+            state=TrainingAttendance.EXCUSED,
+            occurrence__datetime_start__lt=datetime_start
+            # occurrence__state = EventOrOccurrenceState.COMPLETED
+        )
+        one_time_attendances = observed.filter(enrollment=None)
+
+        return excused, one_time_attendances
+
+    @staticmethod
+    def count_of_trainings_to_replace(person):
+        (
+            excused,
+            one_time_attendances,
+        ) = TrainingParticipantAttendance.get_excused_onetime_attendance_occurrences(
+            person
+        )
+
+        return max(excused.count() - one_time_attendances.count(), 0)
 
 
 class TrainingParticipantEnrollment(ParticipantEnrollment):

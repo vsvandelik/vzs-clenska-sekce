@@ -7,6 +7,13 @@
 {% block title %}Tréninky{% endblock %}
 
 {% block content %}
+
+    {% if count_of_trainings_to_replace %}
+        <div class="row">
+            {% include "trainings/index_components_nonadmin/replacing_trainings.html" %}
+        </div>
+    {% endif %}
+
     {% if enrolled_trainings %}
         <div class="row">
             {% include "trainings/index_components_nonadmin/enrolled_trainings.html" %}
