@@ -180,7 +180,7 @@ class TrainingListView(generic.ListView):
         )
 
         upcoming_occurrences = TrainingOccurrence.objects.filter(
-            datetime_start__gte=CURRENT_DATETIME(), event__in=enrolled_trainings
+            datetime_start__gte=CURRENT_DATETIME(), participants=active_person
         ).order_by("datetime_start")
         for occurrence in upcoming_occurrences:
             occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
