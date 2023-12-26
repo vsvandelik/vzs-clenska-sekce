@@ -27,6 +27,12 @@
         {% include 'trainings/detail_components_coach/occurrences.html' %}
     </div>
 
+    <div class="row">
+        {% for weekday, participants in participants_by_weekdays.items %}
+            {% include 'trainings/detail_components_coach/participants_by_weekday.html' %}
+        {% endfor %}
+    </div>
+
 {% endblock %}
 
 

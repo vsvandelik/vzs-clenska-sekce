@@ -169,6 +169,15 @@ class TrainingDetailView(EventDetailBaseView):
                 occurrence.nearest_occurrence = True
                 break
 
+        participants_by_weekdays = {}
+        for weekday in self.object.weekdays_list():
+            participants_by_weekdays[
+                weekday
+            ] = self.object.approved_enrollments_by_weekday(weekday).order_by(
+                "person__last_name"
+            )
+
+        kwargs.setdefault("participants_by_weekdays", participants_by_weekdays)
         kwargs.setdefault("occurrences", occurrences)
 
 
