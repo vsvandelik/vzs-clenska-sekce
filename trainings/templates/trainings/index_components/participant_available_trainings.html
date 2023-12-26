@@ -18,7 +18,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for event in available_trainings %}
+                            {% for event in participant_available_trainings %}
                                 <tr>
                                     <td><a href="{% url 'trainings:detail' event.id %}">{{ event.name }}</a></td>
                                     <td>
