@@ -33,6 +33,7 @@ from vzs.utils import (
     today,
 )
 from vzs.widgets import DatePickerWithIcon
+
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 
@@ -488,8 +489,12 @@ class TransactionFilterForm(Form):
     )
     amount_from = IntegerField(label=_("Suma od"), required=False, min_value=1)
     amount_to = IntegerField(label=_("Suma do"), required=False, min_value=1)
-    date_due_from = DateField(label=_("Datum splatnosti od"), required=False)
-    date_due_to = DateField(label=_("Datum splatnosti do"), required=False)
+    date_due_from = DateField(
+        label=_("Datum splatnosti od"), required=False, widget=DatePickerWithIcon()
+    )
+    date_due_to = DateField(
+        label=_("Datum splatnosti do"), required=False, widget=DatePickerWithIcon()
+    )
     bulk_transaction = ModelChoiceField(
         label=_("Hromadná transakce"),
         queryset=BulkTransaction.objects.all(),
