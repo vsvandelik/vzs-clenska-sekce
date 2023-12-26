@@ -6,9 +6,9 @@
 {% block title %}Transakce{% endblock %}
 
 {% block subcontent %}
-    {% if perms.transakce %}
+    {% ifperm 'persons:transaction-add' person.pk as perm %}
         <div class="btn-group-md btn-group mb-3 elevation-2">
-            <a href="{% url 'persons:transaction-add' person.pk %}" class="btn btn-info">Přidat transakci</a>
+            <a href="{{ perm.url }}" class="btn btn-info">Přidat transakci</a>
         </div>
     {% endif %}
 
