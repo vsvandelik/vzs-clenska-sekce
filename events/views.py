@@ -9,7 +9,7 @@ from django.views import generic
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from one_time_events.permissions import OccurrenceDetailPermissionMixin
-from persons.models import Person
+from persons.models import Person, get_active_user
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
@@ -244,13 +244,13 @@ class EventIndexView(LoginRequiredMixin, generic.ListView):
     context_object_name = "events"
 
     def get_queryset(self):
-        user = self.request.user
         active_person = self.request.active_person
+        active_user = get_active_user(active_person)
 
         visible_event_pks = [
             event.pk
             for event in Event.objects.all()
-            if event.can_user_manage(user)
+            if event.can_user_manage(active_user)
             or event.can_person_interact_with(active_person)
         ]
 

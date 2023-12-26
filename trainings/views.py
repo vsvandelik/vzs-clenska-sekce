@@ -223,9 +223,13 @@ class TrainingListView(generic.ListView):
         for enrolled_training in enrolled_trainings:
             replaceable_trainings += enrolled_training.replaces_training_list()
 
-        replaceable_occurrences = TrainingOccurrence.objects.filter(
-            datetime_start__gte=CURRENT_DATETIME(), event__in=replaceable_trainings
-        ).order_by("datetime_start")[:10]
+        replaceable_occurrences = (
+            TrainingOccurrence.objects.filter(
+                datetime_start__gte=CURRENT_DATETIME(), event__in=replaceable_trainings
+            )
+            .exclude(participants=active_person)
+            .order_by("datetime_start")[:10]
+        )
 
         return count_of_trainings_to_replace, replaceable_occurrences
 
