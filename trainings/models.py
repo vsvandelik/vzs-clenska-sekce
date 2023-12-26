@@ -323,13 +323,19 @@ class Training(Event):
             or TrainingParticipantAttendance.objects.filter(
                 person=person, occurrence__event=self
             ).exists()
-            or any(
-                [
-                    training.enrolled_participants.contains(person)
-                    for training in self.replaces_training_list()
-                ]
-            )
         )
+
+    @staticmethod
+    def get_person_enrolled_trainings(person):
+        enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
+            Q(person=person)
+            & (
+                Q(state=ParticipantEnrollment.State.APPROVED)
+                | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+            )
+        ).values_list("training", flat=True)
+
+        return Training.objects.filter(id__in=enrolled_trainings_id)
 
 
 class CoachPositionAssignment(models.Model):
