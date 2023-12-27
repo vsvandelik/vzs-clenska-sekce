@@ -27,20 +27,20 @@
         </div>
     {% endif %}
     <div class="row">
-        {% include 'trainings/detail_components_nonadmin/overview.html' %}
-        {% include 'trainings/detail_components_nonadmin/description.html' %}
+        {% include 'trainings/detail_components_participant/overview.html' %}
+        {% include 'trainings/detail_components_participant/description.html' %}
     </div>
 
     {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
         <div class="row">
             <div class="col-12">
-                {% include 'trainings/detail_components_nonadmin/future_trainings.html' %}
+                {% include 'trainings/detail_components_participant/future_trainings.html' %}
             </div>
         </div>
 
         <div class="row">
             <div class="col-12">
-                {% include 'trainings/detail_components_nonadmin/past_trainings.html' %}
+                {% include 'trainings/detail_components_participant/past_trainings.html' %}
             </div>
         </div>
     {% endif %}

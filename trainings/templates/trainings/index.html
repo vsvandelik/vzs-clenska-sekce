@@ -8,31 +8,44 @@
 
 {% block content %}
 
-    {% if count_of_trainings_to_replace %}
+    {% if participant_replaceable_occurrences %}
         <div class="row">
-            {% include "trainings/index_components_nonadmin/replacing_trainings.html" %}
+            {% include "trainings/index_components/participant_replacing_trainings.html" %}
         </div>
     {% endif %}
 
-    {% if enrolled_trainings %}
+    {% if participant_enrolled_trainings %}
         <div class="row">
-            {% include "trainings/index_components_nonadmin/enrolled_trainings.html" %}
+            {% include "trainings/index_components/participant_enrolled_trainings.html" %}
         </div>
     {% endif %}
 
-    {% if available_trainings %}
+    {% if coach_regular_trainings %}
         <div class="row">
-            {% include "trainings/index_components_nonadmin/available_trainings.html" %}
+            {% include "trainings/index_components/coach_regular_trainings.html" %}
         </div>
     {% endif %}
 
-    {% if upcoming_trainings_occurrences %}
+    {% if participant_available_trainings %}
         <div class="row">
-            {% include "trainings/index_components_nonadmin/upcoming_trainings.html" %}
+            {% include "trainings/index_components/participant_available_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if participant_upcoming_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components/participant_upcoming_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if coach_upcoming_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components/coach_upcoming_trainings.html" %}
         </div>
     {% endif %}
 
     {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="excuse-myself-coach-modal" %}
 {% endblock %}
 
 {% block scripts %}
@@ -43,5 +56,6 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal('enroll-myself-participant-modal')
+        registerModal('excuse-myself-coach-modal')
     </script>
 {% endblock %}
