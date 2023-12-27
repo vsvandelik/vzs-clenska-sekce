@@ -30,11 +30,11 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
         raise NotImplementedError
 
     @classmethod
-    def permission_predicate(cls, instance, logged_in_user, active_person):
+    def permission_predicate(cls, instance, active_user):
         raise NotImplementedError
 
     @classmethod
-    def view_has_permission(cls, logged_in_user, active_person, **kwargs):
+    def view_has_permission(cls, active_user, **kwargs):
         instances = {
             instance_name: model_class.objects.filter(
                 pk=kwargs[path_parameter_name]
@@ -45,9 +45,7 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
             ) in cls.get_path_parameter_mapping().items()
         }
 
-        return cls.permission_predicate(
-            logged_in_user=logged_in_user, active_person=active_person, **instances
-        )
+        return cls.permission_predicate(active_user=active_user, **instances)
 
 
 class EventPermissionMixin(ObjectPermissionMixin):
@@ -62,8 +60,8 @@ class EventPermissionMixin(ObjectPermissionMixin):
 
 class OccurrencePermissionMixin(ObjectPermissionMixin):
     @classmethod
-    def permission_predicate(cls, occurrence, logged_in_user, active_person):
-        return occurrence.event.can_user_manage(get_active_user(active_person))
+    def permission_predicate(cls, occurrence, active_user):
+        return occurrence.event.can_user_manage(active_user)
 
     @classmethod
     def get_path_parameter_mapping(cls):
@@ -72,8 +70,8 @@ class OccurrencePermissionMixin(ObjectPermissionMixin):
 
 class OccurrenceManagePermissionMixin(OccurrencePermissionMixin):
     @classmethod
-    def permission_predicate(cls, occurrence, logged_in_user, active_person):
-        return occurrence.can_user_manage(get_active_user(active_person))
+    def permission_predicate(cls, occurrence, active_user):
+        return occurrence.can_user_manage(active_user)
 
 
 class OccurrenceManagePermissionMixin2(OccurrenceManagePermissionMixin):
@@ -84,16 +82,16 @@ class OccurrenceManagePermissionMixin2(OccurrenceManagePermissionMixin):
 
 class EventManagePermissionMixin(EventPermissionMixin):
     @classmethod
-    def permission_predicate(cls, event, logged_in_user, active_person):
-        return event.can_user_manage(get_active_user(active_person))
+    def permission_predicate(cls, event, active_user):
+        return event.can_user_manage(active_user)
 
 
 class EventInteractPermissionMixin(EventPermissionMixin):
     @classmethod
-    def permission_predicate(cls, event, logged_in_user, active_person):
-        return event.can_user_manage(
-            get_active_user(active_person)
-        ) or event.can_person_interact_with(active_person)
+    def permission_predicate(cls, event, active_user):
+        return event.can_user_manage(active_user) or event.can_person_interact_with(
+            active_user.person
+        )
 
 
 class UnenrollMyselfPermissionMixin(ObjectPermissionMixin):
@@ -102,8 +100,8 @@ class UnenrollMyselfPermissionMixin(ObjectPermissionMixin):
         return {"pk": (ParticipantEnrollment, "enrollment")}
 
     @classmethod
-    def permission_predicate(cls, enrollment, logged_in_user, active_person):
-        return enrollment.person == active_person
+    def permission_predicate(cls, enrollment, active_user):
+        return enrollment.person == active_user.person
 
 
 class OccurrenceEnrollOrganizerPermissionMixin(ObjectPermissionMixin):
@@ -115,10 +113,8 @@ class OccurrenceEnrollOrganizerPermissionMixin(ObjectPermissionMixin):
         }
 
     @classmethod
-    def permission_predicate(
-        cls, occurrence, position_assignment, logged_in_user, active_person
-    ):
-        return occurrence.can_enroll_position(active_person, position_assignment)
+    def permission_predicate(cls, occurrence, position_assignment, active_user):
+        return occurrence.can_enroll_position(active_user.person, position_assignment)
 
 
 class OccurrenceUnenrollOrganizerPermissionMixin(ObjectPermissionMixin):
@@ -130,9 +126,7 @@ class OccurrenceUnenrollOrganizerPermissionMixin(ObjectPermissionMixin):
         }
 
     @classmethod
-    def permission_predicate(
-        cls, occurrence, organizer_assignment, logged_in_user, active_person
-    ):
+    def permission_predicate(cls, occurrence, organizer_assignment, active_user):
         return occurrence.can_unenroll_position(
-            active_person, organizer_assignment.position_assignment
+            active_user.person, organizer_assignment.position_assignment
         )

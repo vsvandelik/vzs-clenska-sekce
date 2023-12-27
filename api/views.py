@@ -13,7 +13,7 @@ class APIPermissionRequiredMixin(PermissionRequiredMixin):
     Permits users with the ``api`` permission.
     """
 
-    permissions_required = ["api"]
+    permissions_formula = [["api"]]
     """:meta private:"""
 
 
