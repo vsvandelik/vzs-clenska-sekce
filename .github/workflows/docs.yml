@@ -34,25 +34,19 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.11.0"
-      - name: Generate html documentation
+      - name: Prepare environment
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
           cp .env.dist .env
+          cp google_integration/secrets_file.json.dist google_integration/secrets_file.json
+          cp google_integration/service_account_file.json.dist google_integration/service_account_file.json
+      - name: Generate html documentation
+        run: |
           cd docs
           sphinx-apidoc -o _autodoc ..
-          sphinx-build -b html . _build
-      #- name: Copy requirements file
-      #  run: |
-      #    cp .env.dist .env
-      #    cp requirements.txt docs/
-      #    echo -e '\nrinohtype' >> docs/requirements.txt
-      #- uses: ammaraskar/sphinx-action@master
-      #  with:
-      #    docs-folder: "docs/"
-      #    pre-build-command: "sphinx-apidoc -o _autodoc .."
-      #    build-command: "sphinx-build -b html . _build"
+          make html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
