@@ -33,7 +33,7 @@ jobs:
       - name: Copy requirements file
         run: |
           cp requirements.txt docs/
-          echo 'rinohtype' >> docs/requirements.txt
+          echo -e '\nrinohtype' >> docs/requirements.txt
       - uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
