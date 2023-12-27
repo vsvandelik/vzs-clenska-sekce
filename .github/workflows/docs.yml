@@ -34,16 +34,24 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.11.0"
-      - name: Copy requirements file
+      - name: Generate html documentation
         run: |
-          cp .env.dist .env
-          cp requirements.txt docs/
-          echo -e '\nrinohtype' >> docs/requirements.txt
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
-          pre-build-command: "sphinx-apidoc -o _autodoc .."
-          build-command: "sphinx-build -b html . _build"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          cd docs
+          sphinx-apidoc -o _autodoc ..
+          sphinx-build -b html . _build
+      #- name: Copy requirements file
+      #  run: |
+      #    cp .env.dist .env
+      #    cp requirements.txt docs/
+      #    echo -e '\nrinohtype' >> docs/requirements.txt
+      #- uses: ammaraskar/sphinx-action@master
+      #  with:
+      #    docs-folder: "docs/"
+      #    pre-build-command: "sphinx-apidoc -o _autodoc .."
+      #    build-command: "sphinx-build -b html . _build"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
