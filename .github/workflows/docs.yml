@@ -34,6 +34,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Copy requirements file
+        run: |
+          cp requirements.txt docs/
       - name: Install rinoh
         run: pip install rinohtype
       - uses: ammaraskar/sphinx-action@master
