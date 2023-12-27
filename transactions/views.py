@@ -207,7 +207,7 @@ class TransactionListView(TransactionListMixin):
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
 
 
-class TransactionQRView(DetailView):
+class TransactionQRView(LoginRequiredMixin, DetailView):
     """
     Display the QR code for a given transaction.
 
@@ -217,6 +217,7 @@ class TransactionQRView(DetailView):
 
     *   users with the ``transactions.spravce_transakci`` permission
     *   users that manage the transaction's person's membership type
+    *   the user to whom the transaction belongs
 
     **Path parameters:**
 
@@ -237,15 +238,19 @@ class TransactionQRView(DetailView):
     def get_queryset(self):
         """:meta private:"""
 
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
         )
-        if not get_active_user(self.request.active_person).has_perm(
-            "transactions.spravce_transakci"
-        ):
+        if not active_user.has_perm("transactions.spravce_transakci"):
             queryset = queryset.filter(
-                person__in=PersonPermissionMixin.get_queryset_by_permission(
-                    self.request.user
+                Q(person=active_person)
+                | Q(
+                    person__in=PersonPermissionMixin.get_queryset_by_permission(
+                        active_user
+                    )
                 )
             )
 

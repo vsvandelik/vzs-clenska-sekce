@@ -5,13 +5,13 @@ from crispy_forms.layout import Div, Fieldset, Layout, Submit
 from django.forms import (
     CharField,
     ChoiceField,
+    DateField,
     EmailField,
     Form,
     IntegerField,
     ModelChoiceField,
     ModelForm,
     ValidationError,
-    DateField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -147,13 +147,13 @@ class DeleteManagedPersonForm(RelatedRemoveMixin, AddDeleteManagedPersonFormMixi
 class PersonsFilterForm(Form):
     name = CharField(label=_("Jméno"), required=False)
     email = EmailField(label=_("E-mailová adresa"), required=False)
-    qualifications = ModelChoiceField(
+    qualification = ModelChoiceField(
         label=_("Kvalifikace"), required=False, queryset=Feature.qualifications.all()
     )
-    permissions = ModelChoiceField(
+    permission = ModelChoiceField(
         label=_("Oprávnění"), required=False, queryset=Feature.permissions.all()
     )
-    equipments = ModelChoiceField(
+    equipment = ModelChoiceField(
         label=_("Vybavení"), required=False, queryset=Feature.equipments.all()
     )
     person_type = ChoiceField(
@@ -177,9 +177,9 @@ class PersonsFilterForm(Form):
                     css_class="row",
                 ),
                 Div(
-                    Div("qualifications", css_class="col-md-4"),
-                    Div("permissions", css_class="col-md-4"),
-                    Div("equipments", css_class="col-md-4"),
+                    Div("qualification", css_class="col-md-4"),
+                    Div("permission", css_class="col-md-4"),
+                    Div("equipment", css_class="col-md-4"),
                     css_class="row",
                 ),
                 Div(

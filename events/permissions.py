@@ -1,12 +1,32 @@
-from events.models import (
+from django.contrib.auth.mixins import (
+    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
+)
+
+from persons.models import get_active_user
+from users.views import PermissionRequiredMixin
+
+from .models import (
     Event,
     EventOccurrence,
     EventPositionAssignment,
     OrganizerAssignment,
     ParticipantEnrollment,
 )
-from persons.models import get_active_user
-from users.views import PermissionRequiredMixin
+from .utils import user_can_manage_event_category
+
+
+class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
+    def has_permission(self):
+        request = self.request
+
+        if request.method != "POST":
+            return True
+
+        event_type = type(self).form_class._meta.model
+
+        return user_can_manage_event_category(
+            get_active_user(request.active_person), event_type, request.POST["category"]
+        )
 
 
 class ObjectPermissionMixin(PermissionRequiredMixin):

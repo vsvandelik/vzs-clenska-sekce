@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -24,6 +24,7 @@ from .forms import (
 )
 from .models import Event, EventOccurrence, EventPositionAssignment
 from .permissions import (
+    EventCreatePermissionMixin,
     EventInteractPermissionMixin,
     EventManagePermissionMixin,
     UnenrollMyselfPermissionMixin,
@@ -77,7 +78,7 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
         return redirect(viewname, pk=id)
 
 
-class RedirectToOccurrenceDetailMixin:
+class RedirectToOccurrenceFallbackEventDetailMixin:
     def get_redirect_viewname_id(self):
         if "occurrence_id" in self.kwargs:
             id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).id
@@ -90,26 +91,41 @@ class RedirectToOccurrenceDetailMixin:
             raise NotImplementedError
 
         occurrence = EventOccurrence.objects.get(pk=id)
-        if isinstance(occurrence, OneTimeEventOccurrence):
-            viewname = "one_time_events:occurrence-detail"
-        elif isinstance(occurrence, TrainingOccurrence):
-            viewname = "trainings:occurrence-detail"
+        event = occurrence.event
+        active_user = get_active_user(self.request.active_person)
+        if event.can_user_manage(active_user):
+            if isinstance(occurrence, OneTimeEventOccurrence):
+                viewname = "one_time_events:occurrence-detail"
+            elif isinstance(occurrence, TrainingOccurrence):
+                viewname = "trainings:occurrence-detail"
+            else:
+                raise NotImplementedError
+            return viewname, event.id, id
         else:
-            raise NotImplementedError
-        return viewname, occurrence.event.id, id
+            if isinstance(event, OneTimeEvent):
+                viewname = "one_time_events:detail"
+            elif isinstance(event, Training):
+                viewname = "trainings:detail"
+            else:
+                raise NotImplementedError
+            return viewname, event.id
 
 
-class RedirectToOccurrenceDetailOnSuccessMixin(RedirectToOccurrenceDetailMixin):
+class RedirectToOccurrenceFallbackEventDetailOnSuccessMixin(
+    RedirectToOccurrenceFallbackEventDetailMixin
+):
     def get_success_url(self):
-        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
-        return reverse(viewname, args=[event_id, occurrence_id])
+        viewname, *params = super().get_redirect_viewname_id()
+        return reverse(viewname, args=params)
 
 
-class RedirectToOccurrenceDetailOnFailureMixin(RedirectToOccurrenceDetailMixin):
+class RedirectToOccurrenceFallbackEventDetailOnFailureMixin(
+    RedirectToOccurrenceFallbackEventDetailMixin
+):
     def form_invalid(self, form):
         super().form_invalid(form)
-        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
-        return redirect(viewname, event_id=event_id, pk=occurrence_id)
+        viewname, *params = super().get_redirect_viewname_id()
+        return HttpResponseRedirect(reverse(viewname, args=params))
 
 
 class InsertEventIntoSelfObjectMixin:
@@ -186,7 +202,9 @@ class EventCreateUpdateMixin(
     pass
 
 
-class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
+class EventCreateMixin(
+    EventCreatePermissionMixin, EventCreateUpdateMixin, generic.CreateView
+):
     success_message = "Událost %(name)s úspěšně přidána."
 
 

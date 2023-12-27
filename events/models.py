@@ -7,11 +7,12 @@ from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
-from events.utils import check_common_requirements
 from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
 from vzs.utils import today
+
+from .utils import check_common_requirements, user_can_manage_event_category
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -213,7 +214,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         )
 
     def can_user_manage(self, user):
-        return user.has_perm(f"{type(self)._meta.app_label}.{self.category}")
+        return user_can_manage_event_category(user, type(self), self.category)
 
     def exists_occurrence_with_unfilled_attendance(self):
         return any(

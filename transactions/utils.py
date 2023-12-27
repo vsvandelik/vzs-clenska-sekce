@@ -144,21 +144,13 @@ class TransactionFilter(TypedDict, total=False):
     transaction_type: Annotated[
         str,
         lambda transaction_type: (
-            Q_TRUE
-            if transaction_type == ""
-            else (
-                Transaction.Q_reward
-                if transaction_type == "reward"
-                else Transaction.Q_debt
-            )
+            Transaction.Q_reward if transaction_type == "reward" else Transaction.Q_debt
         ),
     ]
 
     is_settled: Annotated[
         str,
-        lambda is_settled: Q_TRUE
-        if is_settled == ""
-        else Q(fio_transaction__isnull=is_settled != "paid"),
+        lambda is_settled: Q(fio_transaction__isnull=is_settled != "paid"),
     ]
 
     amount_from: Annotated[
