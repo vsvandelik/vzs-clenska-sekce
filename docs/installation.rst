@@ -1,5 +1,5 @@
 ##########################
-Instalační dokumentace
+Spouštění a nasazení
 ##########################
 V tomto dokumentu jsou detailně popsány všechny scénáře spouštění a nasazení projektu včetně produkčního nasazení.
 
@@ -52,6 +52,7 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 .. code-block:: console
 
     python manage.py migrate
+    
 |
 
 Nyní je možné spustit webový server Djanga.
