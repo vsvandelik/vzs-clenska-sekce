@@ -17,16 +17,14 @@ Autoři & přispěvovatelé
 
    _autodoc/modules
    terms.rst
-   technologies.rst
-   project-structure.rst
-   dependencies.rst
-   apps.rst
-   installation.rst
+   vývojová/index.rst
+   uživatelská/index.rst
+   instalační/index.rst
    testing.rst
-   requirements-evaluation.rst
-   future.rst
+   team-work.rst
    support.rst
    contributors.rst
+   future.rst
    license.rst
 
 Index

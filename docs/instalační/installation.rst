@@ -1,13 +1,10 @@
-##########################
-Spouštění a nasazení
-##########################
 V tomto dokumentu jsou detailně popsány všechny scénáře spouštění a nasazení projektu včetně produkčního nasazení.
 
 V celém tomto dokumentu předpokládáme, že se v terminálu nacházíme v kořenovém adresáři projektu.
 
-***************************************
+---------------------------------------
 Lokální debug spuštění
-***************************************
+---------------------------------------
 Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
 
 Prerekvizity
@@ -63,13 +60,14 @@ Nyní je možné spustit webový server Djanga.
 
 
     
-***************************************
+---------------------------------------
 Lokální test produkčního nasazení
-***************************************
+---------------------------------------
 Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použítí všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
 
+
 Prerekvizity
-------------
+^^^^^^^^^^^^^
 - docker ≥ 1.13.1
 
 
@@ -131,13 +129,13 @@ Nyní můžeme celý projekt spustit jedním příkazem
 
     docker compose up
 
-***************************************
+---------------------------------------
 Produkční nasazení
-***************************************
+---------------------------------------
 Zde si popíšeme, co všechno je potřeba udělat, abychom mohli projekt bezpečně vystavit na Internet.
 
 Prerekvizity
-------------
+^^^^^^^^^^^^
 - docker ≥ 1.13.1
 
 Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze souboru ``.env.dist`` doplníme zbylé nevyplněné proměnné.
