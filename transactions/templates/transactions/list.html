@@ -10,7 +10,7 @@
         <div class="btn-group-md btn-group mb-3 elevation-2">
             <a href="{{ perm.url }}" class="btn btn-info">Přidat transakci</a>
         </div>
-    {% endif %}
+    {% endifperm %}
 
     {% include "transactions/list_parts/list.html" with edit=True%}
 

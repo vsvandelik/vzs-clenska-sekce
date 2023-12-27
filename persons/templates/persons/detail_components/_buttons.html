@@ -9,19 +9,19 @@
 <div class="btn-group-md btn-group mb-3 elevation-2">
     {% ifperm 'persons:qualifications:add' person.id as perm %}
         <a href="{{ perm.url }}" class="btn btn-info">Přidat kvalifikaci</a>
-    {% endif %}
+    {% endifperm %}
     {% ifperm 'persons:permissions:add' person.id as perm %}
         <a href="{{ perm.url }}" class="btn btn-info">Přidat oprávnění</a>
-    {% endif %}
+    {% endifperm %}
     {% ifperm 'persons:equipments:add' person.id as perm %}
         <a href="{{ perm.url }}" class="btn btn-info">Přidat vybavení</a>
-    {% endif %}
+    {% endifperm %}
 </div>
 <div class="btn-group-md btn-group mb-3 elevation-2">
     <a href="{% url 'persons:transaction-list' person.id %}" class="btn btn-info">Transakce</a>
     {% ifperm 'persons:transaction-add' person.id as perm %}
         <a href="{{ perm.url }}" class="btn btn-info">Přidat transakci</a>
-    {% endif %}
+    {% endifperm %}
 </div>
 
 <div class="btn-group-md btn-group mb-3 elevation-2">
