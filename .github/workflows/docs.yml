@@ -34,7 +34,7 @@ jobs:
         run: pip install rinohtype
       - uses: ammaraskar/sphinx-action@master
         with:
-          docs-folder: "."
+          docs-folder: "docs/"
           pre-build-command: "sphinx-apidoc -o _autodoc .."
           build-command: "sphinx-build -b html . _build"
       - name: Upload artifact
