@@ -2,7 +2,7 @@
 <div class="col-12">
     <div class="card">
         <div class="card-header d-flex align-items-center border-0">
-            <div class="card-title h5">Nahrazování tréninků&nbsp;<span class="card-subtitle text-muted">(počet tréninků k nahrazení: {{ count_of_trainings_to_replace }})</span></div>
+            <div class="card-title h5">Nahrazování tréninků&nbsp;<span class="card-subtitle text-muted">(počet tréninků k nahrazení: {{ participant_count_of_trainings_to_replace }})</span></div>
 
         </div>
         <div class="card-body p-0">
@@ -20,7 +20,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for occurrence in replaceable_occurrences %}
+                            {% for occurrence in participant_replaceable_occurrences %}
                                 <tr>
                                     <td>{{ occurrence.event.name }}</td>
                                     <td>{{ occurrence.datetime_start|date:"l" }}</td>

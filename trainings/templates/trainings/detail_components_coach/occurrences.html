@@ -1,0 +1,30 @@
+{% load vzs_filters %}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title h5">Jednotlivé tréninky</div>
+        </div>
+        <div class="card-body">
+            <div class="row flex-nowrap overflow-auto" id="occurrences-list">
+                {% for occurrence in occurrences %}
+                    <div class="col" {% if occurrence.nearest_occurrence %}id="nearest-occurrence"{% endif %}>
+                        <div class="card" >
+                            <div class="card-header border-0 mx-auto text-nowrap">
+                                <div class="card-title h5 text-bold text-center">{{ occurrence.datetime_start|date:"l" }}<br/>{{ occurrence.datetime_start|date:"j. n. y" }}</div>
+                            </div>
+                            <div class="card-body pt-0 mx-auto">
+                                {% if occurrence.is_closed %}
+                                    <button disabled class="btn btn-sm btn-secondary btn-disabled" href="{{ perm.url }}">Uzavřeno</button>
+                                {% endif %}
+                                {% ifperm 'trainings:fill-attendance' occurrence.event.id occurrence.id as perm %}
+                                    <a class="btn btn-sm btn-info" href="{{ perm.url }}">Zapsat docházku</a>
+                                {% endifperm %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

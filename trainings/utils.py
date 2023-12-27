@@ -62,6 +62,12 @@ def weekday_pretty(weekday):
     return "Ne"
 
 
+def weekday_pretty_full_name(weekday):
+    return ["Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"][
+        weekday
+    ]
+
+
 def days_shortcut_list():
     return ["po", "ut", "st", "ct", "pa", "so", "ne"]
 
