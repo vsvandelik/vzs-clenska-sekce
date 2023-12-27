@@ -316,13 +316,19 @@ class Training(Event):
             or TrainingParticipantAttendance.objects.filter(
                 person=person, occurrence__event=self
             ).exists()
-            or any(
-                [
-                    training.enrolled_participants.contains(person)
-                    for training in self.replaces_training_list()
-                ]
-            )
         )
+
+    @staticmethod
+    def get_person_enrolled_trainings(person):
+        enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
+            Q(person=person)
+            & (
+                Q(state=ParticipantEnrollment.State.APPROVED)
+                | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
+            )
+        ).values_list("training", flat=True)
+
+        return Training.objects.filter(id__in=enrolled_trainings_id)
 
 
 class CoachPositionAssignment(models.Model):
@@ -396,6 +402,11 @@ class TrainingOccurrence(EventOccurrence):
         through="trainings.TrainingParticipantAttendance",
         related_name="training_participants_attendance_set",
     )
+
+    def is_person_coach(self, person):
+        return self.coachoccurrenceassignment_set.filter(
+            person=person, state=TrainingAttendance.PRESENT
+        ).exists()
 
     def get_person_organizer_assignment(self, person):
         return self.coachoccurrenceassignment_set.filter(person=person)
@@ -608,6 +619,13 @@ class TrainingOccurrence(EventOccurrence):
     def can_attendance_be_filled(self):
         return CURRENT_DATETIME() > timezone.localtime(self.datetime_start)
 
+    def can_user_fill_attendance(self, user):
+        return self.can_user_manage(user) or (
+            self.can_attendance_be_filled()
+            and self.is_person_coach(user.person)
+            and self.is_opened
+        )
+
     def coach_assignments_settled(self):
         return CoachOccurrenceAssignment.objects.filter(
             Q(occurrence=self)
@@ -660,6 +678,13 @@ class TrainingParticipantAttendance(models.Model):
     @property
     def is_unexcused(self):
         return self.state == TrainingAttendance.UNEXCUSED
+
+    @property
+    def is_one_time_presence(self):
+        return (
+            self.state == TrainingAttendance.PRESENT
+            and self.person not in self.occurrence.event.enrolled_participants.all()
+        )
 
     class Meta:
         unique_together = ["person", "occurrence"]
