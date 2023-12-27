@@ -32,6 +32,7 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Copy requirements file
         run: |
+          cp .env.dist .env
           cp requirements.txt docs/
           echo -e '\nrinohtype' >> docs/requirements.txt
       - uses: ammaraskar/sphinx-action@master
