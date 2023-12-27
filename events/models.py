@@ -12,7 +12,7 @@ from vzs import settings
 from vzs.models import RenderableModelMixin
 from vzs.utils import today
 
-from .utils import check_common_requirements, user_can_manage_event_category
+from .utils import check_common_requirements
 
 
 class EventOrOccurrenceState(models.TextChoices):
@@ -214,7 +214,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         )
 
     def can_user_manage(self, user):
-        return user_can_manage_event_category(user, type(self), self.category)
+        return user.has_perm(self.category)
 
     def exists_occurrence_with_unfilled_attendance(self):
         return any(

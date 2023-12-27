@@ -86,8 +86,8 @@ class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
 
 class UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
     """
-    Permits users with the ``users.spravce_povoleni`` permission.
+    Permits users with the ``users.povoleni`` permission.
     """
 
-    permissions_required = ["users.spravce_povoleni"]
+    permissions_required = ["povoleni"]
     """:meta private:"""

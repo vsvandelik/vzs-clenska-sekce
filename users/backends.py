@@ -11,7 +11,18 @@ from vzs.settings import GOOGLE_SECRETS_FILE
 UserModel = get_user_model()
 
 
-class PasswordBackend(ModelBackend):
+class UsersAppPermissionsModelBackend(ModelBackend):
+    """
+    Authentication for when all permissions are defined in the ``users`` app.
+
+    :func:`has_perm` is overridden to prepend ``"users."`` to the permission codename.
+    """
+
+    def has_perm(self, user_obj, perm, obj=None):
+        return super().has_perm(user_obj, f"users.{perm}", obj=obj)
+
+
+class PasswordBackend(UsersAppPermissionsModelBackend):
     """
     Authentication with an email address instead of the default username.
     """
@@ -25,7 +36,7 @@ class PasswordBackend(ModelBackend):
         return super().authenticate(request, person=person, password=password, **kwargs)
 
 
-class GoogleBackend(ModelBackend):
+class GoogleBackend(UsersAppPermissionsModelBackend):
     """
     Authentication through Google OAuth2.
     """
