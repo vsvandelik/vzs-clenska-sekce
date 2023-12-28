@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from genderize import Genderize
 
 from persons.models import Person
+from vzs.utils import today
 
 
 class Command(BaseCommand):
@@ -81,15 +82,16 @@ class InputProcessor:
             raise ValidationError({"name": "There is no name. Skipping."})
 
         birth_number = get_val("rc")
+        date_of_birth = get_val("narozeni")
         sex = InputFieldsCleaner.process_sex_by_birth_number(birth_number)
 
         person = Person(
             email=get_val("mail"),
             first_name=first_name,
             last_name=last_name,
-            date_of_birth=get_val("narozeni"),
+            date_of_birth=date_of_birth,
             sex=sex or Person.Sex.M,
-            person_type=Person.Type.ADULT,  # TODO: fix
+            person_type=InputFieldsCleaner.process_type_by_date_of_birth(date_of_birth),
             birth_number=birth_number,
             health_insurance_company=InputFieldsCleaner.process_pojistovna(
                 get_val("Zdravotni_pojistovna"), get_val("zp")
@@ -123,7 +125,7 @@ class InputProcessor:
             email=email,
             first_name=first_name,
             last_name=last_name,
-            sex=Person.Sex.M,  # TODO: fix
+            sex=Person.Sex.M,
             person_type=Person.Type.PARENT,
             phone=phone,
         )
@@ -304,6 +306,20 @@ class InputFieldsCleaner:
             return None
 
         return Person.Sex.F if int(birth_number[2]) - 5 >= 0 else Person.Sex.M
+
+    @staticmethod
+    def process_type_by_date_of_birth(date_of_birth):
+        if not date_of_birth:
+            return Person.Type.ADULT
+
+        date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d")
+        age = (
+            today().year
+            - date_of_birth.year
+            - ((today().month, today().day) < (date_of_birth.month, date_of_birth.day))
+        )
+
+        return Person.Type.ADULT if age >= 18 else Person.Type.CHILD
 
 
 class OutputPrinter:
