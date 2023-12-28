@@ -1,10 +1,13 @@
 import csv
+import os
+import pickle
 from datetime import datetime
 from typing import Any
 
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
+from genderize import Genderize
 
 from persons.models import Person
 
@@ -26,6 +29,10 @@ class Command(BaseCommand):
 
 
 class InputProcessor:
+    genderize_api_key = None
+    genderize_file_path = "data/genderize"
+    genderize_batch_size = 10
+
     def __init__(self, stderr, style):
         super().__init__()
         self.persons = []
@@ -40,6 +47,9 @@ class InputProcessor:
 
             for idx, row in enumerate(reader, start=2):
                 self._process_single_person_row(header, row, idx)
+
+            if InputProcessor.genderize_api_key:
+                self._fix_sex_with_genderize()
 
         return self.persons
 
@@ -70,14 +80,17 @@ class InputProcessor:
         if not first_name or not last_name:
             raise ValidationError({"name": "There is no name. Skipping."})
 
+        birth_number = get_val("rc")
+        sex = InputFieldsCleaner.process_sex_by_birth_number(birth_number)
+
         person = Person(
             email=get_val("mail"),
             first_name=first_name,
             last_name=last_name,
             date_of_birth=get_val("narozeni"),
-            sex=Person.Sex.M,  # TODO: fix
+            sex=sex or Person.Sex.M,
             person_type=Person.Type.ADULT,  # TODO: fix
-            birth_number=get_val("rc"),
+            birth_number=birth_number,
             health_insurance_company=InputFieldsCleaner.process_pojistovna(
                 get_val("Zdravotni_pojistovna"), get_val("zp")
             ),
@@ -87,6 +100,7 @@ class InputProcessor:
             postcode=get_val("psc"),
         )
         person.clean_fields()
+        person.fix_sex = True if sex is None else False
 
         return self._return_if_not_duplicate(person)
 
@@ -114,6 +128,7 @@ class InputProcessor:
             phone=phone,
         )
         parent.clean_fields()
+        parent.fix_sex = True
 
         return self._return_if_not_duplicate(parent)
 
@@ -165,6 +180,59 @@ class InputProcessor:
             self.stderr.write(
                 self.style.WARNING(f"Error in line {line}: {field}: {error_message}")
             )
+
+    def _fix_sex_with_genderize(self):
+        persons_to_fix = [p for p in self.persons if p.fix_sex]
+        names = set(p.first_name for p in persons_to_fix)
+
+        sex_by_names = self._get_sex_by_names(names)
+
+        for person in persons_to_fix:
+            if person.first_name in sex_by_names:
+                person.sex = sex_by_names[person.first_name]
+
+    def _get_sex_by_names(self, names):
+        if os.path.exists(InputProcessor.genderize_file_path):
+            with open(InputProcessor.genderize_file_path, "rb") as f:
+                sex_by_names = pickle.load(f)
+        else:
+            sex_by_names = {}
+
+        missing_names = list(names.difference(set(sex_by_names.keys())))
+
+        if len(missing_names) == 0:
+            return sex_by_names
+
+        returned_gender_count = 0
+        genderize = Genderize()
+
+        for i in range(0, len(missing_names), InputProcessor.genderize_batch_size):
+            subset_names = missing_names[i : i + InputProcessor.genderize_batch_size]
+            self.stderr.write(
+                self.style.SUCCESS(f"Batch {i} with {len(subset_names)} names.")
+            )
+            data = genderize.get(names=subset_names, country_id="cz", language_id="cs")
+
+            for d in data:
+                name = d["name"]
+                if d["gender"] == "female":
+                    sex_by_names[name] = Person.Sex.F
+                else:
+                    sex_by_names[name] = Person.Sex.M
+
+                if d["gender"] is not None:
+                    returned_gender_count += 1
+
+        with open(InputProcessor.genderize_file_path, "wb") as f:
+            pickle.dump(sex_by_names, f)
+
+        self.stderr.write(
+            self.style.SUCCESS(
+                f"Genderize.io API was called for {len(missing_names)} names and returned gender for {returned_gender_count} names."
+            )
+        )
+
+        return sex_by_names
 
 
 class InputFieldsCleaner:
@@ -229,6 +297,13 @@ class InputFieldsCleaner:
             return getattr(Person.HealthInsuranceCompany, letters_only)
 
         return value
+
+    @staticmethod
+    def process_sex_by_birth_number(birth_number):
+        if not birth_number or len(birth_number.replace("/", "")) != 10:
+            return None
+
+        return Person.Sex.F if int(birth_number[2]) - 5 >= 0 else Person.Sex.M
 
 
 class OutputPrinter:

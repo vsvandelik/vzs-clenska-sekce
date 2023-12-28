@@ -1,3 +1,4 @@
 pre-commit
 sphinx
-rinoh
+rinohtype
+Genderize
