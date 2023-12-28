@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 from typing import Any
 
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
@@ -42,51 +43,21 @@ class InputProcessor:
 
         return self.persons
 
-    def _check_if_person_already_exists(self, person: Person):
-        found_weak_duplicate = False
-        for p in self.persons:
-            if p.first_name == person.first_name and p.last_name == person.last_name:
-                if p.email == person.email or p.phone == person.phone:
-                    return p
-                else:
-                    found_weak_duplicate = True
-            elif p.email == person.email:
-                person.email = None
-                raise ValidationError(
-                    {
-                        "email": f"E-mailová adresa {p.email} již byla použita u osoby s jiným jménem ({p.name}). Osoba se vynechává."
-                    }
-                )
-
-        return found_weak_duplicate
-
-    def _return_if_not_duplicate(self, person: Person):
-        possible_existing_person = self._check_if_person_already_exists(person)
-        if isinstance(possible_existing_person, Person):
-            return possible_existing_person
-        elif possible_existing_person is True:
-            self.stderr.write(
-                self.style.WARNING(
-                    f"There is already person with name {person.first_name} {person.last_name} in the list. Adjust contact info if the person is the same."
-                )
-            )
-
-        person.managing_persons = []
-        self.persons.append(person)
-
-        return person
-
     def _process_single_person_row(self, header: dict, row: list, line: int):
         get_val = lambda key: InputFieldsCleaner.clean_value(key, row[header[key]])
 
         try:
+            password = self._get_user_account_password(get_val)
+
             person = self._process_person(get_val)
+            person.password = password
             person_idx = self.persons.index(person)
 
             for parent_idx in range(1, 3):
                 parent = self._process_parent(get_val, parent_idx)
                 if parent:
                     parent.managing_persons.append(person_idx)
+                    parent.password = password
 
         except ValidationError as e:
             self._print_errors_as_warnings(e.message_dict, line)
@@ -145,6 +116,48 @@ class InputProcessor:
         parent.clean_fields()
 
         return self._return_if_not_duplicate(parent)
+
+    def _check_if_person_already_exists(self, person: Person):
+        found_weak_duplicate = False
+        for p in self.persons:
+            if p.first_name == person.first_name and p.last_name == person.last_name:
+                if p.email == person.email or p.phone == person.phone:
+                    return p
+                else:
+                    found_weak_duplicate = True
+            elif p.email == person.email:
+                person.email = None
+                raise ValidationError(
+                    {
+                        "email": f"E-mailová adresa {p.email} již byla použita u osoby s jiným jménem ({p.name}). Osoba se vynechává."
+                    }
+                )
+
+        return found_weak_duplicate
+
+    def _return_if_not_duplicate(self, person: Person):
+        possible_existing_person = self._check_if_person_already_exists(person)
+        if isinstance(possible_existing_person, Person):
+            return possible_existing_person
+        elif possible_existing_person is True:
+            self.stderr.write(
+                self.style.WARNING(
+                    f"There is already person with name {person.first_name} {person.last_name} in the list. Adjust contact info if the person is the same."
+                )
+            )
+
+        person.managing_persons = []
+        self.persons.append(person)
+
+        return person
+
+    def _get_user_account_password(self, get_val):
+        username = get_val("login")
+        password = get_val("heslo")
+        if not username or not password:
+            return None
+
+        return make_password(password)
 
     def _print_errors_as_warnings(self, errors, line):
         for field, error in errors.items():
@@ -233,12 +246,29 @@ class OutputPrinter:
     }}
 }}"""
 
+    user_json_format = """{{
+    "model": "users.user",
+    "pk": {id},
+    "fields": {{
+        "password": "{password}",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "groups": [],
+        "user_permissions": []
+    }}
+}}"""
+
     def print_output(self, persons):
         self.stdout.write("[")
 
         persons_in_json = []
         for idx, person in enumerate(persons):
             persons_in_json.append(self._print_person_output(idx, person))
+
+            if person.password:
+                persons_in_json.append(self._print_user(idx, person.password))
 
         self.stdout.write(",\n".join(persons_in_json))
 
@@ -249,7 +279,7 @@ class OutputPrinter:
 
         fields_output = []
         for key, val in fields.items():
-            if key.startswith("_") or key in ["id"]:
+            if key.startswith("_") or key in ["id", "password"]:
                 continue
             if not val:
                 continue
@@ -262,3 +292,8 @@ class OutputPrinter:
         data = {"id": idx, "fields": ",\n".join(fields_output)}
 
         return self.person_json_format.format(**data)
+
+    def _print_user(self, idx, password):
+        data = {"id": idx, "password": password}
+
+        return self.user_json_format.format(**data)
