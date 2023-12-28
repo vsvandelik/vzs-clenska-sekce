@@ -1,12 +1,12 @@
-##########################
+***************************************
 Struktura projektu
-##########################
+***************************************
 
 Projekt obsahuje mnoho souborů a adresářů, jejichž význam popíšeme zde.
 
-***************************************
+---------------------------------------
 Stromová struktura
-***************************************
+---------------------------------------
 
 Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakončeny lomítkem, za nimi následují soubory.
 
