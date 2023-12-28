@@ -12,7 +12,7 @@ from django.db.models.query import Q, QuerySet
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import formats
-from django.utils.timezone import localdate, make_aware
+from django.utils.timezone import localdate, make_aware, localtime
 
 from vzs import settings
 from vzs.settings import CURRENT_DATETIME
@@ -28,6 +28,16 @@ def get_csv_writer_http_response(filename):
     writer = csv.writer(response, delimiter=";")
 
     return writer, response
+
+
+def get_xml_http_response(filename):
+    response = HttpResponse(
+        content_type="text/xml",
+        headers={"Content-Disposition": rfc5987_content_disposition(f"{filename}.xml")},
+    )
+    response.write("\ufeff".encode("utf8"))
+
+    return response
 
 
 def export_queryset_csv(filename, queryset):
@@ -200,3 +210,7 @@ def combine_date_and_time(date, time):
 
 def today():
     return localdate(CURRENT_DATETIME())
+
+
+def now():
+    return localtime(CURRENT_DATETIME())
