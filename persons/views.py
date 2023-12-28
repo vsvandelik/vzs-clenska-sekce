@@ -1,6 +1,7 @@
 import datetime
 from datetime import date, datetime
 from functools import reduce
+from sys import stderr
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -17,6 +18,7 @@ from features.models import FeatureTypeTexts
 from groups.models import Group
 from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
 from trainings.models import Training
+from users.models import Permission
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today
 
@@ -41,11 +43,11 @@ class PersonPermissionBaseMixin:
     @staticmethod
     def permission_predicate(request):
         permission_required = (
-            "persons.clenska_zakladna",
-            "persons.detska_clenska_zakladna",
-            "persons.bazenova_clenska_zakladna",
-            "persons.lezecka_clenska_zakladna",
-            "persons.dospela_clenska_zakladna",
+            "clenska_zakladna",
+            "detska_clenska_zakladna",
+            "bazenova_clenska_zakladna",
+            "lezecka_clenska_zakladna",
+            "dospela_clenska_zakladna",
         )
         for permission in permission_required:
             if get_active_user(request.active_person).has_perm(permission):
@@ -63,29 +65,29 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
         if queryset is None:
             queryset = Person.objects.all()
 
-        if user.has_perm("persons.clenska_zakladna"):
+        if user.has_perm("clenska_zakladna"):
             return queryset
 
         conditions = []
 
-        if user.has_perm("persons.detska_clenska_zakladna"):
+        if user.has_perm("detska_clenska_zakladna"):
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.bazenova_clenska_zakladna"):
+        if user.has_perm("bazenova_clenska_zakladna"):
             # TODO: omezit jen na bazenove treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.lezecka_clenska_zakladna"):
+        if user.has_perm("lezecka_clenska_zakladna"):
             # TODO: omezit jen na lezecke treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.dospela_clenska_zakladna"):
+        if user.has_perm("dospela_clenska_zakladna"):
             conditions.append(
                 Q(
                     person_type__in=[
@@ -113,7 +115,7 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
 
         active_user = get_active_user(self.request.active_person)
 
-        if active_user.has_perm("persons.clenska_zakladna"):
+        if active_user.has_perm("clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -127,13 +129,13 @@ class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
             )
 
         if (
-            active_user.has_perm("persons.detska_clenska_zakladna")
-            or active_user.has_perm("persons.bazenova_clenska_zakladna")
-            or active_user.has_perm("persons.lezecka_clenska_zakladna")
+            active_user.has_perm("detska_clenska_zakladna")
+            or active_user.has_perm("bazenova_clenska_zakladna")
+            or active_user.has_perm("lezecka_clenska_zakladna")
         ):
             available_person_types.update([Person.Type.CHILD, Person.Type.PARENT])
 
-        if active_user.has_perm("persons.dospela_clenska_zakladna"):
+        if active_user.has_perm("dospela_clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,

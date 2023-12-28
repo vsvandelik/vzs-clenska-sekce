@@ -44,10 +44,10 @@ from .utils import TransactionInfo, send_email_transactions
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
     """
-    Permits users with the ``transactions.spravce_transakci`` permission.
+    Permits users with the ``users.transakce`` permission.
     """
 
-    permission_required = "transactions.spravce_transakci"
+    permission_required = "transakce"
     """:meta private:"""
 
 
@@ -61,7 +61,7 @@ class TransactionCreateView(TransactionEditPermissionMixin, CreateView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
     """
 
     form_class = TransactionCreateForm
@@ -88,7 +88,7 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Path parameters:**
 
@@ -185,7 +185,7 @@ class TransactionListView(TransactionListMixin):
 
     **Permissions**:
 
-    *   users with the ``transactions.spravce_transakci`` permission
+    *   users with the ``users.transakce`` permission
     *   users that manage the transaction's person's membership type
 
     **Path parameters:**
@@ -199,9 +199,7 @@ class TransactionListView(TransactionListMixin):
     def get_queryset(self):
         """:meta private:"""
 
-        if get_active_user(self.request.active_person).has_perm(
-            "transactions.spravce_transakci"
-        ):
+        if get_active_user(self.request.active_person).has_perm("transakce"):
             return super().get_queryset()
         else:
             return PersonPermissionMixin.get_queryset_by_permission(self.request.user)
@@ -215,7 +213,7 @@ class TransactionQRView(LoginRequiredMixin, DetailView):
 
     **Permissions**:
 
-    *   users with the ``transactions.spravce_transakci`` permission
+    *   users with the ``users.transakce`` permission
     *   users that manage the transaction's person's membership type
     *   the user to whom the transaction belongs
 
@@ -244,7 +242,7 @@ class TransactionQRView(LoginRequiredMixin, DetailView):
         queryset = Transaction.objects.filter(
             Q(fio_transaction__isnull=True) & Transaction.Q_debt
         )
-        if not active_user.has_perm("transactions.spravce_transakci"):
+        if not active_user.has_perm("transakce"):
             queryset = queryset.filter(
                 Q(person=active_person)
                 | Q(
@@ -263,7 +261,7 @@ class TransactionEditMixin(TransactionEditPermissionMixin, UpdateView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Path parameters:**
 
@@ -339,7 +337,7 @@ class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Path parameters:**
 
@@ -393,7 +391,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Query parameters:**
 
@@ -461,7 +459,7 @@ class TransactionCreateBulkView(TransactionEditPermissionMixin, FormView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Request body parameters:**
 
@@ -617,7 +615,7 @@ class TransactionCreateBulkConfirmMixin(
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Query parameters:**
 
@@ -675,7 +673,7 @@ class TransactionCreateSameAmountBulkConfirmView(TransactionCreateBulkConfirmMix
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Query parameters:**
 
@@ -811,7 +809,7 @@ class TransactionExportView(TransactionEditPermissionMixin, View):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Query parameters:**
 
@@ -848,7 +846,7 @@ class TransactionSendEmailView(TransactionEditPermissionMixin, View):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Query parameters:**
 
@@ -904,7 +902,7 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
 
     **Permissions**:
 
-    Users with the ``transactions.spravce_transakci`` permission.
+    Users with the ``users.transakce`` permission.
 
     **Path parameters:**
 

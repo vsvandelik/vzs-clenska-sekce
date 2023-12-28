@@ -56,9 +56,6 @@ class Transaction(ExportableCSVMixin, Model):
     Primary key represents the transaction variable symbol.
     """
 
-    class Meta:
-        permissions = [("spravce_transakci", _("Správce transakcí"))]
-
     amount = IntegerField(_("Suma"))
     """
     A negative value represents a debt, positive value represents a reward.

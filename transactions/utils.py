@@ -4,7 +4,6 @@ from datetime import date, datetime
 from typing import Annotated, TypedDict
 from zoneinfo import ZoneInfo
 
-from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.template.loader import render_to_string
@@ -14,8 +13,9 @@ from fiobank import FioBank
 
 from events.models import ParticipantEnrollment
 from persons.models import Person
+from users.utils import get_permission_by_codename
 from vzs.settings import FIO_TOKEN
-from vzs.utils import Q_TRUE, email_notification_recipient_set
+from vzs.utils import email_notification_recipient_set
 
 from .models import FioTransaction, Transaction
 
@@ -24,7 +24,7 @@ _fio_client = FioBank(FIO_TOKEN)
 
 def _send_mail_to_accountants(subject: str, body: str):
     accountant_emails = (
-        Permission.objects.get(codename="spravce_transakci")
+        get_permission_by_codename("transakce")
         .user_set.select_related("person__email")
         .values_list("person__email", flat=True)
     )

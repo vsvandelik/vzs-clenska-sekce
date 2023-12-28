@@ -120,7 +120,34 @@ class Permission(RenderableModelMixin, BasePermission):
     """
 
     class Meta:
-        permissions = [("spravce_povoleni", _("Správce povolení"))]
+        permissions = [
+            ("povoleni", _("Správce povolení")),
+            ("kvalifikace", _("Správce kvalifikací")),
+            ("opravneni", _("Správce oprávnění")),
+            ("vybaveni", _("Správce vybavení")),
+            ("skupiny", _("Správce skupin")),
+            ("stranky", _("Správce textových stránek")),
+            ("komercni_udalosti", _("Správce komerčních událostí")),
+            ("kurzy", _("Správce kurzů")),
+            ("prezentacni_udalosti", _("Správce prezentačních událostí")),
+            ("udalosti_pro_deti", _("Správce událostí pro děti")),
+            ("spolecenske_udalosti", _("Správce společenských událostí")),
+            ("lezecke_treninky", _("Správce lezeckých tréninků")),
+            ("plavecke_treninky", _("Správce plaveckých tréninků")),
+            ("zdravoveda", _("Správce zdravovědy")),
+            ("clenska_zakladna", _("Správce členské základny")),
+            ("detska_clenska_zakladna", _("Správce dětské členské základny")),
+            (
+                "bazenova_clenska_zakladna",
+                _("Správce bazénové dětské členské základny"),
+            ),
+            (
+                "lezecka_clenska_zakladna",
+                _("Správce lezecké dětské členské základny"),
+            ),
+            ("dospela_clenska_zakladna", _("Správce dospělé členské základny")),
+            ("transakce", _("Správce transakcí")),
+        ]
 
     description = models.CharField(max_length=255)
 

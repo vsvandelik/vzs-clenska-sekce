@@ -1,3 +1,5 @@
+{% load vzs_filters %}
+
 <div class="card">
     <div class="card-header">
         <div class="card-title h5">Skupiny</div>
@@ -25,9 +27,9 @@
             </form>
         {% endif %}
     </div>
-    {% if perms.persons.spravce_skupin %}
+    {% ifperm "persons:add-to-group" person.id %}
         <div class="card-footer text-center">
             <a href="#" data-toggle="modal" data-target="#add-person-to-group-modal" class="btn-primary btn">Přidat do skupiny</a>
         </div>
-    {% endif %}
+    {% endifperm %}
 </div>
