@@ -979,7 +979,7 @@ class ApproveOccurrenceForm(
                         organizer_assignment.transaction = Transaction(
                             amount=amount,
                             reason=f"Organizátor {instance.event} dne {instance.date}",
-                            date_due=instance.date + timedelta(days=14),
+                            date_due=instance.date,
                             person=organizer_assignment.person,
                             event=instance.event,
                         )

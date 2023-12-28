@@ -1,76 +1,33 @@
+from vzs.datetime_constants import (
+    DAY_IN_WEEK_NAMES,
+    DAY_IN_WEEK_SHORTCUTS,
+    DAY_IN_WEEK_SHORTCUTS_PRETTY,
+)
+
+
 def weekday_2_day_shortcut(weekday):
-    if weekday == 0:
-        return "po"
-    elif weekday == 1:
-        return "ut"
-    elif weekday == 2:
-        return "st"
-    elif weekday == 3:
-        return "ct"
-    elif weekday == 4:
-        return "pa"
-    elif weekday == 5:
-        return "so"
-    return "ne"
+    return days_shortcut_list()[weekday]
 
 
 def day_shortcut_pretty(day_shortcut):
-    if day_shortcut == "po":
-        return "Po"
-    elif day_shortcut == "ut":
-        return "Út"
-    elif day_shortcut == "st":
-        return "St"
-    elif day_shortcut == "ct":
-        return "Čt"
-    elif day_shortcut == "pa":
-        return "Pá"
-    elif day_shortcut == "so":
-        return "So"
-    return "Ne"
+    return days_pretty_list()[day_shortcut_2_weekday(day_shortcut)]
 
 
 def day_shortcut_2_weekday(day_shortcut):
-    if day_shortcut == "po":
-        return 0
-    elif day_shortcut == "ut":
-        return 1
-    elif day_shortcut == "st":
-        return 2
-    elif day_shortcut == "ct":
-        return 3
-    elif day_shortcut == "pa":
-        return 4
-    elif day_shortcut == "so":
-        return 5
-    return 6
+    return days_shortcut_list().index(day_shortcut)
 
 
 def weekday_pretty(weekday):
-    if weekday == 0:
-        return "Po"
-    elif weekday == 1:
-        return "Út"
-    elif weekday == 2:
-        return "St"
-    elif weekday == 3:
-        return "Čt"
-    elif weekday == 4:
-        return "Pá"
-    elif weekday == 5:
-        return "So"
-    return "Ne"
+    return days_pretty_list()[weekday]
 
 
 def weekday_pretty_full_name(weekday):
-    return ["Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"][
-        weekday
-    ]
+    return DAY_IN_WEEK_NAMES[weekday]
 
 
 def days_shortcut_list():
-    return ["po", "ut", "st", "ct", "pa", "so", "ne"]
+    return DAY_IN_WEEK_SHORTCUTS
 
 
 def days_pretty_list():
-    return ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]
+    return DAY_IN_WEEK_SHORTCUTS_PRETTY

@@ -4,6 +4,8 @@
 
 {% perm_url "api:token:index" as perm_token_index %}
 {% perm_url "api:token:generate" as perm_token_generate %}
+{% perm_url "transactions:index" as perm_transactions_index %}
+{% perm_url "transactions:accounting-export" as perm_transactions_accounting_export %}
 
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -45,8 +47,8 @@
                         </ul>
                     </li>
                 {% endif %}
-                <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index || transactions:index" "menu-open" strict=False %}">
-                    <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index || transactions:index" %}">
+                <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
+                    <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" %}">
                         <i class="nav-icon fas fa-users"></i>
                         <p>
                             Osoby
@@ -88,12 +90,6 @@
                             <a href="{% url "equipments:index" %}" class="nav-link {% active_link "equipments:index" %}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Vybavení</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "transactions:index" %}" class="nav-link {% active_link "transactions:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Transakce</p>
                             </a>
                         </li>
                     </ul>
@@ -151,6 +147,32 @@
                         </li>
                     </ul>
                 </li>
+                {% if perm_transactions_index or perm_transactions_accounting_export %}
+                    <li class="nav-item {% active_link "transactions:index || transactions:export" "menu-open" strict=False %}">
+                        <a href="#" class="nav-link {% active_link "transactions:index || transactions:export" %}">
+                            <i class="nav-icon fas fa-dollar-sign"></i>
+                            <p>Transakce<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            {% if perm_transactions_index %}
+                                <li class="nav-item">
+                                    <a href="{{ perm_transactions_index.url }}" class="nav-link {% active_link "transactions:index" %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Seznam transakcí</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if perm_transactions_accounting_export %}
+                                <li class="nav-item">
+                                    <a href="{{ perm_transactions_accounting_export.url }}" class="nav-link {% active_link "transactions:accounting-export" %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Účetní podklady</p>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endif %}
                 {% if perm_token_index or perm_token_generate %}
                     <li class="nav-item {% active_link "api:token:index || api:token:delete || api:token:generate" "menu-open" strict=False %}">
                         <a href="#" class="nav-link {% active_link "api:token:index || api:token:delete || api:token:generate" %}">
