@@ -5,7 +5,6 @@ from django.contrib.auth.mixins import (
 )
 
 from persons.models import get_active_user
-from persons.views import PersonPermissionMixin
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
@@ -54,6 +53,8 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
 
 
 def _user_can_manage_person(user, person_pk):
+    from persons.views import PersonPermissionMixin
+
     return user.is_superuser or (
         PersonPermissionMixin.get_queryset_by_permission(user)
         .filter(pk=person_pk)
