@@ -13,21 +13,22 @@ class Command(BaseCommand):
 
     def __init__(self):
         super().__init__()
-        self.input_processor = InputProcessor(self.stdout, self.style)
+        self.input_processor = InputProcessor(self.stderr, self.style)
+        self.output_printer = OutputPrinter(self.stdout, self.style)
 
     def add_arguments(self, parser):
         parser.add_argument("filename", type=str)
 
     def handle(self, *args, **options):
-        self.input_processor.process_input(options["filename"])
-        # self.stdout.write(self.style.SUCCESS(f"Successfully created"))
+        persons = self.input_processor.process_input(options["filename"])
+        self.output_printer.print_output(persons)
 
 
 class InputProcessor:
-    def __init__(self, stdout, style):
+    def __init__(self, stderr, style):
         super().__init__()
         self.persons = []
-        self.stdout = stdout
+        self.stderr = stderr
         self.style = style
 
     def process_input(self, filename):
@@ -49,6 +50,13 @@ class InputProcessor:
                     return p
                 else:
                     found_weak_duplicate = True
+            elif p.email == person.email:
+                person.email = None
+                raise ValidationError(
+                    {
+                        "email": f"E-mailová adresa {p.email} již byla použita u osoby s jiným jménem ({p.name}). Osoba se vynechává."
+                    }
+                )
 
         return found_weak_duplicate
 
@@ -57,12 +65,13 @@ class InputProcessor:
         if isinstance(possible_existing_person, Person):
             return possible_existing_person
         elif possible_existing_person is True:
-            self.stdout.write(
+            self.stderr.write(
                 self.style.WARNING(
                     f"There is already person with name {person.first_name} {person.last_name} in the list. Adjust contact info if the person is the same."
                 )
             )
 
+        person.managing_persons = []
         self.persons.append(person)
 
         return person
@@ -72,20 +81,17 @@ class InputProcessor:
 
         try:
             person = self._process_person(get_val)
-            person.parents = []
+            person_idx = self.persons.index(person)
 
-            parent1 = self._process_parent(get_val, 1)
-            if parent1:
-                person.parents.append(parent1)
-
-            parent2 = self._process_parent(get_val, 2)
-            if parent2:
-                person.parents.append(parent2)
+            for parent_idx in range(1, 3):
+                parent = self._process_parent(get_val, parent_idx)
+                if parent:
+                    parent.managing_persons.append(person_idx)
 
         except ValidationError as e:
             self._print_errors_as_warnings(e.message_dict, line)
         except ValueError as e:
-            self.stdout.write(self.style.WARNING(f"Error in line {line}: {e}"))
+            self.stderr.write(self.style.WARNING(f"Error in line {line}: {e}"))
 
     def _process_person(self, get_val):
         first_name = get_val("jmeno")
@@ -143,7 +149,7 @@ class InputProcessor:
     def _print_errors_as_warnings(self, errors, line):
         for field, error in errors.items():
             error_message = " ".join(error) if isinstance(error, list) else error
-            self.stdout.write(
+            self.stderr.write(
                 self.style.WARNING(f"Error in line {line}: {field}: {error_message}")
             )
 
@@ -210,3 +216,49 @@ class InputFieldsCleaner:
             return getattr(Person.HealthInsuranceCompany, letters_only)
 
         return value
+
+
+class OutputPrinter:
+    def __init__(self, stdout, style):
+        super().__init__()
+        self.persons = []
+        self.stdout = stdout
+        self.style = style
+
+    person_json_format = """{{
+    "model": "persons.person",
+    "pk": {id},
+    "fields": {{
+{fields}
+    }}
+}}"""
+
+    def print_output(self, persons):
+        self.stdout.write("[")
+
+        persons_in_json = []
+        for idx, person in enumerate(persons):
+            persons_in_json.append(self._print_person_output(idx, person))
+
+        self.stdout.write(",\n".join(persons_in_json))
+
+        self.stdout.write("]")
+
+    def _print_person_output(self, idx, person):
+        fields = person.__dict__
+
+        fields_output = []
+        for key, val in fields.items():
+            if key.startswith("_") or key in ["id"]:
+                continue
+            if not val:
+                continue
+
+            if key == "managing_persons":
+                fields_output.append(f'\t\t"managed_persons": {val}')
+            else:
+                fields_output.append(f'\t\t"{key}": "{val}"')
+
+        data = {"id": idx, "fields": ",\n".join(fields_output)}
+
+        return self.person_json_format.format(**data)
