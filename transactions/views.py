@@ -932,9 +932,24 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
 
 
 class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
+    """
+    Enables exporting transactions as a accounting basis. The rewards
+    are exported as a CSV file and the debts as an XML file, which can be imported
+    to the Pohoda software.
+
+    **Permissions**:
+
+    Users with the ``transakce`` permission.
+    """
+
     form_class = TransactionAccountingExportPeriodForm
+    """:meta private:"""
+
     template_name = "transactions/accounting_export.html"
+    """:meta private:"""
+
     success_url = reverse_lazy("transactions:accounting-export")
+    """:meta private:"""
 
     def form_valid(self, form):
         _ = super().form_valid(form)

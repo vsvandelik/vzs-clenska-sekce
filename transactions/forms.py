@@ -588,6 +588,10 @@ class TransactionFilterForm(Form):
 
 
 class TransactionAccountingExportPeriodForm(Form):
+    """
+    Selection form for which period the accounting basis should be exported.
+    """
+
     year = IntegerField(label=_("Rok"), min_value=2000, max_value=today().year)
     month = ChoiceField(
         label=_("Měsíc"),
