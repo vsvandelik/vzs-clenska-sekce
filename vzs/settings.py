@@ -297,6 +297,8 @@ ORGANIZER_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
+ONE_TIME_EVENT_CLOSE_DEADLINE_DAYS = 5
+TRAINING_CLOSE_DEADLINE_DAYS = 1
 NOTIFICATION_SENDER_EMAIL = "noreply@vzs-praha15.cz"
 MIN_PARTICIPANT_ABSENCE_SEND_MAIL = 3
 FEATURE_EXPIRE_HOURS_SEND_MAIL = 72
@@ -310,4 +312,8 @@ REST_FRAMEWORK = {
 }
 
 # CRONTAB
-CRONJOBS = [("0 3 * * *", "features.cron.features_expiry_send_mails")]
+CRONJOBS = [
+    ("0 3 * * *", "features.cron.features_expiry_send_mails"),
+    ("0 4 * * *", "one_time_events.cron.unclosed_one_time_events_send_mails"),
+    ("0 5 * * *", "trainings.cron.unclosed_trainings_send_mails"),
+]

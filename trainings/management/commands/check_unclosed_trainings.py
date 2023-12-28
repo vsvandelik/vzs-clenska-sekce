@@ -6,9 +6,10 @@ from django.urls import reverse
 
 from events.models import EventOrOccurrenceState
 from trainings.models import TrainingOccurrence
+from users.utils import get_permission_by_codename
 from vzs import settings
 from vzs.settings import TRAINING_CLOSE_DEADLINE_DAYS
-from vzs.utils import get_server_url
+from vzs.utils import get_server_url, date_pretty, send_notification_email
 
 
 class Command(BaseCommand):
@@ -23,12 +24,10 @@ class Command(BaseCommand):
         )
 
         for unclosed_training in unclosed_trainings:
-            coaches_emails = set(
-                unclosed_training.coaches.values_list("email", flat=True)
-            )
-            if unclosed_training.event.main_coach_assignment:
+            coaches = set(unclosed_training.coaches.all())
+            if unclosed_training.event.main_coach_assignment is not None:
                 main_coach = unclosed_training.event.main_coach_assignment.person
-                coaches_emails.add(main_coach.email)
+                coaches.add(main_coach)
 
             url_address = get_server_url() + reverse(
                 "trainings:fill-attendance",
@@ -37,13 +36,17 @@ class Command(BaseCommand):
                     "pk": unclosed_training.id,
                 },
             )
-
-            send_mail(
+            date = date_pretty(unclosed_training.datetime_start)
+            send_notification_email(
                 "Upozornění na neuzavřený trénink",
-                f"Uzavřete trénink dne {url_address}.",
-                settings.ADMIN_EMAIL,
-                [coaches_emails],
-                fail_silently=False,
+                f"Uzavřete trénink {unclosed_training.event} dne {date} na adrese {url_address}",
+                coaches,
             )
-
-        # TODO: send cc of notification to admin of the event category
+            category_admins = get_permission_by_codename(
+                unclosed_training.event.category
+            ).user_set
+            send_notification_email(
+                "Upozornění na neuzavřený trénink",
+                f"Upozorňujeme Vás jako správce událostí druhu {unclosed_training.event.category.label}, že trénink {unclosed_training.event.name} dne {date} na adrese {url_address} není uzavřen.",
+                category_admins,
+            )

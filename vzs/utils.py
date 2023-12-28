@@ -195,3 +195,7 @@ def combine_date_and_time(date, time):
 
 def today():
     return localdate(CURRENT_DATETIME())
+
+
+def get_server_url():
+    return f"{settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}"
