@@ -5,7 +5,7 @@ from typing import Annotated, TypedDict
 from zoneinfo import ZoneInfo
 
 from django.core.mail import send_mail
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.template.loader import render_to_string
 from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
@@ -14,9 +14,13 @@ from fiobank import FioBank
 from events.models import ParticipantEnrollment
 from persons.models import Person
 from users.utils import get_permission_by_codename
-from vzs.settings import FIO_TOKEN
-from vzs.utils import email_notification_recipient_set
-
+from vzs.settings import FIO_TOKEN, ICO
+from vzs.utils import (
+    email_notification_recipient_set,
+    get_csv_writer_http_response,
+    get_xml_http_response,
+    now,
+)
 from .models import FioTransaction, Transaction
 
 _fio_client = FioBank(FIO_TOKEN)
@@ -212,3 +216,62 @@ class TransactionInfo:
 
     def get_date_due_field_name(self):
         return f"transactions-{self.person.pk}-date_due"
+
+
+def export_rewards_to_csv(year, month):
+    writer, http_response = get_csv_writer_http_response(f"vyplaty-{year}-{month}")
+
+    persons_summaries = (
+        Person.objects.filter(
+            transactions__date_due__year=year,
+            transactions__date_due__month=month,
+            transactions__amount__gt=0,
+        )
+        .distinct()
+        .annotate(amount_sum=Sum("transactions__amount"))
+        .order_by("last_name", "first_name")
+    )
+
+    for person in persons_summaries:
+        divided_rewards = {}
+
+        hourly_rates = {h.event_type: h.hourly_rate for h in person.hourly_rates.all()}
+        person_rewards = person.transactions.filter(
+            date_due__year=year,
+            date_due__month=month,
+            amount__gt=0,
+            event__isnull=False,
+        )
+
+        for reward in person_rewards:
+            category = (
+                reward.event.category
+                if reward.event.category in hourly_rates
+                else "nezarazeno"
+            )
+            divided_rewards.setdefault(category, 0)
+            divided_rewards[category] += reward.amount
+
+        writer.writerow(
+            [person.last_name, person.first_name, "", "", person.amount_sum]
+        )
+
+        for category, amount in divided_rewards.items():
+            writer.writerow(["", "", category, hourly_rates.get(category, ""), amount])
+
+    return http_response
+
+
+def export_debts_to_xml(year, month):
+    http_response = get_xml_http_response(f"faktury-{year}-{month}")
+
+    transactions = Transaction.objects.filter(
+        date_due__year=year, date_due__month=month, amount__lt=0
+    )
+
+    data = {"transactions": transactions, "ico": ICO, "id": now().timestamp()}
+
+    text_content = render_to_string("transactions_xml/invoices.xml", context=data)
+    http_response.write(text_content.encode("utf8"))
+
+    return http_response

@@ -1,9 +1,8 @@
 from collections.abc import Iterable, Mapping
 from itertools import chain
 from typing import Any
-from venv import create
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
@@ -26,9 +25,9 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
+from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
-
 from .forms import (
     TransactionAddTrainingPaymentForm,
     TransactionCreateBulkConfirmForm,
@@ -37,9 +36,15 @@ from .forms import (
     TransactionCreateFromPersonForm,
     TransactionEditForm,
     TransactionFilterForm,
+    TransactionAccountingExportPeriodForm,
 )
 from .models import BulkTransaction, Transaction
-from .utils import TransactionInfo, send_email_transactions
+from .utils import (
+    TransactionInfo,
+    send_email_transactions,
+    export_rewards_to_csv,
+    export_debts_to_xml,
+)
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -47,7 +52,7 @@ class TransactionEditPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``users.transakce`` permission.
     """
 
-    permission_required = "transakce"
+    permissions_required = ["transakce"]
     """:meta private:"""
 
 
@@ -134,7 +139,7 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
         return kwargs
 
 
-class TransactionListMixin(DetailView):
+class TransactionListMixin(TransactionEditPermissionMixin, DetailView):
     """
     A mixin that provides context data used by views
     that list transactions for a certain person.
@@ -924,3 +929,40 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
         self.object.transaction_set.all().delete()
 
         return super().form_valid(form)
+
+
+class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
+    """
+    Enables exporting transactions as a accounting basis. The rewards
+    are exported as a CSV file and the debts as an XML file, which can be imported
+    to the Pohoda software.
+
+    **Permissions**:
+
+    Users with the ``transakce`` permission.
+    """
+
+    form_class = TransactionAccountingExportPeriodForm
+    """:meta private:"""
+
+    template_name = "transactions/accounting_export.html"
+    """:meta private:"""
+
+    success_url = reverse_lazy("transactions:accounting-export")
+    """:meta private:"""
+
+    def form_valid(self, form):
+        _ = super().form_valid(form)
+
+        export_type = form.cleaned_data["type"]
+
+        if export_type == "pohledavky":
+            return export_debts_to_xml(
+                form.cleaned_data["year"], form.cleaned_data["month"]
+            )
+        elif export_type == "vyplaty":
+            return export_rewards_to_csv(
+                form.cleaned_data["year"], form.cleaned_data["month"]
+            )
+        else:
+            return HttpResponseBadRequest(b"Missing parameters")
