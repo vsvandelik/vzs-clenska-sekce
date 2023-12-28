@@ -14,8 +14,13 @@ from fiobank import FioBank
 from events.models import ParticipantEnrollment
 from persons.models import Person
 from users.utils import get_permission_by_codename
-from vzs.settings import FIO_TOKEN
-from vzs.utils import email_notification_recipient_set, get_csv_writer_http_response
+from vzs.settings import FIO_TOKEN, ICO
+from vzs.utils import (
+    email_notification_recipient_set,
+    get_csv_writer_http_response,
+    get_xml_http_response,
+    now,
+)
 from .models import FioTransaction, Transaction
 
 _fio_client = FioBank(FIO_TOKEN)
@@ -253,5 +258,20 @@ def export_rewards_to_csv(year, month):
 
         for category, amount in divided_rewards.items():
             writer.writerow(["", "", category, hourly_rates.get(category, ""), amount])
+
+    return http_response
+
+
+def export_debts_to_xml(year, month):
+    http_response = get_xml_http_response(f"faktury-{year}-{month}")
+
+    transactions = Transaction.objects.filter(
+        date_due__year=year, date_due__month=month, amount__lt=0
+    )
+
+    data = {"transactions": transactions, "ico": ICO, "id": now().timestamp()}
+
+    text_content = render_to_string("transactions_xml/invoices.xml", context=data)
+    http_response.write(text_content.encode("utf8"))
 
     return http_response

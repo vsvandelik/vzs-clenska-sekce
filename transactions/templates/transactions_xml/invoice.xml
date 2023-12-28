@@ -1,0 +1,29 @@
+{% load vzs_filters %}
+
+<dat:dataPackItem version="2.0" id="{{ transaction.pk }}">
+    <inv:invoice version="2.0" xmlns:inv="http://www.stormware.cz/schema/version_2/invoice.xsd">
+        <inv:invoiceHeader xmlns:typ="http://www.stormware.cz/schema/version_2/type.xsd">
+            <inv:invoiceType>issuedInvoice</inv:invoiceType>
+            <inv:date>{{ transaction.date_due|date:"Y-m-d" }}</inv:date>
+            <inv:dateDue>{{ transaction.date_due|date:"Y-m-d" }}</inv:dateDue>
+            <inv:text>{{ transaction.reason }}</inv:text>
+            <inv:partnerIdentity>
+                <typ:address>
+                    <typ:company>{{ transaction.person.name|handle_missing_empty }}</typ:company>
+                    <typ:city>{{ transaction.person.city|handle_missing_empty }}</typ:city>
+                    <typ:street>{{ transaction.person.street|handle_missing_empty }}</typ:street>
+                    <typ:zip>{{ transaction.person.postcode|handle_missing_empty }}</typ:zip>
+                </typ:address>
+            </inv:partnerIdentity>
+            <inv:paymentType>
+                <typ:ids>Příkazem</typ:ids>
+                <typ:paymentType>draft</typ:paymentType>
+            </inv:paymentType>
+        </inv:invoiceHeader>
+        <inv:invoiceSummary xmlns:typ="http://www.stormware.cz/schema/version_2/type.xsd">
+            <inv:homeCurrency>
+                <typ:priceNone>{{ transaction.amount|negate }}</typ:priceNone>
+            </inv:homeCurrency>
+        </inv:invoiceSummary>
+    </inv:invoice>
+</dat:dataPackItem>
