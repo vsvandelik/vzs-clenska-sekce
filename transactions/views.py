@@ -1,9 +1,8 @@
 from collections.abc import Iterable, Mapping
 from itertools import chain
 from typing import Any
-from venv import create
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
@@ -26,9 +25,9 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
+from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
-
 from .forms import (
     TransactionAddTrainingPaymentForm,
     TransactionCreateBulkConfirmForm,
@@ -47,7 +46,7 @@ class TransactionEditPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``users.transakce`` permission.
     """
 
-    permission_required = "transakce"
+    permissions_required = ["transakce"]
     """:meta private:"""
 
 
@@ -134,7 +133,7 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
         return kwargs
 
 
-class TransactionListMixin(DetailView):
+class TransactionListMixin(TransactionEditPermissionMixin, DetailView):
     """
     A mixin that provides context data used by views
     that list transactions for a certain person.

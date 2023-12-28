@@ -72,4 +72,9 @@ urlpatterns = [
         BulkTransactionDeleteView.as_view(),
         name="delete-bulk",
     ),
+    path(
+        "export-ucetnich-podkladu/",
+        TransactionExportView.as_view(),
+        name="accounting-export",
+    ),
 ]
