@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 from django.urls import reverse
@@ -143,7 +144,7 @@ class OneTimeEventDetailView(EventDetailBaseView):
         return organizers_positions
 
 
-class OneTimeEventListView(generic.ListView):
+class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
     template_name = "one_time_events/index.html"
     context_object_name = "events"
 
