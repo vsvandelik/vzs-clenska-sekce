@@ -94,7 +94,7 @@ class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
 
 class UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
     """
-    Permits users with the ``users.povoleni`` permission.
+    Permits users with the ``povoleni`` permission.
     """
 
     permissions_formula = [["povoleni"]]
