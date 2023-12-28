@@ -1,44 +1,66 @@
-import zoneinfo
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import date, datetime
+from typing import Annotated, TypedDict
+from zoneinfo import ZoneInfo
 
-from django.contrib.auth.models import Permission
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.template.loader import render_to_string
-from django.utils import timezone
+from django.utils.timezone import localdate
+from django.utils.translation import gettext_lazy as _
 from fiobank import FioBank
 
-from vzs import settings
-from .models import Transaction, FioTransaction
+from events.models import ParticipantEnrollment
+from persons.models import Person
+from users.utils import get_permission_by_codename
+from vzs.settings import FIO_TOKEN
+from vzs.utils import email_notification_recipient_set
 
-_fio_client = FioBank(settings.FIO_TOKEN)
+from .models import FioTransaction, Transaction
+
+_fio_client = FioBank(FIO_TOKEN)
 
 
-def _send_mail_to_accountants(subject, body):
+def _send_mail_to_accountants(subject: str, body: str):
     accountant_emails = (
-        Permission.objects.get(codename="spravce_transakci")
+        get_permission_by_codename("transakce")
         .user_set.select_related("person__email")
         .values_list("person__email", flat=True)
     )
 
     send_mail(
-        subject,
-        body,
-        None,
-        accountant_emails,
+        subject=subject,
+        message=body,
+        from_email=None,
+        recipient_list=accountant_emails,
         fail_silently=False,
     )
 
 
-def _date_prague(date):
-    return timezone.localdate(date, timezone=zoneinfo.ZoneInfo("Europe/Prague"))
+def _date_prague(date_time: datetime):
+    return localdate(date_time, timezone=ZoneInfo("Europe/Prague"))
 
 
-def fetch_fio(date_start, date_end):
-    date_start = _date_prague(date_start)
-    date_end = _date_prague(date_end)
+def fetch_fio(date_time_start: datetime, date_time_end: datetime):
+    """
+    Fetches transactions from the organisation's bank account into the DB.
+
+    This means matching the fetched Fio transactions with the transactions in the DB.
+    The matching is done by the variable symbol.
+
+    Sends an email to the accountants if there is a problem with the matching:
+
+    *   fetched transaction has the same VS as another previosly matched transaction
+    *   fetched transaction has a different amount
+        than the matched transaction from the DB
+    """
+
+    date_start = _date_prague(date_time_start)
+    date_end = _date_prague(date_time_end)
 
     for received_transaction in _fio_client.period(date_start, date_end):
-        recevied_variabilni = received_transaction["variable_symbol"]
+        received_variabilni = received_transaction["variable_symbol"]
         received_amount = int(received_transaction["amount"])
         received_date = received_transaction["date"]
         received_id = int(received_transaction["transaction_id"])
@@ -47,11 +69,11 @@ def fetch_fio(date_start, date_end):
             # we ignore outgoing transactions
             continue
 
-        if recevied_variabilni is None or recevied_variabilni[0] == "0":
+        if received_variabilni is None or received_variabilni[0] == "0":
             continue
 
         try:
-            transaction_pk = int(recevied_variabilni)
+            transaction_pk = int(received_variabilni)
         except ValueError:
             continue
 
@@ -62,14 +84,18 @@ def fetch_fio(date_start, date_end):
             continue
 
         if transaction.fio_transaction is not None:
-            if transaction.fio_transaction.fio_id != received_id:
+            fio_id = transaction.fio_transaction.fio_id
+            if fio_id != received_id:
                 # the account has multiple transactions with the same VS
                 _send_mail_to_accountants(
-                    "Transakce se stejným VS.",
-                    (
-                        f"Přijatá transakce s Fio ID {received_id} má stejný VS"
-                        f" jako transakce s Fio ID {transaction.fio_transaction.fio_id}.\n"
-                        f"Transakce s Fio ID {transaction.fio_transaction.fio_id} je v systému registrovaná jako transakce {transaction.pk} osoby {str(transaction.person)}.\n"
+                    _("Transakce se stejným VS."),
+                    _(
+                        "Přijatá transakce s Fio ID {0} má stejný VS jako"
+                        " transakce s Fio ID {1}.\n"
+                        "Transakce s Fio ID {1} je v systému registrovaná jako"
+                        " transakce {2} osoby {3}.\n"
+                    ).format(
+                        received_id, fio_id, transaction.pk, str(transaction.person)
                     ),
                 )
 
@@ -79,9 +105,16 @@ def fetch_fio(date_start, date_end):
         if -transaction.amount != received_amount:
             _send_mail_to_accountants(
                 "Suma transakce na účtu se liší od zadané transakce v systému.",
-                (
-                    f"Transakce číslo {transaction.pk} osoby {str(transaction.person)} se liší v sumě od zadané transakce v systému.\n"
-                    f"Zadaná suma je {abs(transaction.amount)} Kč a reálná suma je {abs(received_amount)} Kč"
+                _(
+                    "Transakce číslo {0} osoby {1} se liší v sumě"
+                    "od zadané transakce v systému.\n"
+                    "Zadaná suma je {2} Kč"
+                    "a reálná suma je {3} Kč"
+                ).format(
+                    transaction.pk,
+                    str(transaction.person),
+                    abs(transaction.amount),
+                    abs(received_amount),
                 ),
             )
             continue
@@ -93,67 +126,89 @@ def fetch_fio(date_start, date_end):
         transaction.save()
 
 
-def parse_transactions_filter_queryset(cleaned_data, transactions):
-    person_name = cleaned_data.get("person_name")
-    reason = cleaned_data.get("reason")
-    transaction_type = cleaned_data.get("transaction_type")
-    is_settled = cleaned_data.get("is_settled")
-    amount_from = cleaned_data.get("amount_from")
-    amount_to = cleaned_data.get("amount_to")
-    date_due_from = cleaned_data.get("date_due_from")
-    date_due_to = cleaned_data.get("date_due_to")
-    bulk_transaction = cleaned_data.get("bulk_transaction")
+class TransactionFilter(TypedDict, total=False):
+    """
+    Defines a filter for transactions.
 
-    if person_name:
-        transactions = transactions.filter(
-            Q(person__first_name__icontains=person_name)
-            | Q(person__last_name__icontains=person_name)
-        )
+    Use with :func:`vzs.utils.filter_queryset`.
+    """
 
-    if reason:
-        transactions = transactions.filter(reason__icontains=reason)
+    person_name: Annotated[
+        str,
+        lambda person_name: Q(person__first_name__icontains=person_name)
+        | Q(person__last_name__icontains=person_name),
+    ]
 
-    if transaction_type:
-        query_expression = (
+    reason: Annotated[str, lambda reason: Q(reason__icontains=reason)]
+
+    transaction_type: Annotated[
+        str,
+        lambda transaction_type: (
             Transaction.Q_reward if transaction_type == "reward" else Transaction.Q_debt
-        )
-        transactions = transactions.filter(query_expression)
+        ),
+    ]
 
-    if is_settled:
-        transactions = transactions.filter(fio_transaction__isnull=not is_settled)
+    is_settled: Annotated[
+        str,
+        lambda is_settled: Q(fio_transaction__isnull=is_settled != "paid"),
+    ]
 
-    if amount_from:
-        transactions = transactions.filter(
-            Q(amount__gte=amount_from) | Q(amount__lte=-amount_from)
-        )
+    amount_from: Annotated[
+        int,
+        lambda amount_from: Q(amount__gte=amount_from) | Q(amount__lte=-amount_from),
+    ]
 
-    if amount_to:
-        transactions = transactions.filter(
-            Q(amount__lte=amount_to) & Q(amount__gte=-amount_to)
-        )
+    amount_to: Annotated[
+        int, lambda amount_to: Q(amount__lte=amount_to) & Q(amount__gte=-amount_to)
+    ]
 
-    if date_due_from:
-        transactions = transactions.filter(date_due__gte=date_due_from)
+    date_due_from: Annotated[date, lambda date_due_from: Q(date_due__gte=date_due_from)]
 
-    if date_due_to:
-        transactions = transactions.filter(date_due__lte=date_due_to)
+    date_due_to: Annotated[date, lambda date_due_to: Q(date_due__lte=date_due_to)]
 
-    if bulk_transaction:
-        transactions = transactions.filter(bulk_transaction=bulk_transaction)
-
-    return transactions
+    bulk_transaction: Annotated[
+        int, lambda bulk_transaction: Q(bulk_transaction=bulk_transaction)
+    ]
 
 
-def send_email_transactions(transactions):
+def send_email_transactions(transactions: Iterable[Transaction]):
+    """
+    Sends an email with information about each transaction in ``transactions``.
+    """
+
     for transaction in transactions:
         html_message = render_to_string(
             "transactions/email.html", {"transaction": transaction}
         )
+        emails = email_notification_recipient_set(transaction.person)
         send_mail(
-            "Informace o transakci",
-            "",
-            None,
-            [transaction.person.email],
+            subject="Informace o transakci",
+            message="",
+            from_email=None,
+            recipient_list=emails,
             fail_silently=False,
             html_message=html_message,
         )
+
+
+@dataclass
+class TransactionInfo:
+    """
+    A dataclass used by bulk transaction creating forms
+    and views to store intermediate data.
+
+    See :class:`transactions.views.TransactionCreateSameAmountBulkConfirmView`,
+    :class:`transactions.views.TransactionCreateTrainingBulkConfirmView`
+    and :class:`transactions.forms.TransactionCreateBulkConfirmForm`.
+    """
+
+    person: Person
+    amount: int
+    date_due: date
+    enrollment: ParticipantEnrollment | None = None
+
+    def get_amount_field_name(self):
+        return f"transactions-{self.person.pk}-amount"
+
+    def get_date_due_field_name(self):
+        return f"transactions-{self.person.pk}-date_due"

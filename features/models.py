@@ -1,61 +1,64 @@
-from django.db import models
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    CharField,
+    DateField,
+    ForeignKey,
+    Manager,
+    Model,
+    PositiveSmallIntegerField,
+    TextChoices,
+)
 from django.utils.translation import gettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
 
-class QualificationsManager(models.Manager):
+class QualificationsManager(Manager):
     def get_queryset(self):
         return super().get_queryset().filter(feature_type=Feature.Type.QUALIFICATION)
 
 
-class PermissionsManager(models.Manager):
+class PermissionsManager(Manager):
     def get_queryset(self):
         return super().get_queryset().filter(feature_type=Feature.Type.PERMISSION)
 
 
-class EquipmentsManager(models.Manager):
+class EquipmentsManager(Manager):
     def get_queryset(self):
         return super().get_queryset().filter(feature_type=Feature.Type.EQUIPMENT)
 
 
 class Feature(MPTTModel):
-    class Meta:
-        permissions = [
-            ("spravce_kvalifikaci", _("Správce kvalifikací")),
-            ("spravce_opravneni", _("Správce oprávnění")),
-            ("spravce_vybaveni", _("Správce vybavení")),
-        ]
-
-    class Type(models.TextChoices):
+    class Type(TextChoices):
         QUALIFICATION = "K", _("kvalifikace")
         EQUIPMENT = "V", _("vybavení")
         PERMISSION = "O", _("oprávnění")
 
-    objects = models.Manager()
+    objects = Manager()
     qualifications = QualificationsManager()
     permissions = PermissionsManager()
     equipments = EquipmentsManager()
 
-    feature_type = models.CharField(max_length=1, choices=Type.choices)
+    feature_type = CharField(max_length=1, choices=Type.choices)
     parent = TreeForeignKey(
         "self",
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         default=None,
         blank=True,
         null=True,
         related_name="children",
         verbose_name=_("Nadřazená kategorie"),
     )
-    name = models.CharField(_("Název"), max_length=50)
-    assignable = models.BooleanField(_("Přiřaditelné osobě"), default=True)
-    never_expires = models.BooleanField(blank=True, null=True)
-    fee = models.PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
-    tier = models.PositiveSmallIntegerField(_("Úroveň"), blank=True, null=True)
-    collect_issuers = models.BooleanField(
+    name = CharField(_("Název"), max_length=50)
+    assignable = BooleanField(_("Přiřaditelné osobě"), default=True)
+    never_expires = BooleanField(blank=True, null=True)
+    fee = PositiveSmallIntegerField(_("Poplatek"), blank=True, null=True)
+    tier = PositiveSmallIntegerField(_("Úroveň"), blank=True, null=True)
+    collect_issuers = BooleanField(
         _("Evidovat vydavatele kvalifikace"), blank=True, null=True
     )
-    collect_codes = models.BooleanField(blank=True, null=True)
+    collect_codes = BooleanField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -114,7 +117,7 @@ FeatureTypeTexts = {
         _("Přiřazení kvalifikace bylo úspěšně upraveno."),
         _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
-        "features.spravce_kvalifikaci",
+        "kvalifikace",
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
@@ -134,7 +137,7 @@ FeatureTypeTexts = {
         _("Přiřazení oprávnění bylo úspěšně upraveno."),
         _("Přiřazení oprávnění bylo úspěšně odstraněno."),
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
-        "features.spravce_opravneni",
+        "opravneni",
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
@@ -158,22 +161,19 @@ FeatureTypeTexts = {
         _("Přiřazení vybavení bylo úspěšně upraveno."),
         _("Přiřazení vybavení bylo úspěšně odstraněno."),
         _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
-        "features.spravce_vybaveni",
+        "vybaveni",
     ),
 }
 
 
-class FeatureAssignment(models.Model):
-    person = models.ForeignKey(
-        "persons.Person", verbose_name=_("Osoba"), on_delete=models.CASCADE
-    )
-    feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
-    date_assigned = models.DateField()
-    date_expire = models.DateField(null=True, blank=True)
-    date_returned = models.DateField(null=True, blank=True)  # Only for equipments
-    issuer = models.CharField(
-        max_length=255, blank=True, null=True
-    )  # Only for qualifications
-    code = models.CharField(
+class FeatureAssignment(Model):
+    person = ForeignKey("persons.Person", verbose_name=_("Osoba"), on_delete=CASCADE)
+    feature = ForeignKey(Feature, on_delete=CASCADE)
+    date_assigned = DateField()
+    date_expire = DateField(null=True, blank=True)
+    date_returned = DateField(null=True, blank=True)  # Only for equipments
+    issuer = CharField(max_length=255, blank=True, null=True)  # Only for qualifications
+    code = CharField(
         max_length=255, blank=True, null=True
     )  # Only for qualification + equipments
+    expiry_email_sent = BooleanField(default=False)

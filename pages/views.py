@@ -1,10 +1,13 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import TemplateView, DetailView, UpdateView
+from django.views.generic.base import TemplateView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import UpdateView
 
 from pages.forms import PageEditForm
 from pages.models import Page
+from users.permissions import PermissionRequiredMixin
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -12,16 +15,16 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 
 class PageDetailView(DetailView):
-    template_name = "pages/detail.html"
     model = Page
+    template_name = "pages/detail.html"
 
 
 class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
-    permission_required = "pages.stranky"
-    template_name = "pages/edit.html"
-    model = Page
     form_class = PageEditForm
+    model = Page
+    permissions_required = ["stranky"]
     success_message = _("Stránka byla úspěšně upravena.")
+    template_name = "pages/edit.html"
 
 
 class ErrorPage400View(TemplateView):

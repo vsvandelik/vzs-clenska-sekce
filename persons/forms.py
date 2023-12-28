@@ -1,17 +1,32 @@
-import datetime
-import re
+from re import sub as regex_sub
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Div, Fieldset
-from django import forms
-from django.forms import ModelForm, ValidationError, Form
+from crispy_forms.layout import Div, Fieldset, Layout, Submit
+from django.forms import (
+    CharField,
+    ChoiceField,
+    DateField,
+    EmailField,
+    Form,
+    IntegerField,
+    ModelChoiceField,
+    ModelForm,
+    ValidationError,
+)
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from vzs.forms import WithoutFormTagFormHelper
+from vzs.mixin_extensions import (
+    RelatedAddMixin,
+    RelatedAddOrRemoveFormMixin,
+    RelatedRemoveMixin,
+)
+from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
+
 from .models import Person, PersonHourlyRate
 
 
@@ -36,17 +51,35 @@ class PersonForm(ModelForm):
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
 
-        if date_of_birth and date_of_birth > datetime.date.today():
+        if date_of_birth is not None and date_of_birth > today():
             raise ValidationError(_("Neplatné datum narození."))
 
         return date_of_birth
 
+    def clean_birth_number(self):
+        birth_number = self.cleaned_data["birth_number"]
+
+        persons_with_same_birth_number = Person.objects.filter(
+            birth_number=birth_number
+        ).exclude(pk=self.instance.pk)
+
+        if birth_number is not None and persons_with_same_birth_number.exists():
+            raise ValidationError(
+                _(
+                    "Rodné číslo je již použito. Zkontrolujte prosím,"
+                    "jestli daná osoba již neexistuje."
+                )
+            )
+
+        return birth_number
+
     def clean_phone(self):
         phone = self.cleaned_data["phone"]
-        if not phone:
-            return phone
 
-        phone = re.sub(r"\D", "", phone)  # remove non digits
+        if phone is None:
+            return None
+
+        phone = regex_sub(r"\D", "", phone)  # remove non digits
 
         if phone.startswith("00420"):
             phone = phone[5:]
@@ -60,8 +93,9 @@ class PersonForm(ModelForm):
 
     def clean_postcode(self):
         postcode = self.cleaned_data["postcode"]
-        if not postcode:
-            return postcode
+
+        if postcode is None:
+            return None
 
         if len(str(postcode)) != 5:
             raise ValidationError(_("PSČ nemá platný formát."))
@@ -82,73 +116,53 @@ class MyProfileUpdateForm(PersonForm):
         ]
 
 
-class AddDeleteManagedPersonForm(Form):
-    person = forms.IntegerField()
+class AddDeleteManagedPersonFormMixin(RelatedAddOrRemoveFormMixin):
+    class Meta:
+        fields = []
+        model = Person
 
-    def __init__(self, *args, **kwargs):
-        self.managing_person = kwargs.pop("managing_person", None)
-        super().__init__(*args, **kwargs)
+    managed_person = ModelChoiceField(queryset=Person.objects.all())
+    instance_to_add_or_remove_field_name = "managed_person"
 
-    def clean_person(self):
-        managed_person_pk = self.cleaned_data.get("person")
-
-        try:
-            managing_person_instance = Person.objects.get(pk=self.managing_person)
-            self.cleaned_data["managing_person_instance"] = managing_person_instance
-        except Person.DoesNotExist:
-            raise forms.ValidationError(_("Daná osoba neexistuje."))
-
-        try:
-            managed_person_instance = Person.objects.get(pk=managed_person_pk)
-            self.cleaned_data["managed_person_instance"] = managed_person_instance
-        except Person.DoesNotExist:
-            raise forms.ValidationError(_("Daná osoba neexistuje."))
-
-        if (
-            managed_person_pk
-            and self.managing_person
-            and managed_person_pk == self.managing_person
-        ):
-            raise forms.ValidationError(_("Osoba nemůže spravovat samu sebe."))
-
-        return managed_person_pk
+    def _get_instances(self):
+        return self.instance.managed_persons
 
 
-class AddManagedPersonForm(AddDeleteManagedPersonForm):
-    def clean_person(self):
-        result = super().clean_person()
+class AddManagedPersonForm(RelatedAddMixin, AddDeleteManagedPersonFormMixin):
+    error_message = _("Daný vztah spravované osoby je již zadán.")
 
-        if self.cleaned_data["managing_person_instance"].managed_persons.contains(
-            self.cleaned_data["managed_person_instance"]
-        ):
-            raise forms.ValidationError(_("Daný vztah spravované osoby je již zadán."))
+    def clean_managed_person(self):
+        managed_person = self.cleaned_data["managed_person"]
 
-        return result
+        if managed_person == self.instance:
+            raise ValidationError(_("Osoba nemůže spravovat samu sebe."))
 
-
-class DeleteManagedPersonForm(AddDeleteManagedPersonForm):
-    pass
+        return managed_person
 
 
-class PersonsFilterForm(forms.Form):
-    name = forms.CharField(label=_("Jméno"), required=False)
-    email = forms.EmailField(label=_("E-mailová adresa"), required=False)
-    qualifications = forms.ModelChoiceField(
+class DeleteManagedPersonForm(RelatedRemoveMixin, AddDeleteManagedPersonFormMixin):
+    error_message = _("Daný vztah spravované osoby neexistuje.")
+
+
+class PersonsFilterForm(Form):
+    name = CharField(label=_("Jméno"), required=False)
+    email = EmailField(label=_("E-mailová adresa"), required=False)
+    qualification = ModelChoiceField(
         label=_("Kvalifikace"), required=False, queryset=Feature.qualifications.all()
     )
-    permissions = forms.ModelChoiceField(
+    permission = ModelChoiceField(
         label=_("Oprávnění"), required=False, queryset=Feature.permissions.all()
     )
-    equipments = forms.ModelChoiceField(
+    equipment = ModelChoiceField(
         label=_("Vybavení"), required=False, queryset=Feature.equipments.all()
     )
-    person_type = forms.ChoiceField(
+    person_type = ChoiceField(
         label=_("Typ osoby"),
         required=False,
         choices=[("", "---------")] + Person.Type.choices,
     )
-    age_from = forms.IntegerField(label=_("Věk od"), required=False, min_value=1)
-    age_to = forms.IntegerField(label=_("Věk do"), required=False, min_value=1)
+    age_from = IntegerField(label=_("Věk od"), required=False, min_value=1)
+    age_to = IntegerField(label=_("Věk do"), required=False, min_value=1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,9 +177,9 @@ class PersonsFilterForm(forms.Form):
                     css_class="row",
                 ),
                 Div(
-                    Div("qualifications", css_class="col-md-4"),
-                    Div("permissions", css_class="col-md-4"),
-                    Div("equipments", css_class="col-md-4"),
+                    Div("qualification", css_class="col-md-4"),
+                    Div("permission", css_class="col-md-4"),
+                    Div("equipment", css_class="col-md-4"),
                     css_class="row",
                 ),
                 Div(
@@ -205,20 +219,20 @@ class PersonsFilterForm(forms.Form):
         return cleaned_data
 
 
-class PersonHourlyRateForm(forms.Form):
+class PersonHourlyRateForm(Form):
     def __init__(self, *args, **kwargs):
         self.person_instance = kwargs.pop("instance", None)
         super().__init__(*args, **kwargs)
 
         for key, label in OneTimeEvent.Category.choices:
-            self.fields[key] = forms.IntegerField(
+            self.fields[key] = IntegerField(
                 label=label,
                 required=False,
                 min_value=0,
             )
 
         for key, label in Training.Category.choices:
-            self.fields[key] = forms.IntegerField(
+            self.fields[key] = IntegerField(
                 label=label,
                 required=False,
                 min_value=0,
@@ -266,3 +280,19 @@ class PersonHourlyRateForm(forms.Form):
         ).delete()
 
         return self.person_instance.hourly_rates
+
+
+class PersonStatsForm(ModelForm):
+    date_start = DateField(label="Datum začátku", widget=DatePickerWithIcon())
+    date_end = DateField(label="Datum konce", widget=DatePickerWithIcon())
+
+    class Meta:
+        model = Person
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        date_start = kwargs.pop("date_start")
+        date_end = kwargs.pop("date_end")
+        super().__init__(*args, **kwargs)
+        self.initial["date_start"] = str(date_start)
+        self.initial["date_end"] = str(date_end)

@@ -1,10 +1,11 @@
-from transactions.models import Transaction
-from persons.models import Person
+from datetime import date
+from random import choice as random_choice
+from random import randint
 
 from django.core.management.base import BaseCommand
 
-import random
-from datetime import date
+from persons.models import Person
+from transactions.models import Transaction
 
 
 class Command(BaseCommand):
@@ -15,20 +16,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         persons = list(Person.objects.all())
-        transactions = []
 
-        for i in range(options["N"]):
-            transactions.append(
-                Transaction(
-                    person=random.choice(persons),
-                    amount=random.randint(-200, 200),
-                    reason=f"Popis{i}",
-                    date_due=date(2024, 1, random.randint(1, 31)),
-                )
+        count = options["N"]
+
+        Transaction.objects.bulk_create(
+            Transaction(
+                person=random_choice(persons),
+                amount=randint(-200, 200),
+                reason=f"Popis{i}",
+                date_due=date(2024, 1, randint(1, 31)),
             )
-
-        Transaction.objects.bulk_create(transactions)
+            for i in range(count)
+        )
 
         self.stdout.write(
-            self.style.SUCCESS(f'Successfully created {options["N"]} new transactions.')
+            self.style.SUCCESS(f"Successfully created {count} new transactions.")
         )

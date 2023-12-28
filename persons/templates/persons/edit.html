@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block title %}Úprava osoby{% endblock %}
@@ -22,7 +23,7 @@
                 <div class="card-header">
                     <div class="card-title h5">{% if person %}Úprava{% else %}Přidání{% endif %}</div>
                 </div>
-                <form method="post">
+                <form method="post" id="create-form">
                     {% csrf_token %}
                     <div class="card-body">
                         {% crispy form %}
@@ -34,4 +35,10 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {% if not person %}
+        <script src="{% static "persons/person_exists.js" %}"></script>
+    {% endif %}
 {% endblock %}

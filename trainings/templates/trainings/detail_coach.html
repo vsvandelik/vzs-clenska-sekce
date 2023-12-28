@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Detail tréninku
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'trainings/detail_components_coach/overview.html' %}
+        {% include 'trainings/detail_components_coach/coaches.html' %}
+    </div>
+
+    <div class="row">
+        {% include 'trainings/detail_components_coach/occurrences.html' %}
+    </div>
+
+    <div class="row">
+        {% for weekday, participants in participants_by_weekdays.items %}
+            {% include 'trainings/detail_components_coach/participants_by_weekday.html' %}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    <script src="{% static 'trainings/scroll_to_nearest_occurrence.js' %}"></script>
+{% endblock %}

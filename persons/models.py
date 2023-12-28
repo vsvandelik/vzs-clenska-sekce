@@ -1,60 +1,59 @@
-from datetime import date
 from itertools import chain
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.validators import RegexValidator
-from django.db import models
-from django.db.models import ExpressionWrapper, Case, When, Value, Q
+from django.db.models import (
+    CASCADE,
+    Case,
+    CharField,
+    DateField,
+    EmailField,
+    ExpressionWrapper,
+    ForeignKey,
+    IntegerField,
+    Manager,
+    ManyToManyField,
+    Model,
+    PositiveIntegerField,
+    Q,
+    TextChoices,
+    Value,
+    When,
+)
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from mptt.models import MPTTModel
 
 from features.models import Feature, FeatureAssignment
-from vzs import models as vzs_models
+from vzs.models import ExportableCSVMixin, RenderableModelMixin
+from vzs.utils import today
 
 
-class PersonsManager(models.Manager):
+class PersonsManager(Manager):
     def get_queryset(self):
         return super().get_queryset()
 
     def with_age(self):
         return self.get_queryset().annotate(
             age=ExpressionWrapper(
-                date.today().year
+                today().year
                 - ExtractYear("date_of_birth")
                 - Case(
-                    When(Q(date_of_birth__month__gt=date.today().month), then=Value(1)),
+                    When(Q(date_of_birth__month__gt=today().month), then=Value(1)),
                     When(
-                        Q(date_of_birth__month=date.today().month)
-                        & Q(date_of_birth__day__gt=date.today().day),
+                        Q(date_of_birth__month=today().month)
+                        & Q(date_of_birth__day__gt=today().day),
                         then=Value(1),
                     ),
                     default=Value(0),
                 ),
-                output_field=models.IntegerField(),
+                output_field=IntegerField(),
             )
         )
 
 
-class Person(
-    vzs_models.ExportableCSVMixin, vzs_models.RenderableModelMixin, models.Model
-):
-    class Meta:
-        permissions = [
-            ("clenska_zakladna", _("Správce členské základny")),
-            ("detska_clenska_zakladna", _("Správce dětské členské základny")),
-            (
-                "bazenova_clenska_zakladna",
-                _("Správce bazénové dětské členské základny"),
-            ),
-            (
-                "lezecka_clenska_zakladna",
-                _("Správce lezecké dětské členské základny"),
-            ),
-            ("dospela_clenska_zakladna", _("Správce dospělé členské základny")),
-        ]
-
-    class Type(models.TextChoices):
+class Person(ExportableCSVMixin, RenderableModelMixin, Model):
+    class Type(TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")
         HONORARY = "cestny", _("čestný člen")
@@ -63,31 +62,31 @@ class Person(
         PARENT = "rodic", _("rodič")
         FORMER = "byvaly", _("bývalý člen")
 
-    class HealthInsuranceCompany(models.TextChoices):
-        VZP = 111, "111 - Všeobecná zdravotní pojišťovna České republiky"
-        VOZP = 201, "201 - Vojenská zdravotní pojišťovna České republiky"
-        CPZP = 205, "205 - Česká průmyslová zdravotní pojišťovna"
+    class HealthInsuranceCompany(TextChoices):
+        VZP = "111", "111 - Všeobecná zdravotní pojišťovna České republiky"
+        VOZP = "201", "201 - Vojenská zdravotní pojišťovna České republiky"
+        CPZP = "205", "205 - Česká průmyslová zdravotní pojišťovna"
         OZP = (
-            207,
+            "207",
             "207 - Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
         )
-        ZPS = 209, "209 - Zaměstnanecká pojišťovna Škoda"
-        ZPMV = 211, "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
-        RBP = 213, "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
+        ZPS = "209", "209 - Zaměstnanecká pojišťovna Škoda"
+        ZPMV = "211", "211 - Zdravotní pojišťovna ministerstva vnitra České republiky"
+        RBP = "213", "213 - Revírní bratrská pokladna, zdravotní pojišťovna"
 
-    class Sex(models.TextChoices):
+    class Sex(TextChoices):
         M = "M", _("muž")
         F = "F", _("žena")
 
     objects = PersonsManager()
 
-    email = models.EmailField(_("E-mailová adressa"), unique=True)
-    first_name = models.CharField(_("Křestní jméno"), max_length=50)
-    last_name = models.CharField(_("Příjmení"), max_length=50)
-    date_of_birth = models.DateField(_("Datum narození"), blank=True, null=True)
-    sex = models.CharField(_("Pohlaví"), max_length=1, choices=Sex.choices)
-    person_type = models.CharField(_("Typ osoby"), max_length=10, choices=Type.choices)
-    birth_number = models.CharField(
+    email = EmailField(_("E-mailová adressa"), unique=True, blank=True, null=True)
+    first_name = CharField(_("Křestní jméno"), max_length=50)
+    last_name = CharField(_("Příjmení"), max_length=50)
+    date_of_birth = DateField(_("Datum narození"), blank=True, null=True)
+    sex = CharField(_("Pohlaví"), max_length=1, choices=Sex.choices)
+    person_type = CharField(_("Typ osoby"), max_length=10, choices=Type.choices)
+    birth_number = CharField(
         _("Rodné číslo"),
         max_length=11,
         blank=True,
@@ -99,20 +98,20 @@ class Person(
             )
         ],
     )
-    health_insurance_company = models.CharField(
+    health_insurance_company = CharField(
         _("Zdravotní pojišťovna"),
         max_length=3,
         choices=HealthInsuranceCompany.choices,
         blank=True,
         null=True,
     )
-    phone = models.CharField(_("Telefon"), max_length=20, blank=True, null=True)
-    street = models.CharField(
+    phone = CharField(_("Telefon"), max_length=20, blank=True, null=True)
+    street = CharField(
         _("Ulice a číslo popisné"), max_length=255, blank=True, null=True
     )
-    city = models.CharField(_("Město"), max_length=255, blank=True, null=True)
-    postcode = models.IntegerField(_("PSČ"), blank=True, null=True)
-    swimming_time = models.CharField(
+    city = CharField(_("Město"), max_length=255, blank=True, null=True)
+    postcode = IntegerField(_("PSČ"), blank=True, null=True)
+    swimming_time = CharField(
         _("Čas na 100m"),
         max_length=8,
         blank=True,
@@ -123,8 +122,8 @@ class Person(
             )
         ],
     )
-    features = models.ManyToManyField(Feature, through=FeatureAssignment)
-    managed_persons = models.ManyToManyField(
+    features = ManyToManyField(Feature, through=FeatureAssignment)
+    managed_persons = ManyToManyField(
         "self", symmetrical=False, related_name="managed_by"
     )
 
@@ -172,12 +171,17 @@ class Person(
         return list(chain(self.managed_persons.all(), [self]))
 
 
-class PersonHourlyRate(models.Model):
-    person = models.ForeignKey(
-        Person, on_delete=models.CASCADE, related_name="hourly_rates"
-    )
-    event_type = models.CharField(_("Kategorie akcí"), max_length=20)
-    hourly_rate = models.PositiveIntegerField(
+def get_active_user(person: Person | None):
+    if person is None:
+        return AnonymousUser()
+
+    return getattr(person, "user", AnonymousUser())
+
+
+class PersonHourlyRate(Model):
+    person = ForeignKey(Person, on_delete=CASCADE, related_name="hourly_rates")
+    event_type = CharField(_("Kategorie akcí"), max_length=20)
+    hourly_rate = PositiveIntegerField(
         _("Hodinová sazba"),
     )
 

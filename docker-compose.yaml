@@ -1,0 +1,52 @@
+version: '3.1'
+
+services:
+  backend:
+    image: vzs-clenska-sekce
+    container_name: vzs-clenska-sekce-backend
+    restart: unless-stopped
+    ports:
+      # DO NOT EXPOSE THIS ON THE INTERNET
+      - 8080:8080
+    volumes:
+      # Uncomment if you want to mount gunicorn log
+      # - ./log:/usr/src/app/log
+      - ./.env:/usr/src/app/.env
+      - staticfiles:/usr/src/app/staticfiles
+    depends_on:
+      - db
+      - beforestartup
+
+  beforestartup:
+    image: vzs-clenska-sekce
+    container_name: vzs-clenska-sekce-beforestartup
+    command: sh -c "python3 manage.py collectstatic --clear --no-input && python3 manage.py makemigrations && python3 manage.py migrate"
+    volumes:
+      - staticfiles:/usr/src/app/staticfiles
+    depends_on:
+      - db
+
+  db:
+    container_name: postgres
+    image: postgres:15
+    restart: unless-stopped
+    env_file: ./.env_psql
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  reverse_proxy:
+      env_file: ./.env_caddy
+      image: caddy:2
+      container_name: caddy
+      ports:
+        - 80:80
+
+        # uncomment for automatic https
+        #- 443:443
+      restart: unless-stopped
+      volumes:
+        - ./Caddyfile:/etc/caddy/Caddyfile:ro
+        - staticfiles:/var/www/staticfiles
+volumes:
+  db:
+  staticfiles:

@@ -1,18 +1,21 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
-from persons.models import Person
+from one_time_events.permissions import OccurrenceDetailPermissionMixin
+from persons.models import Person, get_active_user
 from trainings.models import Training, TrainingOccurrence
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.utils import send_notification_email
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -21,6 +24,7 @@ from .forms import (
 )
 from .models import Event, EventOccurrence, EventPositionAssignment
 from .permissions import (
+    EventCreatePermissionMixin,
     EventInteractPermissionMixin,
     EventManagePermissionMixin,
     UnenrollMyselfPermissionMixin,
@@ -74,7 +78,7 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
         return redirect(viewname, pk=id)
 
 
-class RedirectToOccurrenceDetailMixin:
+class RedirectToOccurrenceFallbackEventDetailMixin:
     def get_redirect_viewname_id(self):
         if "occurrence_id" in self.kwargs:
             id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).id
@@ -87,26 +91,41 @@ class RedirectToOccurrenceDetailMixin:
             raise NotImplementedError
 
         occurrence = EventOccurrence.objects.get(pk=id)
-        if isinstance(occurrence, OneTimeEventOccurrence):
-            viewname = "one_time_events:occurrence-detail"
-        elif isinstance(occurrence, TrainingOccurrence):
-            viewname = "trainings:occurrence-detail"
+        event = occurrence.event
+        active_user = get_active_user(self.request.active_person)
+        if event.can_user_manage(active_user):
+            if isinstance(occurrence, OneTimeEventOccurrence):
+                viewname = "one_time_events:occurrence-detail"
+            elif isinstance(occurrence, TrainingOccurrence):
+                viewname = "trainings:occurrence-detail"
+            else:
+                raise NotImplementedError
+            return viewname, event.id, id
         else:
-            raise NotImplementedError
-        return viewname, occurrence.event.id, id
+            if isinstance(event, OneTimeEvent):
+                viewname = "one_time_events:detail"
+            elif isinstance(event, Training):
+                viewname = "trainings:detail"
+            else:
+                raise NotImplementedError
+            return viewname, event.id
 
 
-class RedirectToOccurrenceDetailOnSuccessMixin(RedirectToOccurrenceDetailMixin):
+class RedirectToOccurrenceFallbackEventDetailOnSuccessMixin(
+    RedirectToOccurrenceFallbackEventDetailMixin
+):
     def get_success_url(self):
-        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
-        return reverse(viewname, args=[event_id, occurrence_id])
+        viewname, *params = super().get_redirect_viewname_id()
+        return reverse(viewname, args=params)
 
 
-class RedirectToOccurrenceDetailOnFailureMixin(RedirectToOccurrenceDetailMixin):
+class RedirectToOccurrenceFallbackEventDetailOnFailureMixin(
+    RedirectToOccurrenceFallbackEventDetailMixin
+):
     def form_invalid(self, form):
         super().form_invalid(form)
-        viewname, event_id, occurrence_id = super().get_redirect_viewname_id()
-        return redirect(viewname, event_id=event_id, pk=occurrence_id)
+        viewname, *params = super().get_redirect_viewname_id()
+        return HttpResponseRedirect(reverse(viewname, args=params))
 
 
 class InsertEventIntoSelfObjectMixin:
@@ -183,7 +202,9 @@ class EventCreateUpdateMixin(
     pass
 
 
-class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
+class EventCreateMixin(
+    EventCreatePermissionMixin, EventCreateUpdateMixin, generic.CreateView
+):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
@@ -241,13 +262,13 @@ class EventIndexView(LoginRequiredMixin, generic.ListView):
     context_object_name = "events"
 
     def get_queryset(self):
-        user = self.request.user
         active_person = self.request.active_person
+        active_user = get_active_user(active_person)
 
         visible_event_pks = [
             event.pk
             for event in Event.objects.all()
-            if event.can_user_manage(user)
+            if event.can_user_manage(active_user)
             or event.can_person_interact_with(active_person)
         ]
 
@@ -355,7 +376,10 @@ class ParticipantEnrollmentCreateMixin(
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
 
-class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.UpdateView):
+class ParticipantEnrollmentUpdateMixin(
+    ParticipantEnrollmentMixin,
+    generic.UpdateView,
+):
     success_message = "Změna přihlášky proběhla úspěšně"
 
     def get_form_kwargs(self):
@@ -369,8 +393,11 @@ class ParticipantEnrollmentUpdateMixin(ParticipantEnrollmentMixin, generic.Updat
         return super().get_context_data(**kwargs)
 
 
-class ParticipantEnrollmentDeleteMixin(ParticipantEnrollmentMixin, generic.DeleteView):
+class ParticipantEnrollmentDeleteMixin(
+    EventManagePermissionMixin, ParticipantEnrollmentMixin, generic.DeleteView
+):
     model = ParticipantEnrollment
+    event_id_key = "event_id"
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
@@ -399,6 +426,17 @@ class UnenrollMyselfParticipantView(
     context_object_name = "enrollment"
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
+
+    def form_valid(self, form):
+        enrollment = self.object
+        send_notification_email(
+            _("Odhlášení z události"),
+            _(
+                f"Byl(a) jste úspěšně odhlášen(a) z události {enrollment.event} na vlastní žádost"
+            ),
+            [enrollment.person],
+        )
+        return super().form_valid(form)
 
 
 class BulkApproveParticipantsMixin(
@@ -453,6 +491,7 @@ class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
 
 
 class OccurrenceDetailBaseView(
+    OccurrenceDetailPermissionMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,

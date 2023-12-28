@@ -1,9 +1,11 @@
-import random
+from random import choice as random_choice
+from random import randint
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import localdate, timedelta
 
 from persons.models import Person
+from vzs.settings import CURRENT_DATETIME
 
 
 class Command(BaseCommand):
@@ -13,20 +15,23 @@ class Command(BaseCommand):
         parser.add_argument("N", type=int)
 
     def handle(self, *args, **options):
-        for i in range(options["N"]):
-            new_person = Person(
+        count = options["N"]
+
+        Person.objects.bulk_create(
+            Person(
                 email=f"email.osoba.{i}@email.cz",
                 first_name=f"Testovaci",
                 last_name=f"Osoba {i}",
-                date_of_birth=(
-                    timezone.now()
-                    - timezone.timedelta(weeks=random.randint(5, 50) * 52)
-                ).date(),
-                sex=random.choices(Person.Sex.values)[0],
-                person_type=random.choices(Person.Type.values)[0],
+                date_of_birth=localdate(
+                    CURRENT_DATETIME()
+                    - timedelta(weeks=randint(5, 50) * 52 + randint(0, 365))
+                ),
+                sex=random_choice(Person.Sex.values),
+                person_type=random_choice(Person.Type.values),
             )
-            new_person.save()
+            for i in range(count)
+        )
 
         self.stdout.write(
-            self.style.SUCCESS(f'Successfully created {options["N"]} new persons.')
+            self.style.SUCCESS(f"Successfully created {count} new persons.")
         )

@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
+from datetime import datetime
 from pathlib import Path
 
 import environ
 from dateutil.relativedelta import relativedelta
 from django.conf.locale.cs import formats as cs_formats
+from django.utils.timezone import now
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
     "mptt",
     "tempus_dominus",
     "rest_framework",
+    "django_crontab",
     # Local apps
     "users.apps.UsersConfig",
     "persons.apps.PersonsConfig",
@@ -76,6 +79,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "users.middleware.ActivePersonMiddleware",
+    "users.middleware.LogoutRememberMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -94,6 +98,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "users.context_processors.active_person",
+                "users.context_processors.logout_remember",
             ],
         },
     },
@@ -104,7 +109,16 @@ WSGI_APPLICATION = "vzs.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
+    }
+}
 
 AUTH_USER_MODEL = "users.User"
 
@@ -140,6 +154,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Encoding
+DEFAULT_CHARSET = "UTF-8"
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -158,10 +175,23 @@ cs_formats.TIME_FORMAT = "H:i"
 
 DATETIME_PRECISE_FORMAT = "j. n. Y H:i:s"
 
+current_datime_from_env = os.environ.get("CURRENT_DATETIME")
+if current_datime_from_env:
+    _CURRENT_DATETIME = datetime.fromisoformat(current_datime_from_env.strip())
+
+    def CURRENT_DATETIME():
+        return _CURRENT_DATETIME
+
+else:
+
+    def CURRENT_DATETIME():
+        return now()
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 STATIC_ROOT = env.str("STATIC_ROOT", default=BASE_DIR / "staticfiles")
 
@@ -228,15 +258,18 @@ ADMIN_EMAIL = "system@vzs-praha15.cz"
 
 # Settings for Google Integration
 
-GOOGLE_SERVICE_ACCOUNT_FILE = BASE_DIR / "google_integration/service_account_file.json"
+GOOGLE_SERVICE_ACCOUNT_PATH = BASE_DIR / "google_integration/service_account_file.json"
 GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
+GOOGLE_MAPS_API_KEY = env.str("GOOGLE_MAPS_API_KEY", default=None)
 
 # Settings for FIO bank
 
 FIO_ACCOUNT_NUMBER = "2601743175"
 FIO_BANK_NUMBER = "2010"
 FIO_TOKEN = env.str("FIO_TOKEN")
+
+FIO_ACCOUNT_PRETTY = FIO_ACCOUNT_NUMBER + "/" + FIO_BANK_NUMBER
 
 # Settings for Datepicker Tempus Dominus
 
@@ -264,8 +297,9 @@ ORGANIZER_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_EXCUSE_DEADLINE_DAYS = 21
 PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
-ONETIME_EVENT_CLOSE_DEADLINE_DAYS = 5
-TRAINING_CLOSE_DEADLINE_DAYS = 1
+NOTIFICATION_SENDER_EMAIL = "noreply@vzs-praha15.cz"
+MIN_PARTICIPANT_ABSENCE_SEND_MAIL = 3
+FEATURE_EXPIRE_HOURS_SEND_MAIL = 72
 
 # REST
 REST_FRAMEWORK = {
@@ -274,3 +308,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
+
+# CRONTAB
+CRONJOBS = [("0 3 * * *", "features.cron.features_expiry_send_mails")]

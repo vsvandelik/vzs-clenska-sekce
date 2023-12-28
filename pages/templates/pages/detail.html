@@ -1,14 +1,15 @@
 {% extends "pages/_simple_page_subview.html" %}
 
+{% load vzs_filters %}
+
 {% block title %}{{ object.title }}{% endblock %}
 
-
 {% block buttons %}
-    {% if perms.pages.stranky %}
+    {% ifperm 'pages:edit' object.slug as perm %}
         <div class="btn-group-md btn-group mb-3 elevation-2">
-            <a href="{% url 'pages:edit' object.slug %}" class="btn btn-info">Upravit stránku</a>
+            <a href="{{ perm.url }}" class="btn btn-info">Upravit stránku</a>
         </div>
-    {% endif %}
+    {% endifperm %}
 {% endblock %}
 
 

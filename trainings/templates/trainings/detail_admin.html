@@ -17,19 +17,11 @@
                 {% include "delete_button_text.html" with id="delete-event-modal" %}
             </div>
             {% include 'trainings/detail_components/enroll_unenroll_button.html' %}
-            <div class="btn-group-md btn-group mb-3 elevation-2">
-                <a href="{% url 'trainings:add-transaction' event.id %}?event_id={{ event.id }}" class="btn btn-info">Přidat transakci</a>
-            </div>
-            {% if event.exists_occurrence_with_unfilled_attendance %}
-                <div class="btn-group-md btn-group mb-3 elevation-2">
-                    <a class="btn btn-info"
-                       data-toggle="modal"
-                       data-target="#open-occurrences-overview-modal"
-                       data-action="{% url 'trainings:open-occurrences-overview' event.id %}"
-                    >Dny k uzavření</a>
-                </div>
-            {% endif %}
+            {% include 'trainings/detail_components/add_transaction_button.html' %}
+            {% include 'trainings/detail_components/occurrences_overview_button.html' %}
             {% include 'trainings/detail_components/show_attendance_button.html' %}
+            {% include 'trainings/detail_components/export_participants_button.html' %}
+            {% include 'trainings/detail_components/export_coaches_button.html' %}
         </div>
     </div>
     <div class="row">

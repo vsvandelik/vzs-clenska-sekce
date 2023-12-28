@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load events_template_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Tréninky{% endblock %}
+
+{% block content %}
+
+    {% if participant_replaceable_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components/participant_replacing_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if participant_enrolled_trainings %}
+        <div class="row">
+            {% include "trainings/index_components/participant_enrolled_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if coach_regular_trainings %}
+        <div class="row">
+            {% include "trainings/index_components/coach_regular_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if participant_available_trainings %}
+        <div class="row">
+            {% include "trainings/index_components/participant_available_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if participant_upcoming_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components/participant_upcoming_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% if coach_upcoming_occurrences %}
+        <div class="row">
+            {% include "trainings/index_components/coach_upcoming_trainings.html" %}
+        </div>
+    {% endif %}
+
+    {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="excuse-myself-coach-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script>
+        datatableEnable("upcoming-trainings-occurrences", [], [])
+    </script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('enroll-myself-participant-modal')
+        registerModal('excuse-myself-coach-modal')
+    </script>
+{% endblock %}

@@ -1,20 +1,14 @@
-from datetime import datetime
-
 from django.db.models import Q
 from django.forms import ChoiceField
 from django.forms import ModelForm
-from django.utils import timezone
 from django_select2.forms import Select2Widget
 
 from events.models import (
     EventPersonTypeConstraint,
-    ParticipantEnrollment,
-    OrganizerAssignment,
-    EventPositionAssignment,
 )
-from one_time_events.models import OneTimeEventOccurrence
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
+from vzs.settings import CURRENT_DATETIME
 from vzs.widgets import DatePickerWithIcon
 
 
@@ -152,7 +146,7 @@ class ParticipantEnrollmentForm(EventFormMixin, ModelForm):
         if instance.id is not None:
             instance.person = self.person
         else:
-            instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
+            instance.created_datetime = CURRENT_DATETIME()
 
         if commit:
             instance.save()
@@ -165,9 +159,8 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def clean(self):
         cleaned_data = super().clean()
-        if (
-            self.person is not None
-            and not self.event.does_participant_satisfy_requirements(self.person)
+        if self.person is not None and not self.event.can_person_enroll_as_waiting(
+            self.person
         ):
             self.add_error(
                 None,
@@ -177,7 +170,7 @@ class EnrollMyselfParticipantForm(EventFormMixin, ActivePersonFormMixin, ModelFo
 
     def save(self, commit=True):
         instance = super().save(False)
-        instance.created_datetime = datetime.now(tz=timezone.get_default_timezone())
+        instance.created_datetime = CURRENT_DATETIME()
         instance.person = self.person
 
         if commit:
@@ -261,3 +254,9 @@ class ReopenOccurrenceMixin:
         if not self.instance.can_be_reopened():
             self.add_error(None, "Tato událost nemůže být znovu otevřena")
         return cleaned_data
+
+
+class InsertRequestIntoSelf:
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super().__init__(*args, **kwargs)

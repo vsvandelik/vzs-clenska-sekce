@@ -17,7 +17,7 @@
             <li class="nav-item dropdown">
                 {% with managed_persons=user.person.get_managed_persons %}
                     {% with do_render_dropdown=managed_persons|length|neq:1 %}
-                        <a class="nav-link" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
+                        <a class="nav-link{% if not do_render_dropdown %} nav-link-no-hover{% endif %}" {% if do_render_dropdown %} href="#" data-toggle="dropdown" {% endif %}>
                             <i class="far fa-user"></i>
                             {{ active_person.first_name }} {{ active_person.last_name }}
 
@@ -43,9 +43,20 @@
 
             <!-- Log out -->
             <li class="nav-item">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#logout-modal">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
+                {% if logout_remember %}
+                    <form action="{% url "users:logout" %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link nav-link">
+                {% else %}
+                    <a class="nav-link" href="#" data-toggle="modal" data-target="#logout-modal">
+                {% endif %}
+                <i class="fas fa-sign-out-alt"></i>
+                {% if logout_remember %}
+                    </button>
+                    </form>
+                {% else %}
+                    </a>
+                {% endif %}
             </li>
         {% else %}
             <!-- Log in -->

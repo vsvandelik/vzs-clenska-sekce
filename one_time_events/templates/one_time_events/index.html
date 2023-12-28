@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load events_template_tags %}
+{% load one_time_events_template_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Akce{% endblock %}
+
+{% block content %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url 'one_time_events:add' %}" class="btn btn-primary">Přidat akci</a>
+    </div>
+
+    {% if available_events %}
+        <div class="row">
+            <div class="col-md-12">
+                {% include "one_time_events/index_components_nonadmin/available_events.html" %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if enrolled_events %}
+        <div class="row">
+            <div class="col-md-12">
+                {% include "one_time_events/index_components_nonadmin/enrolled_events.html" %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('enroll-myself-participant-modal')
+        registerModal('unenroll-myself-participant-modal')
+    </script>
+{% endblock %}

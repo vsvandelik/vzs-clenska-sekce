@@ -1,77 +1,93 @@
+import datetime
+from datetime import date, datetime
 from functools import reduce
+from sys import stderr
 
-from django.contrib import messages
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db import connection, connections
 from django.db.models import Q
-from django.http import Http404
-from django.shortcuts import redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.base import View
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.list import ListView
 
 from features.models import FeatureTypeTexts
 from groups.models import Group
-from vzs.utils import export_queryset_csv
+from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
+from trainings.models import Training
+from users.models import Permission
+from vzs.mixin_extensions import MessagesMixin
+from vzs.utils import export_queryset_csv, filter_queryset, today
+
 from .forms import (
-    PersonForm,
     AddManagedPersonForm,
     DeleteManagedPersonForm,
-    PersonsFilterForm,
     MyProfileUpdateForm,
+    PersonForm,
     PersonHourlyRateForm,
+    PersonsFilterForm,
+    PersonStatsForm,
 )
-from .models import Person
+from .models import Person, get_active_user
 from .utils import (
-    parse_persons_filter_queryset,
-    send_email_to_selected_persons,
+    PersonsFilter,
     extend_kwargs_of_assignment_features,
+    send_email_to_selected_persons,
 )
 
 
-class PersonPermissionMixin(PermissionRequiredMixin):
-    def has_permission(self):
+class PersonPermissionBaseMixin:
+    @staticmethod
+    def permission_predicate(request):
         permission_required = (
-            "persons.clenska_zakladna",
-            "persons.detska_clenska_zakladna",
-            "persons.bazenova_clenska_zakladna",
-            "persons.lezecka_clenska_zakladna",
-            "persons.dospela_clenska_zakladna",
+            "clenska_zakladna",
+            "detska_clenska_zakladna",
+            "bazenova_clenska_zakladna",
+            "lezecka_clenska_zakladna",
+            "dospela_clenska_zakladna",
         )
         for permission in permission_required:
-            if self.request.user.has_perm(permission):
+            if get_active_user(request.active_person).has_perm(permission):
                 return True
 
         return False
 
+
+class PersonPermissionMixin(PersonPermissionBaseMixin, PermissionRequiredMixin):
+    def has_permission(self):
+        return self.permission_predicate(self.request)
+
     @staticmethod
     def get_queryset_by_permission(user, queryset=None):
         if queryset is None:
-            queryset = Person.objects
+            queryset = Person.objects.all()
 
-        if user.has_perm("persons.clenska_zakladna"):
+        if user.has_perm("clenska_zakladna"):
             return queryset
 
         conditions = []
 
-        if user.has_perm("persons.detska_clenska_zakladna"):
+        if user.has_perm("detska_clenska_zakladna"):
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.bazenova_clenska_zakladna"):
+        if user.has_perm("bazenova_clenska_zakladna"):
             # TODO: omezit jen na bazenove treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.lezecka_clenska_zakladna"):
+        if user.has_perm("lezecka_clenska_zakladna"):
             # TODO: omezit jen na lezecke treninky
             conditions.append(
                 Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
             )
 
-        if user.has_perm("persons.dospela_clenska_zakladna"):
+        if user.has_perm("dospela_clenska_zakladna"):
             conditions.append(
                 Q(
                     person_type__in=[
@@ -90,12 +106,16 @@ class PersonPermissionMixin(PermissionRequiredMixin):
         return queryset.filter(reduce(lambda x, y: x | y, conditions))
 
     def _filter_queryset_by_permission(self, queryset=None):
-        return self.get_queryset_by_permission(self.request.user, queryset)
+        return self.get_queryset_by_permission(
+            get_active_user(self.request.active_person), queryset
+        )
 
     def _get_available_person_types(self):
         available_person_types = set()
 
-        if self.request.user.has_perm("persons.clenska_zakladna"):
+        active_user = get_active_user(self.request.active_person)
+
+        if active_user.has_perm("clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -109,13 +129,13 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         if (
-            self.request.user.has_perm("persons.detska_clenska_zakladna")
-            or self.request.user.has_perm("persons.bazenova_clenska_zakladna")
-            or self.request.user.has_perm("persons.lezecka_clenska_zakladna")
+            active_user.has_perm("detska_clenska_zakladna")
+            or active_user.has_perm("bazenova_clenska_zakladna")
+            or active_user.has_perm("lezecka_clenska_zakladna")
         ):
             available_person_types.update([Person.Type.CHILD, Person.Type.PARENT])
 
-        if self.request.user.has_perm("persons.dospela_clenska_zakladna"):
+        if active_user.has_perm("dospela_clenska_zakladna"):
             available_person_types.update(
                 [
                     Person.Type.ADULT,
@@ -129,10 +149,15 @@ class PersonPermissionMixin(PermissionRequiredMixin):
         return list(available_person_types)
 
 
-class PersonIndexView(PersonPermissionMixin, generic.ListView):
+class PersonPermissionQuerysetMixin:
+    def get_queryset(self):
+        return self._filter_queryset_by_permission()
+
+
+class PersonIndexView(PersonPermissionMixin, ListView):
+    context_object_name = "persons"
     model = Person
     template_name = "persons/index.html"
-    context_object_name = "persons"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -149,188 +174,229 @@ class PersonIndexView(PersonPermissionMixin, generic.ListView):
 
         self.filter_form = PersonsFilterForm(self.request.GET)
 
-        if self.filter_form.is_valid():
-            return parse_persons_filter_queryset(self.request.GET, persons_objects)
-        else:
-            return persons_objects
+        filter_dict = self.request.GET if self.filter_form.is_valid() else None
+
+        return filter_queryset(persons_objects, filter_dict, PersonsFilter).order_by(
+            "last_name"
+        )
 
 
-class PersonDetailView(PersonPermissionMixin, generic.DetailView):
+class PersonDetailView(
+    PersonPermissionQuerysetMixin, PersonPermissionMixin, DetailView
+):
     model = Person
     template_name = "persons/detail.html"
 
     def get_context_data(self, **kwargs):
-        extend_kwargs_of_assignment_features(self.kwargs["pk"], kwargs)
+        person: Person = self.object
+
+        extend_kwargs_of_assignment_features(person, kwargs)
 
         kwargs.setdefault(
             "persons_to_manage",
             self._filter_queryset_by_permission()
-            .exclude(managed_by=self.kwargs["pk"])
-            .exclude(pk=self.kwargs["pk"])
+            .exclude(managed_by=person)
+            .exclude(pk=person.pk)
             .order_by("last_name", "first_name"),
         )
 
-        user_groups = Person.objects.get(pk=self.kwargs["pk"]).groups.all()
-        kwargs.setdefault("available_groups", Group.objects.exclude(pk__in=user_groups))
+        kwargs.setdefault(
+            "available_groups", Group.objects.exclude(pk__in=person.groups.all())
+        )
 
         kwargs.setdefault("features_texts", FeatureTypeTexts)
 
         return super().get_context_data(**kwargs)
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
 
-
-class PersonCreateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.CreateView
-):
+class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
+    form_class = PersonForm
     model = Person
     template_name = "persons/edit.html"
-    form_class = PersonForm
-    success_message = _("Osoba byla úspěšně vytvořena")
-
-    def form_invalid(self, form):
-        messages.error(
-            self.request,
-            _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři."),
-        )
-        return super().form_invalid(form)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+
         kwargs["available_person_types"] = self._get_available_person_types()
+
         return kwargs
+
+
+class PersonCreateView(PersonCreateUpdateMixin, CreateView):
+    error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
+    success_message = _("Osoba byla úspěšně vytvořena")
+
+
+class PersonStatsView(PersonPermissionMixin, UpdateView):
+    model = Person
+    template_name = "persons/stats.html"
+    form_class = PersonStatsForm
+    http_method_names = ["get"]
+
+    def _get_parse_dates(self):
+        year = today().year
+        default_dates = [
+            date(year=year, month=1, day=1),
+            date(year=year, month=12, day=31),
+        ]
+        start = self.request.GET.get("date_start", default_dates[0])
+        end = self.request.GET.get("date_end", default_dates[1])
+        dates = [start, end]
+        invalid = 0
+        for i in range(len(dates)):
+            if type(dates[i]) is str:
+                try:
+                    d = datetime.strptime(dates[i], "%d. %m. %Y").date()
+                    dates[i] = d
+                except ValueError:
+                    dates[i] = default_dates[i]
+                    invalid += 1
+        if dates[0] > dates[1] and (len(self.request.GET) == 1 or invalid == 1):
+            if dates[0] != default_dates[0]:
+                dates[1] = date(
+                    year=dates[0].year, month=dates[1].month, day=dates[1].day
+                )
+            else:
+                dates[0] = date(
+                    year=dates[1].year, month=dates[0].month, day=dates[0].day
+                )
+
+        return dates[0], dates[1]
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["date_start"] = self.date_start
+        kwargs["date_end"] = self.date_end
+        return kwargs
+
+    def _get_stats(self):
+        person = self.object
+        one_time_event_categories = OneTimeEvent.Category.choices
+        one_time_event_categories = sorted(
+            one_time_event_categories, key=lambda x: x[1], reverse=False
+        )
+        one_time_events_query = """
+                select SUM(one_time_event_occurrence.hours) from one_time_events_organizeroccurrenceassignment as organizer_assignment
+                join persons_person as person on organizer_assignment.person_id = person.id
+                join events_eventoccurrence as occurrence on organizer_assignment.occurrence_id = occurrence.id
+                join one_time_events_onetimeeventoccurrence as one_time_event_occurrence on occurrence.id = one_time_event_occurrence.eventoccurrence_ptr_id
+                join events_event as event on event.id = occurrence.event_id
+                join one_time_events_onetimeevent as one_time_event on one_time_event.event_ptr_id = event.id
+                where 
+                organizer_assignment.state = %s
+                and person.id = %s
+                and one_time_event.category = %s
+                and one_time_event_occurrence.date between %s and %s
+        """
+        one_time_events_out = []
+        with connection.cursor() as cursor:
+            for category in one_time_event_categories:
+                value = category[0]
+                label = category[1]
+                cursor.execute(
+                    one_time_events_query,
+                    [
+                        OneTimeEventAttendance.PRESENT.value,
+                        person.id,
+                        value,
+                        str(self.date_start),
+                        str(self.date_end),
+                    ],
+                )
+                row = cursor.fetchone()
+                sum = row[0] if row[0] is not None else 0
+                one_time_events_out.append((label, sum))
+
+            return one_time_events_out
+
+    def get_context_data(self, **kwargs):
+        self.date_start, self.date_end = self._get_parse_dates()
+        kwargs.setdefault("stats", self._get_stats())
+        return super().get_context_data(**kwargs)
 
 
 class PersonUpdateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
+    PersonPermissionQuerysetMixin, PersonCreateUpdateMixin, UpdateView
 ):
-    model = Person
-    template_name = "persons/edit.html"
-    form_class = PersonForm
+    error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
     success_message = _("Osoba byla úspěšně upravena")
 
-    def form_invalid(self, form):
-        messages.error(
-            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
-        )
-        return super().form_invalid(form)
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["available_person_types"] = self._get_available_person_types()
-        return kwargs
-
-
-class PersonDeleteView(PersonPermissionMixin, generic.edit.DeleteView):
+class PersonDeleteView(
+    PersonPermissionQuerysetMixin, PersonPermissionMixin, DeleteView
+):
     model = Person
-    template_name = "persons/delete.html"
-    success_url = reverse_lazy("persons:index")
     success_message = _("Osoba byla úspěšně smazána")
+    success_url = reverse_lazy("persons:index")
+    template_name = "persons/delete.html"
 
-    def get_queryset(self):
-        return self._filter_queryset_by_permission()
 
-
-class AddDeleteManagedPersonMixin(PersonPermissionMixin, generic.View):
+class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
+    error_message: str
     http_method_names = ["post"]
+    model = Person
 
-    def process_form(self, request, form, pk, op, success_message, error_message):
-        if form.is_valid():
-            managing_person = form.cleaned_data["managing_person_instance"]
-            new_managed_person = form.cleaned_data["managed_person_instance"]
-
-            try:
-                self._filter_queryset_by_permission().get(pk=new_managed_person.pk)
-            except Person.DoesNotExist:
-                raise Http404()
-
-            if op == "add":
-                managing_person.managed_persons.add(new_managed_person)
-            else:
-                managing_person.managed_persons.remove(new_managed_person)
-
-            messages.success(request, success_message)
-
-        else:
-            person_error_messages = " ".join(form.errors["person"])
-            messages.error(request, error_message + person_error_messages)
-
-        return redirect(reverse("persons:detail", args=[pk]))
+    def get_error_message(self, errors):
+        return self.error_message + " ".join(errors["managed_person"])
 
 
 class AddManagedPersonView(AddDeleteManagedPersonMixin):
-    def post(self, request, pk):
-        form = AddManagedPersonForm(request.POST, managing_person=pk)
-
-        return self.process_form(
-            request,
-            form,
-            pk,
-            "add",
-            _("Nová spravovaná osoba byla přidána."),
-            _("Nepodařilo se uložit novou spravovanou osobu. "),
-        )
+    error_message = _("Nepodařilo se uložit novou spravovanou osobu. ")
+    form_class = AddManagedPersonForm
+    success_message = _("Nová spravovaná osoba byla přidána.")
 
 
 class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
-    def post(self, request, pk):
-        form = DeleteManagedPersonForm(request.POST, managing_person=pk)
-
-        return self.process_form(
-            request,
-            form,
-            pk,
-            "delete",
-            _("Odebrání spravované osoby bylo úspěšné."),
-            _("Nepodařilo se odebrat spravovanou osobu. "),
-        )
+    error_message = _("Nepodařilo se odebrat spravovanou osobu. ")
+    form_class = DeleteManagedPersonForm
+    success_message = _("Odebrání spravované osoby bylo úspěšné.")
 
 
-class EditHourlyRateView(
-    PersonPermissionMixin, SuccessMessageMixin, generic.edit.UpdateView
-):
-    model = Person
+class EditHourlyRateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView):
     form_class = PersonHourlyRateForm
-    template_name = "persons/edit_hourly_rate.html"
+    model = Person
     success_message = _("Hodinové sazby byly úspěšně upraveny.")
-
-    def get_success_url(self):
-        return reverse("persons:detail", args=[self.kwargs["pk"]])
+    template_name = "persons/edit_hourly_rate.html"
 
 
-class SendEmailToSelectedPersonsView(generic.View):
+class SelectedPersonsMixin(View):
     http_method_names = ["get"]
 
+    def _get_queryset(self):
+        raise NotImplementedError
+
+    def _process_selected_persons(self, selected_persons):
+        raise NotImplementedError
+
     def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(
-            self.request.GET,
+        selected_persons = filter_queryset(
             PersonPermissionMixin.get_queryset_by_permission(
-                self.request.user, Person.objects.with_age()
+                self.request.user, self._get_queryset()
             ),
+            request.GET,
+            PersonsFilter,
         )
 
+        return self._process_selected_persons(selected_persons)
+
+
+class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
+    def _get_queryset(self):
+        return Person.objects.all()
+
+    def _process_selected_persons(self, selected_persons):
         return send_email_to_selected_persons(selected_persons)
 
 
-class ExportSelectedPersonsView(generic.View):
-    http_method_names = ["get"]
+class ExportSelectedPersonsView(SelectedPersonsMixin):
+    def _get_queryset(self):
+        return Person.objects.with_age()
 
-    def get(self, request, *args, **kwargs):
-        selected_persons = parse_persons_filter_queryset(
-            self.request.GET,
-            PersonPermissionMixin.get_queryset_by_permission(
-                self.request.user, Person.objects.with_age()
-            ),
-        )
-
+    def _process_selected_persons(self, selected_persons):
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
-class MyProfileView(generic.DetailView):
+class MyProfileView(LoginRequiredMixin, DetailView):
     model = Person
     template_name = "persons/my_profile.html"
 
@@ -344,18 +410,13 @@ class MyProfileView(generic.DetailView):
         return super().get_context_data(**kwargs)
 
 
-class MyProfileUpdateView(SuccessMessageMixin, generic.edit.UpdateView):
-    model = Person
-    template_name = "persons/my_profile_edit.html"
+class MyProfileUpdateView(LoginRequiredMixin, MessagesMixin, UpdateView):
+    error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
     form_class = MyProfileUpdateForm
+    model = Person
     success_message = _("Váš profil byl úspěšně upraven.")
     success_url = reverse_lazy("my-profile:index")
+    template_name = "persons/my_profile_edit.html"
 
     def get_object(self, queryset=None):
         return self.request.active_person
-
-    def form_invalid(self, form):
-        messages.error(
-            self.request, _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
-        )
-        return super().form_invalid(form)

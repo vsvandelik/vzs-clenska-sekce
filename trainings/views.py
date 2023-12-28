@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import timedelta
 
 from django.contrib import messages
 from django.db.models import Q
@@ -9,35 +9,55 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
+from events.models import ParticipantEnrollment
+from events.permissions import (
+    EventManagePermissionMixin,
+    OccurrenceEnrollOrganizerPermissionMixin,
+    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixin2,
+    OccurrenceUnenrollOrganizerPermissionMixin,
+)
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
+    EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
     InsertOccurrenceIntoContextData,
+    InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
+    OccurrenceNotOpenedRestrictionMixin,
+    OccurrenceOpenRestrictionMixin,
     ParticipantEnrollmentCreateMixin,
     ParticipantEnrollmentDeleteMixin,
     ParticipantEnrollmentUpdateMixin,
     RedirectToEventDetailOnFailureMixin,
     RedirectToEventDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
-    InsertOccurrenceIntoModelFormKwargsMixin,
-    EventOccurrenceIdCheckMixin,
-    InsertPositionAssignmentIntoModelFormKwargs,
-    OccurrenceOpenRestrictionMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    OccurrenceNotOpenedRestrictionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    InsertEventIntoSelfObjectMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+)
+from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
+from persons.models import Person, get_active_user
+from trainings.permissions import (
+    OccurrenceEnrollMyselfParticipantPermissionMixin,
+    OccurrenceExcuseMyselfOrganizerPermissionMixin,
+    OccurrenceExcuseMyselfParticipantPermissionMixin,
+    OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
+from vzs.settings import CURRENT_DATETIME, PARTICIPANT_ENROLL_DEADLINE_DAYS
+from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -48,12 +68,12 @@ from .forms import (
     ExcuseMyselfCoachForm,
     ExcuseMyselfParticipantForm,
     ParticipantExcuseForm,
+    ReopenTrainingOccurrenceForm,
     TrainingBulkApproveParticipantsForm,
     TrainingEnrollMyselfOrganizerOccurrenceForm,
     TrainingEnrollMyselfParticipantForm,
     TrainingEnrollMyselfParticipantOccurrenceForm,
     TrainingFillAttendanceForm,
-    ReopenTrainingOccurrenceForm,
     TrainingForm,
     TrainingParticipantAttendanceForm,
     TrainingParticipantEnrollmentForm,
@@ -69,13 +89,13 @@ from .models import (
     TrainingParticipantAttendance,
     TrainingParticipantEnrollment,
     TrainingReplaceabilityForParticipants,
+    TrainingAttendance,
 )
 
 
 class TrainingDetailView(EventDetailBaseView):
-    template_name = "trainings/detail.html"
-
     def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
         trainings_for_replacement_to_choose = (
             Training.objects.filter(
                 category=self.object.category,
@@ -83,6 +103,32 @@ class TrainingDetailView(EventDetailBaseView):
             .exclude(pk=self.object.pk)
             .exclude(replaceable_training_2__training_1=self.object)
         )
+
+        upcoming_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__gte=CURRENT_DATETIME()
+        )[:10]
+        for occurrence in upcoming_occurrences:
+            occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance
+                and participant_attendance.state == TrainingAttendance.EXCUSED
+            )
+
+        past_occurrences = self.object.sorted_occurrences_list().filter(
+            datetime_start__lte=CURRENT_DATETIME()
+        )[:20]
+        for occurrence in past_occurrences:
+            if occurrence.is_closed and occurrence.get_participant_attendance(
+                active_person
+            ):
+                occurrence.participant_attendance = (
+                    occurrence.get_participant_attendance(active_person).state
+                )
+            else:
+                occurrence.participant_attendance = "not_closed"
 
         selected_replaceable_trainings = (
             TrainingReplaceabilityForParticipants.objects.filter(training_1=self.object)
@@ -94,7 +140,139 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault(
             "selected_replaceable_trainings", selected_replaceable_trainings
         )
+        kwargs.setdefault(
+            "active_person_participant_enrollment",
+            self.object.get_participant_enrollment(active_person),
+        )
+        kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
+        kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
+        kwargs.setdefault("past_occurrences", past_occurrences)
+
+        self._add_coaches_detail_kwargs(kwargs)
+
         return super().get_context_data(**kwargs)
+
+    def get_template_names(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+        if self.object.can_user_manage(active_user):
+            return "trainings/detail_admin.html"
+        elif self.object.is_organizer(active_person):
+            return "trainings/detail_coach.html"
+        else:
+            return "trainings/detail_participant.html"
+
+    def _add_coaches_detail_kwargs(self, kwargs):
+        occurrences = self.object.sorted_occurrences_list()
+        for occurrence in occurrences:
+            if occurrence.datetime_start >= CURRENT_DATETIME():
+                occurrence.nearest_occurrence = True
+                break
+
+        participants_by_weekdays = {}
+        for weekday in self.object.weekdays_list():
+            participants_by_weekdays[
+                weekday
+            ] = self.object.approved_enrollments_by_weekday(weekday).order_by(
+                "person__last_name"
+            )
+
+        kwargs.setdefault("participants_by_weekdays", participants_by_weekdays)
+        kwargs.setdefault("occurrences", occurrences)
+
+
+class TrainingListView(generic.ListView):
+    template_name = "trainings/index.html"
+
+    def get_context_data(self, **kwargs):
+        active_person = self.request.active_person
+
+        self.add_participant_kwargs(kwargs, active_person)
+        self.add_coaches_kwargs(kwargs, active_person)
+
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        return []
+
+    def add_coaches_kwargs(self, kwargs, active_person):
+        regular_trainings = CoachPositionAssignment.objects.filter(person=active_person)
+        upcoming_occurrences = TrainingOccurrence.objects.filter(
+            datetime_start__gte=CURRENT_DATETIME(), coaches=active_person
+        ).order_by("datetime_start")
+
+        for occurrence in upcoming_occurrences:
+            attendance = occurrence.get_person_organizer_assignment(active_person)
+
+            excused = False
+            if len(attendance) == 1 and attendance.first().is_excused:
+                excused = True
+
+            occurrence.excused = excused
+
+        kwargs.setdefault("coach_regular_trainings", regular_trainings)
+        kwargs.setdefault("coach_upcoming_occurrences", upcoming_occurrences)
+
+    def add_participant_kwargs(self, kwargs, active_person):
+        enrolled_trainings = Training.get_person_enrolled_trainings(active_person)
+        upcoming_occurrences = TrainingOccurrence.objects.filter(
+            datetime_start__gte=CURRENT_DATETIME(), participants=active_person
+        ).order_by("datetime_start")
+
+        for occurrence in upcoming_occurrences:
+            participant_attendance = occurrence.get_participant_attendance(
+                active_person
+            )
+            occurrence.excused = (
+                participant_attendance and participant_attendance.is_excused
+            )
+            occurrence.is_one_time_presence = (
+                participant_attendance.is_one_time_presence
+            )
+
+        non_enrolled_trainings = Training.objects.exclude(id__in=enrolled_trainings)
+        available_trainings = [
+            t
+            for t in non_enrolled_trainings
+            if t.can_person_enroll_as_waiting(active_person)
+        ]
+
+        kwargs.setdefault("participant_enrolled_trainings", enrolled_trainings)
+        kwargs.setdefault("participant_available_trainings", available_trainings)
+        kwargs.setdefault("participant_upcoming_occurrences", upcoming_occurrences)
+
+        self.add_trainings_replacing_kwargs(kwargs, active_person, enrolled_trainings)
+
+    def add_trainings_replacing_kwargs(self, kwargs, active_person, enrolled_trainings):
+        count_of_trainings_to_replace = (
+            TrainingParticipantAttendance.count_of_trainings_to_replace(active_person)
+        )
+
+        if count_of_trainings_to_replace <= 0:
+            return
+
+        replaceable_trainings = []
+
+        for enrolled_training in enrolled_trainings:
+            replaceable_trainings += enrolled_training.replaces_training_list()
+
+        date_start = CURRENT_DATETIME() + timedelta(
+            days=PARTICIPANT_ENROLL_DEADLINE_DAYS
+        )
+        replaceable_occurrences = (
+            TrainingOccurrence.objects.filter(
+                datetime_start__gte=date_start, event__in=replaceable_trainings
+            )
+            .exclude(participants=active_person)
+            .order_by("datetime_start")[:10]
+        )
+
+        kwargs.setdefault(
+            "participant_count_of_trainings_to_replace", count_of_trainings_to_replace
+        )
+        kwargs.setdefault(
+            "participant_replaceable_occurrences", replaceable_occurrences
+        )
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):
@@ -108,6 +286,7 @@ class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
 
 
 class TrainingAddReplaceableTrainingView(
+    EventManagePermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
@@ -116,6 +295,7 @@ class TrainingAddReplaceableTrainingView(
     form_class = TrainingReplaceableForm
     success_message = _("Tréninky pro náhrady byl přidán.")
     model = TrainingReplaceabilityForParticipants
+    event_id_key = "event_id"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -123,8 +303,9 @@ class TrainingAddReplaceableTrainingView(
         return kwargs
 
 
-class TrainingRemoveReplaceableTrainingView(generic.View):
+class TrainingRemoveReplaceableTrainingView(EventManagePermissionMixin, generic.View):
     http_method_names = ["post"]
+    event_id_key = "event_id"
 
     def post(self, request, event_id, *args, **kwargs):
         training_1 = event_id
@@ -149,9 +330,12 @@ class TrainingWeekdaysSelectionMixin:
         return super().get_context_data(**kwargs)
 
 
-class TrainingParticipantEnrollmentCreateUpdateMixin(TrainingWeekdaysSelectionMixin):
+class TrainingParticipantEnrollmentCreateUpdateMixin(
+    EventManagePermissionMixin, TrainingWeekdaysSelectionMixin
+):
     model = TrainingParticipantEnrollment
     form_class = TrainingParticipantEnrollmentForm
+    event_id_key = "event_id"
 
 
 class TrainingParticipantEnrollmentCreateView(
@@ -169,6 +353,26 @@ class TrainingParticipantEnrollmentUpdateView(
 class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
     template_name = "trainings/modals/delete_participant_enrollment.html"
 
+    def form_valid(self, form):
+        enrollment = self.object
+        if enrollment.state == ParticipantEnrollment.State.REJECTED:
+            send_notification_email(
+                _("Zrušení odmítnutí účasti"),
+                _(
+                    f"Na trénink {enrollment.event} vám bylo umožněno znovu se přihlásit"
+                ),
+                [enrollment.person],
+            )
+        else:
+            send_notification_email(
+                _("Odstranění přihlášky"),
+                _(
+                    f"Vaše přihláška na trénink {enrollment.event} byla smazána administrátorem"
+                ),
+                [enrollment.person],
+            )
+        return super().form_valid(form)
+
 
 class TrainingEnrollMyselfParticipantView(
     TrainingWeekdaysSelectionMixin, EnrollMyselfParticipantMixin
@@ -180,6 +384,7 @@ class TrainingEnrollMyselfParticipantView(
 
 
 class CoachAssignmentMixin(
+    EventManagePermissionMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
 ):
@@ -250,7 +455,7 @@ class CoachOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
@@ -260,6 +465,7 @@ class CoachOccurrenceBaseView(
 
 
 class CancelCoachExcuseView(
+    OccurrenceManagePermissionMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -269,7 +475,8 @@ class CancelCoachExcuseView(
 
 
 class ExcuseMyselfCoachView(
-    RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceExcuseMyselfOrganizerPermissionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -291,6 +498,7 @@ class ExcuseMyselfCoachView(
 
 
 class CoachExcuseView(
+    OccurrenceManagePermissionMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -300,7 +508,8 @@ class CoachExcuseView(
 
 
 class EnrollMyselfOrganizerForOccurrenceView(
-    RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceEnrollOrganizerPermissionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
@@ -313,6 +522,7 @@ class EnrollMyselfOrganizerForOccurrenceView(
 
 
 class OneTimeCoachDeleteView(
+    OccurrenceManagePermissionMixin,
     CoachOccurrenceBaseView,
     generic.DeleteView,
 ):
@@ -323,9 +533,21 @@ class OneTimeCoachDeleteView(
             f"Osoba {self.object.person} byla úspěšně odebrána jako jednorázový trenér"
         )
 
+    def form_valid(self, form):
+        assignment = self.object
+        send_notification_email(
+            _("Zrušení jednorázové trenérské účasti"),
+            _(
+                f"Vaše jednorázová trenérská účast na pozici {assignment.position_assignment.position} dne {date_pretty(assignment.occurrence.datetime_start)} tréninku {assignment.occurrence.event} byla zrušena administrátorem"
+            ),
+            [assignment.person],
+        )
+        return super().form_valid(form)
+
 
 class UnenrollMyselfOrganizerFromOccurrenceView(
-    RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceUnenrollOrganizerPermissionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -339,6 +561,7 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
 
 
 class AddOneTimeCoachView(
+    OccurrenceManagePermissionMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     CoachOccurrenceBaseView,
     generic.CreateView,
@@ -349,8 +572,9 @@ class AddOneTimeCoachView(
 
 
 class EditOneTimeCoachView(
+    OccurrenceManagePermissionMixin,
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.UpdateView,
@@ -377,7 +601,7 @@ class ParticipantOccurrenceBaseView(
     MessagesMixin,
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
@@ -387,6 +611,7 @@ class ParticipantOccurrenceBaseView(
 
 
 class ExcuseParticipantView(
+    OccurrenceManagePermissionMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -396,6 +621,7 @@ class ExcuseParticipantView(
 
 
 class CancelParticipantExcuseView(
+    OccurrenceManagePermissionMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -405,7 +631,8 @@ class CancelParticipantExcuseView(
 
 
 class ExcuseMyselfParticipantView(
-    RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceExcuseMyselfParticipantPermissionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -427,7 +654,8 @@ class ExcuseMyselfParticipantView(
 
 
 class UnenrollMyselfParticipantFromOccurrenceView(
-    RedirectToOccurrenceDetailOnFailureMixin,
+    OccurrenceUnenrollMyselfParticipantPermissionMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -439,6 +667,7 @@ class UnenrollMyselfParticipantFromOccurrenceView(
 
 
 class AddOneTimeParticipantView(
+    OccurrenceManagePermissionMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     ParticipantOccurrenceBaseView,
     generic.CreateView,
@@ -449,6 +678,7 @@ class AddOneTimeParticipantView(
 
 
 class OneTimeParticipantDeleteView(
+    OccurrenceManagePermissionMixin,
     ParticipantOccurrenceBaseView,
     generic.DeleteView,
 ):
@@ -457,11 +687,23 @@ class OneTimeParticipantDeleteView(
     def get_success_message(self, cleaned_data):
         return f"Osoba {self.object.person} byla úspěšně odebrána jako účastník"
 
+    def form_valid(self, form):
+        attendance = self.object
+        send_notification_email(
+            _("Zrušení jednorázové účasti účastníka"),
+            _(
+                f"Vaše jednorázová účast dne {date_pretty(attendance.occurrence.datetime_start)} tréninku {attendance.occurrence.event} byla zrušena administrátorem"
+            ),
+            [attendance.person],
+        )
+        return super().form_valid(form)
+
 
 class EnrollMyselfParticipantFromOccurrenceView(
+    OccurrenceEnrollMyselfParticipantPermissionMixin,
     MessagesMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertOccurrenceIntoModelFormKwargsMixin,
     EventOccurrenceIdCheckMixin,
@@ -476,15 +718,16 @@ class EnrollMyselfParticipantFromOccurrenceView(
 class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if datetime.now(tz=timezone.get_default_timezone()) < occurrence.datetime_start:
+        if CURRENT_DATETIME() < timezone.localtime(occurrence.datetime_start):
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 
 
 class TrainingFillAttendanceView(
+    OccurrenceFillAttendancePermissionMixin,
     MessagesMixin,
     TrainingOccurrenceAttendanceCanBeFilledMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
     InsertRequestIntoModelFormKwargsMixin,
@@ -508,10 +751,11 @@ class TrainingFillAttendanceView(
 
 
 class ReopenTrainingOccurrenceView(
+    OccurrenceManagePermissionMixin2,
     MessagesMixin,
     OccurrenceNotOpenedRestrictionMixin,
-    RedirectToOccurrenceDetailOnSuccessMixin,
-    RedirectToOccurrenceDetailOnFailureMixin,
+    RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoContextData,
     generic.UpdateView,
@@ -524,12 +768,81 @@ class ReopenTrainingOccurrenceView(
 
 
 class TrainingOpenOccurrencesOverviewView(
-    InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
 ):
     template_name = "trainings/modals/open_occurrences_overview.html"
 
 
 class TrainingShowAttendanceView(
-    MessagesMixin, InsertEventIntoContextData, generic.TemplateView
+    EventManagePermissionMixin,
+    MessagesMixin,
+    InsertEventIntoContextData,
+    generic.TemplateView,
 ):
     template_name = "trainings/show_attendance.html"
+
+
+class TrainingExportParticipantsView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        approved_persons_id = self.event.trainingparticipantenrollment_set.filter(
+            state=ParticipantEnrollment.State.APPROVED
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_účastníci", Person.objects.filter(id__in=approved_persons_id)
+        )
+
+
+class TrainingExportCoachesView(
+    EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
+):
+    http_method_names = ["get"]
+
+    def get(self, request, *args, **kwargs):
+        coaches_id = CoachPositionAssignment.objects.filter(
+            training=self.event
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.event}_trenéři", Person.objects.filter(id__in=coaches_id)
+        )
+
+
+class TrainingExportOrganizersOccurrenceView(
+    OccurrenceManagePermissionMixin2,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+    generic.View,
+):
+    http_method_names = ["get"]
+    occurrence_id_key = "pk"
+
+    def get(self, request, *args, **kwargs):
+        coaches_id = CoachOccurrenceAssignment.objects.filter(
+            occurrence=self.occurrence, state=TrainingAttendance.PRESENT
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.occurrence.event}_{date_pretty(self.occurrence.datetime_start)}_trenéři",
+            Person.objects.filter(id__in=coaches_id),
+        )
+
+
+class TrainingExportParticipantsOccurrenceView(
+    OccurrenceManagePermissionMixin2,
+    EventOccurrenceIdCheckMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
+    generic.View,
+):
+    http_method_names = ["get"]
+    occurrence_id_key = "pk"
+
+    def get(self, request, *args, **kwargs):
+        participants_id = TrainingParticipantAttendance.objects.filter(
+            occurrence=self.occurrence, state=TrainingAttendance.PRESENT
+        ).values_list("person_id")
+        return export_queryset_csv(
+            f"{self.occurrence.event}_{date_pretty(self.occurrence.datetime_start)}_účastníci",
+            Person.objects.filter(id__in=participants_id),
+        )

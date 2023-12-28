@@ -1,34 +1,43 @@
-from django.contrib import auth
 from django.urls import path
 
-from . import views
+from .views import (
+    ChangeActivePersonView,
+    GoogleAuthView,
+    GoogleLoginView,
+    LoginView,
+    LogoutView,
+    PermissionDetailView,
+    PermissionsView,
+    UserResetPasswordRequestView,
+    UserResetPasswordView,
+)
 
 app_name = "users"
 
 urlpatterns = [
-    path("prihlasit/", views.LoginView.as_view(), name="login"),
-    path("odhlasit/", auth.views.LogoutView.as_view(), name="logout"),
+    path("prihlasit/", LoginView.as_view(), name="login"),
+    path("odhlasit/", LogoutView.as_view(), name="logout"),
     path(
         "resetovat-heslo/",
-        views.UserResetPasswordRequestView.as_view(),
+        UserResetPasswordRequestView.as_view(),
         name="reset-password-request",
     ),
     path(
         "obnova-zapomenuteho-hesla/",
-        views.UserResetPasswordView.as_view(),
+        UserResetPasswordView.as_view(),
         name="reset-password",
     ),
-    path("povoleni/", views.PermissionsView.as_view(), name="permissions"),
+    path("povoleni/", PermissionsView.as_view(), name="permissions"),
     path(
         "povoleni/<int:pk>/",
-        views.PermissionDetailView.as_view(),
+        PermissionDetailView.as_view(),
         name="permission_detail",
     ),
     path(
         "zmenit-aktivni-osobu/",
-        views.ChangeActivePersonView.as_view(),
+        ChangeActivePersonView.as_view(),
         name="change-active-person",
     ),
-    path("google/login/", views.GoogleLoginView.as_view(), name="google-login"),
-    path("google/auth/", views.GoogleAuthView.as_view(), name="google-auth"),
+    path("google/login/", GoogleLoginView.as_view(), name="google-login"),
+    path("google/auth/", GoogleAuthView.as_view(), name="google-auth"),
 ]

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    Detail tréninku
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span
+                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                </div>
+            </div>
+            {% include 'trainings/detail_components/enroll_unenroll_button.html' %}
+
+        </div>
+    </div>
+    {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
+        <div class="alert alert-success mt-n4" role="alert">
+            Na tuto akci jste již přihlášen/a. Odhlášení je možné provádět jen prostřednictvím e-mailu z důvodu domluvení detailů odhlášky.
+        </div>
+    {% elif active_person_participant_enrollment.state == enrollment_states.SUBSTITUTE %}
+        <div class="alert alert-success" role="alert">
+            Na tuto akci jste již přihlášen/a jako náhradník. Počkejte prosím na manuální schválení administrátorem v případě volné kapacity.
+        </div>
+    {% endif %}
+    <div class="row">
+        {% include 'trainings/detail_components_participant/overview.html' %}
+        {% include 'trainings/detail_components_participant/description.html' %}
+    </div>
+
+    {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
+        <div class="row">
+            <div class="col-12">
+                {% include 'trainings/detail_components_participant/future_trainings.html' %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                {% include 'trainings/detail_components_participant/past_trainings.html' %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal('excuse-myself-participant-modal');
+        registerModal('unenroll-myself-participant-modal');
+    </script>
+{% endblock %}

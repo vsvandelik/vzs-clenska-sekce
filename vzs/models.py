@@ -1,5 +1,5 @@
+from django.db.models import Model
 from django.template.loader import render_to_string
-from django.db import models
 
 
 class RenderableModelMixin:
@@ -12,7 +12,7 @@ class RenderableModelMixin:
         return render_to_string(template_name, kwargs)
 
 
-class DatabaseSettingsMixin(models.Model):
+class DatabaseSettingsMixin(Model):
     class Meta:
         abstract = True
 

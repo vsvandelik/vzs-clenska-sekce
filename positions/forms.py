@@ -1,13 +1,17 @@
-from django import forms
-from django.forms import ModelForm
+from django.forms import ModelChoiceField, ModelForm
 
-from events.forms_bases import AgeLimitForm, GroupMembershipForm, AllowedPersonTypeForm
+from events.forms_bases import AgeLimitForm, AllowedPersonTypeForm, GroupMembershipForm
 from features.models import Feature
 from positions.models import EventPosition
-from vzs.forms import WithoutFormTagFormHelper
+from vzs.forms import WithoutFormTagMixin
+from vzs.mixin_extensions import (
+    RelatedAddMixin,
+    RelatedAddOrRemoveFormMixin,
+    RelatedRemoveMixin,
+)
 
 
-class PositionForm(ModelForm):
+class PositionForm(WithoutFormTagMixin, ModelForm):
     class Meta:
         fields = ["name", "wage_hour"]
         model = EventPosition
@@ -16,38 +20,31 @@ class PositionForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["wage_hour"].widget.attrs["min"] = 1
 
-        self.helper = WithoutFormTagFormHelper()
 
-
-class AddRemoveFeatureRequirementPositionForm(ModelForm):
+class AddRemoveFeatureRequirementPositionMixin(RelatedAddOrRemoveFormMixin):
     class Meta:
         fields = []
         model = EventPosition
 
-    feature_id = forms.IntegerField()
+    feature = ModelChoiceField(queryset=Feature.objects.all())
+    instance_to_add_or_remove_field_name = "feature"
 
-    def clean(self):
-        cleaned_data = super().clean()
-        fid = cleaned_data["feature_id"]
-        try:
-            cleaned_data["feature"] = Feature.objects.get(pk=fid)
-        except Feature.DoesNotExist:
-            self.add_error(
-                "feature_id",
-                f"Kvalifikace, oprávnění ani vybavení s id {fid} neexistuje",
-            )
-        return cleaned_data
+    def _get_instances(self):
+        return self.instance.required_features
 
-    def save(self, commit=True):
-        instance = super().save(False)
-        feature = self.cleaned_data["feature"]
-        if feature in instance.required_features.all():
-            instance.required_features.remove(feature)
-        else:
-            instance.required_features.add(feature)
-        if commit:
-            instance.save()
-        return instance
+
+class AddFeatureRequirementPositionForm(
+    RelatedAddMixin, AddRemoveFeatureRequirementPositionMixin
+):
+    # TODO: error message
+    pass
+
+
+class RemoveFeatureRequirementPositionForm(
+    RelatedRemoveMixin, AddRemoveFeatureRequirementPositionMixin
+):
+    # TODO: error message
+    pass
 
 
 class PositionAgeLimitForm(AgeLimitForm):
