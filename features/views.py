@@ -1,6 +1,3 @@
-from datetime import datetime
-
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages import error as error_message
 from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
@@ -19,6 +16,7 @@ from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
+from users.permissions import PermissionRequiredMixin
 from vzs.utils import today
 
 from .forms import (
@@ -47,10 +45,9 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
 
         return super().dispatch(request, feature_type, *args, **kwargs)
 
-    def has_permission(self):
-        user = self.request.user
-
-        return user.has_perm(self.feature_type_texts.permission_name)
+    @classmethod
+    def view_has_permission(cls, active_user, feature_type, **kwargs):
+        return active_user.has_perm(FeatureTypeTexts[feature_type].permission_name)
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("texts", self.feature_type_texts)

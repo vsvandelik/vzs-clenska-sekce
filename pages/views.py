@@ -22,7 +22,7 @@ class PageDetailView(DetailView):
 class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = PageEditForm
     model = Page
-    permissions_required = ["stranky"]
+    permissions_formula = [["stranky"]]
     success_message = _("Stránka byla úspěšně upravena.")
     template_name = "pages/edit.html"
 
