@@ -13,13 +13,25 @@ class Command(BaseCommand):
 
     def __init__(self):
         super().__init__()
-        self.persons = []
+        self.input_processor = InputProcessor(self.stdout, self.style)
 
     def add_arguments(self, parser):
         parser.add_argument("filename", type=str)
 
     def handle(self, *args, **options):
-        with open(options["filename"], "r") as f:
+        self.input_processor.process_input(options["filename"])
+        # self.stdout.write(self.style.SUCCESS(f"Successfully created"))
+
+
+class InputProcessor:
+    def __init__(self, stdout, style):
+        super().__init__()
+        self.persons = []
+        self.stdout = stdout
+        self.style = style
+
+    def process_input(self, filename):
+        with open(filename, "r") as f:
             reader = csv.reader(f)
 
             header = {name: idx for idx, name in enumerate(next(reader))}
@@ -27,7 +39,7 @@ class Command(BaseCommand):
             for idx, row in enumerate(reader, start=2):
                 self._process_single_person_row(header, row, idx)
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully created"))
+        return self.persons
 
     def _check_if_person_already_exists(self, person: Person):
         found_weak_duplicate = False
@@ -56,7 +68,7 @@ class Command(BaseCommand):
         return person
 
     def _process_single_person_row(self, header: dict, row: list, line: int):
-        get_val = lambda key: self._clean_value(key, row[header[key]])
+        get_val = lambda key: InputFieldsCleaner.clean_value(key, row[header[key]])
 
         try:
             person = self._process_person(get_val)
@@ -89,7 +101,7 @@ class Command(BaseCommand):
             sex=Person.Sex.M,  # TODO: fix
             person_type=Person.Type.ADULT,  # TODO: fix
             birth_number=get_val("rc"),
-            health_insurance_company=self._process_pojistovna(
+            health_insurance_company=InputFieldsCleaner.process_pojistovna(
                 get_val("Zdravotni_pojistovna"), get_val("zp")
             ),
             phone=get_val("telefon"),
@@ -135,8 +147,11 @@ class Command(BaseCommand):
                 self.style.WARNING(f"Error in line {line}: {field}: {error_message}")
             )
 
-    def _clean_value(self, key: str, value: str) -> Any | None:
-        value_processor = getattr(self, f"_process_{key}", None)
+
+class InputFieldsCleaner:
+    @staticmethod
+    def clean_value(key: str, value: str) -> Any | None:
+        value_processor = getattr(InputFieldsCleaner, f"process_{key}", None)
 
         value = (
             value.strip()
@@ -149,24 +164,27 @@ class Command(BaseCommand):
         else:
             return value
 
-    def _process_narozeni(self, value: str) -> str:
+    @staticmethod
+    def process_narozeni(value: str) -> str:
         value = value.replace(" ", "").replace(",", ".")
         input_date = datetime.strptime(value, "%d.%m.%Y")
         return input_date.strftime("%Y-%m-%d")
 
-    def _process_psc(self, value: str) -> int:
+    @staticmethod
+    def process_psc(value: str) -> int:
         return int(value.replace(" ", ""))
 
-    def _process_pojistovna(self, value1: str, value2: str) -> str | None:
-        value1 = self._process_health_insurance_company_parser(value1)
-        value2 = self._process_health_insurance_company_parser(value2)
+    @staticmethod
+    def process_pojistovna(value1: str, value2: str) -> str | None:
+        value1 = InputFieldsCleaner._process_health_insurance_company_parser(value1)
+        value2 = InputFieldsCleaner._process_health_insurance_company_parser(value2)
 
         if not value1 and not value2:
             return None
         if not value1:
-            return self._process_health_insurance_company_parser(value2)
+            return InputFieldsCleaner._process_health_insurance_company_parser(value2)
         elif not value2 or value1 == value2:
-            return self._process_health_insurance_company_parser(value1)
+            return InputFieldsCleaner._process_health_insurance_company_parser(value1)
         else:
             raise ValidationError(
                 {
@@ -174,7 +192,8 @@ class Command(BaseCommand):
                 }
             )
 
-    def _process_health_insurance_company_parser(self, value):
+    @staticmethod
+    def _process_health_insurance_company_parser(value):
         if not value:
             return None
 
