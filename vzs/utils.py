@@ -1,24 +1,24 @@
 import csv
-import unicodedata
 from collections.abc import Callable, Mapping
 from datetime import datetime
 from typing import Any, TypedDict, TypeVar, get_type_hints
 from urllib import parse
 from urllib.parse import quote
 
+import unicodedata
 from django.core.mail import send_mail
 from django.db.models import Model
 from django.db.models.query import Q, QuerySet
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import formats
-from django.utils.timezone import localdate, make_aware
+from django.utils.timezone import localdate, make_aware, localtime
 
 from vzs import settings
 from vzs.settings import CURRENT_DATETIME
 
 
-def export_queryset_csv(filename, queryset):
+def get_csv_writer_http_response(filename):
     response = HttpResponse(
         content_type="text/csv",
         headers={"Content-Disposition": rfc5987_content_disposition(f"{filename}.csv")},
@@ -27,12 +27,28 @@ def export_queryset_csv(filename, queryset):
 
     writer = csv.writer(response, delimiter=";")
 
+    return writer, response
+
+
+def get_xml_http_response(filename):
+    response = HttpResponse(
+        content_type="text/xml",
+        headers={"Content-Disposition": rfc5987_content_disposition(f"{filename}.xml")},
+    )
+    response.write("\ufeff".encode("utf8"))
+
+    return response
+
+
+def export_queryset_csv(filename, queryset):
+    writer, http_response = get_csv_writer_http_response(filename)
+
     writer.writerow(queryset.model.csv_header())
 
     for instance in queryset:
         writer.writerow(instance.csv_row())
 
-    return response
+    return http_response
 
 
 def rfc5987_content_disposition(file_name):
@@ -135,7 +151,6 @@ Q_TRUE = ~Q(pk__in=[])
 TRUE constant, evaluates as true for any instance
 """
 
-
 T = TypeVar("T", bound=Model)
 
 
@@ -195,3 +210,7 @@ def combine_date_and_time(date, time):
 
 def today():
     return localdate(CURRENT_DATETIME())
+
+
+def now():
+    return localtime(CURRENT_DATETIME())
