@@ -131,6 +131,13 @@ def handle_missing(value):
 
 
 @register.filter
+def handle_missing_empty(value):
+    if value in [None, "", "None Kč"]:
+        return ""
+    return value
+
+
+@register.filter
 def display_presence(value):
     if value in [None, "", False]:
         return mark_safe(settings.VALUE_MISSING_HTML)

@@ -12,6 +12,7 @@ from .views import (
     TransactionIndexView,
     TransactionQRView,
     TransactionSendEmailView,
+    TransactionAccountingExportView,
 )
 
 app_name = "transactions"
@@ -71,5 +72,10 @@ urlpatterns = [
         "<int:pk>/smazat-hromadnou/",
         BulkTransactionDeleteView.as_view(),
         name="delete-bulk",
+    ),
+    path(
+        "export-ucetnich-podkladu/",
+        TransactionAccountingExportView.as_view(),
+        name="accounting-export",
     ),
 ]

@@ -263,6 +263,10 @@ GOOGLE_SECRETS_FILE = BASE_DIR / "google_integration/secrets_file.json"
 GOOGLE_DOMAIN = env.str("GOOGLE_DOMAIN", default="vzs-praha15.cz")
 GOOGLE_MAPS_API_KEY = env.str("GOOGLE_MAPS_API_KEY", default=None)
 
+# Settings for export to Pohoda
+
+ICO = env.str("ICO", default="65996739")
+
 # Settings for FIO bank
 
 FIO_ACCOUNT_NUMBER = "2601743175"

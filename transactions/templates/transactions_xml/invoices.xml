@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dat:dataPack version="2.0" id="{{ id }}" ico="{{ ico }}" application="VZS Clenska Sekce P15" note="Export z clenske sekce" xmlns:dat="http://www.stormware.cz/schema/version_2/data.xsd">
+    {% for transaction in transactions %}
+        {% include 'transactions_xml/invoice.xml' %}
+    {% endfor %}
+</dat:dataPack>
