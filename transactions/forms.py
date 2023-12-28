@@ -15,7 +15,6 @@ from django.forms import (
     ModelForm,
     ValidationError,
 )
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
@@ -25,6 +24,7 @@ from persons.forms import PersonsFilterForm
 from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from trainings.models import Training
+from vzs.datetime_constants import MONTH_NAMES
 from vzs.forms import WithoutFormTagFormHelper, WithoutFormTagMixin
 from vzs.utils import (
     filter_queryset,
@@ -33,7 +33,6 @@ from vzs.utils import (
     today,
 )
 from vzs.widgets import DatePickerWithIcon
-
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 
@@ -586,3 +585,32 @@ class TransactionFilterForm(Form):
             self.cleaned_data if self.is_valid() else None,
             TransactionFilter,
         )
+
+
+class TransactionAccountingExportPeriodForm(Form):
+    year = IntegerField(label=_("Rok"), min_value=2000, max_value=today().year)
+    month = ChoiceField(
+        label=_("Měsíc"),
+        required=True,
+        choices=[("", "---------")]
+        + [(i, month) for i, month in enumerate(MONTH_NAMES, start=1)],
+    )
+    type = ChoiceField(
+        label=_("Typ exportu"),
+        required=True,
+        choices=[
+            ("", "---------"),
+            ("vyplaty", "Výplaty v csv"),
+            ("pohledavky", "Pohledávky v isdoc"),
+        ],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if today().month != 1:
+            self.initial["year"] = today().year
+            self.initial["month"] = today().month - 1
+        else:
+            self.initial["year"] = today().year - 1
+            self.initial["month"] = 12

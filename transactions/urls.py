@@ -12,6 +12,7 @@ from .views import (
     TransactionIndexView,
     TransactionQRView,
     TransactionSendEmailView,
+    TransactionAccountingExportView,
 )
 
 app_name = "transactions"
@@ -74,7 +75,7 @@ urlpatterns = [
     ),
     path(
         "export-ucetnich-podkladu/",
-        TransactionExportView.as_view(),
+        TransactionAccountingExportView.as_view(),
         name="accounting-export",
     ),
 ]

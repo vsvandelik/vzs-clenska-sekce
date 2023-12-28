@@ -36,9 +36,10 @@ from .forms import (
     TransactionCreateFromPersonForm,
     TransactionEditForm,
     TransactionFilterForm,
+    TransactionAccountingExportPeriodForm,
 )
 from .models import BulkTransaction, Transaction
-from .utils import TransactionInfo, send_email_transactions
+from .utils import TransactionInfo, send_email_transactions, export_rewards_to_csv
 
 
 class TransactionEditPermissionMixin(PermissionRequiredMixin):
@@ -923,3 +924,18 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
         self.object.transaction_set.all().delete()
 
         return super().form_valid(form)
+
+
+class TransactionAccountingExportView(
+    TransactionEditPermissionMixin, SuccessMessageMixin, FormView
+):
+    form_class = TransactionAccountingExportPeriodForm
+    template_name = "transactions/accounting_export.html"
+    success_url = reverse_lazy("transactions:accounting-export")
+    success_message = _("Export byl úspěšně vytvořen a stahování by mělo začít brzy.")
+
+    def form_valid(self, form):
+        _ = super().form_valid(form)
+        return export_rewards_to_csv(
+            form.cleaned_data["year"], form.cleaned_data["month"]
+        )

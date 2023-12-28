@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Export účetních podkladů{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title h5">Export</div>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="export-form">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <input form="export-form" type="submit" value="Exportovat" class="btn btn-primary"/>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
