@@ -184,10 +184,10 @@ Environmentální proměnné pro DB systém PostgreSQL, relevantní pouze při p
 ---------------------
 Určuje, které soubory mají být ignorovány při práci s verzovacím systémem Git.
 
----------------------
+------------------------
 .pre-commit-config.yaml
----------------------
-
+------------------------
+konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black code formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
 
 ***************************************
 Standardní struktura Django aplikace
