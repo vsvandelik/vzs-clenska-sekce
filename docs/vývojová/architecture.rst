@@ -38,4 +38,6 @@ Další informace o front-endu se nachází na zvláštní stránce :ref:`front-
 ---------------------
 Databáze
 ---------------------
-O 
+O komunikaci s databází se stará Django ORM (objektové relační mapování), díky kterému se nemusíme psát ručně SQL dotazy a kontrolovat kompatibility napříč DB systémy. Při :ref:`Lokálním debug spuštění <local-debug>` se standardně používá SQLite databáze, při :ref:`Produkčním nasazení <production>` se používá PostgreSQL.
+
+Další informace o databázi se nachází na zvláštní stránce :ref:`db`.

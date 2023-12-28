@@ -2,6 +2,7 @@ V tomto dokumentu jsou detailně popsány všechny scénáře spouštění a nas
 
 V celém tomto dokumentu předpokládáme, že se v terminálu nacházíme v kořenovém adresáři projektu.
 
+.. _local-debug:
 ---------------------------------------
 Lokální debug spuštění
 ---------------------------------------
@@ -129,6 +130,7 @@ Nyní můžeme celý projekt spustit jedním příkazem
 
     docker compose up
 
+.. _production:
 ---------------------------------------
 Produkční nasazení
 ---------------------------------------

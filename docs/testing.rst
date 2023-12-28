@@ -7,7 +7,7 @@ Pro účely lepšího představaní zamýšleného použití a testování proje
 ***************************************
 Import dat
 ***************************************
-Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`./installation`. Poté je možné data naimportovat příkazem
+Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`./instalační/installation`. Poté je možné data naimportovat příkazem
 
 .. code-block:: console
 
