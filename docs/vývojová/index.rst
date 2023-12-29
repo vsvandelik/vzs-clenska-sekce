@@ -9,8 +9,8 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    :caption: Obsah:
 
    technologies.rst
-   project-structure.rst
    architecture.rst
+   project-structure.rst
    django-apps.rst
    front-end.rst
    db.rst

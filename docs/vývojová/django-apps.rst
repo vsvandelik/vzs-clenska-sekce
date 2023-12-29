@@ -1,5 +1,5 @@
 **************************
-Django aplikace
+Popis Django aplikací
 **************************
 
 Tato stránka obsahuje všechny Django aplikace a jejich popis.

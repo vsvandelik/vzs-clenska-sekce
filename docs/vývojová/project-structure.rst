@@ -315,10 +315,9 @@ Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:
 | ├── :ref:`forms.py`
 | ├── :ref:`models.py`
 | ├── :ref:`permissions.py`
-| ├── tests.py
-| ├── urls.py
-| ├── utils.py
-| ├── views.py
+| ├── :ref:`urls.py`
+| ├── :ref:`utils.py`
+| ├── :ref:`views.py`
 
 .. _management/:
 ------------------------
@@ -386,3 +385,21 @@ Obsahuje modely aplikace včetně metod, která nad nimi operují.
 permissions.py
 ------------------------
 Třídy a metody pracující s oprávněními aplikované na pohledy aplikace.
+
+.. _urls.py:
+------------------------
+urls.py
+------------------------
+Obsahuje definice URL vzorů mapující se na jednotlivé pohledy definované ve :ref:`views.py`
+
+.. _utils.py:
+------------------------
+utils.py
+------------------------
+Různé pomocné funkce, které aplikace využívá. Aplikace :ref:`events` např. využívá funkci ``parse_czech_date(date_str)``, která parsuje datum ze standardního českého formátu.
+
+.. _views.py:
+------------------------
+views.py
+------------------------
+Jednotlivé pohledy ke kterým je možné přistoupit z URL vzorů definovaných v souboru :ref:`urls.py`

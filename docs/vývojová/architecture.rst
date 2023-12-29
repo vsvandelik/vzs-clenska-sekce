@@ -11,18 +11,18 @@ Framework Django je velice komplexní framework, který definuje řadu konvencí
 
 Back-end se dělí na 12 Django aplikací.
 
-- api
-- events
-- groups
-- features
-- one_time_events
-- pages
-- persons
-- positions
-- trainings
-- transactions
-- users
-- vzs
+- :ref:`api`
+- :ref:`events`
+- :ref:`groups`
+- :ref:`features`
+- :ref:`one_time_events`
+- :ref:`pages`
+- :ref:`persons`
+- :ref:`positions`
+- :ref:`trainings`
+- :ref:`transactions`
+- :ref:`users`
+- :ref:`vzs`
 
 Po kliknutí na název aplikace se zobrazí detailnější popis vybrané aplikace.
 
@@ -38,6 +38,6 @@ Další informace o front-endu se nachází na zvláštní stránce :ref:`front-
 ---------------------
 Databáze
 ---------------------
-O komunikaci s databází se stará Django ORM (objektové relační mapování), díky kterému se nemusíme psát ručně SQL dotazy a kontrolovat kompatibility napříč DB systémy. Při :ref:`Lokálním debug spuštění <local-debug>` se standardně používá SQLite databáze, při :ref:`Produkčním nasazení <production>` se používá PostgreSQL.
+O komunikaci s databází se stará Django ORM (objektové relační mapování), díky kterému se nemusíme psát ručně SQL dotazy a kontrolovat kompatibilitu napříč DB systémy. Při :ref:`Lokálním debug spuštění <local-debug>` se standardně používá SQLite databáze, při :ref:`Produkčním nasazení <production>` se používá PostgreSQL.
 
 Další informace o databázi se nachází na zvláštní stránce :ref:`db`.
