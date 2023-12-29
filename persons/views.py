@@ -6,6 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
@@ -114,6 +115,52 @@ class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
 class PersonCreateView(PersonCreateUpdateMixin, CreateView):
     error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
     success_message = _("Osoba byla úspěšně vytvořena")
+
+
+class PersonCreateChildView(PersonCreateUpdateMixin, CreateView):
+    template_name = "persons/create_child.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["available_person_types"] = [Person.Type.CHILD]
+        return kwargs
+
+    def get_success_url(self):
+        return reverse("persons:add-child-parent", kwargs={"pk": self.object.pk})
+
+
+class PersonCreateChildParentView(PersonCreateUpdateMixin, CreateView):
+    template_name = "persons/create_child_parent.html"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.child = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.child = get_object_or_404(Person, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("child", self.child)
+        kwargs.setdefault("parent_idx", self.child.managed_by.count() + 1)
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["initial"] = {"person_type": Person.Type.PARENT.value}
+        kwargs["is_add_child_parent_form"] = True
+        return kwargs
+
+    def form_valid(self, form):
+        _ = super().form_valid(form)
+        form.instance.managed_persons.add(self.child)
+
+        if form.cleaned_data["add_another_parent"]:
+            view = "persons:add-child-parent"
+        else:
+            view = "persons:detail"
+
+        return HttpResponseRedirect(reverse(view, kwargs={"pk": self.child.pk}))
 
 
 class PersonStatsView(PersonPermissionMixin, UpdateView):

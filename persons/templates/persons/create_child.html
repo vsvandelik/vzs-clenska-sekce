@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Přidání nového dítěte{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+
+                <div class="card-header">
+                    <div class="card-title h5">Dítě</div>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" id="create-form">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+
+                <div class="card-footer text-center">
+                    <input form="create-form" type="submit" value="Uložit" class="btn btn-primary"/>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {% if not person %}
+        <script src="{% static "persons/person_exists.js" %}"></script>
+    {% endif %}
+{% endblock %}
