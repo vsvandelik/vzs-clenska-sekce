@@ -311,11 +311,10 @@ Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:
 | ├── :ref:`templatetags/`
 | ├── __init__.py
 | ├── :ref:`apps.py`
-| ├── cron.py
-| ├── forms.py
-| ├── models.py
-| ├── permissions.py
-| ├── apps.py
+| ├── :ref:`cron.py`
+| ├── :ref:`forms.py`
+| ├── :ref:`models.py`
+| ├── :ref:`permissions.py`
 | ├── tests.py
 | ├── urls.py
 | ├── utils.py
@@ -364,3 +363,26 @@ apps.py
 ------------------------
 Slouží ke konfiguraci chování aplikace, je zde možné nastavit např. jiné jméno aplikace apod.
 
+.. _cron.py:
+------------------------
+cron.py
+------------------------
+Funkce, které jsou periodicky volány pomocí daemonu cron. Další informace viz :ref:`cron`.
+
+.. _forms.py:
+------------------------
+forms.py
+------------------------
+Třídy definující formuláře aplikace, více informací o formulářích víz :ref:`forms`.
+
+.. _models.py:
+------------------------
+models.py
+------------------------
+Obsahuje modely aplikace včetně metod, která nad nimi operují.
+
+.. _permissions.py:
+------------------------
+permissions.py
+------------------------
+Třídy a metody pracující s oprávněními aplikované na pohledy aplikace.
