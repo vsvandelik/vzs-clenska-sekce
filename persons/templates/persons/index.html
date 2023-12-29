@@ -7,6 +7,18 @@
 {% block title %}Seznam všech osob{% endblock %}
 
 {% block content %}
+    {% ifperm 'persons:add' as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat obecnou osobu</a>
+        </div>
+    {% endifperm %}
+
+    {% ifperm 'persons:add-child' as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat dítě</a>
+        </div>
+    {% endifperm %}
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -59,9 +71,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'persons:add' %}" class="btn btn-primary">Přidat osobu</a>
                 </div>
             </div>
         </div>
