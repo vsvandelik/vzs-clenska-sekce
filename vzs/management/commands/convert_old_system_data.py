@@ -90,7 +90,7 @@ class InputProcessor:
             first_name=first_name,
             last_name=last_name,
             date_of_birth=date_of_birth,
-            sex=sex or Person.Sex.M,
+            sex=sex or Person.Sex.UNKNOWN,
             person_type=InputFieldsCleaner.process_type_by_date_of_birth(date_of_birth),
             birth_number=birth_number,
             health_insurance_company=InputFieldsCleaner.process_pojistovna(
@@ -102,7 +102,6 @@ class InputProcessor:
             postcode=get_val("psc"),
         )
         person.clean_fields()
-        person.fix_sex = True if sex is None else False
 
         return self._return_if_not_duplicate(person)
 
@@ -125,12 +124,11 @@ class InputProcessor:
             email=email,
             first_name=first_name,
             last_name=last_name,
-            sex=Person.Sex.M,
+            sex=Person.Sex.UNKNOWN,
             person_type=Person.Type.PARENT,
             phone=phone,
         )
         parent.clean_fields()
-        parent.fix_sex = True
 
         return self._return_if_not_duplicate(parent)
 
@@ -184,7 +182,7 @@ class InputProcessor:
             )
 
     def _fix_sex_with_genderize(self):
-        persons_to_fix = [p for p in self.persons if p.fix_sex]
+        persons_to_fix = [p for p in self.persons if p.sex == Person.Sex.UNKNOWN]
         names = set(p.first_name for p in persons_to_fix)
 
         sex_by_names = self._get_sex_by_names(names)
@@ -310,7 +308,7 @@ class InputFieldsCleaner:
     @staticmethod
     def process_type_by_date_of_birth(date_of_birth):
         if not date_of_birth:
-            return Person.Type.ADULT
+            return Person.Type.UNKNOWN
 
         date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d")
         age = (
@@ -319,7 +317,7 @@ class InputFieldsCleaner:
             - ((today().month, today().day) < (date_of_birth.month, date_of_birth.day))
         )
 
-        return Person.Type.ADULT if age >= 18 else Person.Type.CHILD
+        return Person.Type.UNKNOWN if age >= 18 else Person.Type.CHILD
 
 
 class OutputPrinter:
