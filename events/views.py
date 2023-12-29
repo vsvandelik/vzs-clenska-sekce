@@ -222,7 +222,7 @@ class EventGeneratesDatesMixin:
 
 class PersonTypeInsertIntoContextDataMixin:
     def get_context_data(self, **kwargs):
-        kwargs.setdefault("available_person_types", Person.Type.choices)
+        kwargs.setdefault("available_person_types", Person.Type.valid_choices())
         kwargs.setdefault(
             "person_types_required",
             self.object.allowed_person_types.values_list("person_type", flat=True),
