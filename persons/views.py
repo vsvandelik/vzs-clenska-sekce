@@ -1,5 +1,6 @@
 import datetime
 from datetime import date, datetime
+from sys import stderr
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -11,7 +12,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from features.models import FeatureTypeTexts
+from features.models import Feature, FeatureTypeTexts
 from groups.models import Group
 from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
 from persons.models import Person

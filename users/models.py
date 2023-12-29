@@ -8,7 +8,10 @@ from django.utils.functional import classproperty
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token as BaseToken
 
+from features.models import Feature
+from one_time_events.models import OneTimeEvent
 from persons.models import Person
+from trainings.models import Training
 from vzs import settings
 from vzs.models import RenderableModelMixin
 from vzs.settings import CURRENT_DATETIME
@@ -122,19 +125,19 @@ class Permission(RenderableModelMixin, BasePermission):
     class Meta:
         permissions = [
             ("povoleni", _("Správce povolení")),
-            ("kvalifikace", _("Správce kvalifikací")),
-            ("opravneni", _("Správce oprávnění")),
-            ("vybaveni", _("Správce vybavení")),
+            (Feature.Type.QUALIFICATION, _("Správce kvalifikací")),
+            (Feature.Type.PERMISSION, _("Správce oprávnění")),
+            (Feature.Type.EQUIPMENT, _("Správce vybavení")),
             ("skupiny", _("Správce skupin")),
             ("stranky", _("Správce textových stránek")),
-            ("komercni_udalosti", _("Správce komerčních událostí")),
-            ("kurzy", _("Správce kurzů")),
-            ("prezentacni_udalosti", _("Správce prezentačních událostí")),
-            ("udalosti_pro_deti", _("Správce událostí pro děti")),
-            ("spolecenske_udalosti", _("Správce společenských událostí")),
-            ("lezecke_treninky", _("Správce lezeckých tréninků")),
-            ("plavecke_treninky", _("Správce plaveckých tréninků")),
-            ("zdravoveda", _("Správce zdravovědy")),
+            (OneTimeEvent.Category.COMMERCIAL, _("Správce komerčních událostí")),
+            (OneTimeEvent.Category.COURSE, _("Správce kurzů")),
+            (OneTimeEvent.Category.PRESENTATION, _("Správce prezentačních událostí")),
+            (OneTimeEvent.Category.FOR_CHILDREN, _("Správce událostí pro děti")),
+            (OneTimeEvent.Category.SOCIAL, _("Správce společenských událostí")),
+            (Training.Category.CLIMBING, _("Správce lezeckých tréninků")),
+            (Training.Category.SWIMMING, _("Správce plaveckých tréninků")),
+            (Training.Category.MEDICAL, _("Správce zdravovědy")),
             ("clenska_zakladna", _("Správce členské základny")),
             ("detska_clenska_zakladna", _("Správce dětské členské základny")),
             (
