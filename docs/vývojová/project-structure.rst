@@ -16,7 +16,7 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 |     ├── deploy.yml
 |     ├── django.yml
 |     ├── docs.yml
-| ├── api/
+| ├── :ref:`api/`
 | ├── data/
 |   ├── db.json
 | ├── docs/
@@ -63,6 +63,7 @@ Workflows pro GitHub. Konkrétně:
 - Deploy static content to Pages (nasadí aktuální dokumentaci na GitHub Pages)
 - Django CI (zkontroluje, zda nedojde k chybě při spuštění migrací)
 
+.. _api/:
 ---------------------
 api/
 ---------------------
@@ -187,7 +188,67 @@ Určuje, které soubory mají být ignorovány při práci s verzovacím systém
 ------------------------
 .pre-commit-config.yaml
 ------------------------
-konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black code formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
+Konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black code formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
+
+------------------------
+Caddyfile
+------------------------
+Konfigurační soubor pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
+
+------------------------
+docker-build.bat
+------------------------
+Batch script, který sestaví docker image pro :term:`IS`.
+
+------------------------
+docker-build.sh
+------------------------
+Shell script, který sestaví docker image pro :term:`IS`.
+
+------------------------
+docker-compose.yaml
+------------------------
+Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
+
+------------------------
+Dockerfile
+------------------------
+Soubor popisující, jak sestavit docker image pro :term:`IS`.
+
+------------------------
+manage.py
+------------------------
+Python skript vytvořený Djangem při vytváření nového projektu. Slouží k interakci a správě Django projektu.
+
+------------------------
+package.json
+------------------------
+Manifest Node.js projektu, který definuje frontendové závislosti (Bootstrap, Select2, jQuery, ...)
+
+------------------------
+package-lock.json
+------------------------
+Automaticky generovaný soubor Node.js projektu, který obsahuje reprodukovatelného popisu stromu závislostí.
+
+------------------------
+README.md
+------------------------
+README soubor obsahující základní informace o projektu.
+
+------------------------
+requirements.txt
+------------------------
+Závislosti projektu, které je nutné mít vždy nainstalované.
+
+------------------------
+requirements_dev.txt
+------------------------
+Závislosti projektu, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj (pre-commit, sphinx, ...).
+
+------------------------
+requirements_prod.txt
+------------------------
+Závislosti projektu, které jsou vyžadovány pouze pro běh v produkčním prostředí.
 
 ***************************************
 Standardní struktura Django aplikace
