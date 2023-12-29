@@ -26,7 +26,6 @@ from vzs.mixin_extensions import (
 )
 from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
-
 from .models import Person, PersonHourlyRate
 
 
@@ -37,18 +36,23 @@ class PersonForm(ModelForm):
         widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
-        self.available_person_types = kwargs.pop("available_person_types", [])
+        available_person_types = kwargs.pop("available_person_types", [])
 
         super().__init__(*args, **kwargs)
 
         self.helper = WithoutFormTagFormHelper()
+        self.person_type = None
 
         if "person_type" in self.fields:
-            self.fields["person_type"].choices = [("", "---------")] + [
-                (pt, pt.label)
-                for pt in self.available_person_types
-                if pt != Person.Type.UNKNOWN
-            ]
+            if len(available_person_types) == 1:
+                del self.fields["person_type"]
+                self.person_type = available_person_types[0]
+            else:
+                self.fields["person_type"].choices = [("", "---------")] + [
+                    (pt, pt.label)
+                    for pt in available_person_types
+                    if pt != Person.Type.UNKNOWN
+                ]
 
         # Removing unknown sex as choice
         self.fields["sex"].choices = [
@@ -108,6 +112,13 @@ class PersonForm(ModelForm):
             raise ValidationError(_("PSČ nemá platný formát."))
 
         return postcode
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person_type:
+            cleaned_data["person_type"] = self.person_type
+
+        return cleaned_data
 
 
 class MyProfileUpdateForm(PersonForm):

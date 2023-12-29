@@ -116,6 +116,17 @@ class PersonCreateView(PersonCreateUpdateMixin, CreateView):
     success_message = _("Osoba byla úspěšně vytvořena")
 
 
+class PersonCreateChildView(PersonPermissionMixin, CreateView):
+    form_class = PersonForm
+    model = Person
+    template_name = "persons/create_child.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["available_person_types"] = [Person.Type.CHILD]
+        return kwargs
+
+
 class PersonStatsView(PersonPermissionMixin, UpdateView):
     model = Person
     template_name = "persons/stats.html"
