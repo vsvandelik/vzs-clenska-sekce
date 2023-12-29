@@ -1,3 +1,4 @@
+{% load sidebar_menu_tags %}
 {% load static %}
 {% load active_link_tags %}
 {% load vzs_filters %}
@@ -22,6 +23,10 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
+
+
+                {% render_menu %}
+
                 {% if user.is_authenticated %}
                     <li class="nav-item {% active_link "my-profile:index || my-transactions" "menu-open" strict=False %}">
                         <a href="#" class="nav-link {% active_link "my-profile:index || my-transactions" %}">
