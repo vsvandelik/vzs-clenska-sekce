@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Přidání nového dítěte - rodiče{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="elevation-2 card">
+                <div class="card-header">
+                    <div class="card-title h5"><span style="line-height: 45px;font-size: 22.5px;">{{ child.name }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+
+                <div class="card-header">
+                    <div class="card-title h5">Rodič {{ parent_idx }}</div>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" id="create-form">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+
+                    <a class="d-inline-block btn btn-sm btn-info" href="#" id="display-hidden-fields">Zobrazit skryté položky</a>
+                </div>
+
+                <div class="card-footer text-center">
+                    <input form="create-form" type="submit" value="Uložit" class="btn btn-primary">
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "persons/person_exists.js" %}"></script>
+    <script src="{% static "persons/create_child_parent.js" %}"></script>
+{% endblock %}

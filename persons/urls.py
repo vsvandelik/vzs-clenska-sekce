@@ -36,6 +36,7 @@ from .views import (
     SendEmailToSelectedPersonsView,
     PersonStatsView,
     PersonCreateChildView,
+    PersonCreateChildParentView,
 )
 
 app_name = "persons"
@@ -76,6 +77,11 @@ urlpatterns = [
     path("exportovat/", ExportSelectedPersonsView.as_view(), name="export"),
     path("pridat/", PersonCreateView.as_view(), name="add"),
     path("pridat-dite/", PersonCreateChildView.as_view(), name="add-child"),
+    path(
+        "pridat-dite/<int:pk>/pridat-rodice",
+        PersonCreateChildParentView.as_view(),
+        name="add-child-parent",
+    ),
     path("<int:pk>/", PersonDetailView.as_view(), name="detail"),
     path("<int:pk>/statistiky", PersonStatsView.as_view(), name="stats"),
     path("<int:pk>/upravit/", PersonUpdateView.as_view(), name="edit"),

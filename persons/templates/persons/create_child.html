@@ -15,14 +15,14 @@
                 </div>
 
                 <div class="card-body">
-                    <form method="post" id="create-child-form">
+                    <form method="post" id="create-form">
                         {% csrf_token %}
                         {% crispy form %}
                     </form>
                 </div>
 
                 <div class="card-footer text-center">
-                    <input form="create-child-form" type="submit" value="Uložit" class="btn btn-primary"/>
+                    <input form="create-form" type="submit" value="Uložit" class="btn btn-primary"/>
                 </div>
 
             </div>

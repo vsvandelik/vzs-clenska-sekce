@@ -12,6 +12,7 @@ from django.forms import (
     ModelChoiceField,
     ModelForm,
     ValidationError,
+    BooleanField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -32,11 +33,26 @@ from .models import Person, PersonHourlyRate
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_persons", "is_deleted"]
+        fields = [
+            "first_name",
+            "last_name",
+            "person_type",
+            "sex",
+            "email",
+            "phone",
+            "date_of_birth",
+            "birth_number",
+            "health_insurance_company",
+            "city",
+            "postcode",
+            "street",
+            "swimming_time",
+        ]
         widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
         available_person_types = kwargs.pop("available_person_types", [])
+        is_add_child_parent_form = kwargs.pop("is_add_child_parent_form", False)
 
         super().__init__(*args, **kwargs)
 
@@ -58,6 +74,12 @@ class PersonForm(ModelForm):
         self.fields["sex"].choices = [
             c for c in self.fields["sex"].choices if c[0] != "U"
         ]
+
+        if is_add_child_parent_form:
+            self.fields["add_another_parent"] = BooleanField(
+                label=_("Přidat dalšího rodiče"),
+                required=False,
+            )
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
