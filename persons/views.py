@@ -1,5 +1,6 @@
 import datetime
 from datetime import date, datetime
+from sys import stderr
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -7,14 +8,14 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from features.models import FeatureTypeTexts, Feature, FeatureAssignment
+from features.models import Feature, FeatureAssignment, FeatureTypeTexts
 from groups.models import Group
 from one_time_events.models import (
     OneTimeEvent,
@@ -25,7 +26,8 @@ from persons.models import Person
 from trainings.models import TrainingOccurrence
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
-from vzs.utils import export_queryset_csv, filter_queryset, today, now
+from vzs.utils import export_queryset_csv, filter_queryset, now, today
+
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -38,9 +40,9 @@ from .forms import (
 from .permissions import PersonPermissionMixin, PersonPermissionQuerysetMixin
 from .utils import (
     PersonsFilter,
+    anonymize_person,
     extend_kwargs_of_assignment_features,
     send_email_to_selected_persons,
-    anonymize_person,
 )
 
 

@@ -31,16 +31,16 @@ class EquipmentsManager(Manager):
 
 class Feature(MPTTModel):
     class Type(TextChoices):
-        QUALIFICATION = "K", _("kvalifikace")
-        EQUIPMENT = "V", _("vybavení")
-        PERMISSION = "O", _("oprávnění")
+        QUALIFICATION = "kvalifikace", _("kvalifikace")
+        EQUIPMENT = "vybaveni", _("vybavení")
+        PERMISSION = "opravneni", _("oprávnění")
 
     objects = Manager()
     qualifications = QualificationsManager()
     permissions = PermissionsManager()
     equipments = EquipmentsManager()
 
-    feature_type = CharField(max_length=1, choices=Type.choices)
+    feature_type = CharField(max_length=15, choices=Type.choices)
     parent = TreeForeignKey(
         "self",
         on_delete=CASCADE,
@@ -78,7 +78,6 @@ class FeatureTypeTextsClass:
         success_message_assigning_updated,
         success_message_assigning_delete,
         duplicated_message_assigning,
-        permission_name,
     ):
         self.shortcut = feature_type.value
         self.name_1 = feature_type.label
@@ -92,7 +91,6 @@ class FeatureTypeTextsClass:
         self.success_message_assigning_updated = success_message_assigning_updated
         self.success_message_assigning_delete = success_message_assigning_delete
         self.duplicated_message_assigning = duplicated_message_assigning
-        self.permission_name = permission_name
 
 
 FeatureTypeTexts = {
@@ -117,7 +115,6 @@ FeatureTypeTexts = {
         _("Přiřazení kvalifikace bylo úspěšně upraveno."),
         _("Přiřazení kvalifikace bylo úspěšně odstraněno."),
         _("Daná osoba má již tuto kvalifikaci přiřazenou. Uložení se neprovedlo."),
-        "kvalifikace",
     ),
     "permissions": FeatureTypeTextsClass(
         Feature.Type.PERMISSION,
@@ -137,7 +134,6 @@ FeatureTypeTexts = {
         _("Přiřazení oprávnění bylo úspěšně upraveno."),
         _("Přiřazení oprávnění bylo úspěšně odstraněno."),
         _("Daná osoba má již toto oprávnění přiřazené. Uložení se neprovedlo."),
-        "opravneni",
     ),
     "equipments": FeatureTypeTextsClass(
         Feature.Type.EQUIPMENT,
@@ -161,7 +157,6 @@ FeatureTypeTexts = {
         _("Přiřazení vybavení bylo úspěšně upraveno."),
         _("Přiřazení vybavení bylo úspěšně odstraněno."),
         _("Daná osoba má již toto vybavení přiřazené. Uložení se neprovedlo."),
-        "vybaveni",
     ),
 }
 
