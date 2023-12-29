@@ -8,9 +8,11 @@
 {% block title %}Akce{% endblock %}
 
 {% block content %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url 'one_time_events:add' %}" class="btn btn-primary">Přidat akci</a>
-    </div>
+    {% ifperm "one_time_events:add" as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat akci</a>
+        </div>
+    {% endifperm %}
 
     {% if available_events %}
         <div class="row">
