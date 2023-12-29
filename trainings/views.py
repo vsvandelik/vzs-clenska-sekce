@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -51,6 +52,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
@@ -181,7 +183,7 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault("occurrences", occurrences)
 
 
-class TrainingListView(generic.ListView):
+class TrainingListView(LoginRequiredMixin, generic.ListView):
     template_name = "trainings/index.html"
 
     def get_context_data(self, **kwargs):

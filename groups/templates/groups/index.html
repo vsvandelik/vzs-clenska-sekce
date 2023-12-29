@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
+{% load vzs_filters %}
 
 {% block title %}Seznam všech skupin{% endblock %}
 
 {% block content %}
+    {% ifperm 'groups:add' as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat skupinu</a>
+        </div>
+    {% endifperm %}
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -15,9 +22,6 @@
                             <li><a href="{% url 'groups:detail' group.id %}">{{ group.name }}</a></li>
                         {% endfor %}
                     </ul>
-                </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'groups:add' %}" class="btn btn-primary">Přidat skupinu</a>
                 </div>
             </div>
         </div>

@@ -1,38 +1,51 @@
 {% extends "base.html" %}
+{% load vzs_filters %}
 
 {% load static %}
 
-{% block content %}
-    <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title">Tokeny</h3>
-        </div>
+{% block title %}API tokeny{% endblock %}
 
-        <div class="card-body">
-            <table class="table" id="tokens-table">
-                <thead>
-                    <tr>
-                        <th>Název</th>
-                        <th>Token</th>
-                        <th>Čas vytvoření</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for token in tokens %}
-                        <tr>
-                            <td>{{ token.name }}</td>
-                            <td>{{ token.key }}</td>
-                            <td>{{ token.created }}</td>
-                            <td>
-                                <div class="btn-group">
-                                    {% include "delete_button_icon.html" with id="delete-token-modal" pattern="api:token:delete" object=token %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+    {% ifperm "api:token:generate" as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Generovat token</a>
+        </div>
+    {% endifperm %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tokeny</h3>
+                </div>
+
+                <div class="card-body">
+                    <table class="table" id="tokens-table">
+                        <thead>
+                            <tr>
+                                <th>Název</th>
+                                <th>Token</th>
+                                <th>Čas vytvoření</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for token in tokens %}
+                                <tr>
+                                    <td>{{ token.name }}</td>
+                                    <td>{{ token.key }}</td>
+                                    <td>{{ token.created }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% include "delete_button_icon.html" with id="delete-token-modal" pattern="api:token:delete" object=token %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -12,6 +12,7 @@ from django.forms import (
     ModelChoiceField,
     ModelForm,
     ValidationError,
+    BooleanField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -26,27 +27,59 @@ from vzs.mixin_extensions import (
 )
 from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
-
 from .models import Person, PersonHourlyRate
 
 
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_persons"]
+        fields = [
+            "first_name",
+            "last_name",
+            "person_type",
+            "sex",
+            "email",
+            "phone",
+            "date_of_birth",
+            "birth_number",
+            "health_insurance_company",
+            "city",
+            "postcode",
+            "street",
+            "swimming_time",
+        ]
         widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
-        self.available_person_types = kwargs.pop("available_person_types", [])
+        available_person_types = kwargs.pop("available_person_types", [])
+        is_add_child_parent_form = kwargs.pop("is_add_child_parent_form", False)
 
         super().__init__(*args, **kwargs)
 
         self.helper = WithoutFormTagFormHelper()
+        self.person_type = None
 
         if "person_type" in self.fields:
-            self.fields["person_type"].choices = [("", "---------")] + [
-                (pt, pt.label) for pt in self.available_person_types
-            ]
+            if len(available_person_types) == 1:
+                del self.fields["person_type"]
+                self.person_type = available_person_types[0]
+            else:
+                self.fields["person_type"].choices = [("", "---------")] + [
+                    (pt, pt.label)
+                    for pt in available_person_types
+                    if pt != Person.Type.UNKNOWN
+                ]
+
+        # Removing unknown sex as choice
+        self.fields["sex"].choices = [
+            c for c in self.fields["sex"].choices if c[0] != "U"
+        ]
+
+        if is_add_child_parent_form:
+            self.fields["add_another_parent"] = BooleanField(
+                label=_("Přidat dalšího rodiče"),
+                required=False,
+            )
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
@@ -101,6 +134,13 @@ class PersonForm(ModelForm):
             raise ValidationError(_("PSČ nemá platný formát."))
 
         return postcode
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.person_type:
+            cleaned_data["person_type"] = self.person_type
+
+        return cleaned_data
 
 
 class MyProfileUpdateForm(PersonForm):
@@ -159,7 +199,7 @@ class PersonsFilterForm(Form):
     person_type = ChoiceField(
         label=_("Typ osoby"),
         required=False,
-        choices=[("", "---------")] + Person.Type.choices,
+        choices=[("", "---------")] + Person.Type.valid_choices(),
     )
     age_from = IntegerField(label=_("Věk od"), required=False, min_value=1)
     age_to = IntegerField(label=_("Věk do"), required=False, min_value=1)
