@@ -17,9 +17,10 @@ from .forms import (
     RemoveFeatureRequirementPositionForm,
 )
 from .models import EventPosition
+from .permissions import PositionPermissionMixin
 
 
-class PositionMixin:
+class PositionMixin(PositionPermissionMixin):
     context_object_name = "position"
     model = EventPosition
 
