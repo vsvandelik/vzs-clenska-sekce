@@ -6,9 +6,9 @@ from django.contrib.auth.views import RedirectURLMixin
 from django.contrib.messages import error as error_message
 from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.mail import send_mail
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -26,7 +26,6 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
-
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -407,8 +406,8 @@ class ChangeActivePersonView(LoginRequiredMixin, BaseFormView):
             set_active_person(request, new_active_person)
             success_message(request, _("Aktivní osoba úspěšně změněna."))
         else:
-            return HttpResponseForbidden(
-                _("Vybraná osoba není spravována přihlášenou osobou.").encode("utf-8")
+            raise PermissionDenied(
+                _("Vybraná osoba není spravována přihlášenou osobou.")
             )
 
         return HttpResponseRedirect(

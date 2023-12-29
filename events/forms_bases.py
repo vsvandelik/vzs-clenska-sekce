@@ -95,7 +95,7 @@ class AllowedPersonTypeForm(ModelForm):
     class Meta:
         fields = []
 
-    person_type = ChoiceField(choices=Person.Type.choices)
+    person_type = ChoiceField(choices=Person.Type.valid_choices())
 
     def save(self, commit=True):
         instance = super().save(False)

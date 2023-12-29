@@ -361,7 +361,7 @@ class OrganizerAssignment(PolymorphicModel):
 
 class EventPersonTypeConstraint(models.Model):
     person_type = models.CharField(
-        _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.choices
+        _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.valid_choices()
     )
 
     @staticmethod

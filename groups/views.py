@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.messages import error as error_message
 from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
@@ -14,8 +13,8 @@ from django.views.generic.list import ListView
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
+from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
-
 from .forms import (
     AddMembersGroupForm,
     AddPersonToGroupForm,
@@ -26,7 +25,7 @@ from .models import Group, Person
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
-    permission_required = "skupiny"
+    permissions_formula = [["skupiny"]]
 
 
 class GroupIndexView(GroupPermissionMixin, ListView):
@@ -186,9 +185,10 @@ class AddRemovePersonToGroupMixin(PersonPermissionMixin, MessagesMixin, UpdateVi
     error_message: str
     http_method_names = ["post"]
     form_class: type
+    model = Person
 
     def get_success_url(self) -> str:
-        return reverse("persons:detail", args=[self.object])
+        return reverse("persons:detail", args=[self.object.pk])
 
     def get_error_message(self, errors):
         return self.error_message + " ".join(errors["group"])

@@ -47,7 +47,7 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
 
     @classmethod
     def view_has_permission(cls, active_user, feature_type, **kwargs):
-        return active_user.has_perm(FeatureTypeTexts[feature_type].permission_name)
+        return active_user.has_perm(FeatureTypeTexts[feature_type].shortcut)
 
     def get_context_data(self, **kwargs):
         kwargs.setdefault("texts", self.feature_type_texts)

@@ -4,10 +4,11 @@ from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import SuspiciousOperation
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
 from django.forms import Form
-from django.http import HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -28,7 +29,6 @@ from trainings.models import Training
 from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
-
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
@@ -379,17 +379,30 @@ class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
 
-class BulkTransactionIndexView(BaseListView):
+class BulkTransactionIndexView(TransactionEditPermissionMixin, ListView):
+    """
+    Displays a list of bulk transactions
+
+    Allow direct deletion using modals.
+
+    **Permissions**:
+
+    Users with the ``transakce`` permission.
+    """
+
     context_object_name = "bulk_transactions"
     """:meta private:"""
 
     model = BulkTransaction
     """:meta private:"""
 
+    template_name = "transactions/bulk_transactions.html"
+    """:meta private:"""
+
 
 class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     """
-    Displays a list of all transactions and bulk transactions.
+    Displays a list of all transactions
 
     Allow direct deletion using modals.
 
@@ -397,7 +410,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
 
     **Permissions**:
 
-    Users with the ``users.transakce`` permission.
+    Users with the ``transakce`` permission.
 
     **Query parameters:**
 
@@ -411,9 +424,6 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     *   ``date_due_to``
     *   ``bulk_transaction``
     """
-
-    bulk_transactions_view = BulkTransactionIndexView()
-    """:meta private:"""
 
     context_object_name = "transactions"
     """:meta private:"""
@@ -436,9 +446,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
         kwargs.setdefault("form", self.filter_form)
         kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
-        return self.bulk_transactions_view.get_context_data(
-            object_list=self.bulk_transactions_view.get_queryset()
-        ) | super().get_context_data(**kwargs)
+        return super().get_context_data(**kwargs)
 
     def get(self, request: HttpRequest, *args, **kwargs):
         """:meta private:"""
@@ -634,10 +642,10 @@ class TransactionCreateBulkConfirmMixin(
         """:meta private:"""
 
         query_parameters = self.request.GET
-        required_parameters = chain(["reason"], self.additional_required_parameters())
+        required_parameters = {"reason", *self.additional_required_parameters()}
 
-        if not set(query_parameters.keys()).issubset(required_parameters):
-            return HttpResponseBadRequest(b"Missing parameters")
+        if not required_parameters.issubset(query_parameters.keys()):
+            raise SuspiciousOperation("Missing parameters")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -934,7 +942,7 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
 
 class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
     """
-    Enables exporting transactions as a accounting basis. The rewards
+    Enables exporting transactions as an accounting basis. The rewards
     are exported as a CSV file and the debts as an XML file, which can be imported
     to the Pohoda software.
 
@@ -966,4 +974,4 @@ class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
                 form.cleaned_data["year"], form.cleaned_data["month"]
             )
         else:
-            return HttpResponseBadRequest(b"Missing parameters")
+            raise SuspiciousOperation("Missing parameters")

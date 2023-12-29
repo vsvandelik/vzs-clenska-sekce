@@ -21,7 +21,7 @@ from vzs.utils import (
     get_xml_http_response,
     now,
 )
-from .models import FioTransaction, Transaction
+from .models import FioTransaction, Transaction, BulkTransaction
 
 _fio_client = FioBank(FIO_TOKEN)
 
@@ -171,7 +171,7 @@ class TransactionFilter(TypedDict, total=False):
     date_due_to: Annotated[date, lambda date_due_to: Q(date_due__lte=date_due_to)]
 
     bulk_transaction: Annotated[
-        int, lambda bulk_transaction: Q(bulk_transaction=bulk_transaction)
+        BulkTransaction, lambda bulk_transaction: Q(bulk_transaction=bulk_transaction)
     ]
 
 

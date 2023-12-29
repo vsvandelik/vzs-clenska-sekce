@@ -5,6 +5,12 @@
 {% block title %}Seznam všech {{ texts.name_2_plural }}{% endblock %}
 
 {% block content %}
+    {% ifperm feature_type|add:':add' as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat {{ texts.name_4 }}</a>
+        </div>
+    {% endifperm %}
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -18,9 +24,6 @@
                             {{ children }}
                         {% endrecursetree %}
                     </ul>
-                </div>
-                <div class="card-footer text-center">
-                    <a href="{% url feature_type|add:':add' %}" class="btn btn-primary">Přidat {{ texts.name_4 }}</a>
                 </div>
             </div>
         </div>

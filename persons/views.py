@@ -1,22 +1,32 @@
 import datetime
 from datetime import date, datetime
+from sys import stderr
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connection
-from django.urls import reverse_lazy
+from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from features.models import FeatureTypeTexts
+from features.models import Feature, FeatureAssignment, FeatureTypeTexts
 from groups.models import Group
-from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
+from one_time_events.models import (
+    OneTimeEvent,
+    OneTimeEventAttendance,
+    OneTimeEventOccurrence,
+)
 from persons.models import Person
+from trainings.models import TrainingOccurrence
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
-from vzs.utils import export_queryset_csv, filter_queryset, today
+from vzs.utils import export_queryset_csv, filter_queryset, now, today
 
 from .forms import (
     AddManagedPersonForm,
@@ -30,6 +40,7 @@ from .forms import (
 from .permissions import PersonPermissionMixin, PersonPermissionQuerysetMixin
 from .utils import (
     PersonsFilter,
+    anonymize_person,
     extend_kwargs_of_assignment_features,
     send_email_to_selected_persons,
 )
@@ -106,6 +117,52 @@ class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
 class PersonCreateView(PersonCreateUpdateMixin, CreateView):
     error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
     success_message = _("Osoba byla úspěšně vytvořena")
+
+
+class PersonCreateChildView(PersonCreateUpdateMixin, CreateView):
+    template_name = "persons/create_child.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["available_person_types"] = [Person.Type.CHILD]
+        return kwargs
+
+    def get_success_url(self):
+        return reverse("persons:add-child-parent", kwargs={"pk": self.object.pk})
+
+
+class PersonCreateChildParentView(PersonCreateUpdateMixin, CreateView):
+    template_name = "persons/create_child_parent.html"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.child = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.child = get_object_or_404(Person, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("child", self.child)
+        kwargs.setdefault("parent_idx", self.child.managed_by.count() + 1)
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["initial"] = {"person_type": Person.Type.PARENT.value}
+        kwargs["is_add_child_parent_form"] = True
+        return kwargs
+
+    def form_valid(self, form):
+        _ = super().form_valid(form)
+        form.instance.managed_persons.add(self.child)
+
+        if form.cleaned_data["add_another_parent"]:
+            view = "persons:add-child-parent"
+        else:
+            view = "persons:detail"
+
+        return HttpResponseRedirect(reverse(view, kwargs={"pk": self.child.pk}))
 
 
 class PersonStatsView(PersonPermissionMixin, UpdateView):
@@ -210,6 +267,73 @@ class PersonDeleteView(
     success_message = _("Osoba byla úspěšně smazána")
     success_url = reverse_lazy("persons:index")
     template_name = "persons/delete.html"
+
+    def form_valid(self, form):
+        person = self.object
+
+        if self._is_person_in_events(person, only_upcoming=True):
+            messages.error(
+                self.request,
+                _(
+                    "Osoba je přihlášena na nadcházející akce, a proto se osobu nepodařilo odstranit."
+                ),
+            )
+            return HttpResponseRedirect(
+                reverse("persons:detail", kwargs={"pk": person.pk})
+            )
+
+        if self._has_person_equipment(person):
+            messages.error(
+                self.request,
+                _("Osoba má v držení vybavení, a proto se osobu nepodařilo odstranit."),
+            )
+            return HttpResponseRedirect(
+                reverse("persons:detail", kwargs={"pk": person.pk})
+            )
+
+        if self._is_person_in_events(person):
+            anonymize_person(person)
+            messages.warning(
+                self.request,
+                _(
+                    "Osoba je přihlášena na některé akce, proto nebude záznam o osobě smazán, ale bude jen anonymizován."
+                ),
+            )
+        else:
+            person.delete()
+            messages.success(self.request, _("Osoba byla úspěšně smazána."))
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    @staticmethod
+    def _is_person_in_events(person, only_upcoming=False):
+        one_time_occurrences = OneTimeEventOccurrence.objects.filter(
+            Q(organizers=person) | Q(participants=person)
+        )
+
+        trainings_occurrences = TrainingOccurrence.objects.filter(
+            Q(coaches=person) | Q(participants=person)
+        )
+
+        if only_upcoming:
+            one_time_occurrences = one_time_occurrences.filter(date__gte=today())
+            trainings_occurrences = trainings_occurrences.filter(
+                datetime_start__gte=now()
+            )
+
+        return one_time_occurrences.exists() or trainings_occurrences.exists()
+
+    @staticmethod
+    def _has_person_equipment(person):
+        equipment = (
+            FeatureAssignment.objects.filter(
+                person=person, feature__feature_type=Feature.Type.EQUIPMENT
+            )
+            .filter(Q(date_returned__isnull=True) | Q(date_returned__gte=today()))
+            .all()
+        )
+
+        return equipment
 
 
 class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
