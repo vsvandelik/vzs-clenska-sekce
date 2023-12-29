@@ -19,8 +19,8 @@
                 <div class="card-header d-flex align-items-center">
                     <div class="card-title h5">Transakce</div>
                     <div class="card-tools ml-auto">
-                        <a class="btn btn-primary btn-sm" href="{% url "transactions:send-email" %}?{{ filtered_get }}">Poslat {{ filtered_get|yesno:"vyfiltrovaným,všem" }} e-mail</a>
-                        <a class="btn btn-primary btn-sm" href="{% url "transactions:export" %}?{{ filtered_get }}">Vyexportovat {{ filtered_get|yesno:"vyfiltrované,všechny" }}</a>
+                        <a class="btn btn-info btn-sm" href="{% url "transactions:send-email" %}?{{ filtered_get }}">Poslat {{ filtered_get|yesno:"vyfiltrovaným,všem" }} e-mail</a>
+                        <a class="btn btn-info btn-sm" href="{% url "transactions:export" %}?{{ filtered_get }}">Vyexportovat {{ filtered_get|yesno:"vyfiltrované,všechny" }}</a>
                     </div>
                 </div>
                 <div class="card-body">
