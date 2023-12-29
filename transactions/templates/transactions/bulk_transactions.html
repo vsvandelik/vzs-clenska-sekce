@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}Hromadné transakce{% endblock %}
+
+{% block content %}
+    {% ifperm "transactions:add-bulk" as perm %}
+        <div class="btn-group-md btn-group mb-3 elevation-2">
+            <a href="{{ perm.url }}" class="btn btn-primary">Přidat hromadnou transakci</a>
+        </div>
+    {% endifperm %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="card-title h5">Transakce</div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-hover table-striped" id="bulk-transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Popis</th>
+                                        <th scope="col">Trénink</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bulk_transaction in bulk_transactions %}
+                                        <tr>
+                                            <td>{{ bulk_transaction.reason }}</td>
+                                            <td>{% if bulk_transaction.event is not none %}{% render bulk_transaction.event "inline" %}{% else %}-{% endif %}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete-bulk" object=bulk_transaction %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-transaction-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        datatableEnable("bulk-transactions-table", [0, 1], [0, 1]);
+        registerModal("delete-transaction-modal");
+    </script>
+{% endblock %}

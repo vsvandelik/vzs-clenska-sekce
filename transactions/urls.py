@@ -13,6 +13,7 @@ from .views import (
     TransactionQRView,
     TransactionSendEmailView,
     TransactionAccountingExportView,
+    BulkTransactionIndexView,
 )
 
 app_name = "transactions"
@@ -22,6 +23,11 @@ urlpatterns = [
         "",
         TransactionIndexView.as_view(),
         name="index",
+    ),
+    path(
+        "hromadne/",
+        BulkTransactionIndexView.as_view(),
+        name="index-bulk",
     ),
     path(
         "exportovat/",
