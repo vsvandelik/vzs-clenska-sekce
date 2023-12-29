@@ -42,9 +42,12 @@ class Command(BaseCommand):
                 f"Uzavřete událost s názvem {event.name} na adrese {url_address}",
                 organizers,
             )
-            category_admins = get_permission_by_codename(event.category).user_set
+            category_admins = [
+                user.person
+                for user in get_permission_by_codename(event.category).user_set.all()
+            ]
             send_notification_email(
                 "Upozornění na neuzavřenou událost",
-                f"Upozorňujeme Vás jako správce událostí druhu {event.category.label}, že událost s názvem {event.name} na adrese {url_address} není uzavřena",
+                f"Upozorňujeme Vás jako správce událostí druhu {event.get_category_display()}, že událost s názvem {event.name} na adrese {url_address} není uzavřena",
                 category_admins,
             )

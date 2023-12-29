@@ -42,11 +42,14 @@ class Command(BaseCommand):
                 f"Uzavřete trénink {unclosed_training.event} dne {date} na adrese {url_address}",
                 coaches,
             )
-            category_admins = get_permission_by_codename(
-                unclosed_training.event.category
-            ).user_set
+            category_admins = [
+                user.person
+                for user in get_permission_by_codename(
+                    unclosed_training.event.category
+                ).user_set.all()
+            ]
             send_notification_email(
                 "Upozornění na neuzavřený trénink",
-                f"Upozorňujeme Vás jako správce událostí druhu {unclosed_training.event.category.label}, že trénink {unclosed_training.event.name} dne {date} na adrese {url_address} není uzavřen.",
+                f"Upozorňujeme Vás jako správce událostí druhu {unclosed_training.event.get_category_display()}, že trénink {unclosed_training.event.name} dne {date} na adrese {url_address} není uzavřen.",
                 category_admins,
             )
