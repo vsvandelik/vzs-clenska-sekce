@@ -7,11 +7,9 @@
 {% block title %}Tréninky{% endblock %}
 
 {% block content %}
-    {% ifperm "trainings:add" as perm %}
-        <div class="btn-group-md btn-group mb-3 elevation-2">
-            <a href="{{ perm.url }}" class="btn btn-primary">Přidat trénink</a>
-        </div>
-    {% endifperm %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url "trainings:add" %}" class="btn btn-primary">Přidat trénink</a>
+    </div>
 
     {% if participant_replaceable_occurrences %}
         <div class="row">
