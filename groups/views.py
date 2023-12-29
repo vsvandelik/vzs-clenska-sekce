@@ -15,7 +15,6 @@ from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
 from vzs.mixin_extensions import MessagesMixin
-
 from .forms import (
     AddMembersGroupForm,
     AddPersonToGroupForm,
@@ -186,9 +185,10 @@ class AddRemovePersonToGroupMixin(PersonPermissionMixin, MessagesMixin, UpdateVi
     error_message: str
     http_method_names = ["post"]
     form_class: type
+    model = Person
 
     def get_success_url(self) -> str:
-        return reverse("persons:detail", args=[self.object])
+        return reverse("persons:detail", args=[self.object.pk])
 
     def get_error_message(self, errors):
         return self.error_message + " ".join(errors["group"])
