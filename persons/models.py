@@ -19,6 +19,7 @@ from django.db.models import (
     TextChoices,
     Value,
     When,
+    BooleanField,
 )
 from django.db.models.functions import ExtractYear
 from django.urls import reverse
@@ -31,7 +32,7 @@ from vzs.utils import today
 
 class PersonsManager(Manager):
     def get_queryset(self):
-        return super().get_queryset()
+        return super().get_queryset().exclude(is_deleted=True)
 
     def with_age(self):
         return self.get_queryset().annotate(
@@ -61,6 +62,7 @@ class Person(ExportableCSVMixin, RenderableModelMixin, Model):
         EXTERNAL = "externi", _("externí spolupracovník")
         PARENT = "rodic", _("rodič")
         FORMER = "byvaly", _("bývalý člen")
+        UNKNOWN = "neznámý", _("neznámý")
 
     class HealthInsuranceCompany(TextChoices):
         VZP = "111", "111 - Všeobecná zdravotní pojišťovna České republiky"
@@ -77,6 +79,7 @@ class Person(ExportableCSVMixin, RenderableModelMixin, Model):
     class Sex(TextChoices):
         M = "M", _("muž")
         F = "F", _("žena")
+        UNKNOWN = "U", _("neznámé")
 
     objects = PersonsManager()
 
@@ -126,6 +129,7 @@ class Person(ExportableCSVMixin, RenderableModelMixin, Model):
     managed_persons = ManyToManyField(
         "self", symmetrical=False, related_name="managed_by"
     )
+    is_deleted = BooleanField(_("Smazáno"), default=False)
 
     csv_order = [
         "person_type",

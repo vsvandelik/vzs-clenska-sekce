@@ -33,7 +33,7 @@ from .models import Person, PersonHourlyRate
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_persons"]
+        exclude = ["features", "managed_persons", "is_deleted"]
         widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
@@ -47,6 +47,11 @@ class PersonForm(ModelForm):
             self.fields["person_type"].choices = [("", "---------")] + [
                 (pt, pt.label) for pt in self.available_person_types
             ]
+
+        # Removing unknown sex as choice
+        self.fields["sex"].choices = [
+            c for c in self.fields["sex"].choices if c[0] != "U"
+        ]
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]

@@ -1,23 +1,30 @@
 import datetime
 from datetime import date, datetime
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connection
-from django.urls import reverse_lazy
+from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from features.models import FeatureTypeTexts
+from features.models import FeatureTypeTexts, Feature, FeatureAssignment
 from groups.models import Group
-from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
-from persons.models import Person
+from one_time_events.models import (
+    OneTimeEvent,
+    OneTimeEventAttendance,
+    OneTimeEventOccurrence,
+)
+from persons.models import Person, PersonHourlyRate
+from trainings.models import TrainingOccurrence
 from vzs.mixin_extensions import MessagesMixin
-from vzs.utils import export_queryset_csv, filter_queryset, today
-
+from vzs.utils import export_queryset_csv, filter_queryset, today, now
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -210,6 +217,112 @@ class PersonDeleteView(
     success_message = _("Osoba byla úspěšně smazána")
     success_url = reverse_lazy("persons:index")
     template_name = "persons/delete.html"
+
+    def form_valid(self, form):
+        person = self.object
+
+        if self._is_person_in_events(person, only_upcoming=True):
+            messages.error(
+                self.request,
+                _(
+                    "Osoba je přihlášena na nadcházející akce, a proto se osobu nepodařilo odstranit."
+                ),
+            )
+            return HttpResponseRedirect(
+                reverse("persons:detail", kwargs={"pk": person.pk})
+            )
+
+        if self._has_person_equipment(person):
+            messages.error(
+                self.request,
+                _("Osoba má v držení vybavení, a proto se osobu nepodařilo odstranit."),
+            )
+            return HttpResponseRedirect(
+                reverse("persons:detail", kwargs={"pk": person.pk})
+            )
+
+        if self._is_person_in_events(person):
+            self._anonymize_person(person)
+            messages.warning(
+                self.request,
+                _(
+                    "Osoba je přihlášena na některé akce, proto nebude záznam o osobě smazán, ale bude jen anonymizován."
+                ),
+            )
+        else:
+            person.delete()
+            messages.success(self.request, _("Osoba byla úspěšně smazána."))
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    @staticmethod
+    def _is_person_in_events(person, only_upcoming=False):
+        one_time_occurrences = OneTimeEventOccurrence.objects.filter(
+            Q(organizers=person) | Q(participants=person)
+        )
+
+        trainings_occurrences = TrainingOccurrence.objects.filter(
+            Q(coaches=person) | Q(participants=person)
+        )
+
+        if only_upcoming:
+            one_time_occurrences = one_time_occurrences.filter(date__gte=today())
+            trainings_occurrences = trainings_occurrences.filter(
+                datetime_start__gte=now()
+            )
+
+        return one_time_occurrences.exists() or trainings_occurrences.exists()
+
+    @staticmethod
+    def _has_person_equipment(person):
+        equipment = (
+            FeatureAssignment.objects.filter(
+                person=person, feature__feature_type=Feature.Type.EQUIPMENT
+            )
+            .filter(Q(date_returned__isnull=True) | Q(date_returned__gte=today()))
+            .all()
+        )
+
+        return equipment
+
+    @staticmethod
+    def _anonymize_person(person):
+        # Features
+        FeatureAssignment.objects.filter(person=person).delete()
+
+        # Groups
+        for group in person.groups.all():
+            group.members.remove(person)
+
+        # Unsettled transactions
+        person.transactions.filter(fio_transaction__isnull=True).delete()
+
+        # User
+        if hasattr(person, "user"):
+            person.user.delete()
+
+        # Hourly rates
+        PersonHourlyRate.objects.filter(person=person).delete()
+
+        # Managed people
+        person.managed_persons.clear()
+
+        # Personal data
+        person.first_name = "Anonymizováno"
+        person.last_name = "Anonymizováno"
+        person.sex = Person.Sex.UNKNOWN
+        person.person_type = Person.Type.UNKNOWN
+        person.email = None
+        person.phone = None
+        person.birth_number = None
+        person.date_of_birth = None
+        person.street = None
+        person.city = None
+        person.postcode = None
+        person.health_insurance_company = None
+        person.swimming_time = None
+        person.is_deleted = True
+        person.save()
 
 
 class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
