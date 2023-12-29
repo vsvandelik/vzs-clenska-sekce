@@ -12,7 +12,7 @@ Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`./i
 
 .. code-block:: console
 
-    python manage.py loaddata data/db.json
+    python ./manage.py loaddata data/db.json
 
 ***************************************
 Účty

@@ -49,7 +49,7 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 
 .. code-block:: console
 
-    python manage.py migrate
+    python ./manage.py migrate
     
 |
 
@@ -57,7 +57,7 @@ Nyní je možné spustit webový server Djanga.
 
 .. code-block:: console
 
-     python manage.py runserver 8080
+     python ./manage.py runserver 8080
 
 
     

@@ -16,6 +16,10 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    db.rst
    forms.rst
    commands.rst
+   django-extensions.rst
+   dependencies.rst
+   cron.rst
+   template-tags.rst
    requirements-evaluation.rst
    contribute.rst
 .. .. include:: technologies.rst
