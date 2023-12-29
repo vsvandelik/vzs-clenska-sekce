@@ -1,0 +1,26 @@
+{% load vzs_filters %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Platby k uhrazení</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Suma</th>
+                    <th>Popis</th>
+                    <th>Datum splatnosti</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in unsettled_transactions %}
+                    <tr>
+                        <td>{{ transaction.amount|absolute }}</td>
+                        <td>{{ transaction.reason }}</td>
+                        <td>{{ transaction.date_due }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

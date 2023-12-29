@@ -1,8 +1,63 @@
-{% extends "pages/_simple_page_subview.html" %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Úvod{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
-{% block subcontent %}
-    <p>TODO: Zde bude nějaký zajímavý obsah typu nejbližší akce, atd.</p>
+{% block content %}
+    <div class="row row-cols-3">
+
+        {% if not multiple_managed_people and not unsettled_transactions and not soon_expiring_qualifications and not soon_returning_equipment and not upcoming_onetimeevents_participant and not upcoming_onetimeevents_organizer and not upcoming_trainings_participant and not upcoming_trainings_coach %}
+            <div class="col mx-auto text-center">
+                <img src="{% static "logo.svg" %}" class="img-fluid" alt="Logo" style="height: 80vh"/>
+            </div>
+        {% endif %}
+
+        {% if multiple_managed_people %}
+            <div class="col">
+                {% include "pages/home_parts/multiple_persons_using_tip.html" %}
+            </div>
+        {% endif %}
+
+        {% if unsettled_transactions %}
+            <div class="col">
+                {% include "pages/home_parts/unsettled_transactions.html" %}
+            </div>
+        {% endif %}
+
+        {% if soon_expiring_qualifications %}
+            <div class="col">
+                {% include "pages/home_parts/soon_expiring_features.html" with features=soon_expiring_qualifications title="Kvalifikace končící v 90 dnech" name_col="Název kvalifikace" date_col="Datum platnosti" %}
+            </div>
+        {% endif %}
+
+        {% if soon_returning_equipment %}
+            <div class="col">
+                {% include "pages/home_parts/soon_expiring_features.html" with features=soon_returning_equipment title="Výpůjčky končící ve 30 dnech" name_col="Položka" date_col="Datum vrácení" %}
+            </div>
+        {% endif %}
+
+        {% if upcoming_onetimeevents_participant %}
+            <div class="col">
+                {% include "pages/home_parts/upcoming_one_time_events.html" with title="Nadcházejí účastnící se akce" events=upcoming_onetimeevents_participant %}
+            </div>
+        {% endif %}
+
+        {% if upcoming_onetimeevents_organizer %}
+            <div class="col">
+                {% include "pages/home_parts/upcoming_one_time_events.html" with title="Nadcházejí organizující akce" events=upcoming_onetimeevents_organizer %}
+            </div>
+        {% endif %}
+
+        {% if upcoming_trainings_participant %}
+            <div class="col">
+                {% include "pages/home_parts/upcoming_trainings.html" with title="Nadcházejí účastnící se trénink" occurrences=upcoming_trainings_participant %}
+            </div>
+        {% endif %}
+
+        {% if upcoming_trainings_coach %}
+            <div class="col">
+                {% include "pages/home_parts/upcoming_trainings.html" with title="Nadcházejí trénující trénink" occurrences=upcoming_trainings_coach %}
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}
-
