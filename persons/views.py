@@ -22,7 +22,7 @@ from one_time_events.models import (
     OneTimeEventOccurrence,
 )
 from persons.models import Person
-from trainings.models import Training, TrainingOccurrence
+from trainings.models import TrainingOccurrence
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, now, today
