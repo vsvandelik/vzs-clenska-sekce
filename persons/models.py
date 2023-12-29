@@ -62,7 +62,15 @@ class Person(ExportableCSVMixin, RenderableModelMixin, Model):
         EXTERNAL = "externi", _("externí spolupracovník")
         PARENT = "rodic", _("rodič")
         FORMER = "byvaly", _("bývalý člen")
-        UNKNOWN = "neznámý", _("neznámý")
+        UNKNOWN = "neznamy", _("neznámý")
+
+        @staticmethod
+        def valid_choices():
+            return [
+                choice
+                for choice in Person.Type.choices
+                if choice[0] != Person.Type.UNKNOWN
+            ]
 
     class HealthInsuranceCompany(TextChoices):
         VZP = "111", "111 - Všeobecná zdravotní pojišťovna České republiky"
