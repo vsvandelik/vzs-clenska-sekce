@@ -13,7 +13,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "pages/home.html"
 
 
-class PageDetailView(DetailView):
+class PageDetailView(LoginRequiredMixin, DetailView):
     model = Page
     template_name = "pages/detail.html"
 

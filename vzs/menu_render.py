@@ -45,7 +45,7 @@ class MenuItem:
             raise ValueError("Only one of item or children must be specified.")
 
         self.link = link
-        self.reverse_link = reverse(link) if link is not None else None
+        self.reverse_link = self._get_reversed_link(link)
         self.children = children
 
     def render(self, context):
@@ -110,6 +110,17 @@ class MenuItem:
         }
 
         return self.ITEM_WITH_CHILDREN_HTML.format(**data)
+
+    @staticmethod
+    def _get_reversed_link(link):
+        if not link:
+            return None
+
+        parts = link.split(" ", 1)
+        if len(parts) == 1:
+            return reverse(parts[0])
+        else:
+            return reverse(parts[0], args=[parts[1]])
 
     @staticmethod
     def _has_permission(context, reverse_link: str):
