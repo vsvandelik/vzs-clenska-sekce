@@ -33,7 +33,7 @@ from .models import Person, PersonHourlyRate
 class PersonForm(ModelForm):
     class Meta:
         model = Person
-        exclude = ["features", "managed_persons"]
+        exclude = ["features", "managed_persons", "is_deleted"]
         widgets = {"date_of_birth": DatePickerWithIcon()}
 
     def __init__(self, *args, **kwargs):
@@ -45,8 +45,15 @@ class PersonForm(ModelForm):
 
         if "person_type" in self.fields:
             self.fields["person_type"].choices = [("", "---------")] + [
-                (pt, pt.label) for pt in self.available_person_types
+                (pt, pt.label)
+                for pt in self.available_person_types
+                if pt != Person.Type.UNKNOWN
             ]
+
+        # Removing unknown sex as choice
+        self.fields["sex"].choices = [
+            c for c in self.fields["sex"].choices if c[0] != "U"
+        ]
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data["date_of_birth"]
@@ -159,7 +166,7 @@ class PersonsFilterForm(Form):
     person_type = ChoiceField(
         label=_("Typ osoby"),
         required=False,
-        choices=[("", "---------")] + Person.Type.choices,
+        choices=[("", "---------")] + Person.Type.valid_choices(),
     )
     age_from = IntegerField(label=_("Věk od"), required=False, min_value=1)
     age_to = IntegerField(label=_("Věk do"), required=False, min_value=1)

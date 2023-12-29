@@ -80,6 +80,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
                     Person.Type.HONORARY,
                     Person.Type.PARENT,
                     Person.Type.FORMER,
+                    Person.Type.UNKNOWN,
                 ]
             )
 
