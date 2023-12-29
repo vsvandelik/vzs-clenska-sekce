@@ -24,81 +24,8 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
 
-
                 {% render_menu %}
 
-                {% if user.is_authenticated %}
-                    <li class="nav-item {% active_link "my-profile:index || my-transactions" "menu-open" strict=False %}">
-                        <a href="#" class="nav-link {% active_link "my-profile:index || my-transactions" %}">
-                            <i class="nav-icon fas fa-user"></i>
-                            <p>
-                                {{ active_person }}
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{% url "my-profile:index" %}" class="nav-link {% active_link "my-profile:index" %}">
-                                    <i class="nav-icon fas fa-user"></i>
-                                    <p>Profil</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url "my-transactions" %}" class="nav-link {% active_link "my-transactions" %}">
-                                    <i class="nav-icon fas fa-money-check-alt"></i>
-                                    <p>Transakce</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                {% endif %}
-                <li class="nav-item {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" "menu-open" strict=False %}">
-                    <a href="#" class="nav-link {% active_link "persons:index || persons:add || groups:index || qualifications:index || permissions:index || equipments:index" %}">
-                        <i class="nav-icon fas fa-users"></i>
-                        <p>
-                            Osoby
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{% url "persons:index" %}" class="nav-link {% active_link "persons:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Seznam osob</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "persons:add" %}" class="nav-link {% active_link "persons:add" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Přidat osobu</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "groups:index" %}" class="nav-link {% active_link "groups:index" %}">
-                                <i class=" far fa-circle nav-icon"></i>
-                                <p>Skupiny</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "qualifications:index" %}" class="nav-link {% active_link "qualifications:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Kvalifikace</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "permissions:index" %}" class="nav-link {% active_link "permissions:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Oprávnění</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "equipments:index" %}" class="nav-link {% active_link "equipments:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Vybavení</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
                 <li class="nav-item">
                     <a href="{% url "one_time_events:index" %}" class="nav-link {% active_link "one_time_events:index" %}">
                         <i class="fas fa-calendar nav-icon"></i>

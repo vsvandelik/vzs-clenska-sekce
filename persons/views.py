@@ -1,7 +1,6 @@
 import datetime
 from datetime import date, datetime
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connection
 from django.urls import reverse_lazy
@@ -15,9 +14,9 @@ from features.models import FeatureTypeTexts
 from groups.models import Group
 from one_time_events.models import OneTimeEvent, OneTimeEventAttendance
 from persons.models import Person
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today
-
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
