@@ -233,7 +233,7 @@ Automaticky generovaný soubor Node.js projektu, který obsahuje reprodukovateln
 ------------------------
 README.md
 ------------------------
-README soubor obsahující základní informace o projektu.
+Readme soubor obsahující základní informace o projektu.
 
 ------------------------
 requirements.txt
