@@ -2,6 +2,7 @@ from collections.abc import Collection, Iterable
 
 from django.contrib.auth.mixins import (
     PermissionRequiredMixin as DjangoPermissionRequiredMixin,
+    LoginRequiredMixin as DjangoLoginRequiredMixin,
 )
 
 from persons.models import get_active_user
@@ -50,6 +51,27 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
         return self.view_has_permission_person(
             self.request.active_person, **self.kwargs
         )
+
+
+class LoginRequiredMixin(DjangoLoginRequiredMixin):
+    @classmethod
+    def view_has_permission_person(cls, active_person, **kwargs):
+        """
+        :meta private:
+        """
+
+        active_user = get_active_user(active_person)
+        return cls.view_has_permission(active_user, **kwargs)
+
+    @classmethod
+    def view_has_permission(cls, active_user, **kwargs):
+        """
+        Should return ``True`` iff the user is logged in.
+
+        Override for custom behavior.
+        """
+
+        return active_user.is_authenticated
 
 
 def _user_can_manage_person(user, person_pk):

@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import TemplateView
@@ -7,7 +6,7 @@ from django.views.generic.edit import UpdateView
 
 from pages.forms import PageEditForm
 from pages.models import Page
-from users.permissions import PermissionRequiredMixin
+from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
 
 
 class HomeView(LoginRequiredMixin, TemplateView):

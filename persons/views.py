@@ -2,7 +2,6 @@ import datetime
 from datetime import date, datetime
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import connection
 from django.db.models import Q
@@ -24,6 +23,7 @@ from one_time_events.models import (
 )
 from persons.models import Person
 from trainings.models import TrainingOccurrence
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today, now
 from .forms import (
