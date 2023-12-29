@@ -1,7 +1,3 @@
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-)
-
 from persons.models import get_active_user
 from users.views import PermissionRequiredMixin
 
@@ -14,14 +10,20 @@ from .models import (
 )
 
 
-class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
+class EventCreatePermissionMixin(PermissionRequiredMixin):
     def has_permission(self):
         request = self.request
 
         if request.method != "POST":
             return True
 
-        return get_active_user(request.active_person).has_perm(request.POST["category"])
+        return self.view_has_permission_person(
+            request.active_person, permission_category=request.POST["category"]
+        )
+
+    @classmethod
+    def view_has_permission(cls, active_user, permission_category):
+        return get_active_user(active_user).has_perm(permission_category)
 
 
 class ObjectPermissionMixin(PermissionRequiredMixin):

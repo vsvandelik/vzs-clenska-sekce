@@ -9,9 +9,7 @@ app_name = "trainings"
 urlpatterns = [
     path("", views.TrainingListView.as_view(), name="index"),
     path("<int:pk>/", views.TrainingDetailView.as_view(), name="detail"),
-    path(
-        "pridat/", views.TrainingCreateView.as_view(), name="add"
-    ),  # TODO: permissions
+    path("pridat/", views.TrainingCreateView.as_view(), name="add"),
     path(
         "<int:pk>/upravit/",
         views.TrainingUpdateView.as_view(),

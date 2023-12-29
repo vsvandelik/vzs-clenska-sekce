@@ -215,9 +215,16 @@ class _PermURLNode(URLNode):
                 "Permission template tags require an `as` variable name."
             )
 
-        super().__init__(
-            url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar
-        )
+        url_kwargs = {}
+        self.permission_kwargs = {}
+
+        for key, value in url_node.kwargs.items():
+            if key.startswith("permission_"):
+                self.permission_kwargs[key] = value
+            else:
+                url_kwargs[key] = value
+
+        super().__init__(url_node.view_name, url_node.args, url_kwargs, url_node.asvar)
 
     def render(self, context):
         super().render(context)
@@ -226,8 +233,12 @@ class _PermURLNode(URLNode):
 
         match = resolve(url)
 
+        permission_kwargs = {
+            key: value.resolve(context) for key, value in self.permission_kwargs.items()
+        }
+
         permitted = match.func.view_class.view_has_permission_person(
-            context["active_person"], **match.kwargs
+            context["active_person"], **self.kwargs, **permission_kwargs
         )
 
         context[self.asvar] = _PermURLContextVariable(url, permitted)
