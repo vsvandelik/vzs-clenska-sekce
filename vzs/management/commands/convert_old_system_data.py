@@ -24,23 +24,32 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("filename", type=str)
 
+        parser.add_argument("--genderize_api_key", type=str, default=None)
+        parser.add_argument("--genderize_file_path", type=str, default="data/genderize")
+        parser.add_argument("--genderize_batch_size", type=int, default=10)
+
     def handle(self, *args, **options):
-        persons = self.input_processor.process_input(options["filename"])
+        genderize_settings = {
+            "genderize_api_key": options["genderize_api_key"],
+            "genderize_file_path": options["genderize_file_path"],
+            "genderize_batch_size": options["genderize_batch_size"],
+        }
+
+        persons = self.input_processor.process_input(
+            options["filename"], genderize_settings
+        )
+
         self.output_printer.print_output(persons)
 
 
 class InputProcessor:
-    genderize_api_key = None
-    genderize_file_path = "data/genderize"
-    genderize_batch_size = 10
-
     def __init__(self, stderr, style):
         super().__init__()
         self.persons = []
         self.stderr = stderr
         self.style = style
 
-    def process_input(self, filename):
+    def process_input(self, filename, genderize_settings):
         with open(filename, "r") as f:
             reader = csv.reader(f)
 
@@ -49,8 +58,8 @@ class InputProcessor:
             for idx, row in enumerate(reader, start=2):
                 self._process_single_person_row(header, row, idx)
 
-            if InputProcessor.genderize_api_key:
-                self._fix_sex_with_genderize()
+            if genderize_settings["genderize_api_key"]:
+                self._fix_sex_with_genderize(genderize_settings)
 
         return self.persons
 
@@ -185,15 +194,18 @@ class InputProcessor:
         persons_to_fix = [p for p in self.persons if p.sex == Person.Sex.UNKNOWN]
         names = set(p.first_name for p in persons_to_fix)
 
-        sex_by_names = self._get_sex_by_names(names)
+        sex_by_names = self._get_sex_by_names(names, genderize_settings)
 
         for person in persons_to_fix:
             if person.first_name in sex_by_names:
                 person.sex = sex_by_names[person.first_name]
 
-    def _get_sex_by_names(self, names):
-        if os.path.exists(InputProcessor.genderize_file_path):
-            with open(InputProcessor.genderize_file_path, "rb") as f:
+    def _get_sex_by_names(self, names, genderize_settings):
+        cache_path = genderize_settings["genderize_file_path"]
+        batch_size = genderize_settings["genderize_batch_size"]
+
+        if os.path.exists(cache_path):
+            with open(cache_path, "rb") as f:
                 sex_by_names = pickle.load(f)
         else:
             sex_by_names = {}
@@ -204,10 +216,10 @@ class InputProcessor:
             return sex_by_names
 
         returned_gender_count = 0
-        genderize = Genderize()
+        genderize = Genderize(api_key=genderize_settings["genderize_api_key"])
 
-        for i in range(0, len(missing_names), InputProcessor.genderize_batch_size):
-            subset_names = missing_names[i : i + InputProcessor.genderize_batch_size]
+        for i in range(0, len(missing_names), batch_size):
+            subset_names = missing_names[i : i + batch_size]
             self.stderr.write(
                 self.style.SUCCESS(f"Batch {i} with {len(subset_names)} names.")
             )
@@ -223,7 +235,7 @@ class InputProcessor:
                 if d["gender"] is not None:
                     returned_gender_count += 1
 
-        with open(InputProcessor.genderize_file_path, "wb") as f:
+        with open(cache_path, "wb") as f:
             pickle.dump(sex_by_names, f)
 
         self.stderr.write(
