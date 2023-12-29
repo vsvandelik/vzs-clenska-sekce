@@ -185,9 +185,10 @@ class AddRemovePersonToGroupMixin(PersonPermissionMixin, MessagesMixin, UpdateVi
     error_message: str
     http_method_names = ["post"]
     form_class: type
+    model = Person
 
     def get_success_url(self) -> str:
-        return reverse("persons:detail", args=[self.object])
+        return reverse("persons:detail", args=[self.object.pk])
 
     def get_error_message(self, errors):
         return self.error_message + " ".join(errors["group"])

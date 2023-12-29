@@ -4,10 +4,11 @@ from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import SuspiciousOperation
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
 from django.forms import Form
-from django.http import HttpRequest, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -28,7 +29,6 @@ from trainings.models import Training
 from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
-
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
@@ -642,10 +642,10 @@ class TransactionCreateBulkConfirmMixin(
         """:meta private:"""
 
         query_parameters = self.request.GET
-        required_parameters = chain(["reason"], self.additional_required_parameters())
+        required_parameters = {"reason", *self.additional_required_parameters()}
 
-        if not set(query_parameters.keys()).issubset(required_parameters):
-            return HttpResponseBadRequest(b"Missing parameters")
+        if not required_parameters.issubset(query_parameters.keys()):
+            raise SuspiciousOperation("Missing parameters")
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -942,7 +942,7 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
 
 class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
     """
-    Enables exporting transactions as a accounting basis. The rewards
+    Enables exporting transactions as an accounting basis. The rewards
     are exported as a CSV file and the debts as an XML file, which can be imported
     to the Pohoda software.
 
@@ -974,4 +974,4 @@ class TransactionAccountingExportView(TransactionEditPermissionMixin, FormView):
                 form.cleaned_data["year"], form.cleaned_data["month"]
             )
         else:
-            return HttpResponseBadRequest(b"Missing parameters")
+            raise SuspiciousOperation("Missing parameters")
