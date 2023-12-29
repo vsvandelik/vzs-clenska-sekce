@@ -257,9 +257,9 @@ class TransactionCreateBulkConfirmForm(
 
     def __init__(
         self,
-        event: Event,
-        reason: str,
         transaction_infos: Iterable[TransactionInfo],
+        event: Event = None,
+        reason: str = None,
         *args,
         **kwargs,
     ):
@@ -385,11 +385,17 @@ class TransactionCreateBulkConfirmForm(
             if commit:
                 transaction.save()
 
-            enrollment.transactions.add(transaction)
+            if enrollment:
+                enrollment.transactions.add(transaction)
+                self._send_new_transaction_with_enrollment_email(
+                    enrollment, transaction
+                )
+            else:
+                self._send_new_transaction_with_reason_email(self.reason, transaction)
 
-            self._send_new_transaction_email(enrollment, transaction)
+        return bulk_transaction
 
-    def _send_new_transaction_email(
+    def _send_new_transaction_with_enrollment_email(
         self, enrollment: ParticipantEnrollment, transaction: Transaction
     ):
         payment_html = "<br><br>" + payment_email_html(transaction, self.request)
@@ -400,6 +406,17 @@ class TransactionCreateBulkConfirmForm(
             )
             + payment_html,
             [enrollment.person],
+        )
+
+    def _send_new_transaction_with_reason_email(
+        self, reason: str, transaction: Transaction
+    ):
+        payment_html = "<br><br>" + payment_email_html(transaction, self.request)
+        send_notification_email(
+            _("Nová transakce k zaplacení"),
+            _("Byla pro vás vytvořena nová transakce s popisem {0}").format(reason)
+            + payment_html,
+            [transaction.person],
         )
 
 
