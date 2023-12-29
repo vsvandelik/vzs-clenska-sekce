@@ -379,17 +379,30 @@ class TransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
         return reverse("persons:transaction-list", kwargs={"pk": self.person.pk})
 
 
-class BulkTransactionIndexView(BaseListView):
+class BulkTransactionIndexView(TransactionEditPermissionMixin, ListView):
+    """
+    Displays a list of bulk transactions
+
+    Allow direct deletion using modals.
+
+    **Permissions**:
+
+    Users with the ``transakce`` permission.
+    """
+
     context_object_name = "bulk_transactions"
     """:meta private:"""
 
     model = BulkTransaction
     """:meta private:"""
 
+    template_name = "transactions/bulk_transactions.html"
+    """:meta private:"""
+
 
 class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     """
-    Displays a list of all transactions and bulk transactions.
+    Displays a list of all transactions
 
     Allow direct deletion using modals.
 
@@ -397,7 +410,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
 
     **Permissions**:
 
-    Users with the ``users.transakce`` permission.
+    Users with the ``transakce`` permission.
 
     **Query parameters:**
 
@@ -411,9 +424,6 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
     *   ``date_due_to``
     *   ``bulk_transaction``
     """
-
-    bulk_transactions_view = BulkTransactionIndexView()
-    """:meta private:"""
 
     context_object_name = "transactions"
     """:meta private:"""
@@ -436,9 +446,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
         kwargs.setdefault("form", self.filter_form)
         kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
-        return self.bulk_transactions_view.get_context_data(
-            object_list=self.bulk_transactions_view.get_queryset()
-        ) | super().get_context_data(**kwargs)
+        return super().get_context_data(**kwargs)
 
     def get(self, request: HttpRequest, *args, **kwargs):
         """:meta private:"""

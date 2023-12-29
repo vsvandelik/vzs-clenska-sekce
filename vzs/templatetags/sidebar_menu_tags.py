@@ -43,6 +43,7 @@ def render_menu(context):
             icon="fas fa-dollar-sign",
             children=[
                 MenuItem("Seznam transakcí", "transactions:index"),
+                MenuItem("Hromadné transakce", "transactions:index-bulk"),
                 MenuItem("Účetní podklady", "transactions:accounting-export"),
             ],
         ),
@@ -51,7 +52,6 @@ def render_menu(context):
             icon="fas fa-cogs",
             children=[
                 MenuItem("Seznam API tokenů", "api:token:index"),
-                MenuItem("Generovat token", "api:token:generate"),
             ],
         ),
     ]
