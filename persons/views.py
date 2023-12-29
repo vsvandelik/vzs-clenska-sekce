@@ -21,7 +21,7 @@ from one_time_events.models import (
     OneTimeEventAttendance,
     OneTimeEventOccurrence,
 )
-from persons.models import Person, PersonHourlyRate
+from persons.models import Person
 from trainings.models import TrainingOccurrence
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, today, now
@@ -39,6 +39,7 @@ from .utils import (
     PersonsFilter,
     extend_kwargs_of_assignment_features,
     send_email_to_selected_persons,
+    anonymize_person,
 )
 
 
@@ -242,7 +243,7 @@ class PersonDeleteView(
             )
 
         if self._is_person_in_events(person):
-            self._anonymize_person(person)
+            anonymize_person(person)
             messages.warning(
                 self.request,
                 _(
@@ -284,45 +285,6 @@ class PersonDeleteView(
         )
 
         return equipment
-
-    @staticmethod
-    def _anonymize_person(person):
-        # Features
-        FeatureAssignment.objects.filter(person=person).delete()
-
-        # Groups
-        for group in person.groups.all():
-            group.members.remove(person)
-
-        # Unsettled transactions
-        person.transactions.filter(fio_transaction__isnull=True).delete()
-
-        # User
-        if hasattr(person, "user"):
-            person.user.delete()
-
-        # Hourly rates
-        PersonHourlyRate.objects.filter(person=person).delete()
-
-        # Managed people
-        person.managed_persons.clear()
-
-        # Personal data
-        person.first_name = "Anonymizováno"
-        person.last_name = "Anonymizováno"
-        person.sex = Person.Sex.UNKNOWN
-        person.person_type = Person.Type.UNKNOWN
-        person.email = None
-        person.phone = None
-        person.birth_number = None
-        person.date_of_birth = None
-        person.street = None
-        person.city = None
-        person.postcode = None
-        person.health_insurance_company = None
-        person.swimming_time = None
-        person.is_deleted = True
-        person.save()
 
 
 class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):

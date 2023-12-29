@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 
 from events.models import Event
 from features.models import Feature, FeatureAssignment
+from persons.models import PersonHourlyRate, Person
 
 
 class PersonsFilter(TypedDict, total=False):
@@ -96,3 +97,42 @@ def extend_kwargs_of_assignment_features(person, kwargs):
             date_returned__isnull=True,
         ),
     )
+
+
+def anonymize_person(person):
+    # Features
+    FeatureAssignment.objects.filter(person=person).delete()
+
+    # Groups
+    for group in person.groups.all():
+        group.members.remove(person)
+
+    # Unsettled transactions
+    person.transactions.filter(fio_transaction__isnull=True).delete()
+
+    # User
+    if hasattr(person, "user"):
+        person.user.delete()
+
+    # Hourly rates
+    PersonHourlyRate.objects.filter(person=person).delete()
+
+    # Managed people
+    person.managed_persons.clear()
+
+    # Personal data
+    person.first_name = "Anonymizováno"
+    person.last_name = "Anonymizováno"
+    person.sex = Person.Sex.UNKNOWN
+    person.person_type = Person.Type.UNKNOWN
+    person.email = None
+    person.phone = None
+    person.birth_number = None
+    person.date_of_birth = None
+    person.street = None
+    person.city = None
+    person.postcode = None
+    person.health_insurance_company = None
+    person.swimming_time = None
+    person.is_deleted = True
+    person.save()
