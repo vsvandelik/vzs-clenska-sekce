@@ -2,6 +2,7 @@ import re
 
 from django import template
 from django.template.base import Node
+from django.template.defaultfilters import stringfilter
 from django.template.defaulttags import URLNode, url
 from django.template.exceptions import TemplateSyntaxError
 from django.urls import resolve
@@ -261,3 +262,9 @@ def ifperm(parser, token):
     nodelist = parser.parse(("endifperm",))
     parser.next_token()
     return _IfPermNode(nodelist, perm_url(parser, token))
+
+
+@register.filter
+@stringfilter
+def suffix_not_empty(value, args):
+    return value + str(args) if value else value
