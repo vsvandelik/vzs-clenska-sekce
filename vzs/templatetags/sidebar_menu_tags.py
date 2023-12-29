@@ -29,6 +29,31 @@ def render_menu(context):
                 MenuItem("Vybavení", "equipments:index"),
             ],
         ),
+        MenuItem("Akce", "one_time_events:index", icon="fas fa-calendar"),
+        MenuItem("Tréninky", "trainings:index", icon="fas fa-dumbbell"),
+        MenuItem(
+            "Správa událostí",
+            icon="fab fa-elementor",
+            children=[
+                MenuItem("Pozice", "positions:index"),
+            ],
+        ),
+        MenuItem(
+            "Transakce",
+            icon="fas fa-dollar-sign",
+            children=[
+                MenuItem("Seznam transakcí", "transactions:index"),
+                MenuItem("Účetní podklady", "transactions:accounting-export"),
+            ],
+        ),
+        MenuItem(
+            "Nastavení",
+            icon="fas fa-cogs",
+            children=[
+                MenuItem("Seznam API tokenů", "api:token:index"),
+                MenuItem("Generovat token", "api:token:generate"),
+            ],
+        ),
     ]
 
     output = []

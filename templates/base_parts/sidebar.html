@@ -26,23 +26,11 @@
 
                 {% render_menu %}
 
-                <li class="nav-item">
-                    <a href="{% url "one_time_events:index" %}" class="nav-link {% active_link "one_time_events:index" %}">
-                        <i class="fas fa-calendar nav-icon"></i>
-                        <p>Akce</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url "trainings:index" %}" class="nav-link {% active_link "trainings:index" %}">
-                        <i class="fas fa-calendar nav-icon"></i>
-                        <p>Tréninky</p>
-                    </a>
-                </li>
-                <li class="nav-item {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" "menu-open" strict=False %}">
-                    <a href="#" class="nav-link {% active_link "events:index || trainings:add || one_time_events:add || positions:index || positions:add" %}">
+                <li class="nav-item {% active_link "events:index" "menu-open" strict=True %}">
+                    <a href="#" class="nav-link {% active_link "events:index" %}">
                         <i class="nav-icon fas fa-calendar"></i>
                         <p>
-                            Události
+                            Události (ke smazani)
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
@@ -53,87 +41,8 @@
                                 <p>Seznam událostí</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{% url "one_time_events:add" %}" class="nav-link {% active_link "one_time_events:add" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Přidat jednorázovou</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "trainings:add" %}" class="nav-link {% active_link "trainings:add" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Přidat trénink</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "positions:index" %}" class="nav-link {% active_link "positions:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Seznam pozic</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url "positions:add" %}" class="nav-link {% active_link "positions:add" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Přidat pozici</p>
-                            </a>
-                        </li>
                     </ul>
                 </li>
-                {% if perm_transactions_index or perm_transactions_accounting_export %}
-                    <li class="nav-item {% active_link "transactions:index || transactions:export" "menu-open" strict=False %}">
-                        <a href="#" class="nav-link {% active_link "transactions:index || transactions:export" %}">
-                            <i class="nav-icon fas fa-dollar-sign"></i>
-                            <p>Transakce<i class="right fas fa-angle-left"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            {% if perm_transactions_index %}
-                                <li class="nav-item">
-                                    <a href="{{ perm_transactions_index.url }}" class="nav-link {% active_link "transactions:index" %}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Seznam transakcí</p>
-                                    </a>
-                                </li>
-                            {% endif %}
-                            {% if perm_transactions_accounting_export %}
-                                <li class="nav-item">
-                                    <a href="{{ perm_transactions_accounting_export.url }}" class="nav-link {% active_link "transactions:accounting-export" %}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Účetní podklady</p>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                {% endif %}
-                {% if perm_token_index or perm_token_generate %}
-                    <li class="nav-item {% active_link "api:token:index || api:token:delete || api:token:generate" "menu-open" strict=False %}">
-                        <a href="#" class="nav-link {% active_link "api:token:index || api:token:delete || api:token:generate" %}">
-                            <i class="nav-icon fas fa-cogs"></i>
-                            <p>
-                                API
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            {% if perm_token_index %}
-                                <li class="nav-item">
-                                    <a href="{{ perm_token_index.url }}" class="nav-link {% active_link "api:token:index" %}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Seznam tokenů</p>
-                                    </a>
-                                </li>
-                            {% endif %}
-                            {% if perm_token_generate %}
-                                <li class="nav-item">
-                                    <a href="{{ perm_token_generate.url }}" class="nav-link {% active_link "api:token:generate" %}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Generovat token</p>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                {% endif %}
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

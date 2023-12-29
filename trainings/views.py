@@ -51,6 +51,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
@@ -181,7 +182,7 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault("occurrences", occurrences)
 
 
-class TrainingListView(generic.ListView):
+class TrainingListView(LoginRequiredMixin, generic.ListView):
     template_name = "trainings/index.html"
 
     def get_context_data(self, **kwargs):
