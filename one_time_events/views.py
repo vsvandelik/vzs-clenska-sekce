@@ -43,6 +43,7 @@ from events.views import (
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
 )
 from persons.models import Person, get_active_user
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,

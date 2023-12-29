@@ -52,6 +52,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
