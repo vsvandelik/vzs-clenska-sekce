@@ -157,6 +157,7 @@ def qr(transaction):
         f"&bankCode={settings.FIO_BANK_NUMBER}"
         f"&amount={abs(transaction.amount)}"
         f"&vs={transaction.pk}"
+        f"&message={transaction.reason[:140]}"
     )
 
 
