@@ -56,9 +56,8 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 
 .. _.github/:
 
----------------------
 .github/
----------------------
+^^^^^^^^^^^^^^^^^^
 Workflows pro GitHub. Konkrétně:
 
 - Deploy to VPS (nasadí aktuální master větev na testovací VPS server)
@@ -67,273 +66,239 @@ Workflows pro GitHub. Konkrétně:
 
 .. _api/:
 
----------------------
 api/
----------------------
+^^^^^^^^^^^^^^^^^^
+
 Django aplikace :ref:`api`.
 
 .. _data/:
 
----------------------
 data/
----------------------
+^^^^^^^^^^^^^^^^^^
+
 Testovací data, více informací o použití testovací dat viz :ref:`testing`.
 
 
 .. _docs/:
 
----------------------
 docs/
----------------------
+^^^^^^^^^^^^^^^^^^
 Zdrojový kód této dokumentace.
 
 .. _events/:
 
----------------------
 events/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`events`.
 
 .. _features/:
 
----------------------
 features/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`features`.
 
 .. _google_integration/:
 
----------------------
 google_integration/
----------------------
+^^^^^^^^^^^^^^^^^^^^
 Obsahuje nezbytné komponenty pro integraci skupin v rámci :term:`IS` a Google Workspace.
 
 .. _groups/:
 
----------------------
 groups/
----------------------
+^^^^^^^^^^^^^^^^^^^^
+
 Django aplikace :ref:`groups`.
 
 .. _node_modules/:
 
----------------------
 node_modules/
----------------------
+^^^^^^^^^^^^^^^^^^
 Adresář Node.js obsahující frontendové závislosti.
 
 .. _one_time_events/:
 
----------------------
 one_time_events/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`one_time_events`.
 
 .. _overriden_django_commands/:
 
-----------------------------
 overriden_django_commands/
-----------------------------
+^^^^^^^^^^^^^^^^^^
 Adresář určený pro sdružování kódu redefinující výchozí funkcionalitu Djanga. Konkrétně se zde nachází pouze kód redefinující redefinující příkaz ``python ./manage.py createsuperuser`` tak, aby nově vytvořený administrátor měl všechna oprávnění.
 
 .. _pages/:
 
----------------------
 pages/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`pages`.
 
 .. _persons/:
 
----------------------
 persons/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`persons`.
 
 .. _positions/:
 
----------------------
 positions/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`positions`.
 
 .. _static/:
 
----------------------
 static/
----------------------
+^^^^^^^^^^^^^^^^^^
 Sdružuje statický obsah (CSS, JS, obrázky, ...) relevantní pro více Django aplikací, případně pro celý :term:`IS`.
 
 .. _templates/:
 
----------------------
 templates/
----------------------
+^^^^^^^^^^^^^^^^^^
 Sdružuje HTML šablony relevantní pro více Django aplikací, případně pro celý :term:`IS`.
 
 .. _trainings/:
 
----------------------
 trainings/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`trainings`.
 
 .. _transactions/:
 
----------------------
 transactions/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`transactions`.
 
 .. _users/:
 
----------------------
 users/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`users`.
 
 .. _vzs/:
 
----------------------
 vzs/
----------------------
+^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`vzs`.
 
 .. _.env:
 
----------------------
 .env
----------------------
+^^^^^^^^^^^^^^^^^^
 Environmentální proměnné, které mění konfiguraci :term:`IS`.
 
 .. _.env.dist:
 
----------------------
 .env.dist
----------------------
+^^^^^^^^^^^^^^^^^^
 Šablona, podle které je možné vytvořit soubor ``.env``.
 
 .. _.env_caddy:
 
----------------------
 .env_caddy
----------------------
+^^^^^^^^^^^^^^^^^^
 Environmentální proměnné pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
 
 .. _.env_psql:
 
----------------------
 .env_psql
----------------------
+^^^^^^^^^^^^^^^^^^
 Environmentální proměnné pro DB systém PostgreSQL, relevantní pouze při produkčním nasazení.
 
 .. _.gitignore:
 
----------------------
 .gitignore
----------------------
+^^^^^^^^^^^^^^^^^^
 Určuje, které soubory mají být ignorovány při práci s verzovacím systémem Git.
 
 .. _.pre-commit-config.yaml:
 
-------------------------
 .pre-commit-config.yaml
-------------------------
+^^^^^^^^^^^^^^^^^^
 Konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black code formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
 
 .. _Caddyfile:
 
-------------------------
 Caddyfile
-------------------------
+^^^^^^^^^^^^^^^^^^
 Konfigurační soubor pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
 
 .. _docker-build.bat:
 
-------------------------
 docker-build.bat
-------------------------
+^^^^^^^^^^^^^^^^^^
 Batch script, který sestaví docker image pro :term:`IS`.
 
 .. _docker-build.sh:
 
-------------------------
 docker-build.sh
-------------------------
+^^^^^^^^^^^^^^^^^^
 Shell script, který sestaví docker image pro :term:`IS`.
 
 .. _docker-compose.yaml:
 
-------------------------
 docker-compose.yaml
-------------------------
+^^^^^^^^^^^^^^^^^^
 Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
 
 .. _Dockerfile:
 
-------------------------
 Dockerfile
-------------------------
+^^^^^^^^^^^^^^^^^^
 Soubor popisující, jak sestavit docker image pro :term:`IS`.
 
 .. _manage.py:
 
-------------------------
 manage.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Python skript vytvořený Djangem při vytváření nového projektu. Slouží k interakci a správě Django projektu.
 
 .. _package.json:
 
-------------------------
 package.json
-------------------------
+^^^^^^^^^^^^^^^^^^
 Manifest Node.js projektu, který definuje frontendové závislosti (Bootstrap, Select2, jQuery, ...)
 
 .. _package-lock.json:
 
-------------------------
 package-lock.json
-------------------------
+^^^^^^^^^^^^^^^^^^
 Automaticky generovaný soubor Node.js projektu, který obsahuje reprodukovatelného popisu stromu závislostí.
 
 .. _README.md:
 
-------------------------
 README.md
-------------------------
+^^^^^^^^^^^^^^^^^^
 Readme soubor obsahující základní informace o projektu.
 
 .. _requirements.txt:
 
-------------------------
 requirements.txt
-------------------------
+^^^^^^^^^^^^^^^^^^
 Závislosti projektu, které je nutné mít vždy nainstalované. 
 
 Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements.txt`.
 
 .. _requirements_dev.txt:
 
-------------------------
 requirements_dev.txt
-------------------------
+^^^^^^^^^^^^^^^^^^
 Závislosti projektu, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj (pre-commit, sphinx, ...). 
 
 Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements_dev.txt`.
 
 .. _requirements_prod.txt:
 
-------------------------
 requirements_prod.txt
-------------------------
+^^^^^^^^^^^^^^^^^^
 Závislosti projektu, které jsou vyžadovány pouze pro běh v produkčním prostředí.
 
 Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements_prod.txt`.
 
-***************************************
+-------------------------------------
 Standardní struktura Django aplikace
-***************************************
+-------------------------------------
 Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:`IS`. Tato struktura přímo odpovídá konvencím Djanga, proto informace obsažené v této sekci neobsahují příliš mnoho nových informací pro osoby dobře znalé Djanga.
 
 | django-aplikace
@@ -359,9 +324,8 @@ Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:
 
 .. _management/:
 
-------------------------
 management/
-------------------------
+^^^^^^^^^^^^^^^^^^
 Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Django příkazy, které interagují s aplikací. Tyto příkazy je možné spustit pomocí příkazu ``python ./manage.py <název souboru s příkazem bez koncovky>``, ukázka výše obsahuje dva příkazy ``cmd1.py`` a ``cmd2.py``, ty je možné spustit konkrétním příkazem
 
 .. code-block:: console
@@ -373,84 +337,72 @@ Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Djang
 
 .. _migrations/:
 
-------------------------
 migrations/
-------------------------
+^^^^^^^^^^^^^^^^^^
 Soubory popisující migrace modelu aplikace. Migrace představují způsob, jak změny provedené v modelech přenést do schématu databáze. 
 
 .. _static_app/:
 
-------------------------
 static/
-------------------------
+^^^^^^^^^^^^^^^^^^
 Sdružuje statický obsah (CSS, JS, obrázky, ...) používané pouze touto aplikací.
 
 .. _templates_app/:
 
-------------------------
 templates/
-------------------------
+^^^^^^^^^^^^^^^^^^
 Sdružuje HTML šablony používané pouze touto aplikací.
 
 .. _templatetags/:
 
-------------------------
 templatetags/
-------------------------
+^^^^^^^^^^^^^^^^^^
 Vlastní šablonové tagy využívané pouze v rámci aplikace pro Jinja renderovací engine Djanga. Neplatí pro aplikace :ref:`events` a :ref:`vzs`. První zmíněná sdružuje kód jednorázových událostí (aplikace :ref:`one_time_events`) a tréninků (aplikace :ref:`trainings`). Druhá zmíněná obsahuje společný kód využívaný všemi ostatními aplikacemi.
 
 .. _apps.py:
 
-------------------------
 apps.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Slouží ke konfiguraci chování aplikace, je zde možné nastavit např. jiné jméno aplikace apod.
 
 .. _cron.py:
 
-------------------------
 cron.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Funkce, které jsou periodicky volány pomocí daemonu cron. Další informace viz :ref:`cron`.
 
 .. _forms.py:
 
-------------------------
 forms.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Třídy definující formuláře aplikace, více informací o formulářích víz :ref:`forms`.
 
 .. _models.py:
 
-------------------------
 models.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Obsahuje modely aplikace včetně metod, která nad nimi operují.
 
 .. _permissions.py:
 
-------------------------
 permissions.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Třídy a metody pracující s oprávněními aplikované na pohledy aplikace.
 
 .. _urls.py:
 
-------------------------
 urls.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Obsahuje definice URL vzorů mapující se na jednotlivé pohledy definované ve :ref:`views.py`
 
 .. _utils.py:
 
-------------------------
 utils.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Různé pomocné funkce, které aplikace využívá. Aplikace :ref:`events` např. využívá funkci ``parse_czech_date(date_str)``, která parsuje datum ze standardního českého formátu.
 
 .. _views.py:
 
-------------------------
 views.py
-------------------------
+^^^^^^^^^^^^^^^^^^
 Jednotlivé pohledy ke kterým je možné přistoupit z URL vzorů definovaných v souboru :ref:`urls.py`
