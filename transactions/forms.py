@@ -622,7 +622,7 @@ class TransactionAccountingExportPeriodForm(Form):
         choices=[
             ("", "---------"),
             ("vyplaty", "Výplaty v csv"),
-            ("pohledavky", "Pohledávky v isdoc"),
+            ("pohledavky", "Pohledávky v Pohoda XML"),
         ],
     )
 
