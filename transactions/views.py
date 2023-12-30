@@ -908,7 +908,9 @@ class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
         return self.request.active_person
 
 
-class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
+class BulkTransactionDeleteView(
+    TransactionEditPermissionMixin, SuccessMessageMixin, DeleteView
+):
     """
     Deletes a bulk transaction. This means deleting
     the :class:`BulkTransaction` instance
@@ -933,6 +935,8 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
     """:meta private:"""
 
     success_url = reverse_lazy("transactions:index")
+
+    success_message = _("Hromadná transakce byla smazána")
 
     def form_valid(self, form):
         self.object.transaction_set.all().delete()
