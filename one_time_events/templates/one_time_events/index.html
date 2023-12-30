@@ -39,6 +39,7 @@
 
     {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
     {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-organizer-modal" %}
 {% endblock %}
 
 {% block scripts %}
@@ -47,5 +48,6 @@
     <script>
         registerModal('enroll-myself-participant-modal')
         registerModal('unenroll-myself-participant-modal')
+        registerModal('unenroll-myself-organizer-modal')
     </script>
 {% endblock %}

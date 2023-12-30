@@ -26,8 +26,10 @@
                                 <td class="text-right">
                                     <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
                                     {% ifperm 'one_time_events:unenroll-myself-organizer' event.id as perm %}
-                                        <a class="btn btn-info btn-sm" href="{{ perm.url }}">
-                                            Odhlásit se
+                                        <a class="btn btn-info btn-sm"
+                                           data-target="#unenroll-myself-organizer-modal"
+                                           data-toggle="modal"
+                                           data-action="{{ perm.url }}">Odhlásit se
                                         </a>
                                     {% endifperm %}
                                 </td>
