@@ -20,7 +20,6 @@ Autoři & přispěvovatelé
    vývojová/index.rst
    uživatelská/index.rst
    instalační/index.rst
-   testing.rst
    team-work.rst
    support.rst
    contributors.rst
