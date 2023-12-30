@@ -274,6 +274,11 @@ class InputFieldsCleaner:
         return int(value.replace(" ", ""))
 
     @staticmethod
+    def process_rc(value: str) -> str:
+        if value.isdigit() and len(value) in {9, 10}:
+            return value[:6] + "/" + value[6:]
+
+    @staticmethod
     def process_pojistovna(value1: str, value2: str) -> str | None:
         value1 = InputFieldsCleaner._process_health_insurance_company_parser(value1)
         value2 = InputFieldsCleaner._process_health_insurance_company_parser(value2)
