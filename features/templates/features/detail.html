@@ -110,7 +110,7 @@
                                     <tr>
                                         <th>{% render row.person "inline" %}</th>
                                         {% for feature in row.features %}
-                                            <td class="text-center">{% if feature %}<i class="fas fa-check"></i>{% endif %}</td>
+                                            <td class="text-center">{% if feature.is_assigned %}<a href="{% url feature_type|wrapstr:"persons:,:edit" row.person.pk feature.pk %}"><i class="fas fa-check"></i></a>{% endif %}</td>
                                         {% endfor %}
                                     </tr>
                                 {% endfor %}

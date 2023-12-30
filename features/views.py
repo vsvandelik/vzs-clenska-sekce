@@ -227,15 +227,15 @@ class FeatureDetailView(FeaturePermissionMixin, DetailView):
                         date_returned__isnull=True,
                     ).filter(Q(date_expire__isnull=True) | Q(date_expire__gte=today()))
                 )
-            ).values_list("is_assigned", flat=True)
+            )
 
-            assigned_features = list(features)
+            assigned_features = [f.is_assigned for f in features]
 
             if any(assigned_features):
                 features_assignment_matrix["rows"].append(
                     {
                         "person": person,
-                        "features": assigned_features,
+                        "features": features,
                     }
                 )
 
