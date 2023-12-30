@@ -6,7 +6,7 @@ from urllib import parse
 from urllib.parse import quote
 
 import unicodedata
-from django.core.mail import send_mail
+from django.core.mail import send_mail as django_send_mail
 from django.db.models import Model
 from django.db.models.query import Q, QuerySet
 from django.http import HttpResponse
@@ -71,6 +71,18 @@ def reverse_with_get_params(*args, **kwargs):
     return url
 
 
+def send_mail(subject, message, recipient_list, *args, **kwargs):
+    django_send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.EMAIL_SENDER,
+        recipient_list=recipient_list,
+        fail_silently=False,
+        *args,
+        **kwargs,
+    )
+
+
 def send_notification_email(subject, message, persons_list, *args, **kwargs):
     recipient_set = set()
     for person in persons_list:
@@ -78,9 +90,8 @@ def send_notification_email(subject, message, persons_list, *args, **kwargs):
             recipient_set.add(recipient)
 
     send_mail(
-        message,
         subject,
-        settings.NOTIFICATION_SENDER_EMAIL,
+        message,
         list(recipient_set),
         *args,
         **kwargs,

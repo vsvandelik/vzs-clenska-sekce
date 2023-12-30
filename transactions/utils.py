@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Annotated, TypedDict
 from zoneinfo import ZoneInfo
 
-from django.core.mail import send_mail
+
 from django.db.models import Q, Sum
 from django.template.loader import render_to_string
 from django.utils.timezone import localdate
@@ -20,6 +20,7 @@ from vzs.utils import (
     get_csv_writer_http_response,
     get_xml_http_response,
     now,
+    send_mail,
 )
 from .models import FioTransaction, Transaction, BulkTransaction
 
@@ -33,13 +34,7 @@ def _send_mail_to_accountants(subject: str, body: str):
         .values_list("person__email", flat=True)
     )
 
-    send_mail(
-        subject=subject,
-        message=body,
-        from_email=None,
-        recipient_list=accountant_emails,
-        fail_silently=False,
-    )
+    send_mail(subject=subject, message=body, recipient_list=accountant_emails)
 
 
 def _date_prague(date_time: datetime):
@@ -185,12 +180,11 @@ def send_email_transactions(transactions: Iterable[Transaction]):
             "transactions/email.html", {"transaction": transaction}
         )
         emails = email_notification_recipient_set(transaction.person)
+
         send_mail(
             subject="Informace o transakci",
             message="",
-            from_email=None,
             recipient_list=emails,
-            fail_silently=False,
             html_message=html_message,
         )
 

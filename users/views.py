@@ -7,7 +7,6 @@ from django.contrib.messages import error as error_message
 from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
-from django.core.mail import send_mail
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -26,6 +25,7 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
+from vzs.utils import send_mail
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -324,11 +324,9 @@ class UserGenerateNewPasswordView(
         response = super().form_valid(form)
 
         send_mail(
-            _("Vaše heslo bylo změněno"),
-            _(f"Vaše heslo bylo změněno administrátorem na {self.password}."),
-            None,
-            [self.object.person.email],
-            fail_silently=False,
+            subject="Vaše heslo bylo změněno",
+            message=_(f"Vaše heslo bylo změněno administrátorem na {self.password}."),
+            recipient_list=[self.object.person.email],
         )
 
         return response
@@ -730,11 +728,11 @@ class UserResetPasswordRequestView(SuccessMessageMixin, CreateView):
             )
 
             send_mail(
-                _("Zapomenuté heslo"),
-                _("Nasledujte následující odkaz pro změnu hesla: {0}").format(link),
-                None,
-                [token.user.person.email],
-                fail_silently=False,
+                subject=_("Zapomenuté heslo"),
+                message=_("Nasledujte následující odkaz pro změnu hesla: {0}").format(
+                    link
+                ),
+                recipient_list=[token.user.person.email],
             )
 
         return response

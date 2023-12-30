@@ -1,13 +1,11 @@
 import datetime
 
-from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.urls import reverse
 
 from events.models import EventOrOccurrenceState
 from trainings.models import TrainingOccurrence
 from users.utils import get_permission_by_codename
-from vzs import settings
 from vzs.settings import TRAINING_CLOSE_DEADLINE_DAYS
 from vzs.utils import get_server_url, date_pretty, send_notification_email
 
