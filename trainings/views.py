@@ -42,6 +42,7 @@ from events.views import (
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoSelfObjectMixin,
+    EventAdminListMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
 from persons.models import Person, get_active_user
@@ -51,7 +52,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
-from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
@@ -273,26 +274,15 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         )
 
 
-class TrainingAdminListView(PermissionRequiredMixin, generic.ListView):
+class TrainingAdminListView(EventAdminListMixin):
     template_name = "trainings/list_admin.html"
-    permissions_formula = [[]]  # TODO: permissions
     context_object_name = "trainings"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.filter_form = None
-
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("form", self.filter_form)
-        kwargs.setdefault("filtered_get", self.request.GET.urlencode())
-
-        return super().get_context_data(**kwargs)
 
     def get(self, request, *args, **kwargs):
         self.filter_form = TrainingsFilterForm(request.GET)
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
+    def get_accessible_events(self):
         active_person = self.request.active_person
         active_user = get_active_user(active_person)
 
@@ -300,9 +290,8 @@ class TrainingAdminListView(PermissionRequiredMixin, generic.ListView):
         visible_trainings_ids = [
             t.pk for t in trainings if t.can_user_manage(active_user)
         ]
-        visible_trainings = Training.objects.filter(pk__in=visible_trainings_ids)
 
-        return self.filter_form.process_filter(visible_trainings).order_by("name")
+        return Training.objects.filter(pk__in=visible_trainings_ids)
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):
