@@ -11,7 +11,6 @@ from .views import (
     TransactionExportView,
     TransactionIndexView,
     TransactionQRView,
-    TransactionSendEmailView,
     TransactionAccountingExportView,
     BulkTransactionIndexView,
 )
@@ -33,11 +32,6 @@ urlpatterns = [
         "exportovat/",
         TransactionExportView.as_view(),
         name="export",
-    ),
-    path(
-        "poslat-email/",
-        TransactionSendEmailView.as_view(),
-        name="send-email",
     ),
     path(
         "pridat-hromadne/",

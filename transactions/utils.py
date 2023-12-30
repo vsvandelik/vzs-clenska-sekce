@@ -170,23 +170,22 @@ class TransactionFilter(TypedDict, total=False):
     ]
 
 
-def send_email_transactions(transactions: Iterable[Transaction]):
+def send_email_transaction(transaction: Transaction):
     """
-    Sends an email with information about each transaction in ``transactions``.
+    Sends an email with information about transaction to the person
     """
 
-    for transaction in transactions:
-        html_message = render_to_string(
-            "transactions/email.html", {"transaction": transaction}
-        )
-        emails = email_notification_recipient_set(transaction.person)
+    html_message = render_to_string(
+        "transactions/email.html", {"transaction": transaction}
+    )
+    emails = email_notification_recipient_set(transaction.person)
 
-        send_mail(
-            subject="Informace o transakci",
-            message="",
-            recipient_list=emails,
-            html_message=html_message,
-        )
+    send_mail(
+        subject="Informace o transakci",
+        message="",
+        recipient_list=emails,
+        html_message=html_message,
+    )
 
 
 @dataclass
