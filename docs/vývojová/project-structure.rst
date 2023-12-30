@@ -125,7 +125,7 @@ Django aplikace :ref:`one_time_events`.
 .. _overriden_django_commands/:
 
 overriden_django_commands/
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Adresář určený pro sdružování kódu redefinující výchozí funkcionalitu Djanga. Konkrétně se zde nachází pouze kód redefinující redefinující příkaz ``python ./manage.py createsuperuser`` tak, aby nově vytvořený administrátor měl všechna oprávnění.
 
 .. _pages/:
@@ -215,7 +215,7 @@ Určuje, které soubory mají být ignorovány při práci s verzovacím systém
 .. _.pre-commit-config.yaml:
 
 .pre-commit-config.yaml
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 Konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black code formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
 
 .. _Caddyfile:
@@ -239,7 +239,7 @@ Shell script, který sestaví docker image pro :term:`IS`.
 .. _docker-compose.yaml:
 
 docker-compose.yaml
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
 
 .. _Dockerfile:
@@ -283,7 +283,7 @@ Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements
 .. _requirements_dev.txt:
 
 requirements_dev.txt
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 Závislosti projektu, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj (pre-commit, sphinx, ...). 
 
 Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements_dev.txt`.
@@ -291,7 +291,7 @@ Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements
 .. _requirements_prod.txt:
 
 requirements_prod.txt
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 Závislosti projektu, které jsou vyžadovány pouze pro běh v produkčním prostředí.
 
 Pro bližší informace o závislostech viz :ref:`dependencies_from_requirements_prod.txt`.
