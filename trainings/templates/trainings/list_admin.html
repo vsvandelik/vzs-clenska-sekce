@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load events_template_tags %}
+
+{% load static %}
+{% load vzs_filters %}
+
+{% block title %}
+    Seznam všech tréninků
+{% endblock %}
+{% block content %}
+    <div class="btn-group-md btn-group mb-3 elevation-2">
+        <a href="{% url "trainings:add" %}" class="btn btn-primary">Přidat trénink</a>
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-header d-flex align-items-center">
+            <div class="card-title h5">Tréninky</div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <table id="trainings-table" class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Název</th>
+                                <th scope="col">Termíny</th>
+                                <th scope="col">Termín konání</th>
+                                <th scope="col">Kapacita</th>
+                                <th scope="col" style="width: 40px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for training in trainings %}
+                                <tr>
+                                    <td><a href="{% url 'trainings:detail' training.id %}">{{ training.name }}</a></td>
+                                    <td>
+                                        {% for weekday in training.weekdays_list %}
+                                            {% include 'trainings/components/weekday.html' with event=training %}
+                                            {% if not forloop.last %} <br> {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{% display_date_range training %} </td>
+                                    <td>
+                                        {% for weekday in training.weekdays_list %}
+                                            {% include 'trainings/detail_components/capacity.html' with event=training %}
+                                            {% if not forloop.last %} <br> {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% ifperm 'trainings:detail' training.id as perm %}
+                                                <a class="btn btn-info btn-sm" href="{{ perm.url }}">
+                                                    <i class="fas fa-info"></i>
+                                                </a>
+                                            {% endifperm %}
+                                            {% ifperm 'trainings:edit' training.id as perm %}
+                                                <a class="btn btn-success btn-sm"
+                                                   href="{{ perm.url }}">
+                                                    <i class="fas fa-pen"></i>
+                                                </a>
+                                            {% endifperm %}
+                                            {% ifperm 'events:delete' training.id as perm %}
+                                                <a href="#" data-toggle="modal" data-target="#delete-event-modal"
+                                                   data-action="{{ perm.url }}"
+                                                   class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </a>
+                                            {% endifperm %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "modal_include.html" with id="delete-event-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        datatableEnable("trainings-table", [0], [0]);
+        registerModal("delete-event-modal");
+    </script>
+{% endblock %}

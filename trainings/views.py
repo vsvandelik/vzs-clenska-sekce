@@ -51,7 +51,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
 )
-from users.permissions import LoginRequiredMixin
+from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
@@ -270,6 +270,15 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault(
             "participant_replaceable_occurrences", replaceable_occurrences
         )
+
+
+class TrainingAdminListView(PermissionRequiredMixin, generic.ListView):
+    template_name = "trainings/list_admin.html"
+    permissions_formula = [[]]  # TODO: permissions
+    context_object_name = "trainings"
+
+    def get_queryset(self):
+        return Training.objects.all()  # TODO: filtering
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):

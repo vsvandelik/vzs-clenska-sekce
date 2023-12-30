@@ -7,10 +7,6 @@
 {% block title %}Tréninky{% endblock %}
 
 {% block content %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url "trainings:add" %}" class="btn btn-primary">Přidat trénink</a>
-    </div>
-
     {% if participant_replaceable_occurrences %}
         <div class="row">
             {% include "trainings/index_components/participant_replacing_trainings.html" %}

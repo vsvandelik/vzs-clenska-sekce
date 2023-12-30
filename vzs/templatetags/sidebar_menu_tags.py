@@ -29,8 +29,8 @@ def render_menu(context):
                 MenuItem("Vybavení", "equipments:index"),
             ],
         ),
-        MenuItem("Akce", "one_time_events:index", icon="fas fa-calendar"),
-        MenuItem("Tréninky", "trainings:index", icon="fas fa-dumbbell"),
+        get_one_time_events_menu_item(context),
+        get_trainings_menu_item(context),
         MenuItem(
             "Správa událostí",
             icon="fab fa-elementor",
@@ -64,3 +64,37 @@ def render_menu(context):
         output.append(item.render(context))
 
     return mark_safe("".join(output))
+
+
+def get_one_time_events_menu_item(context):
+    can_person_edit_one_time_events = True  # TODO: permissions
+
+    if can_person_edit_one_time_events:
+        return MenuItem(
+            "Akce",
+            icon="fas fa-calendar",
+            children=[
+                MenuItem("Moje akce", "one_time_events:index"),
+                MenuItem("Seznam všech akcí", "one_time_events:index"),
+            ],
+        )
+
+    else:
+        return MenuItem("Akce", "one_time_events:index", icon="fas fa-calendar")
+
+
+def get_trainings_menu_item(context):
+    can_person_edit_trainings = True  # TODO: permissions
+
+    if can_person_edit_trainings:
+        return MenuItem(
+            "Tréninky",
+            icon="fas fa-dumbbell",
+            children=[
+                MenuItem("Moje tréninky", "trainings:index"),
+                MenuItem("Seznam všech tréninků", "trainings:list-admin"),
+            ],
+        )
+
+    else:
+        return MenuItem("Tréninky", "trainings:index", icon="fas fa-dumbbell")
