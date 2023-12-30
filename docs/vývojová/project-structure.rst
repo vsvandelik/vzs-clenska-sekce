@@ -326,14 +326,9 @@ Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:
 
 management/
 ^^^^^^^^^^^^^^^^^^
-Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Django příkazy, které interagují s aplikací. Tyto příkazy je možné spustit pomocí příkazu ``python ./manage.py <název souboru s příkazem bez koncovky>``, ukázka výše obsahuje dva příkazy ``cmd1.py`` a ``cmd2.py``, ty je možné spustit konkrétním příkazem
+Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Django příkazy, které interagují s aplikací. Bližší informace ohledně vytvoření vlastního Django příkazu jsou k dispozici na stránce :ref:`vytvoreni_vlastniho_django_prikazu`.
 
-.. code-block:: console
-
-    python ./manage.py cmd1
-    python ./manage.py cmd2
-
-:term:`IS` obsahuje několik vlastních Django příkazů. Jedním z nich je příkaz ``python ./manage.py createsuperuser``, který vytvoří administrátora se všemi oprávněními.
+:term:`IS` obsahuje několik vlastních Django příkazů. Kompletní seznam je k dispozici na stránce :ref:`vlastni_django_prikazy`.
 
 .. _migrations/:
 
@@ -369,7 +364,7 @@ Slouží ke konfiguraci chování aplikace, je zde možné nastavit např. jiné
 
 cron.py
 ^^^^^^^^^^^^^^^^^^
-Funkce, které jsou periodicky volány pomocí daemonu cron. Další informace viz :ref:`cron`.
+Funkce, které jsou periodicky volány pomocí daemonu cron, více informací o vytvoření funkce volané Cronem viz :ref:`funkce_volane_daemonem_cron`.
 
 .. _forms.py:
 

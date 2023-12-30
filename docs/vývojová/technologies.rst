@@ -63,6 +63,8 @@ PostgreSQL je open-source databázový systém vydaný pod svobodnou licencí, k
 
 PostgreSQL je vysoce škálovatelný a podporuje také replikační a clusterové použití, je proto vhodný pro použití v kritických aplikacích. Zásadní odlišností oproti některým konkurenčním DB systémům je silný důraz na dodržování standardů. Je plně kompatibilní se standardy SQL, což usnadňuje práci při migraci dat při použití různých DB systémů, které dodržují standard SQL.
 
+PostgreSQL je používán jako DB systém pro produkční nasazení.
+
 .. [7] Zdroj: oficiální stránky PostgreSQL, odkaz: `<https://www.postgresql.org>`_.
 
 
@@ -70,6 +72,8 @@ PostgreSQL je vysoce škálovatelný a podporuje také replikační a clusterov�
 ---------------------
 Cron [8]_
 ---------------------
-Něco random o cronu.
+Cron je UNIXový daemon, který spouští úlohy periodicky dle plánu. 
 
-.. [8] Zdroj: blabla
+Cron je používán pro periodické volání funkcí, které upozorňují uživatele na expirující vlastnosti, neuzavřené události apod.
+
+.. [8] Zdroj: manuálová stránka cron

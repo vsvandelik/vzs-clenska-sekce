@@ -63,6 +63,8 @@ Příklad použití:
         <script>datatableEnable("tokens-table", [0, 1], [0, 1, 2]);</script>
     {% endblock %}
 
+.. _Select2_example:
+
 -------------------------------
  Select2
 -------------------------------
@@ -79,10 +81,25 @@ Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutí
             "group": Select2Widget(),
         }
 
+.. _vytvoreni_vlastniho_django_prikazu:
+
 ------------------------------------
  Vytvoření vlastního Django příkazu
 ------------------------------------
-A
+Vlastní Django příkaz se vždy nachází uvnitř nějaké aplikace. Je vhodné dodržovat konvenci, že příkazy se nachází uvnitř té aplikace, se kterou nejvíce souvisí jejich implementace. Relativně z pohledu aplikace se příkazy vždy nachází uvnitř adresáře ``management/commands/``. Vytvořením souboru ``management/commands/cmd1.py``, můžeme příkaz ``cmd1`` spustit spuštěním ``python ./manage.py cmd1``. Platí, že název příkazu odpovídá názvu souboru bez přípony. 
+
+Soubory implementující příkazy musí vycházet z následující šablony. Při spuštění příkazu se spustí funkce handle.
+
+.. code-block:: console
+
+    class Command(BaseCommand):
+        help = "TODO: Write here useful help message"
+
+        def handle(self, *args, **options):
+            # TODO: implement this function
+            pass
+
+.. _funkce_volane_daemonem_cron:
 
 -------------------------------
  Funkce volané daemonem Cron

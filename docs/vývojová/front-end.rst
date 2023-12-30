@@ -1,4 +1,5 @@
 .. _front-end:
+
 ***************************************
 Front-end
 ***************************************
@@ -48,6 +49,8 @@ Select2
 Select2 je další knihovnou pro jQuery. Její význam spočívá ve vylepšení komponent ``<select>``. Tato knihovna se mezi závislosti :term:`IS` dostala až později. S přibývajícími daty jsme zjistili, že v některých select boxech by se při použití výchozích stylů špatně vyhledávalo. Vylepšení select boxů při použití Select2 spočívá v zobrazení vyhledávacího pole, které je pro řadu select boxů vhodné, např. select box pro výběr osoby se seznamu. Na druhou stranu :term:`IS` obsahuje i select boxy, kde dochází k výběru z malého množství položek, např. pohlaví, kde knihovna Select2 není používána.
 
 Při návrhu nového select boxu doporučuje používat Select2 pouze pro select boxy, kde dochází k výběru z mnoha položek a konkrétní položku je rychlejší najít pomocí vyhledávacího pole.
+
+:ref:`Příklady použití Select2. <Select2_example>`
 
 ----------------------------------------
 FontAwesome
