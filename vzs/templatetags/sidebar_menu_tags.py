@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from trainings.views import TrainingAdminListView
 from vzs.menu_render import MenuItem
 
 register = template.Library()
@@ -84,7 +85,9 @@ def get_one_time_events_menu_item(context):
 
 
 def get_trainings_menu_item(context):
-    can_person_edit_trainings = True  # TODO: permissions
+    can_person_edit_trainings = TrainingAdminListView.view_has_permission_person(
+        context["active_person"]
+    )
 
     if can_person_edit_trainings:
         return MenuItem(
