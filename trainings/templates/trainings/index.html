@@ -17,33 +17,36 @@
         </div>
     {% endif %}
 
-    {% if participant_enrolled_trainings %}
-        <div class="row">
-            {% include "trainings/index_components/participant_enrolled_trainings.html" %}
-        </div>
-    {% endif %}
+    <div class="row">
+        {% if participant_enrolled_trainings %}
+            <div class="col-lg-6">
+                {% include "trainings/index_components/participant_enrolled_trainings.html" %}
+            </div>
+        {% endif %}
 
-    {% if coach_regular_trainings %}
-        <div class="row">
-            {% include "trainings/index_components/coach_regular_trainings.html" %}
-        </div>
-    {% endif %}
+        {% if coach_regular_trainings %}
+            <div class="col-lg-6">
+                {% include "trainings/index_components/coach_regular_trainings.html" %}
+            </div>
+        {% endif %}
+
+
+        {% if participant_upcoming_occurrences %}
+            <div class="col-lg-6">
+                {% include "trainings/index_components/participant_upcoming_trainings.html" %}
+            </div>
+        {% endif %}
+
+        {% if coach_upcoming_occurrences %}
+            <div class="col-lg-6">
+                {% include "trainings/index_components/coach_upcoming_trainings.html" %}
+            </div>
+        {% endif %}
+    </div>
 
     {% if participant_available_trainings %}
         <div class="row">
             {% include "trainings/index_components/participant_available_trainings.html" %}
-        </div>
-    {% endif %}
-
-    {% if participant_upcoming_occurrences %}
-        <div class="row">
-            {% include "trainings/index_components/participant_upcoming_trainings.html" %}
-        </div>
-    {% endif %}
-
-    {% if coach_upcoming_occurrences %}
-        <div class="row">
-            {% include "trainings/index_components/coach_upcoming_trainings.html" %}
         </div>
     {% endif %}
 
@@ -54,7 +57,8 @@
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script>
-        datatableEnable("upcoming-trainings-occurrences", [], [])
+        datatableEnable("upcoming-trainings-participant-occurrences", [], [])
+        datatableEnable("upcoming-trainings-coach-occurrences", [], [])
     </script>
     <script src="{% static "register_modal.js" %}"></script>
     <script>
