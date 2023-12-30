@@ -8,28 +8,38 @@
 {% block title %}Akce{% endblock %}
 
 {% block content %}
-    <div class="btn-group-md btn-group mb-3 elevation-2">
-        <a href="{% url "one_time_events:add" %}" class="btn btn-primary">Přidat akci</a>
+
+    <div class="row">
+        {% if upcoming_events_participant %}
+            <div class="col">
+                {% include "one_time_events/index_components/participant_enrolled_events.html" %}
+            </div>
+        {% endif %}
+
+        {% if upcoming_events_organizer %}
+            <div class="col">
+                {% include "one_time_events/index_components/organizer_enrolled_events.html" %}
+            </div>
+        {% endif %}
     </div>
 
-    {% if available_events %}
-        <div class="row">
-            <div class="col-md-12">
-                {% include "one_time_events/index_components_nonadmin/available_events.html" %}
+    <div class="row">
+        {% if available_events_participant %}
+            <div class="col">
+                {% include "one_time_events/index_components/participant_available_events.html" %}
             </div>
-        </div>
-    {% endif %}
+        {% endif %}
 
-    {% if enrolled_events %}
-        <div class="row">
-            <div class="col-md-12">
-                {% include "one_time_events/index_components_nonadmin/enrolled_events.html" %}
+        {% if available_events_organizer %}
+            <div class="col">
+                {% include "one_time_events/index_components/organizer_available_events.html" %}
             </div>
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 
     {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
     {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-organizer-modal" %}
 {% endblock %}
 
 {% block scripts %}
@@ -38,5 +48,6 @@
     <script>
         registerModal('enroll-myself-participant-modal')
         registerModal('unenroll-myself-participant-modal')
+        registerModal('unenroll-myself-organizer-modal')
     </script>
 {% endblock %}
