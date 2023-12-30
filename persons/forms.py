@@ -71,9 +71,10 @@ class PersonForm(ModelForm):
                 ]
 
         # Removing unknown sex as choice
-        self.fields["sex"].choices = [
-            c for c in self.fields["sex"].choices if c[0] != "U"
-        ]
+        if "sex" in self.fields:
+            self.fields["sex"].choices = [
+                c for c in self.fields["sex"].choices if c[0] != "U"
+            ]
 
         if is_add_child_parent_form:
             self.fields["add_another_parent"] = BooleanField(
