@@ -42,6 +42,7 @@ from events.views import (
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoSelfObjectMixin,
+    EventAdminListMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
 from persons.models import Person, get_active_user
@@ -81,6 +82,7 @@ from .forms import (
     TrainingReplaceableForm,
     TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
     TrainingUnenrollMyselfParticipantFromOccurrenceForm,
+    TrainingsFilterForm,
 )
 from .models import (
     CoachOccurrenceAssignment,
@@ -188,36 +190,39 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
 
-        self.add_participant_kwargs(kwargs, active_person)
-        self.add_coaches_kwargs(kwargs, active_person)
+        self._add_participant_kwargs(kwargs, active_person)
+        self._add_coaches_kwargs(kwargs, active_person)
 
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return []
 
-    def add_coaches_kwargs(self, kwargs, active_person):
-        regular_trainings = CoachPositionAssignment.objects.filter(person=active_person)
+    def _add_coaches_kwargs(self, kwargs, active_person):
+        regular_trainings = Training.get_unfinished_trainings_by_coach(active_person)
         upcoming_occurrences = TrainingOccurrence.get_upcoming_by_coach(
-            active_person
+            active_person, False
         ).all()
 
         for occurrence in upcoming_occurrences:
+            occurrence.excused = False
+
             attendance = occurrence.get_person_organizer_assignment(active_person)
-
-            excused = False
             if len(attendance) == 1 and attendance.first().is_excused:
-                excused = True
-
-            occurrence.excused = excused
+                occurrence.excused = True
 
         kwargs.setdefault("coach_regular_trainings", regular_trainings)
         kwargs.setdefault("coach_upcoming_occurrences", upcoming_occurrences)
 
-    def add_participant_kwargs(self, kwargs, active_person):
-        enrolled_trainings = Training.get_person_enrolled_trainings(active_person)
-        upcoming_occurrences = TrainingOccurrence.get_upcoming_by_participant(
+    def _add_participant_kwargs(self, kwargs, active_person):
+        available_trainings = Training.get_available_trainings_by_participant(
             active_person
+        )
+        enrolled_trainings = Training.get_unfinished_trainings_by_participant(
+            active_person
+        )
+        upcoming_occurrences = TrainingOccurrence.get_upcoming_by_participant(
+            active_person, False
         ).all()
 
         for occurrence in upcoming_occurrences:
@@ -231,20 +236,15 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
                 participant_attendance.is_one_time_presence
             )
 
-        non_enrolled_trainings = Training.objects.exclude(id__in=enrolled_trainings)
-        available_trainings = [
-            t
-            for t in non_enrolled_trainings
-            if t.can_person_enroll_as_waiting(active_person)
-        ]
-
         kwargs.setdefault("participant_enrolled_trainings", enrolled_trainings)
         kwargs.setdefault("participant_available_trainings", available_trainings)
         kwargs.setdefault("participant_upcoming_occurrences", upcoming_occurrences)
 
-        self.add_trainings_replacing_kwargs(kwargs, active_person, enrolled_trainings)
+        self._add_trainings_replacing_kwargs(kwargs, active_person, enrolled_trainings)
 
-    def add_trainings_replacing_kwargs(self, kwargs, active_person, enrolled_trainings):
+    def _add_trainings_replacing_kwargs(
+        self, kwargs, active_person, enrolled_trainings
+    ):
         count_of_trainings_to_replace = (
             TrainingParticipantAttendance.count_of_trainings_to_replace(active_person)
         )
@@ -272,6 +272,26 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault(
             "participant_replaceable_occurrences", replaceable_occurrences
         )
+
+
+class TrainingAdminListView(EventAdminListMixin):
+    template_name = "trainings/list_admin.html"
+    context_object_name = "trainings"
+
+    def get(self, request, *args, **kwargs):
+        self.filter_form = TrainingsFilterForm(request.GET)
+        return super().get(request, *args, **kwargs)
+
+    def get_accessible_events(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+
+        trainings = Training.objects.all()
+        visible_trainings_ids = [
+            t.pk for t in trainings if t.can_user_manage(active_user)
+        ]
+
+        return Training.objects.filter(pk__in=visible_trainings_ids)
 
 
 class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):

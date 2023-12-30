@@ -1,13 +1,13 @@
 from django.urls import path
 
 from transactions import views as transactions_views
-
 from . import views
 
 app_name = "trainings"
 
 urlpatterns = [
     path("", views.TrainingListView.as_view(), name="index"),
+    path("vsechny/", views.TrainingAdminListView.as_view(), name="list-admin"),
     path("<int:pk>/", views.TrainingDetailView.as_view(), name="detail"),
     path(
         "pridat/", views.TrainingCreateView.as_view(), name="add"
