@@ -199,6 +199,11 @@ def filter_range(start, end):
     return range(start, end)
 
 
+@register.filter
+def is_not_empty(value):
+    return value != ""
+
+
 class _PermURLContextVariable:
     def __init__(self, url, permitted):
         self.url = url
