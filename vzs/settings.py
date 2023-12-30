@@ -261,7 +261,7 @@ EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 
 EMAIL_SENDER = env.str("EMAIL_SENDER", default="noreply@vzs-praha15.cz")
 
-if DEBUG and EMAIL_HOST == "localhost":
+if EMAIL_HOST == "localhost":
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Settings for Google Integration
