@@ -86,6 +86,6 @@
     <script>
         registerModal("delete-person-modal");
         datatableEnable("persons-table", [0, 1], [0, 1], order=[], searchable=false);
-        registerFilterForm("persons-filter-form");
+        registerFilterForm("persons-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
 {% endblock %}

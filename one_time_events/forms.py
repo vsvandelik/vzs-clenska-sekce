@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit
+from crispy_forms.layout import Layout, Div, Submit, HTML
 from django import forms
 from django.core.validators import MinValueValidator
 from django.db.models import Q, QuerySet
@@ -1150,6 +1150,9 @@ class OneTimeEventsFilterForm(Form):
                 ),
                 Div(
                     Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
                         Submit(
                             "submit",
                             "Filtrovat",

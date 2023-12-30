@@ -1,7 +1,7 @@
 from datetime import timedelta, timezone
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit
+from crispy_forms.layout import Layout, Div, Submit, HTML
 from django import forms
 from django.db.models import Q, QuerySet
 from django.forms import ModelForm, Form, ChoiceField, IntegerField, ModelChoiceField
@@ -1418,6 +1418,9 @@ class TrainingsFilterForm(Form):
                 ),
                 Div(
                     Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
                         Submit(
                             "submit",
                             "Filtrovat",

@@ -97,6 +97,6 @@
     <script>
         datatableEnable("trainings-table", [0], [0], order=[], searchable=false);
         registerModal("delete-event-modal");
-        registerFilterForm("trainings-filter-form");
+        registerFilterForm("trainings-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
 {% endblock %}
