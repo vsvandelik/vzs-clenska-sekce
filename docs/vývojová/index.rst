@@ -10,6 +10,7 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
 
    technologies.rst
    architecture.rst
+   naming-conventions.rst
    project-structure.rst
    django-apps.rst
    front-end.rst

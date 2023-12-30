@@ -9,7 +9,42 @@ Tato stránka obsahuje návody a ukázky kódu demonstrující použití běžn�
 -------------------------
 Modální okna Bootstrapu
 -------------------------
+Budeme vytvářet tlačítko a modální okno. Po stisku tlačítka se zobrazí modální okno.
 
+Vytvoření tlačítka
+^^^^^^^^^^^^^^^^^^^^^^^^
+Rozmyslíme se id modálního okna, které budeme vytvářet v dalším kroku. Definujeme ho jako ``"unenroll-myself-participant-modal"``. Modální okno bude zobrazovat odpověď požadavku z akce ``{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}``, která je dobře definována.
+
+Potom můžeme vytvořit tlačítko.
+
+.. code-block:: console
+
+    <a data-toggle="modal" data-target="#unenroll-myself-participant-modal" data-action="{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}" class="btn btn-secondary">Odhlásit se jako účastník</a>
+
+Důležité je nastavit správně atributy ``data-toggle``, ``data-target`` a ``data-action``, které souvisí s modálním oknem a požadavkem, který má nastat při zobrazení modálního okna.
+
+Nyní je potřeba vytvořit modální okno.
+
+Vytvoření modální okna Bootstrapu
+^^^^^^^^^^^^^^^^^^^^^^^^
+Pro vytvoření modálního okna existuje předpřipravená šablona, kterou stačí pouze vložit do naší stránky. Důležité je správně vyplnit parametr ``id``, je nutné, aby hodnota byla stejná jako atribut ``data-target`` u tlačítka, aby fungovalo zobrazení modálního okna po stisku tlačítka.
+
+Příklad
+
+.. code-block:: console
+
+    {% include 'modal_include.html' with id='unenroll-myself-participant-modal' %}
+
+
+Napojení JS na zobrazení modálního okna
+^^^^^^^^^^^^^^^^^^^^^^^^
+Nyní zbývá poslední krok a tím je spuštění JS. Při zobrazení modálního okna se musí odeslat request na URL endpoint definovaný v atributu ``data-action`` a vložit odpověď do modálního okna. To je možné provést jednoduše předpřipravenou funkcí ``registerModal(id)``.
+
+Příklad:
+
+.. code-block:: console
+
+    registerModal("unenroll-myself-participant-modal")
 
 
 .. _DataTable_example:
