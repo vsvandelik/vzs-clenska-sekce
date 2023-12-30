@@ -1,5 +1,5 @@
 ***************************************
-Jak použít
+Jak na
 ***************************************
 Tato stránka obsahuje návody a ukázky kódu demonstrující použití běžných primitiv, které se často opakovaně vyskytují napříč všemi aplikacemi.
 
@@ -26,7 +26,7 @@ Důležité je nastavit správně atributy ``data-toggle``, ``data-target`` a ``
 Nyní je potřeba vytvořit modální okno.
 
 Vytvoření modální okna Bootstrapu
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Pro vytvoření modálního okna existuje předpřipravená šablona, kterou stačí pouze vložit do naší stránky. Důležité je správně vyplnit parametr ``id``, je nutné, aby hodnota byla stejná jako atribut ``data-target`` u tlačítka, aby fungovalo zobrazení modálního okna po stisku tlačítka.
 
 Příklad
@@ -37,7 +37,7 @@ Příklad
 
 
 Napojení JS na zobrazení modálního okna
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Nyní zbývá poslední krok a tím je spuštění JS. Při zobrazení modálního okna se musí odeslat request na URL endpoint definovaný v atributu ``data-action`` a vložit odpověď do modálního okna. To je možné provést jednoduše předpřipravenou funkcí ``registerModal(id)``.
 
 Příklad:
@@ -62,3 +62,27 @@ Příklad použití:
         <script src="{% static "datatables.js" %}"></script>
         <script>datatableEnable("tokens-table", [0, 1], [0, 1, 2]);</script>
     {% endblock %}
+
+-------------------------------
+ Select2
+-------------------------------
+Pokud vytvoříme formulářové pole, které bude mít na výběr více položek. Django použije jako widget k renderování buďto radio button nebo select box v závislosti na počtu položek. Pokud chceme definovat použití Select2, musíme explicitně nastavit widget.
+
+Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutíme použití Select2.
+
+.. code-block:: console
+
+    class GroupMembershipForm(ModelForm):
+    class Meta:
+        fields = ["group"]
+        widgets = {
+            "group": Select2Widget(),
+        }
+
+-------------------------------
+ Funkce volané daemonem Cron
+-------------------------------
+
+------------------------------------
+ Vytvoření vlastního Django příkazu
+------------------------------------

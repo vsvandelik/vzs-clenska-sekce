@@ -64,3 +64,12 @@ PostgreSQL je open-source databázový systém vydaný pod svobodnou licencí, k
 PostgreSQL je vysoce škálovatelný a podporuje také replikační a clusterové použití, je proto vhodný pro použití v kritických aplikacích. Zásadní odlišností oproti některým konkurenčním DB systémům je silný důraz na dodržování standardů. Je plně kompatibilní se standardy SQL, což usnadňuje práci při migraci dat při použití různých DB systémů, které dodržují standard SQL.
 
 .. [7] Zdroj: oficiální stránky PostgreSQL, odkaz: `<https://www.postgresql.org>`_.
+
+
+
+---------------------
+Cron [8]_
+---------------------
+Něco random o cronu.
+
+.. [8] Zdroj: blabla
