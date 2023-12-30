@@ -1,7 +1,7 @@
 from re import sub as regex_sub
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Fieldset, Layout, Submit
+from crispy_forms.layout import Div, Fieldset, Layout, Submit, HTML
 from django.forms import (
     CharField,
     ChoiceField,
@@ -230,6 +230,9 @@ class PersonsFilterForm(Form):
                 ),
                 Div(
                     Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
                         Submit(
                             "submit",
                             "Filtrovat",

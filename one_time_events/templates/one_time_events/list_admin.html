@@ -89,6 +89,6 @@
     <script>
         datatableEnable("one-time-events-table", [0], [0]);
         registerModal("delete-event-modal");
-        registerFilterForm("one-time-events-filter-form");
+        registerFilterForm("one-time-events-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
 {% endblock %}
