@@ -12,18 +12,26 @@ Zásadním front-endovým frameworkem, který byl použit je Bootstrap. Použit�
 Jako příklad použití Bootstrapu uvedeme použití modálního okna. Modální okno se používá při mazání komplexnějších objektů pro potvrzení smazání (např. mazání organizátorských pozic). Obsah zprávy o potvrzení smazání objektu však závisí na konkrétním objektu, který chceme smazat. Tento problém je řešen kombinací Javascriptu, který pošle GET požadavek, jehož odpoveď se zobrazí uvnitř modálního okna.
 
 .. _admin-lte:
+
 ----------------------------------------
 AdminLTE
 ----------------------------------------
-
+Šablona s levým postranním menu, kterou zahrnují všechny HTML soubory :term:`IS`, je součástí AdminLTE. Šablona byla zvolena pro svůj jednotný vzhled při použití Bootstrapu a jednoduché použití.
 
 ----------------------------------------
 jQuery
 ----------------------------------------
+Hlavním důvodem pro použití jQuery byl důvod, že jej vyžadují další komponenty, které jsme chtěli použít (:ref:`DataTables`, :ref:`Select2`). Postupem času se ukázalo, že pro některé části Javascriptu se použití jQuery ukázalo jako adekvátní, protože značně zjednodušilo kód.
+
+Momentálně je aplikována konvence, že není nutné vždy používat jQuery, pokud existuje ve standardním Javascriptu odpovídající ekvivalentní způsob, jak dosáhnout stejné funkcionality. Pokud však je kód pomocí jQuery jednodušší a srozumitelnější, je jeho použití preferované. Rozhodli jsme se tak proto, že řada knihoven a frameworků ustupuje od používání jQuery, např. AdminLTE od verze 5 již nezávisí na jQuery. Dá se předpokládat, že tento trend bude pokračovat a další součásti již nebudou vyžadovat jQuery. V budoucnu je možné, že dojde k odstranění jQuery jako závislosti projektu.
+
+.. _DataTables:
 
 ----------------------------------------
 DataTables
 ----------------------------------------
+
+.. _Select2:
 
 ----------------------------------------
 Select2
