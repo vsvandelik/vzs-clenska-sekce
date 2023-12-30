@@ -20,6 +20,7 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    dependencies.rst
    cron.rst
    template-tags.rst
+   how-to-use.rst
    data-conversion.rst
    requirements-evaluation.rst
    contribute.rst

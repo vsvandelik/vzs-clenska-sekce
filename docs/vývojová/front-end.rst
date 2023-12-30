@@ -11,6 +11,9 @@ Zásadním front-endovým frameworkem, který byl použit je Bootstrap. Použit�
 
 Jako příklad použití Bootstrapu uvedeme použití modálního okna. Modální okno se používá při mazání komplexnějších objektů pro potvrzení smazání (např. mazání organizátorských pozic). Obsah zprávy o potvrzení smazání objektu však závisí na konkrétním objektu, který chceme smazat. Tento problém je řešen kombinací Javascriptu, který pošle GET požadavek, jehož odpoveď se zobrazí uvnitř modálního okna.
 
+:ref:`Příklady použití modálních oken Bootstrapu. <Bootstrap_modals_example>`
+
+
 .. _admin-lte:
 
 ----------------------------------------
@@ -30,9 +33,12 @@ Momentálně je aplikována konvence, že není nutné vždy používat jQuery, 
 ----------------------------------------
 DataTables
 ----------------------------------------
-DataTables je knihovna vytvořenou pomocí jQuery, která vylepšuje tabulky. Tabulky získají funkce jako např. seřazení dle sloupce, zobrazení počtu řádků na stránku, hledání apod. Většina tabulek :term:`IS` využívá DataTables s různou úrovní konfigurace. Některé komplexní tabulky jako např. Seznam všech osob mají povolené všechny funkce DataTables, jednodušší a méně objemné tabulky jako např. Seznam organizkých pozic jednorázové události mají povolené pouze řazení dle sloupce a vypnuté omezení zobrazení počtu řádku na stránku.
+DataTables je knihovna vytvořenou pomocí jQuery, která vylepšuje tabulky. Tabulky získají funkce jako např. seřazení dle sloupce, zobrazení počtu řádků na stránku, hledání apod. Většina tabulek :term:`IS` využívá DataTables s různou úrovní konfigurace. Některé komplexní tabulky jako např. Seznam všech osob mají povolené všechny funkce DataTables, jednodušší a méně objemné tabulky jako např. Seznam organizkých pozic jednorázové události mají povolené pouze řazení dle sloupce a ostatní funkce vypnuté.
 
 Při návrhu nové tabulky, je nutné si rozmyslet očekávaný objem dat, který tabulka bude zobrazovat a zvážit jak DataTables pro zobrazení tabulky nakonfigurovat.
+
+:ref:`Příklady použití DataTables. <DataTable_example>`
+
 
 .. _Select2:
 
