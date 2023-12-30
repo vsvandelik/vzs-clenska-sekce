@@ -16,7 +16,7 @@ from events.models import (
 from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
 from vzs import settings
 from vzs.settings import CURRENT_DATETIME
-from vzs.utils import now
+from vzs.utils import now, today
 
 
 class TrainingAttendance(models.TextChoices):
@@ -320,16 +320,30 @@ class Training(Event):
         )
 
     @staticmethod
-    def get_person_enrolled_trainings(person):
+    def get_unfinished_trainings_by_participant(person):
         enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
-            Q(person=person)
-            & (
-                Q(state=ParticipantEnrollment.State.APPROVED)
-                | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
-            )
+            person=person, state=ParticipantEnrollment.State.APPROVED
         ).values_list("training", flat=True)
 
-        return Training.objects.filter(id__in=enrolled_trainings_id)
+        return Training.objects.filter(
+            id__in=enrolled_trainings_id, date_end__gte=today()
+        )
+
+    @staticmethod
+    def get_unfinished_trainings_by_coach(person):
+        return Training.objects.filter(coaches=person, date_end__gte=today())
+
+    @staticmethod
+    def get_available_trainings_by_participant(person):
+        enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
+            person=person
+        ).values_list("training", flat=True)
+
+        available_trainings = Training.objects.exclude(id__in=enrolled_trainings_id)
+
+        return [
+            t for t in available_trainings if t.can_person_enroll_as_waiting(person)
+        ]
 
 
 class CoachPositionAssignment(models.Model):
@@ -648,19 +662,31 @@ class TrainingOccurrence(EventOccurrence):
         ) <= timezone.localtime(self.datetime_start)
 
     @staticmethod
-    def get_upcoming_by_participant(person):
-        # TODO: ignore if not approved
-        return TrainingOccurrence.objects.filter(
+    def get_upcoming_by_participant(person, ignore_excused=True):
+        pre_filter = TrainingOccurrence.objects.filter(
             datetime_start__gte=now(),
             participants=person,
-        ).order_by("datetime_start")
+        )
+
+        if ignore_excused:
+            pre_filter = pre_filter.exclude(
+                trainingparticipantattendance__state=TrainingAttendance.EXCUSED
+            )
+
+        return pre_filter.order_by("datetime_start")
 
     @staticmethod
-    def get_upcoming_by_coach(person):
-        # TODO: ignore if excused
-        return TrainingOccurrence.objects.filter(
+    def get_upcoming_by_coach(person, ignore_excused=True):
+        pre_filter = TrainingOccurrence.objects.filter(
             datetime_start__gte=now(), coaches=person
-        ).order_by("datetime_start")
+        )
+
+        if ignore_excused:
+            pre_filter = pre_filter.exclude(
+                coachoccurrenceassignment__state=TrainingAttendance.EXCUSED
+            )
+
+        return pre_filter.order_by("datetime_start")
 
     @property
     def hours(self):
