@@ -95,7 +95,7 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "filter_form.js" %}"></script>
     <script>
-        datatableEnable("trainings-table", [0], [0]);
+        datatableEnable("trainings-table", [0], [0], order=[], searchable=false);
         registerModal("delete-event-modal");
         registerFilterForm("trainings-filter-form");
     </script>
