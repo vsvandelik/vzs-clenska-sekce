@@ -55,3 +55,4 @@ Při návrhu nového select boxu doporučuje používat Select2 pouze pro select
 ----------------------------------------
 FontAwesome
 ----------------------------------------
+Pro účely zobrazení symbolů jsou používány ikonky z projektu FontAwesome. Zásadní výhodou oproti použití Unicode symbolů je garance, že FontAwesome ikonky vypadají na všech platformách stejně. Z těchto důvodu je doporučeno vždy upřednostit FontAwesome ikonku a pokud možno nepoužívat Unicode symboly.
