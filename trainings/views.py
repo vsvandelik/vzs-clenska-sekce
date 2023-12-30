@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -58,8 +57,8 @@ from vzs.mixin_extensions import (
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
 )
-from vzs.settings import CURRENT_DATETIME, PARTICIPANT_ENROLL_DEADLINE_DAYS
-from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
+from vzs.settings import PARTICIPANT_ENROLL_DEADLINE_DAYS
+from vzs.utils import send_notification_email, date_pretty, export_queryset_csv, now
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -107,7 +106,7 @@ class TrainingDetailView(EventDetailBaseView):
         )
 
         upcoming_occurrences = self.object.sorted_occurrences_list().filter(
-            datetime_start__gte=CURRENT_DATETIME()
+            datetime_start__gte=now()
         )[:10]
         for occurrence in upcoming_occurrences:
             occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
@@ -120,7 +119,7 @@ class TrainingDetailView(EventDetailBaseView):
             )
 
         past_occurrences = self.object.sorted_occurrences_list().filter(
-            datetime_start__lte=CURRENT_DATETIME()
+            datetime_start__lte=now()
         )[:20]
         for occurrence in past_occurrences:
             if occurrence.is_closed and occurrence.get_participant_attendance(
@@ -167,7 +166,7 @@ class TrainingDetailView(EventDetailBaseView):
     def _add_coaches_detail_kwargs(self, kwargs):
         occurrences = self.object.sorted_occurrences_list()
         for occurrence in occurrences:
-            if occurrence.datetime_start >= CURRENT_DATETIME():
+            if occurrence.datetime_start >= now():
                 occurrence.nearest_occurrence = True
                 break
 
@@ -199,9 +198,9 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
 
     def add_coaches_kwargs(self, kwargs, active_person):
         regular_trainings = CoachPositionAssignment.objects.filter(person=active_person)
-        upcoming_occurrences = TrainingOccurrence.objects.filter(
-            datetime_start__gte=CURRENT_DATETIME(), coaches=active_person
-        ).order_by("datetime_start")
+        upcoming_occurrences = TrainingOccurrence.get_upcoming_by_coach(
+            active_person
+        ).all()
 
         for occurrence in upcoming_occurrences:
             attendance = occurrence.get_person_organizer_assignment(active_person)
@@ -217,9 +216,9 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
 
     def add_participant_kwargs(self, kwargs, active_person):
         enrolled_trainings = Training.get_person_enrolled_trainings(active_person)
-        upcoming_occurrences = TrainingOccurrence.objects.filter(
-            datetime_start__gte=CURRENT_DATETIME(), participants=active_person
-        ).order_by("datetime_start")
+        upcoming_occurrences = TrainingOccurrence.get_upcoming_by_participant(
+            active_person
+        ).all()
 
         for occurrence in upcoming_occurrences:
             participant_attendance = occurrence.get_participant_attendance(
@@ -258,9 +257,7 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         for enrolled_training in enrolled_trainings:
             replaceable_trainings += enrolled_training.replaces_training_list()
 
-        date_start = CURRENT_DATETIME() + timedelta(
-            days=PARTICIPANT_ENROLL_DEADLINE_DAYS
-        )
+        date_start = now() + timedelta(days=PARTICIPANT_ENROLL_DEADLINE_DAYS)
         replaceable_occurrences = (
             TrainingOccurrence.objects.filter(
                 datetime_start__gte=date_start, event__in=replaceable_trainings
@@ -720,7 +717,7 @@ class EnrollMyselfParticipantFromOccurrenceView(
 class TrainingOccurrenceAttendanceCanBeFilledMixin:
     def dispatch(self, request, *args, **kwargs):
         occurrence = self.get_object()
-        if CURRENT_DATETIME() < timezone.localtime(occurrence.datetime_start):
+        if now() < timezone.localtime(occurrence.datetime_start):
             raise Http404("Tato stránka není dostupná")
         return super().dispatch(request, *args, **kwargs)
 

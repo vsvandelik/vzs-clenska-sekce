@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
-from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
 
 from events.models import (
@@ -17,7 +16,6 @@ from persons.models import PersonHourlyRate
 from trainings.models import Training
 from transactions.models import Transaction
 from vzs import settings
-from vzs.settings import CURRENT_DATETIME
 from vzs.utils import today
 
 
@@ -33,7 +31,6 @@ class OneTimeEvent(Event):
         PRESENTATION = "prezentacni", _("prezentační")
         FOR_CHILDREN = "pro-deti", _("pro děti")
         SOCIAL = "spolecenska", _("společenská")
-
 
     enrolled_participants = models.ManyToManyField(
         "persons.Person",
@@ -201,6 +198,29 @@ class OneTimeEvent(Event):
                 | Q(state=ParticipantEnrollment.State.SUBSTITUTE)
             )
         ).exists() or super().can_person_interact_with(person)
+
+    @staticmethod
+    def get_upcoming_by_participant(person):
+        # TODO: ignore if not approved
+        return OneTimeEvent.objects.filter(
+            date_start__gte=today(),
+            onetimeeventparticipantenrollment__person=person,
+        ).order_by("date_start")
+
+    @staticmethod
+    def get_upcoming_by_organizer(person):
+        # TODO: ignore if excused
+        upcoming_occurrences = OneTimeEventOccurrence.objects.filter(
+            date__gte=today(), organizers=person
+        ).all()
+
+        return (
+            OneTimeEvent.objects.filter(
+                date_start__gte=today(), eventoccurrence__in=upcoming_occurrences
+            )
+            .distinct()
+            .order_by("date_start")
+        )
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
