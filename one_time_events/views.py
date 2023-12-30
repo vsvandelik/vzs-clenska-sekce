@@ -183,10 +183,38 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault("enrolled_events", enrolled_events)
         kwargs.setdefault("available_events", available_events)
 
+        self._add_upcoming_events_participant_kwargs(kwargs)
+        self._add_upcoming_events_organizer_kwargs(kwargs)
+
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return []
+
+    def _add_upcoming_events_participant_kwargs(self, kwargs):
+        active_person = self.request.active_person
+
+        enrolled_events = OneTimeEvent.get_upcoming_by_participant(active_person)
+        for enrolled_event in enrolled_events:
+            enrolled_event.enrollment = enrolled_event.get_participant_enrollment(
+                active_person
+            )
+
+        available_events = OneTimeEvent.get_available_events_by_participant(
+            active_person
+        )
+
+        kwargs.setdefault("upcoming_events_participant", enrolled_events)
+        kwargs.setdefault("available_events_participant", available_events)
+
+    def _add_upcoming_events_organizer_kwargs(self, kwargs):
+        active_person = self.request.active_person
+
+        enrolled_events = OneTimeEvent.get_upcoming_by_organizer(active_person)
+        available_events = OneTimeEvent.get_available_events_by_organizer(active_person)
+
+        kwargs.setdefault("upcoming_events_organizer", enrolled_events)
+        kwargs.setdefault("available_events_organizer", available_events)
 
 
 class OneTimeEventAdminListView(EventAdminListMixin):

@@ -335,6 +335,7 @@ class Training(Event):
 
     @staticmethod
     def get_available_trainings_by_participant(person):
+        # TODO: Checking capacity
         enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
             person=person
         ).values_list("training", flat=True)
@@ -663,6 +664,7 @@ class TrainingOccurrence(EventOccurrence):
 
     @staticmethod
     def get_upcoming_by_participant(person, ignore_excused=True):
+        # TODO: ignore un-approved enrollments
         pre_filter = TrainingOccurrence.objects.filter(
             datetime_start__gte=now(),
             participants=person,
