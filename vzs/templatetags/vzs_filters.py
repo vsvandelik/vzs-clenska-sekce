@@ -102,6 +102,12 @@ def addstr(arg1, arg2):
 
 
 @register.filter
+def wrapstr(middle, prefix_suffix):
+    prefix, suffix = prefix_suffix.split(",")
+    return str(prefix) + str(middle) + str(suffix)
+
+
+@register.filter
 def index(indexable, i):
     return indexable[i]
 
