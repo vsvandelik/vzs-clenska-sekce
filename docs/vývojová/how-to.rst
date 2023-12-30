@@ -52,7 +52,7 @@ Příklad:
 -------------------------
 DataTables
 -------------------------
-Na existující tabulku s ``id="tokens-table"`` je možné DataTables aplikovat použitím funkce ``datatableEnable(id, searchableColumns, orderableColumns, order = [])``, nebo ``simpleOrderableTableEnable(id, orderableColumns, order = [])``. Druhá funkce skryje vyhledávací pole. Parametry ``searchableColumns`` a ``orderableColumns`` očekávají pole indexů sloupců. První parametr definuje sloupce, přes které se vyhledává při použití vyhledávacího pole. Druhý parametr definuje sloupce, které je možné řadit. Konečně parametr order definuje pořadí sloupců, tento parametr může být vynechán, pokud není potřeba měnit pořadí sloupců.
+Na existující tabulku s ``id="tokens-table"`` je možné DataTables aplikovat použitím funkce ``datatableEnable(id, searchableColumns, orderableColumns, order = [])``, nebo ``simpleOrderableTableEnable(id, orderableColumns, order = [])``. Druhá funkce skryje vyhledávací pole. Parametry ``searchableColumns`` a ``orderableColumns`` očekávají pole indexů sloupců. První parametr definuje sloupce, přes které se vyhledává při použití vyhledávacího pole. Druhý parametr definuje sloupce, které je možné řadit. Konečně parametr ``order`` definuje pořadí sloupců, tento parametr může být vynechán, pokud není potřeba měnit pořadí sloupců.
 
 Příklad použití:
 
@@ -79,10 +79,33 @@ Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutí
             "group": Select2Widget(),
         }
 
--------------------------------
- Funkce volané daemonem Cron
--------------------------------
-
 ------------------------------------
  Vytvoření vlastního Django příkazu
 ------------------------------------
+A
+
+-------------------------------
+ Funkce volané daemonem Cron
+-------------------------------
+Libovolná funkce může být periodicky volána Cronem. Nicméně všechny funkce, které jsou volány Cronem jsou jednořádkové funkce spouštějící Django příkaz. Je doporučeno se této konvence držet při přidávání dalších funkcí pro Cron. Výhoda tohoto přístupu spočívá v tom, že je možné kdykoliv ručně příkaz spustit pomocí standardních nástrojů Djanga (``python ./manage.py <název příkazu>``).
+
+Příkazy implementující funkcionalitu by se měly nacházet v aplikaci, která úsce souvisí s významem příkazu. Např. příkaz kontrolující, zda trenér nezapomněl uzavřít trénink se nachází v aplikaci :ref:`trainings`. To stejné platí i pro jednořádkové funkce, které volá Cron. Standardně je umisťujeme do vlastního souboru cron.py.
+
+Definice intervalů volání a konkrétních cron jobů se nachází uvnitř aplikace :ref:`vzs` v souboru settings.py jako proměnná ``CRONJOBS``.
+
+Příklad ``CRONJOBS``:
+
+.. code-block:: console
+
+    CRONJOBS = [
+        ("0 3 * * *", "features.cron.features_expiry_send_mails"),
+        ("0 4 * * *", "one_time_events.cron.unclosed_one_time_events_send_mails"),
+        ("0 5 * * *", "trainings.cron.unclosed_trainings_send_mails"),
+    ]
+
+Příklad ``features.cron.features_expiry_send_mails``
+
+.. code-block:: console
+
+    def features_expiry_send_mails():
+        call_command("send_feature_expiry_mail")
