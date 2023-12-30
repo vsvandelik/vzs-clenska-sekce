@@ -5,12 +5,16 @@ $.extend($.fn.dataTable.defaults, {
 });
 
 function datatableEnable(id, searchableColumns, orderableColumns, order = [], searchable = true) {
+    if (!window.initializedDataTables) {
+        window.initializedDataTables = {};
+    }
+
     $(function () {
-        $("#" + id).DataTable({
+        window.initializedDataTables[id] = $("#" + id).DataTable({
             "columnDefs": [
-                { "targets": searchableColumns, "searchable": true },
-                { "targets": orderableColumns, "orderable": true },
-                { "targets": "_all", "searchable": false, "orderable": false },
+                {"targets": searchableColumns, "searchable": true},
+                {"targets": orderableColumns, "orderable": true},
+                {"targets": "_all", "searchable": false, "orderable": false},
             ],
             "order": order,
             "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]],
@@ -22,11 +26,15 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = [], se
 }
 
 function simpleOrderableTableEnable(id, orderableColumns, order = []) {
+    if (!window.initializedDataTables) {
+        window.initializedDataTables = {};
+    }
+
     $(function () {
-        $("#" + id).DataTable({
+        window.initializedDataTables[id] = $("#" + id).DataTable({
             "columnDefs": [
-                { "targets": orderableColumns, "orderable": true },
-                { "targets": "_all", "searchable": false, "orderable": false },
+                {"targets": orderableColumns, "orderable": true},
+                {"targets": "_all", "searchable": false, "orderable": false},
             ],
             "order": order,
             "searching": false,
