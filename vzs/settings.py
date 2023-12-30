@@ -252,9 +252,17 @@ SERVER_PROTOCOL = env.str("SERVER_PROTOCOL", default="http")
 
 # Emails
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = env.str("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=25)
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 
-ADMIN_EMAIL = "system@vzs-praha15.cz"
+EMAIL_SENDER = env.str("EMAIL_SENDER", default="noreply@vzs-praha15.cz")
+
+if EMAIL_HOST == "localhost":
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Settings for Google Integration
 
@@ -293,6 +301,7 @@ SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
 SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
 # Constants
+ADMIN_EMAIL = "system@vzs-praha15.cz"
 VALUE_MISSING_HTML = '<i class="fas fa-times"></i>'
 VALUE_PRESENT_HTML = '<i class="fas fa-check"></i>'
 ORGANIZER_UNENROLL_DEADLINE_DAYS = 21
@@ -303,7 +312,6 @@ PARTICIPANT_UNENROLL_DEADLINE_DAYS = 21
 PARTICIPANT_ENROLL_DEADLINE_DAYS = 1
 ONE_TIME_EVENT_CLOSE_DEADLINE_DAYS = 5
 TRAINING_CLOSE_DEADLINE_DAYS = 1
-NOTIFICATION_SENDER_EMAIL = "noreply@vzs-praha15.cz"
 MIN_PARTICIPANT_ABSENCE_SEND_MAIL = 3
 FEATURE_EXPIRE_HOURS_SEND_MAIL = 72
 
