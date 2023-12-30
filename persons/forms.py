@@ -1,7 +1,7 @@
 from re import sub as regex_sub
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Fieldset, Layout, Submit
+from crispy_forms.layout import Div, Fieldset, Layout, Submit, HTML
 from django.forms import (
     CharField,
     ChoiceField,
@@ -71,9 +71,10 @@ class PersonForm(ModelForm):
                 ]
 
         # Removing unknown sex as choice
-        self.fields["sex"].choices = [
-            c for c in self.fields["sex"].choices if c[0] != "U"
-        ]
+        if "sex" in self.fields:
+            self.fields["sex"].choices = [
+                c for c in self.fields["sex"].choices if c[0] != "U"
+            ]
 
         if is_add_child_parent_form:
             self.fields["add_another_parent"] = BooleanField(
@@ -91,6 +92,9 @@ class PersonForm(ModelForm):
 
     def clean_birth_number(self):
         birth_number = self.cleaned_data["birth_number"]
+
+        if birth_number.isdigit() and len(birth_number) in {9, 10}:
+            birth_number = birth_number[:6] + "/" + birth_number[6:]
 
         persons_with_same_birth_number = Person.objects.filter(
             birth_number=birth_number
@@ -230,6 +234,9 @@ class PersonsFilterForm(Form):
                 ),
                 Div(
                     Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
                         Submit(
                             "submit",
                             "Filtrovat",

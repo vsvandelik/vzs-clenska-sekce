@@ -4,7 +4,7 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
-function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
+function datatableEnable(id, searchableColumns, orderableColumns, order = [], searchable = true) {
     $(function () {
         $("#" + id).DataTable({
             "columnDefs": [
@@ -15,7 +15,8 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = []) {
             "order": order,
             "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]],
             "stateSave": true,
-            "stateDuration": -1
+            "stateDuration": -1,
+            "searching": searchable
         });
     });
 }

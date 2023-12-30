@@ -1,9 +1,11 @@
 from datetime import timedelta
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Submit, HTML
 from django import forms
 from django.core.validators import MinValueValidator
-from django.db.models import Q
-from django.forms import CheckboxSelectMultiple, Form, ModelForm
+from django.db.models import Q, QuerySet
+from django.forms import CheckboxSelectMultiple, Form, ModelForm, ChoiceField, DateField
 from django.utils.translation import gettext_lazy as _
 from django_select2.forms import Select2Widget
 
@@ -33,8 +35,13 @@ from persons.models import Person
 from persons.widgets import PersonSelectWidget
 from transactions.models import Transaction
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.utils import date_pretty, payment_email_html, send_notification_email
-
+from vzs.utils import (
+    date_pretty,
+    payment_email_html,
+    send_notification_email,
+    filter_queryset,
+)
+from vzs.widgets import DatePickerWithIcon
 from .models import (
     OneTimeEvent,
     OneTimeEventAttendance,
@@ -43,6 +50,7 @@ from .models import (
     OneTimeEventParticipantEnrollment,
     OrganizerOccurrenceAssignment,
 )
+from .utils import OneTimeEventsFilter
 
 
 class OneTimeEventParticipantEnrollmentUpdateAttendanceProvider:
@@ -1100,3 +1108,70 @@ class OneTimeEventCreateDuplicateForm(ModelForm):
     class Meta:
         model = OneTimeEvent
         fields = []
+
+
+class OneTimeEventsFilterForm(Form):
+    category = ChoiceField(
+        label=_("Typ akce"),
+        required=False,
+        choices=[("", "---------")] + OneTimeEvent.Category.choices,
+    )
+    date_from = DateField(
+        label=_("Datum od"), required=False, widget=DatePickerWithIcon()
+    )
+    date_to = DateField(
+        label=_("Datum do"), required=False, widget=DatePickerWithIcon()
+    )
+    state = ChoiceField(
+        label=_("Stav"),
+        required=False,
+        choices=[("", "---------")] + EventOrOccurrenceState.choices,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self._create_form_helper()
+
+    @staticmethod
+    def _create_form_helper():
+        helper = FormHelper()
+
+        helper.form_method = "GET"
+        helper.form_id = "one-time-events-filter-form"
+        helper.include_media = False
+        helper.layout = Layout(
+            Div(
+                Div(
+                    Div("category", css_class="col-md-4"),
+                    Div("date_from", css_class="col-md-3"),
+                    Div("date_to", css_class="col-md-3"),
+                    Div("state", css_class="col-md-2"),
+                    css_class="row",
+                ),
+                Div(
+                    Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
+                        Submit(
+                            "submit",
+                            "Filtrovat",
+                            css_class="btn btn-primary float-right",
+                        ),
+                        css_class="col-12",
+                    ),
+                    css_class="row",
+                ),
+                css_class="p-2 border rounded bg-light",
+                style="box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);",
+            )
+        )
+
+        return helper
+
+    def process_filter(self, events) -> QuerySet[OneTimeEvent]:
+        return filter_queryset(
+            events,
+            self.cleaned_data if self.is_valid() else None,
+            OneTimeEventsFilter,
+        )

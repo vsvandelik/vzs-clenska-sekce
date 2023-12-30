@@ -79,7 +79,7 @@ def extend_kwargs_of_assignment_features(person, kwargs):
         "qualifications",
         FeatureAssignment.objects.filter(
             person=person, feature__feature_type=Feature.Type.QUALIFICATION.value
-        ),
+        ).order_by("date_expire"),
     )
 
     kwargs.setdefault(

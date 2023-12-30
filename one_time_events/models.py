@@ -201,15 +201,14 @@ class OneTimeEvent(Event):
 
     @staticmethod
     def get_upcoming_by_participant(person):
-        # TODO: ignore if not approved
         return OneTimeEvent.objects.filter(
             date_start__gte=today(),
             onetimeeventparticipantenrollment__person=person,
+            onetimeeventparticipantenrollment__state=ParticipantEnrollment.State.APPROVED,
         ).order_by("date_start")
 
     @staticmethod
     def get_upcoming_by_organizer(person):
-        # TODO: ignore if excused
         upcoming_occurrences = OneTimeEventOccurrence.objects.filter(
             date__gte=today(), organizers=person
         ).all()
@@ -221,6 +220,26 @@ class OneTimeEvent(Event):
             .distinct()
             .order_by("date_start")
         )
+
+    @staticmethod
+    def get_available_events_by_participant(person):
+        enrolled_events_id = OneTimeEventParticipantEnrollment.objects.filter(
+            person=person
+        ).values_list("one_time_event", flat=True)
+
+        available_events = OneTimeEvent.objects.exclude(id__in=enrolled_events_id)
+
+        return [e for e in available_events if e.can_person_enroll_as_waiting(person)]
+
+    @staticmethod
+    def get_available_events_by_organizer(person):
+        enrolled_events_id = OneTimeEventOccurrence.objects.filter(
+            date__gte=today(), organizers=person
+        ).all()
+
+        available_events = OneTimeEvent.objects.exclude(id__in=enrolled_events_id)
+
+        return [e for e in available_events if e.can_enroll_organizer(person)]
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):

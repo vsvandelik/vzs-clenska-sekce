@@ -3,7 +3,7 @@
 
 <div class="card">
     <div class="card-header d-flex align-items-center border-0">
-        <div class="card-title h5">Nadcházející přihlášené akce</div>
+        <div class="card-title h5">Akce k přihlášení jako organizátor</div>
     </div>
     <div class="card-body p-0">
         <div class="row">
@@ -18,24 +18,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for event in enrolled_events %}
+                        {% for event in available_events_organizer %}
                             <tr>
                                 <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
                                 <td>{% display_date_range event %}</td>
-                                <td>{{ event.location }}</td>
+                                <td>{{ event.location|handle_missing_empty }}</td>
                                 <td class="text-right">
-                                    {% if event.active_person_enrollment %}
-                                        {% ifperm 'events:unenroll-myself-participant' event.active_person_enrollment.id as perm %}
-                                            <a class="btn btn-info btn-sm"
-                                               data-target="#unenroll-myself-participant-modal"
-                                               data-toggle="modal"
-                                               data-action="{{ perm.url }}">Odhlásit jako účastník
-                                            </a>
-                                        {% endifperm %}
-                                    {% endif %}
-                                    {% ifperm 'one_time_events:unenroll-myself-organizer' event.id as perm %}
+                                    <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
+                                    {% ifperm 'one_time_events:enroll-myself-organizer' event.id as perm %}
                                         <a class="btn btn-info btn-sm" href="{{ perm.url }}">
-                                            Odhlásit jako organizátor
+                                            Přihlásit se
                                         </a>
                                     {% endifperm %}
                                 </td>

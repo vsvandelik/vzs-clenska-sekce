@@ -80,11 +80,12 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "persons/persons_filter.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static "filter_form.js" %}"></script>
     <script>
         registerModal("delete-person-modal");
-        datatableEnable("persons-table", [0, 1], [0, 1]);
+        datatableEnable("persons-table", [0, 1], [0, 1], order=[], searchable=false);
+        registerFilterForm("persons-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
 {% endblock %}

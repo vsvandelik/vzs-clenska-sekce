@@ -8,14 +8,14 @@ from django.core.exceptions import SuspiciousOperation
 from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
 from django.forms import Form
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
-from django.views.generic.list import BaseListView, ListView
+from django.views.generic.list import ListView
 
 from events.permissions import EventManagePermissionMixin
 from events.views import (
@@ -44,7 +44,7 @@ from .utils import (
     TransactionInfo,
     export_debts_to_xml,
     export_rewards_to_csv,
-    send_email_transactions,
+    send_email_transaction,
 )
 
 
@@ -83,7 +83,9 @@ class TransactionCreateView(TransactionEditPermissionMixin, CreateView):
     """:meta private:"""
 
 
-class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView):
+class TransactionCreateFromPersonView(
+    TransactionEditPermissionMixin, SuccessMessageMixin, CreateView
+):
     """
     A view for creating a new transaction.
 
@@ -109,6 +111,8 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
 
     template_name = "transactions/create_from_person.html"
     """:meta private:"""
+
+    success_message = _("Transakce byla přidána")
 
     def dispatch(self, request: HttpRequest, *args, **kwargs):
         """:meta private:"""
@@ -138,6 +142,13 @@ class TransactionCreateFromPersonView(TransactionEditPermissionMixin, CreateView
         kwargs.setdefault("person", self.person)
 
         return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        send_email_transaction(self.object)
+
+        return response
 
 
 class TransactionListMixin(TransactionEditPermissionMixin, DetailView):
@@ -849,47 +860,6 @@ class TransactionExportView(TransactionEditPermissionMixin, View):
         return export_queryset_csv("vzs_transakce_export", filter_form.process_filter())
 
 
-class TransactionSendEmailView(TransactionEditPermissionMixin, View):
-    """
-    Sends an email with transaction info for a set of transactions.
-
-    Filters using :class:`TransactionFilterForm`.
-
-    **Success redirection view**: :class:`TransactionIndexView`
-    with forwarded query parameters
-
-    **Permissions**:
-
-    Users with the ``users.transakce`` permission.
-
-    **Query parameters:**
-
-    *   ``person_name``
-    *   ``reason``
-    *   ``transaction_type``
-    *   ``is_settled``
-    *   ``amount_from``
-    *   ``amount_to``
-    *   ``date_due_from``
-    *   ``date_due_to``
-    *   ``bulk_transaction``
-    """
-
-    http_method_names = ["get"]
-    """:meta private:"""
-
-    def get(self, request: HttpRequest, *args, **kwargs):
-        """:meta private:"""
-
-        filter_form = TransactionFilterForm(request.GET)
-
-        send_email_transactions(filter_form.process_filter())
-
-        return HttpResponseRedirect(
-            f"{reverse('transactions:index')}?{request.GET.urlencode()}"
-        )
-
-
 class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
     """
     Displays a list of transactions for the active person.
@@ -908,7 +878,9 @@ class MyTransactionsView(LoginRequiredMixin, TransactionListMixin):
         return self.request.active_person
 
 
-class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
+class BulkTransactionDeleteView(
+    TransactionEditPermissionMixin, SuccessMessageMixin, DeleteView
+):
     """
     Deletes a bulk transaction. This means deleting
     the :class:`BulkTransaction` instance
@@ -933,6 +905,8 @@ class BulkTransactionDeleteView(TransactionEditPermissionMixin, DeleteView):
     """:meta private:"""
 
     success_url = reverse_lazy("transactions:index")
+
+    success_message = _("Hromadná transakce byla smazána")
 
     def form_valid(self, form):
         self.object.transaction_set.all().delete()

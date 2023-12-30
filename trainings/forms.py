@@ -1,8 +1,10 @@
 from datetime import timedelta, timezone
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Submit, HTML
 from django import forms
-from django.db.models import Q
-from django.forms import ModelForm
+from django.db.models import Q, QuerySet
+from django.forms import ModelForm, Form, ChoiceField, IntegerField, ModelChoiceField
 from django.utils import timezone
 from django.utils.timezone import localdate
 from django.utils.translation import gettext_lazy as _
@@ -29,6 +31,7 @@ from trainings.utils import (
     day_shortcut_2_weekday,
     days_shortcut_list,
     weekday_2_day_shortcut,
+    TrainingsFilter,
 )
 from transactions.models import Transaction
 from vzs import settings
@@ -38,9 +41,9 @@ from vzs.utils import (
     date_pretty,
     send_notification_email,
     time_pretty,
+    filter_queryset,
 )
 from vzs.widgets import TimePickerWithIcon
-
 from .models import (
     CoachOccurrenceAssignment,
     CoachPositionAssignment,
@@ -1368,3 +1371,75 @@ class ReopenTrainingOccurrenceForm(ReopenOccurrenceMixin, ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class TrainingsFilterForm(Form):
+    category = ChoiceField(
+        label=_("Typ tréninku"),
+        required=False,
+        choices=[("", "---------")] + Training.Category.choices,
+    )
+    year_start = IntegerField(label=_("Rok začátku"), required=False, min_value=2000)
+    main_coach = ModelChoiceField(label=_("Garant"), required=False, queryset=None)
+    only_opened = ChoiceField(
+        label=_("Pouze neukončené"),
+        required=False,
+        choices=[("yes", "Ano"), ("no", "Ne")],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = self._create_form_helper()
+
+        self.fields["main_coach"].queryset = (
+            Person.objects.filter(
+                coachpositionassignment__main_coach_assignment__isnull=False
+            )
+            .distinct()
+            .order_by("last_name", "first_name")
+            .all()
+        )
+
+    @staticmethod
+    def _create_form_helper():
+        helper = FormHelper()
+
+        helper.form_method = "GET"
+        helper.form_id = "trainings-filter-form"
+        helper.include_media = False
+        helper.layout = Layout(
+            Div(
+                Div(
+                    Div("category", css_class="col-md-4"),
+                    Div("year_start", css_class="col-md-2"),
+                    Div("main_coach", css_class="col-md-4"),
+                    Div("only_opened", css_class="col-md-2"),
+                    css_class="row",
+                ),
+                Div(
+                    Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
+                        Submit(
+                            "submit",
+                            "Filtrovat",
+                            css_class="btn btn-primary float-right",
+                        ),
+                        css_class="col-12",
+                    ),
+                    css_class="row",
+                ),
+                css_class="p-2 border rounded bg-light",
+                style="box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);",
+            )
+        )
+
+        return helper
+
+    def process_filter(self, trainings) -> QuerySet[Training]:
+        return filter_queryset(
+            trainings,
+            self.cleaned_data if self.is_valid() else None,
+            TrainingsFilter,
+        )

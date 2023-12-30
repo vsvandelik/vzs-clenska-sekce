@@ -125,6 +125,9 @@ class Transaction(ExportableCSVMixin, Model):
     csv_getters = {
         "amount": lambda instance: abs(instance.amount),
         "type": lambda instance: instance.reward_string,
+        "feature_assigment": lambda instance: instance.feature_assigment.feature.name
+        if instance.feature_assigment
+        else "",
     }
 
     @property
