@@ -7,7 +7,7 @@ Jak již bylo zmíněno v kapitole :ref:`architektura`, základním součástí 
 ----------------------------------------
 Bootstrap
 ----------------------------------------
-Zásadním front-endovým frameworkem, který byl použit je Bootstrap. Použití Bootstrapu na jedné straně spočítá v tom, že hlavní šablona :ref:`admin-lte` ho vyžaduje jako svoji závislost. Na druhé straně Bootstrap definuje lépe vypadající výchozí verzi téměř každé existující komponenty. Bez předchozího vzdělání v oblasti UX je velmi obtížné a časově náročné dosáhnout podobných kvalit, proto je Bootstrap použit téměř ve všech komponentách všech HTML šablon.
+Zásadním front-endovým frameworkem, který byl použit je Bootstrap. Použití Bootstrapu na jedné straně spočítá v tom, že hlavní šablona :ref:`admin-lte` ho vyžaduje jako svoji závislost. Na druhé straně Bootstrap definuje lépe vypadající výchozí verzi téměř každé existující komponenty. Bez předchozího vzdělání v oblasti UX je velmi obtížné a časově náročné dosáhnout podobných kvalit, proto je Bootstrap použit téměř ve všech komponentách všech HTML šablon. Při vytváření nových šablon je doporučeno používat Bootstrap v maximální možné míře.
 
 Jako příklad použití Bootstrapu uvedeme použití modálního okna. Modální okno se používá při mazání komplexnějších objektů pro potvrzení smazání (např. mazání organizátorských pozic). Obsah zprávy o potvrzení smazání objektu však závisí na konkrétním objektu, který chceme smazat. Tento problém je řešen kombinací Javascriptu, který pošle GET požadavek, jehož odpoveď se zobrazí uvnitř modálního okna.
 
@@ -39,6 +39,9 @@ Při návrhu nové tabulky, je nutné si rozmyslet očekávaný objem dat, kter�
 ----------------------------------------
 Select2
 ----------------------------------------
+Select2 je další knihovnou pro jQuery. Její význam spočívá ve vylepšení komponent ``<select>``. Tato knihovna se mezi závislosti :term:`IS` dostala až později. S přibývajícími daty jsme zjistili, že v některých select boxech by se při použití výchozích stylů špatně vyhledávalo. Vylepšení select boxů při použití Select2 spočívá v zobrazení vyhledávacího pole, které je pro řadu select boxů vhodné, např. select box pro výběr osoby se seznamu. Na druhou stranu :term:`IS` obsahuje i select boxy, kde dochází k výběru z malého množství položek, např. pohlaví, kde knihovna Select2 není používána.
+
+Při návrhu nového select boxu doporučuje používat Select2 pouze pro select boxy, kde dochází k výběru z mnoha položek a konkrétní položku je rychlejší najít pomocí vyhledávacího pole.
 
 ----------------------------------------
 FontAwesome
