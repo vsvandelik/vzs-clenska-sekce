@@ -214,3 +214,7 @@ def today():
 
 def now():
     return localtime(CURRENT_DATETIME())
+
+
+def get_server_url():
+    return f"{settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}"

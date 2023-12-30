@@ -16,6 +16,7 @@ from events.models import (
 from trainings.utils import days_shortcut_list, weekday_2_day_shortcut, weekday_pretty
 from vzs import settings
 from vzs.settings import CURRENT_DATETIME
+from vzs.utils import now
 
 
 class TrainingAttendance(models.TextChoices):
@@ -645,6 +646,21 @@ class TrainingOccurrence(EventOccurrence):
         return CURRENT_DATETIME() + timedelta(
             days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
         ) <= timezone.localtime(self.datetime_start)
+
+    @staticmethod
+    def get_upcoming_by_participant(person):
+        # TODO: ignore if not approved
+        return TrainingOccurrence.objects.filter(
+            datetime_start__gte=now(),
+            participants=person,
+        ).order_by("datetime_start")
+
+    @staticmethod
+    def get_upcoming_by_coach(person):
+        # TODO: ignore if excused
+        return TrainingOccurrence.objects.filter(
+            datetime_start__gte=now(), coaches=person
+        ).order_by("datetime_start")
 
     @property
     def hours(self):

@@ -1,0 +1,24 @@
+{% load vzs_filters %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">{{ title }}</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Název</th>
+                    <th>Datum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for occurrence in occurrences %}
+                    <tr>
+                        <td>{{ occurrence.event.name }}</td>
+                        <td class="text-nowrap">{{ occurrence.datetime_start }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

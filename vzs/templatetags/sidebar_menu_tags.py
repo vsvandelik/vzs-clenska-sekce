@@ -54,6 +54,8 @@ def render_menu(context):
                 MenuItem("Seznam API tokenů", "api:token:index"),
             ],
         ),
+        MenuItem("Nápověda", "pages:detail napoveda", icon="fas fa-question-circle"),
+        MenuItem("Kontakt", "pages:detail kontakt", icon="fas fa-envelope"),
     ]
 
     output = []
