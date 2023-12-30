@@ -335,7 +335,6 @@ class Training(Event):
 
     @staticmethod
     def get_available_trainings_by_participant(person):
-        # TODO: Checking capacity
         enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
             person=person
         ).values_list("training", flat=True)

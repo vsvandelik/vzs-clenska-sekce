@@ -144,23 +144,6 @@ class Event(RenderableModelMixin, PolymorphicModel):
 
         return self.does_participant_satisfy_requirements(person)
 
-    def can_person_enroll_as_organizer(self, person):
-        """
-        Checks if person can enroll as organizer to any position.
-        There is no a check if person is already enrolled as organizer.
-        """
-
-        satisfy_any_position = [
-            position.does_person_satisfy_requirements(person, self.date_start)
-            for position in self.positions.all()
-        ]
-
-        return (
-            person is not None
-            and today() <= self.date_end
-            and any(satisfy_any_position)
-        )
-
     def can_participant_unenroll(self, person):
         enrollment = self.get_participant_enrollment(person)
         if enrollment is None or enrollment.state in [
@@ -216,7 +199,17 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.is_organizer(person)
             or self.can_person_enroll_as_waiting(person)
-            or self.can_person_enroll_as_organizer(person)
+            or (
+                today() <= self.date_end
+                and any(
+                    [
+                        position.does_person_satisfy_requirements(
+                            person, self.date_start
+                        )
+                        for position in self.positions.all()
+                    ]
+                )
+            )
         )
 
     def can_user_manage(self, user):

@@ -223,7 +223,6 @@ class OneTimeEvent(Event):
 
     @staticmethod
     def get_available_events_by_participant(person):
-        # TODO: Checking capacity
         enrolled_events_id = OneTimeEventParticipantEnrollment.objects.filter(
             person=person
         ).values_list("one_time_event", flat=True)
@@ -234,14 +233,13 @@ class OneTimeEvent(Event):
 
     @staticmethod
     def get_available_events_by_organizer(person):
-        # TODO: Checking capacity
         enrolled_events_id = OneTimeEventOccurrence.objects.filter(
             date__gte=today(), organizers=person
         ).all()
 
         available_events = OneTimeEvent.objects.exclude(id__in=enrolled_events_id)
 
-        return [e for e in available_events if e.can_person_enroll_as_organizer(person)]
+        return [e for e in available_events if e.can_enroll_organizer(person)]
 
 
 class OrganizerOccurrenceAssignment(OrganizerAssignment):
