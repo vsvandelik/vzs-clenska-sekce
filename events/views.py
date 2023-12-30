@@ -11,6 +11,7 @@ from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
 from one_time_events.permissions import OccurrenceDetailPermissionMixin
 from persons.models import Person, get_active_user
 from trainings.models import Training, TrainingOccurrence
+from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
@@ -273,6 +274,28 @@ class EventIndexView(LoginRequiredMixin, generic.ListView):
         ]
 
         return Event.objects.filter(pk__in=visible_event_pks)
+
+
+class EventAdminListMixin(PermissionRequiredMixin, generic.ListView):
+    permissions_formula = [[]]  # TODO: permissions
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.filter_form = None
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("form", self.filter_form)
+        kwargs.setdefault("filtered_get", self.request.GET.urlencode())
+
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        events = self.get_accessible_events()
+
+        return self.filter_form.process_filter(events).order_by("name")
+
+    def get_accessible_events(self):
+        return Event.objects.all()
 
 
 class EventDeleteView(

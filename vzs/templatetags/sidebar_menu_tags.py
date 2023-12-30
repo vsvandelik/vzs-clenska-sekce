@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from one_time_events.views import OneTimeEventAdminListView
 from trainings.views import TrainingAdminListView
 from vzs.menu_render import MenuItem
 
@@ -68,7 +69,9 @@ def render_menu(context):
 
 
 def get_one_time_events_menu_item(context):
-    can_person_edit_one_time_events = True  # TODO: permissions
+    can_person_edit_one_time_events = (
+        OneTimeEventAdminListView.view_has_permission_person(context["active_person"])
+    )
 
     if can_person_edit_one_time_events:
         return MenuItem(
@@ -76,7 +79,7 @@ def get_one_time_events_menu_item(context):
             icon="fas fa-calendar",
             children=[
                 MenuItem("Moje akce", "one_time_events:index"),
-                MenuItem("Seznam všech akcí", "one_time_events:index"),
+                MenuItem("Seznam všech akcí", "one_time_events:list-admin"),
             ],
         )
 
