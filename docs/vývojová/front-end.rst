@@ -30,6 +30,9 @@ Momentálně je aplikována konvence, že není nutné vždy používat jQuery, 
 ----------------------------------------
 DataTables
 ----------------------------------------
+DataTables je knihovna vytvořenou pomocí jQuery, která vylepšuje tabulky. Tabulky získají funkce jako např. seřazení dle sloupce, zobrazení počtu řádků na stránku, hledání apod. Většina tabulek :term:`IS` využívá DataTables s různou úrovní konfigurace. Některé komplexní tabulky jako např. Seznam všech osob mají povolené všechny funkce DataTables, jednodušší a méně objemné tabulky jako např. Seznam organizkých pozic jednorázové události mají povolené pouze řazení dle sloupce a vypnuté omezení zobrazení počtu řádku na stránku.
+
+Při návrhu nové tabulky, je nutné si rozmyslet očekávaný objem dat, který tabulka bude zobrazovat a zvážit jak DataTables pro zobrazení tabulky nakonfigurovat.
 
 .. _Select2:
 
