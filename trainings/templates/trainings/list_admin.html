@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% load events_template_tags %}
 
 {% load static %}
@@ -20,6 +21,12 @@
         </div>
 
         <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a class="text-bold text-body" id="filter-toggler" href="#">Filtrování&nbsp;<span><i class="fas fa-angle-right" data-status="closed"></i><i class="fas fa-angle-down" data-status="open"></i></span></a>
+                    {% crispy form %}
+                </div>
+            </div>
             <div class="row">
                 <div class="col-12">
                     <table id="trainings-table" class="table table-hover table-striped">
@@ -86,8 +93,10 @@
 {% block scripts %}
     <script src="{% static "datatables.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "filter_form.js" %}"></script>
     <script>
         datatableEnable("trainings-table", [0], [0]);
         registerModal("delete-event-modal");
+        registerFilterForm("trainings-filter-form");
     </script>
 {% endblock %}
