@@ -74,14 +74,12 @@ def reverse_with_get_params(*args, **kwargs):
 
 
 def send_mail(subject, message, recipient_list, *args, **kwargs):
-    logo_path = static("logo.png")
-
     data = {
         "title": kwargs.get("title", subject),
         "body": kwargs.get("html_message", f"<p>{message}</p>"),
         "protocol": SERVER_PROTOCOL,
         "url": SERVER_DOMAIN,
-        "logo_url": f"{SERVER_PROTOCOL}://{SERVER_DOMAIN}{logo_path}",
+        "logo_url": get_server_url() + static("logo.png"),
     }
 
     html_message = render_to_string("email.html", data)
