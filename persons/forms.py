@@ -93,6 +93,9 @@ class PersonForm(ModelForm):
     def clean_birth_number(self):
         birth_number = self.cleaned_data["birth_number"]
 
+        if birth_number.isdigit() and len(birth_number) in {9, 10}:
+            birth_number = birth_number[:6] + "/" + birth_number[6:]
+
         persons_with_same_birth_number = Person.objects.filter(
             birth_number=birth_number
         ).exclude(pk=self.instance.pk)
