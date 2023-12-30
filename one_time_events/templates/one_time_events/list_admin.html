@@ -87,7 +87,7 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "filter_form.js" %}"></script>
     <script>
-        datatableEnable("one-time-events-table", [0], [0]);
+        datatableEnable("one-time-events-table", [0], [0], order=[], searchable=false);
         registerModal("delete-event-modal");
         registerFilterForm("one-time-events-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
