@@ -13,7 +13,7 @@
                 <tbody>
                     {% for item in items %}
                         <tr {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                            <td>{{ item.feature.name }}</td>
+                            <td>{{ item.feature.name }}{% if item.date_expire and title == "Kvalifikace" %} <span class="text-muted">(skončila platnost)</span>{% endif %}</td>
                             <td class="text-center">
                                 <div class="btn-group">
                                     {% if return_url %}
