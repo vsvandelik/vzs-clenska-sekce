@@ -21,7 +21,6 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    dependencies.rst
    template-tags.rst
    how-to.rst
-   data-conversion.rst
    testing.rst
    requirements-evaluation.rst
    contribute.rst

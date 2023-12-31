@@ -1,0 +1,37 @@
+Název původního sloupce,Přenášeno,Poznámka
+id,,
+jmeno,✓,
+prijmeni,✓,
+narozeni,✓,Je vyžadován formát d.m.Y (případně s mezerami po tečce)
+ulice,✓,
+mesto,✓,
+psc,✓,
+telefon,✓,
+mail,✓,"v novém systému lze jeden email použít jen pro jednu osobu (vč. rodičů), osoby s opakujícím emailem jsou vynechány"
+Zdravotni_pojistovna,✓,akceptují se jen české pojišťovny
+login,,
+heslo,✓,heslo se ukládá zašifrovaně
+treninkova_skupina,,
+aktivita,,
+rc,✓,
+zp,✓,"akceptují se jen české pojišťovny, musí být prázdné či shodné s hodnotou ve sloupci Zdravotni_pojistovna"
+aktivace,,
+skupina,,
+opravneni,,
+jmeno1,✓,"založí se nová osoba pro rodiče, musí být vyplněno jméno a příjmení"
+prijmeni1,✓,
+mail1,✓,
+telefon1,✓,
+jmeno2,✓,"založí se nová osoba pro rodiče, musí být vyplněno jméno a příjmení"
+prijmeni2,✓,
+mail2,✓,
+telefon2,✓,
+tricko,,
+kratasy,,
+plavky,,
+kalhoty,,
+mikina,,
+bunda,,
+neopren,,
+ploutve,,
+foto,,
