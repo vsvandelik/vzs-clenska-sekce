@@ -1,2 +1,2 @@
 @echo off
-docker build -t vzs-clenska-sekce .
+docker build -t vzs-clenska-sekce "%~dp0"
