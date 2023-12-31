@@ -661,6 +661,12 @@ class TrainingOccurrence(EventOccurrence):
             days=settings.ORGANIZER_UNENROLL_DEADLINE_DAYS
         ) <= timezone.localtime(self.datetime_start)
 
+    def is_coach_excused(self, person):
+        return not self.coachoccurrenceassignment_set.filter(
+            Q(state=TrainingAttendance.PRESENT) | Q(state=TrainingAttendance.UNEXCUSED),
+            person=person,
+        ).exists()
+
     @staticmethod
     def get_upcoming_by_participant(person, ignore_excused=True):
         # TODO: ignore un-approved enrollments

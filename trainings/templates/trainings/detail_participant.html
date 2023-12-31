@@ -18,11 +18,11 @@
         </div>
     </div>
     {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
-        <div class="alert alert-success mt-n4" role="alert">
+        <div class="alert alert-info mt-n4" role="alert">
             Na tuto akci jste již přihlášen/a. Odhlášení je možné provádět jen prostřednictvím e-mailu z důvodu domluvení detailů odhlášky.
         </div>
     {% elif active_person_participant_enrollment.state == enrollment_states.SUBSTITUTE %}
-        <div class="alert alert-success" role="alert">
+        <div class="alert alert-info" role="alert">
             Na tuto akci jste již přihlášen/a jako náhradník. Počkejte prosím na manuální schválení administrátorem v případě volné kapacity.
         </div>
     {% endif %}
@@ -32,17 +32,23 @@
     </div>
 
     {% if active_person_participant_enrollment.state == enrollment_states.APPROVED %}
-        <div class="row">
-            <div class="col-12">
-                {% include 'trainings/detail_components_participant/future_trainings.html' %}
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12">
-                {% include 'trainings/detail_components_participant/past_trainings.html' %}
+        {% if upcoming_occurrences %}
+            <div class="row">
+                <div class="col-12">
+                    {% include 'trainings/detail_components_participant/future_trainings.html' %}
+                </div>
             </div>
-        </div>
+        {% endif %}
+
+        {% if past_occurrences %}
+            <div class="row">
+                <div class="col-12">
+                    {% include 'trainings/detail_components_participant/past_trainings.html' %}
+                </div>
+            </div>
+        {% endif %}
+
     {% endif %}
 
     {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
