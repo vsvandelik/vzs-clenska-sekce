@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -210,6 +210,11 @@ class Training(Event):
     def _occurrences_list(self):
         return TrainingOccurrence.objects.filter(event=self)
 
+    def _occurrences_list_datetime_range(self, datetime_from, datetime_to):
+        return TrainingOccurrence.objects.filter(
+            event=self, datetime_start__gte=datetime_from, datetime_end__lte=datetime_to
+        )
+
     def _occurrences_conv_localtime(self, occurrences):
         for occurrence in occurrences:
             occurrence.datetime_start = timezone.localtime(occurrence.datetime_start)
@@ -222,6 +227,13 @@ class Training(Event):
 
     def sorted_occurrences_list(self):
         occurrences = self._occurrences_list().order_by("datetime_start")
+        self._occurrences_conv_localtime(occurrences)
+        return occurrences
+
+    def sorted_occurrences_list_datetime_range(self, datetime_from, datetime_to):
+        occurrences = self._occurrences_list_datetime_range(
+            datetime_from, datetime_to
+        ).order_by("datetime_start")
         self._occurrences_conv_localtime(occurrences)
         return occurrences
 
@@ -266,6 +278,33 @@ class Training(Event):
                 occurrence__event=self, person=person
             ).exists()
         )
+
+    def one_time_free_coach_spots_available_for_person(
+        self, person, max_occurrence_datetime
+    ):
+        free_spots = dict()
+        for position_assignment in self.eventpositionassignment_set.all():
+            free_spots[position_assignment] = list(
+                filter(
+                    lambda occurrence: position_assignment.position.does_person_satisfy_requirements(
+                        person, occurrence.datetime_start.date()
+                    ),
+                    self.one_time_free_coach_spots(
+                        position_assignment, max_occurrence_datetime
+                    ),
+                )
+            )
+        return free_spots
+
+    def one_time_free_coach_spots(self, position_assignment, max_occurrence_datetime):
+        free_occurrences = []
+        for occurrence in self.sorted_occurrences_list_datetime_range(
+            now(), max_occurrence_datetime
+        ):
+            if occurrence.has_one_time_free_coach_spots(position_assignment):
+                free_occurrences.append(occurrence)
+
+        return free_occurrences
 
     def __str__(self):
         return self.name
@@ -694,6 +733,16 @@ class TrainingOccurrence(EventOccurrence):
             )
 
         return pre_filter.order_by("datetime_start")
+
+    def has_one_time_free_coach_spots(self, position_assignment):
+        assignments_count = CoachOccurrenceAssignment.objects.filter(
+            position_assignment=position_assignment,
+            occurrence=self,
+            state=TrainingAttendance.PRESENT,
+        ).count()
+        if assignments_count < position_assignment.count:
+            return True
+        return False
 
     @property
     def hours(self):
