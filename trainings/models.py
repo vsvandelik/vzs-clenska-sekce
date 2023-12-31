@@ -288,7 +288,8 @@ class Training(Event):
                 filter(
                     lambda occurrence: position_assignment.position.does_person_satisfy_requirements(
                         person, occurrence.datetime_start.date()
-                    ),
+                    )
+                    and not occurrence.is_person_coach(person, position_assignment),
                     self.one_time_free_coach_spots(
                         position_assignment, max_occurrence_datetime
                     ),
@@ -460,6 +461,13 @@ class TrainingOccurrence(EventOccurrence):
     def is_person_coach(self, person):
         return self.coachoccurrenceassignment_set.filter(
             person=person, state=TrainingAttendance.PRESENT
+        ).exists()
+
+    def is_person_coach(self, person, position_assignment):
+        return self.coachoccurrenceassignment_set.filter(
+            position_assignment=position_assignment,
+            person=person,
+            state=TrainingAttendance.PRESENT,
         ).exists()
 
     def get_person_organizer_assignment(self, person):
