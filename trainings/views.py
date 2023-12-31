@@ -167,10 +167,15 @@ class TrainingDetailView(EventDetailBaseView):
 
     def _add_coaches_detail_kwargs(self, kwargs):
         occurrences = self.object.sorted_occurrences_list()
+
+        nearest_occurrence_found = False
         for occurrence in occurrences:
-            if occurrence.datetime_start >= now():
+            occurrence.is_excused = occurrence.is_coach_excused(
+                self.request.active_person
+            )
+            if not nearest_occurrence_found and occurrence.datetime_start >= now():
                 occurrence.nearest_occurrence = True
-                break
+                nearest_occurrence_found = True
 
         participants_by_weekdays = {}
         for weekday in self.object.weekdays_list():
@@ -205,11 +210,7 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         ).all()
 
         for occurrence in upcoming_occurrences:
-            occurrence.excused = False
-
-            attendance = occurrence.get_person_organizer_assignment(active_person)
-            if len(attendance) == 1 and attendance.first().is_excused:
-                occurrence.excused = True
+            occurrence.excused = occurrence.is_coach_excused(active_person)
 
         kwargs.setdefault("coach_regular_trainings", regular_trainings)
         kwargs.setdefault("coach_upcoming_occurrences", upcoming_occurrences)
