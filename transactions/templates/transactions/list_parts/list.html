@@ -32,12 +32,13 @@
                                             </a>
                                         {% endif %}
 
-                                        {% if edit %}
-                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
+                                        {% ifperm "transactions:edit-from-person" transaction.pk as perm %}
+                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
-                                        {% endif %}
+                                        {% endifperm %}
+
+                                        {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
                                     </div>
                                 </td>
                             </tr>
@@ -69,14 +70,15 @@
                                 <td>{{ transaction.reason }}</td>
                                 <td>{{ transaction.date_due }}</td>
                                 <td>
-                                    {% if edit %}
-                                        <div class="btn-group float-right">
-                                            <a href="{% url "transactions:edit-from-person" transaction.pk %}" class="btn btn-success btn-sm">
+                                    <div class="btn-group float-right">
+                                        {% ifperm "transactions:edit-from-person" transaction.pk as perm %}
+                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
                                             </a>
-                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
-                                        </div>
-                                    {% endif %}
+                                        {% endifperm %}
+
+                                        {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

@@ -306,7 +306,9 @@ class TransactionEditMixin(TransactionEditPermissionMixin, UpdateView):
         return super().get_form()
 
 
-class TransactionEditFromPersonView(TransactionEditMixin):
+class TransactionEditFromPersonView(
+    TransactionDisableEditSettledPermissionMixin, TransactionEditMixin
+):
     """
     Edits a transaction.
 
