@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate, login, update_session_auth_hash
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as BaseLoginView
 from django.contrib.auth.views import LogoutView as BaseLogoutView
 from django.contrib.auth.views import RedirectURLMixin
@@ -44,6 +43,7 @@ from .permissions import (
     UserCreateDeletePermissionMixin,
     UserGeneratePasswordPermissionMixin,
     UserManagePermissionsPermissionMixin,
+    LoginRequiredMixin,
 )
 from .utils import create_random_password
 

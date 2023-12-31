@@ -54,8 +54,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
             OneTimeEvent.get_upcoming_by_organizer(active_person).all()[:5],
         )
 
-        print(today())
-
         return super().get_context_data(**kwargs)
 
     def _get_unsettled_transactions(self):
