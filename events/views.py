@@ -257,24 +257,6 @@ class EventDetailBaseView(
         return super().get_context_data(**kwargs)
 
 
-class EventIndexView(LoginRequiredMixin, generic.ListView):
-    template_name = "events/index.html"
-    context_object_name = "events"
-
-    def get_queryset(self):
-        active_person = self.request.active_person
-        active_user = get_active_user(active_person)
-
-        visible_event_pks = [
-            event.pk
-            for event in Event.objects.all()
-            if event.can_user_manage(active_user)
-            or event.can_person_interact_with(active_person)
-        ]
-
-        return Event.objects.filter(pk__in=visible_event_pks)
-
-
 class EventAdminListMixin(PermissionRequiredMixin, generic.ListView):
     permissions_formula = [[]]  # TODO: permissions
 
