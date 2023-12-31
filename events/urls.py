@@ -5,7 +5,6 @@ from . import views
 app_name = "events"
 
 urlpatterns = [
-    path("", views.EventIndexView.as_view(), name="index"),
     path("<int:pk>/smazat/", views.EventDeleteView.as_view(), name="delete"),
     path(
         "<int:pk>/upravit-vekove-omezeni/",

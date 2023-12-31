@@ -53,6 +53,14 @@ def qr(transaction):
     return utils_qr(transaction)
 
 
+@register.simple_tag
+def is_settled(transaction):
+    if transaction.is_reward:
+        return ""
+    else:
+        return display_presence(transaction.is_settled)
+
+
 @register.filter
 def event_type_display_value(value):
     if value in Training.Category.values:

@@ -27,11 +27,11 @@
                     <div class="card-tools ml-auto">
                         {% if filtered_get %}
                             <a class="btn btn-info btn-sm" href="{% url "persons:add-bulk-transaction" %}?{{ filtered_get }}">Zadat vyfiltrovaným platbu</a>
-                            <a class="btn btn-info btn-sm" href="{% url "persons:send-mail" %}?{{ filtered_get }}">Poslat vyfiltrovaným e-mail</a>
+                            {% include "persons/render_send_email_button.html" %}
                             <a class="btn btn-info btn-sm" href="{% url "persons:export" %}?{{ filtered_get }}">Vyexportovat vyfiltrované</a>
                         {% else %}
                             <a class="btn btn-info btn-sm" href="{% url "persons:add-bulk-transaction" %}">Zadat všem platbu</a>
-                            <a class="btn btn-info btn-sm" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
+                            {% include "persons/render_send_email_button.html" %}
                             <a class="btn btn-info btn-sm" href="{% url "persons:export" %}">Vyexportovat všechny</a>
                         {% endif %}
                     </div>
@@ -85,7 +85,8 @@
     <script src="{% static "filter_form.js" %}"></script>
     <script>
         registerModal("delete-person-modal");
-        datatableEnable("persons-table", [0, 1], [0, 1], order=[], searchable=false);
+        datatableEnable("persons-table", [0, 1], [0, 1], order = [], searchable = false);
         registerFilterForm("persons-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
+    <script src="{% static "persons/mails_to_clipboard.js" %}"></script>
 {% endblock %}

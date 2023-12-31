@@ -2,7 +2,6 @@ from collections.abc import Iterable, Mapping
 from itertools import chain
 from typing import Any
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Q, Sum
@@ -26,7 +25,7 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
-from users.permissions import PermissionRequiredMixin
+from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 from .forms import (
