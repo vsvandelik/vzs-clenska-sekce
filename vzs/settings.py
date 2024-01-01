@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "active_link",
     "crispy_forms",
     "crispy_bootstrap4",
-    "widget_tweaks",
     "tinymce",
     "django_select2",
     "mptt",
