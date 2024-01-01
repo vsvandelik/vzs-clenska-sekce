@@ -13,7 +13,7 @@ Tato stránka obsahuje seznam všech použitých Django rozšíření včetně k
 - :ref:`django-select2`
 - :ref:`django-tempus-dominus`
 - django-tinymce
-- django-widget-tweaks
+- :ref:`django-widget-tweaks`
 - djangorestframework
 
 .. _django-active-links:
@@ -86,3 +86,10 @@ Výchozí HTML komponenta pro výběr data a času nezobrazuje formát obvyklý 
 ----------------
 django-tinymce
 ----------------
+TODO
+
+.. _django-widget-tweaks:
+
+---------------------
+django-widget-tweaks
+---------------------
