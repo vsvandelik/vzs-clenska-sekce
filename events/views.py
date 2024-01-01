@@ -283,7 +283,28 @@ class EventDeleteView(
     EventManagePermissionMixin, EventMixin, MessagesMixin, generic.DeleteView
 ):
     template_name = "events/modals/delete.html"
-    success_url = reverse_lazy("events:index")
+
+    def get_success_url(self):
+        one_time_events_index = reverse("one_time_events:index")
+        trainings_index = reverse("trainings:index")
+        admin_one_time_events_index = reverse("one_time_events:list-admin")
+        admin_trainings_index = reverse("trainings:list-admin")
+        coming_from_uri = self.request.META["HTTP_REFERER"]
+        if coming_from_uri not in [
+            one_time_events_index,
+            trainings_index,
+            admin_one_time_events_index,
+            admin_trainings_index,
+        ]:
+            if self.object.is_one_time_event():
+                if self.request.user.has_perm("one_time_events:list-admin"):
+                    return admin_one_time_events_index
+                return one_time_events_index
+            else:
+                if self.request.user.has_perm("trainings:list-admin"):
+                    return admin_trainings_index
+                return trainings_index
+        return coming_from_uri
 
     def get_success_message(self, cleaned_data):
         return f"Událost {self.object.name} úspěšně smazána"
