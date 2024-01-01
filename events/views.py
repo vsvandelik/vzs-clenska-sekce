@@ -1,7 +1,6 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, reverse
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -296,12 +295,13 @@ class EventDeleteView(
             admin_one_time_events_index,
             admin_trainings_index,
         ]:
+            active_user = get_active_user(self.request.active_person)
             if self.object.is_one_time_event():
-                if self.request.user.has_perm("one_time_events:list-admin"):
+                if active_user.has_perm("one_time_events:list-admin"):
                     return admin_one_time_events_index
                 return one_time_events_index
             else:
-                if self.request.user.has_perm("trainings:list-admin"):
+                if active_user.has_perm("trainings:list-admin"):
                     return admin_trainings_index
                 return trainings_index
         return coming_from_uri
