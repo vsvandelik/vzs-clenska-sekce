@@ -13,8 +13,7 @@ Tato stránka obsahuje seznam všech použitých Django rozšíření včetně k
 - :ref:`django-select2`
 - :ref:`django-tempus-dominus`
 - django-tinymce
-- :ref:`django-widget-tweaks`
-- djangorestframework
+- :ref:`djangorestframework`
 
 .. _django-active-links:
 
@@ -81,15 +80,9 @@ django-tempus-dominus
 ----------------------
 Výchozí HTML komponenta pro výběr data a času nezobrazuje formát obvyklý pro Česko. django-tempus-dominus umožňuje integraci nástroje pro výběr data a času Tempus Dominus Bootstrap 4, který je lépe konfigurovatelný a zobrazuje čas v obvyklém formátu.
 
-.. _django-tinymce:
+.. _djangorestframework:
 
-----------------
-django-tinymce
-----------------
-TODO
-
-.. _django-widget-tweaks:
-
----------------------
-django-widget-tweaks
----------------------
+------------------------
+djangorestframework
+------------------------
+Balíček sloužící k tvorbě API. Využíván aplikací :ref:`api`.
