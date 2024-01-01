@@ -50,10 +50,34 @@ Závislosti definované v souboru requirements_dev.txt
 -----------------------------------------------------
 Zde jsou obsaženy závislosti, které je, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj. Konkrétně se jedná o:
 
-- Genderize
-- pre-commit
-- rinohtype
-- sphinx
+- :ref:`Genderize`
+- :ref:`pre-commit`
+- :ref:`rinohtype`
+- :ref:`sphinx`
+
+.. _Genderize:
+
+Genderize
+^^^^^^^^^^
+Balíček implementující API služby `<https://genderize.io>`_, která na základě křestního jména predikuje pohlaví osoby. Tato funkcionalita se využívá při převodu dat ze starého systému. Pro více informací o převodu dat ze starého systému navštivte stránku :doc:`../uživatelská/data-conversion`.
+
+.. _pre-commit:
+
+pre-commit
+^^^^^^^^^^^
+Framework pre-commit spouští nadefinované hooks před provedením příkazu ``git commit``. :term:`IS` využívá 2 hooks, které zajistí formátování kódu. Více informací o workflow viz :doc:`./contribute`.
+
+.. _rinohtype:
+
+rinohtype
+^^^^^^^^^^^
+rinohtype slouží ke zpracování dokumentů. Jeho výstupem jsou dokumenty ve formátu PDF. :term:`IS` tento balíček používá pro export dokumentace z reStructuredText souborů dokumentačního nástroje :ref:`sphinx` do PDF.
+
+.. _sphinx:
+
+sphinx
+^^^^^^^^^^^
+sphinx je univerzální nástroj pro vytváření dokumentace určený výhradně pro projekty vytvořené v Pythonu. Tato dokumentace je napsána v reStructuredText souborech za pomocí nástroje sphinx, který do dokumentace navíc přidá anotace z kódu.
 
 .. _dependencies_from_requirements_prod.txt:
 
