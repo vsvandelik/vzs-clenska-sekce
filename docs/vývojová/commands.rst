@@ -14,7 +14,10 @@ Tato stránka obsahuje seznam všech vytvořenych vlastních Django příkazů v
      - Popis
    * - check_unclosed_one_time_events
      - one_time_events/management/commands/check_unclosed_one_time_events.py
-     - Odešle upozornění na neuzavřenou událost správci kategorie události a organizátorům.
+     - Odešle upozornění na neuzavřené události správcům kategorií událostí a organizátorům. Tento příkaz je periodicky volán Cronem.
+   * - check_unclosed_trainings
+     - trainings/management/commands/check_unclosed_trainings.py
+     - Odešle upozornění na neuzavřené tréninky správcům kategorií tréninků a organizátorům. Tento příkaz je periodicky volán Cronem.
    * - convert_old_system_data
      - vzs/management/commands/convert_old_system_data.py
      - Převede CSV soubor s uživateli ze starého systému na data ve formátu JSON, který je možné načíst do :term:`IS` Více o konverzi viz :doc:`../uživatelská/data-conversion`.
@@ -60,3 +63,5 @@ Příklad:
 .. code-block:: console
 
     python ./manage.py createsuperuser
+
+Některé příkazy přijímají další parametry. Pro zobrazení nápovědy je možné použít přepínač ``-h``.

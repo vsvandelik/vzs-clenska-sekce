@@ -16,6 +16,8 @@ Pokud v aplikaci upravíme model, musíme spustit příkaz ``python ./manage.py 
 
 Výhodou tohoto přístupu je, že nám téměř odpadá starost s databázemi, protože Django ORM implementuje ovladače pro generování korektních SQL dotazů pro všechny standardní relační DB systémy.
 
+.. _polymorfni_modely:
+
 ---------------------
 Polymorfní modely
 ---------------------
