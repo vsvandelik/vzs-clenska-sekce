@@ -12,7 +12,7 @@ Tato stránka obsahuje seznam všech použitých Django rozšíření včetně k
 - :ref:`django-mptt`
 - :ref:`django-select2`
 - :ref:`django-tempus-dominus`
-- django-tinymce
+- :ref:`django-tinymce`
 - :ref:`djangorestframework`
 
 .. _django-active-links:
@@ -79,6 +79,14 @@ Tento balíček umožňuje použít Select2 idiomatickým způsobem z pohledu Dj
 django-tempus-dominus
 ----------------------
 Výchozí HTML komponenta pro výběr data a času nezobrazuje formát obvyklý pro Česko. django-tempus-dominus umožňuje integraci nástroje pro výběr data a času Tempus Dominus Bootstrap 4, který je lépe konfigurovatelný a zobrazuje čas v obvyklém formátu.
+
+.. _django-tinymce:
+
+---------------
+django-tinymce
+---------------
+django-tinymce poskytuje komponenty pro integraci WYSIWYG editoru, který :ref:`IS` využívá v aplikaci :ref:`pages` pro tvorbu statických stránek.
+
 
 .. _djangorestframework:
 
