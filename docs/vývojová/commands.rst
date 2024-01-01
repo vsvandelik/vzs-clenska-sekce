@@ -29,7 +29,7 @@ Tato stránka obsahuje seznam všech vytvořenych vlastních Django příkazů v
      - Synchronizuje transakce provedené na bankovním účtu :term:`Organizace`.
    * - garbage_collect_tokens
      - users/management/commands/garbage_collect_tokens.py
-     - Smaže expirované tokeny pro obnovu hesel z databáze.
+     - Smaže expirované tokeny pro obnovu hesel z databáze. Tento příkaz je periodicky volán Cronem.
    * - generate_one_time_events
      - one_time_events/management/commands/generate_one_time_events.py
      - Vytvoří nové jednorázové události.
