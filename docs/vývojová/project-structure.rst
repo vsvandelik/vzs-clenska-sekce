@@ -126,7 +126,7 @@ Django aplikace :ref:`one_time_events`.
 
 overriden_django_commands/
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Adresář určený pro sdružování kódu redefinující výchozí funkcionalitu Djanga. Konkrétně se zde nachází pouze kód redefinující redefinující příkaz ``python ./manage.py createsuperuser`` tak, aby nově vytvořený administrátor měl všechna oprávnění.
+Adresář určený pro sdružování kódu redefinující výchozí funkcionalitu Djanga. Konkrétně se zde nachází pouze kód redefinující redefinující příkaz ``python ./manage.py createsuperuser`` tak, aby nově vytvořený administrátor měl všechna povolení.
 
 .. _pages/:
 
