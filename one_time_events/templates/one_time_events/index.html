@@ -8,6 +8,17 @@
 {% block title %}Akce{% endblock %}
 
 {% block content %}
+    {% if not upcoming_events_participant and not upcoming_events_organizer and not available_events_participant and not available_events_organizer %}
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <p>Žádné akce nejsou k dispozici.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     <div class="row">
         {% if upcoming_events_participant %}
