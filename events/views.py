@@ -1,8 +1,11 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, reverse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views import generic
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views.generic.list import ListView
 
 from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from one_time_events.models import OneTimeEvent, OneTimeEventOccurrence
@@ -15,6 +18,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email
+
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -31,8 +35,8 @@ from .permissions import (
 
 
 class EventMixin:
-    model = Event
     context_object_name = "event"
+    model = Event
 
 
 class RedirectToEventDetailMixin:
@@ -196,20 +200,16 @@ class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
 
 
 class EventCreateUpdateMixin(
-    EventMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin, generic.FormView
+    EventMixin, RedirectToEventDetailOnSuccessMixin, MessagesMixin, FormView
 ):
     pass
 
 
-class EventCreateMixin(
-    EventCreatePermissionMixin, EventCreateUpdateMixin, generic.CreateView
-):
+class EventCreateMixin(EventCreatePermissionMixin, EventCreateUpdateMixin, CreateView):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
-class EventUpdateMixin(
-    EventManagePermissionMixin, EventCreateUpdateMixin, generic.UpdateView
-):
+class EventUpdateMixin(EventManagePermissionMixin, EventCreateUpdateMixin, UpdateView):
     success_message = "Událost %(name)s úspěšně upravena."
 
 
@@ -233,7 +233,7 @@ class EventDetailBaseView(
     EventInteractPermissionMixin,
     EventMixin,
     PersonTypeInsertIntoContextDataMixin,
-    generic.DetailView,
+    DetailView,
 ):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
@@ -256,7 +256,7 @@ class EventDetailBaseView(
         return super().get_context_data(**kwargs)
 
 
-class EventAdminListMixin(PermissionRequiredMixin, generic.ListView):
+class EventAdminListMixin(PermissionRequiredMixin, ListView):
     permissions_formula = [[]]  # TODO: permissions
 
     def __init__(self, **kwargs):
@@ -279,7 +279,7 @@ class EventAdminListMixin(PermissionRequiredMixin, generic.ListView):
 
 
 class EventDeleteView(
-    EventManagePermissionMixin, EventMixin, MessagesMixin, generic.DeleteView
+    EventManagePermissionMixin, EventMixin, MessagesMixin, DeleteView
 ):
     template_name = "events/modals/delete.html"
 
@@ -313,9 +313,9 @@ class EventDeleteView(
 class EventPositionAssignmentMixin(
     EventManagePermissionMixin, MessagesMixin, RedirectToEventDetailOnSuccessMixin
 ):
-    model = EventPositionAssignment
     context_object_name = "position_assignment"
     event_id_key = "event_id"
+    model = EventPositionAssignment
 
 
 class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
@@ -325,17 +325,17 @@ class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
 class EventPositionAssignmentCreateView(
     InsertEventIntoModelFormKwargsMixin,
     EventPositionAssignmentCreateUpdateMixin,
-    generic.CreateView,
+    CreateView,
 ):
-    template_name = "events/create_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s přidána"
+    template_name = "events/create_event_position_assignment.html"
 
 
 class EventPositionAssignmentUpdateView(
-    EventPositionAssignmentCreateUpdateMixin, generic.UpdateView
+    EventPositionAssignmentCreateUpdateMixin, UpdateView
 ):
-    template_name = "events/edit_event_position_assignment.html"
     success_message = "Organizátorská pozice %(position)s upravena"
+    template_name = "events/edit_event_position_assignment.html"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -344,9 +344,7 @@ class EventPositionAssignmentUpdateView(
         return kwargs
 
 
-class EventPositionAssignmentDeleteView(
-    EventPositionAssignmentMixin, generic.DeleteView
-):
+class EventPositionAssignmentDeleteView(EventPositionAssignmentMixin, DeleteView):
     template_name = "events/modals/delete_event_position_assignment.html"
 
     def get_success_message(self, cleaned_data):
@@ -354,19 +352,19 @@ class EventPositionAssignmentDeleteView(
 
 
 class EditAgeLimitView(
-    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, generic.UpdateView
+    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, UpdateView
 ):
-    template_name = "events/edit_age_limit.html"
     form_class = EventAgeLimitForm
     success_message = "Změna věkového omezení uložena"
+    template_name = "events/edit_age_limit.html"
 
 
 class EditGroupMembershipView(
-    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, generic.UpdateView
+    EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, UpdateView
 ):
-    template_name = "events/edit_group_membership.html"
     form_class = EventGroupMembershipForm
     success_message = "Změna vyžadování skupiny uložena"
+    template_name = "events/edit_group_membership.html"
 
 
 class AddRemoveAllowedPersonTypeView(
@@ -374,12 +372,12 @@ class AddRemoveAllowedPersonTypeView(
     InsertEventIntoSelfObjectMixin,
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
-    generic.UpdateView,
+    UpdateView,
 ):
     event_id_key = "pk"
     form_class = EventAllowedPersonTypeForm
-    success_message = "Změna omezení na typ členství uložena"
     model = Event
+    success_message = "Změna omezení na typ členství uložena"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -396,14 +394,14 @@ class ParticipantEnrollmentCreateMixin(
     ParticipantEnrollmentMixin,
     InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoContextData,
-    generic.CreateView,
+    CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
 
 
 class ParticipantEnrollmentUpdateMixin(
     ParticipantEnrollmentMixin,
-    generic.UpdateView,
+    UpdateView,
 ):
     success_message = "Změna přihlášky proběhla úspěšně"
 
@@ -419,10 +417,10 @@ class ParticipantEnrollmentUpdateMixin(
 
 
 class ParticipantEnrollmentDeleteMixin(
-    EventManagePermissionMixin, ParticipantEnrollmentMixin, generic.DeleteView
+    EventManagePermissionMixin, ParticipantEnrollmentMixin, DeleteView
 ):
-    model = ParticipantEnrollment
     event_id_key = "event_id"
+    model = ParticipantEnrollment
 
     def get_success_message(self, cleaned_data):
         return f"Přihláška osoby {self.object.person} smazána"
@@ -435,7 +433,7 @@ class EnrollMyselfParticipantMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertActivePersonIntoModelFormKwargsMixin,
-    generic.CreateView,
+    CreateView,
 ):
     pass
 
@@ -445,10 +443,10 @@ class UnenrollMyselfParticipantView(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     RedirectToEventDetailOnFailureMixin,
-    generic.DeleteView,
+    DeleteView,
 ):
-    model = ParticipantEnrollment
     context_object_name = "enrollment"
+    model = ParticipantEnrollment
     success_message = "Odhlášení z události proběhlo úspěšně"
     template_name = "events/modals/unenroll_myself_participant.html"
 
@@ -469,11 +467,11 @@ class BulkApproveParticipantsMixin(
     MessagesMixin,
     RedirectToEventDetailOnSuccessMixin,
     InsertEventIntoContextData,
-    generic.UpdateView,
+    UpdateView,
 ):
     event_id_key = "pk"
-    success_message = "Počet schválených přihlášek: %(count)s"
     model = Event
+    success_message = "Počet schválených přihlášek: %(count)s"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -520,7 +518,7 @@ class OccurrenceDetailBaseView(
     InsertEventIntoContextData,
     InsertOccurrenceIntoContextData,
     EventOccurrenceIdCheckMixin,
-    generic.DetailView,
+    DetailView,
 ):
     occurrence_id_key = "pk"
 
