@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment
+from events.models import ParticipantEnrollment, EventOrOccurrenceState
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -400,7 +400,9 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         event = self.event
 
         OrganizerOccurrenceAssignment.objects.filter(
-            person=person, occurrence__event=event
+            person=person,
+            occurrence__event=event,
+            occurrence__state=EventOrOccurrenceState.OPEN,
         ).delete()
 
         send_notification_email(
