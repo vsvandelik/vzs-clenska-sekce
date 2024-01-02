@@ -18,7 +18,18 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 |     ├── :ref:`docs.yml <.github/>`
 | ├── :ref:`api/`
 | ├── :ref:`data/`
-|   ├── :ref:`db.json <data/>`
+|   ├── :ref:`data/db.json`
+|   ├── :ref:`data/db-backup.bat`
+|   ├── :ref:`data/db-backup.sh`
+|   ├── :ref:`data/db-restore.bat`
+|   ├── :ref:`data/db-restore.sh`
+| ├── :ref:`docker/`
+|   ├── :ref:`docker/.env_caddy`
+|   ├── :ref:`docker/.env_psql`
+|   ├── :ref:`docker/docker-build.bat`
+|   ├── :ref:`docker/docker-build.sh`
+|   ├── :ref:`docker/docker-compose.yaml`
+|   ├── :ref:`docker/Dockerfile`
 | ├── :ref:`docs/`
 | ├── :ref:`events/`
 | ├── :ref:`features/`
@@ -36,16 +47,11 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 | ├── :ref:`transactions/`
 | ├── :ref:`users/`
 | ├── :ref:`vzs/`
+| ├── :ref:`.dockerignore`
 | ├── :ref:`.env`
 | ├── :ref:`.env.dist`
-| ├── :ref:`.env_psql`
 | ├── :ref:`.gitignore`
 | ├── :ref:`.pre-commit-config.yaml`
-| ├── :ref:`Caddyfile`
-| ├── :ref:`docker-build.bat`
-| ├── :ref:`docker-build.sh`
-| ├── :ref:`docker-compose.yaml`
-| ├── :ref:`Dockerfile`
 | ├── :ref:`manage.py`
 | ├── :ref:`package.json`
 | ├── :ref:`package-lock.json`
@@ -75,8 +81,86 @@ Django aplikace :ref:`api`.
 
 data/
 ^^^^^^^^^^^^^^^^^^
+Adresář obsahující testovací data a skripty pro zálohu a obnovení databáze.
 
+.. _data/db.json:
+
+data/db.json
+^^^^^^^^^^^^^
 Testovací data, více informací o použití testovací dat viz :ref:`testing`.
+
+
+.. _data/db-backup.bat:
+
+data/db-backup.bat
+^^^^^^^^^^^^^^^^^^^
+Windows Batch script pro zálohu databáze.
+
+.. _data/db-backup.sh:
+
+data/db-backup.sh
+^^^^^^^^^^^^^^^^^^^
+Shell script pro zálohu databáze.
+
+.. _data/db-restore.bat:
+
+data/db-restore.bat
+^^^^^^^^^^^^^^^^^^^^
+Windows Batch script pro obnovu databáze.
+
+.. _data/db-restore.sh:
+
+data/db-restore.sh
+^^^^^^^^^^^^^^^^^^^
+Shell script pro obnovu databáze.
+
+.. _docker/:
+
+docker/
+^^^^^^^^^^^^^^^^^^
+Soubory k sestavení docker image a orchestraci.
+
+.. _docker/.env_caddy:
+
+docker/.env_caddy
+^^^^^^^^^^^^^^^^^^
+Environmentální proměnné pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
+
+.. _docker/.env_psql:
+
+docker/.env_psql
+^^^^^^^^^^^^^^^^^^
+Environmentální proměnné pro DB systém PostgreSQL, relevantní pouze při produkčním nasazení.
+
+.. _docker/Caddyfile:
+
+docker/Caddyfile
+^^^^^^^^^^^^^^^^^^
+Konfigurační soubor pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
+
+.. _docker/docker-build.bat:
+
+docker/docker-build.bat
+^^^^^^^^^^^^^^^^^^^^^^^^
+Windows Batch script, který sestaví docker image pro :term:`IS`.
+
+.. _docker/docker-build.sh:
+
+docker/docker-build.sh
+^^^^^^^^^^^^^^^^^^^^^^^^
+Shell script, který sestaví docker image pro :term:`IS`.
+
+.. _docker/docker-compose.yaml:
+
+docker/docker-compose.yaml
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
+
+.. _docker/Dockerfile:
+
+docker/Dockerfile
+^^^^^^^^^^^^^^^^^^^^^^^^
+Soubor popisující, jak sestavit docker image pro :term:`IS`.
 
 
 .. _docs/:
@@ -182,6 +266,12 @@ vzs/
 ^^^^^^^^^^^^^^^^^^
 Django aplikace :ref:`vzs`.
 
+.. _.dockerignore:
+
+.dockerignore
+^^^^^^^^^^^^^^^^^^
+TODO napsat neco
+
 .. _.env:
 
 .env
@@ -194,18 +284,6 @@ Environmentální proměnné, které mění konfiguraci :term:`IS`.
 ^^^^^^^^^^^^^^^^^^
 Šablona, podle které je možné vytvořit soubor ``.env``.
 
-.. _.env_caddy:
-
-.env_caddy
-^^^^^^^^^^^^^^^^^^
-Environmentální proměnné pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
-
-.. _.env_psql:
-
-.env_psql
-^^^^^^^^^^^^^^^^^^
-Environmentální proměnné pro DB systém PostgreSQL, relevantní pouze při produkčním nasazení.
-
 .. _.gitignore:
 
 .gitignore
@@ -217,36 +295,6 @@ Určuje, které soubory mají být ignorovány při práci s verzovacím systém
 .pre-commit-config.yaml
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Konfigurační soubor pro framework pre-commit, který spouští nadefinované hooks před provedením příkazu ``git commit``. Soubor je nakonfigurován tak, že před každým commitem se provede formátování Python souborů pomocí Black Code Formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód.
-
-.. _Caddyfile:
-
-Caddyfile
-^^^^^^^^^^^^^^^^^^
-Konfigurační soubor pro reverse proxy Caddy, relevantní pouze při produkčním nasazení.
-
-.. _docker-build.bat:
-
-docker-build.bat
-^^^^^^^^^^^^^^^^^^
-Batch script, který sestaví docker image pro :term:`IS`.
-
-.. _docker-build.sh:
-
-docker-build.sh
-^^^^^^^^^^^^^^^^^^
-Shell script, který sestaví docker image pro :term:`IS`.
-
-.. _docker-compose.yaml:
-
-docker-compose.yaml
-^^^^^^^^^^^^^^^^^^^^
-Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
-
-.. _Dockerfile:
-
-Dockerfile
-^^^^^^^^^^^^^^^^^^
-Soubor popisující, jak sestavit docker image pro :term:`IS`.
 
 .. _manage.py:
 

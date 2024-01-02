@@ -9,11 +9,13 @@ Pro účely lepšího představaní zamýšleného použití a testování proje
 ***************************************
 Import dat
 ***************************************
-Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`../instalační/installation`. Poté je možné data naimportovat příkazem
+Před importem dat je nutné mít sestavené funkční prostředí viz :doc:`../instalační/installation`. Poté je možné data naimportovat spuštěním skriptu
 
 .. code-block:: console
 
-    python ./manage.py loaddata data/db.json
+    data\db-restore.bat  (Windows)
+
+    ./data/db-restore.sh  (Linux)
 
 ***************************************
 Účty
