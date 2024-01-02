@@ -1,5 +1,4 @@
 from re import sub as regex_sub
-from sys import stderr
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Div, Fieldset, Layout, Submit

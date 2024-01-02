@@ -1,6 +1,5 @@
 from random import choice as random_choice
 from random import randint
-from sys import stderr
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import localdate, timedelta
