@@ -44,7 +44,7 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 4. Nainstalujeme závislosti nutné ke spuštění
 
 .. code-block:: console
-    
+
     npm install
     pip install -r requirements.txt
 
@@ -93,7 +93,7 @@ Před vytvořením docker image je nutné provést konfiguraci.
     SQL_HOST=db
     SQL_PORT=5432
 
-2. Nastavíme proměnné o stejných hodnotách i z pohledu PostgreSQL. Soubor ``.env_psql`` by měl vypadat takto
+2. Nastavíme proměnné o stejných hodnotách i z pohledu PostgreSQL. Soubor ``docker/.env_psql`` by měl vypadat takto
 
 .. code-block:: console
 
@@ -101,7 +101,7 @@ Před vytvořením docker image je nutné provést konfiguraci.
     POSTGRES_PASSWORD=supersecret
     POSTGRES_DB=vzs-clenska-sekce
 
-3. Nastavíme konfigurační soubor ``Caddyfile`` pro reverzní proxy Caddy
+3. Nastavíme konfigurační soubor ``docker/Caddyfile`` pro reverzní proxy Caddy
 
 .. code-block:: console
 
@@ -122,12 +122,12 @@ Poté můžeme sestavit docker image projektu.
 
 .. code-block:: console
 
-    ./docker-build.sh  (Linux)
+    ./docker/docker-build.sh  (Linux)
 
-    docker-build.bat  (Windows)
+    docker\docker-build.bat  (Windows)
 
 
-Nyní můžeme celý projekt spustit jedním příkazem
+Nyní můžeme celý projekt spustit jedním příkazem, nutné spouštět z adresáře docker.
 
 .. code-block:: console
 
@@ -173,7 +173,7 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 
 Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
 
-Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_psql`` na
+Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``docker/.env_psql`` na
 
 .. code-block:: console
 
@@ -183,7 +183,7 @@ Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_p
 
 - Proměnnou ``POSTGRES_PASSWORD`` nastavíme na stejnou hodnotu jako proměnnou ``SQL_PASSWORD`` ze souboru ``.env``
 
-Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env_caddy`` nastavíme na 
+Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``docker/.env_caddy`` nastavíme na 
 
 .. code-block:: console
 
@@ -192,7 +192,7 @@ Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``.en
 
 Do proměnné ``EMAIL`` doplníme email, který chceme používat pro ACME challenge při získávání HTTPS certifikátu.
 
-Posledním souborem ke konfiguraci je ``Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``Caddyfile`` upravíme na
+Posledním souborem ke konfiguraci je ``docker/Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``docker/Caddyfile`` upravíme na
 
 .. code-block:: console
 
@@ -211,10 +211,10 @@ Poté můžeme sestavit docker image projektu.
 
 .. code-block:: console
 
-    ./docker-build.sh  (Linux)
+    ./docker/docker-build.sh  (Linux)
 
-    docker-build.bat  (Windows)
+    docker\docker-build.bat  (Windows)
 
 Projekt pro svoji funkčnost vyžaduje otevření pouze portu 80 a 443, je nutné zakázat přístup z Internetu zejména na port 5432 (PostgreSQL) a port 8080 (Gunicorn). Doporučujeme použít program ``ufw``.
 
-Pomocí příkazu ``docker compose up`` je možné vytvořit kontejnery a spustit server.
+Pomocí příkazu ``docker compose up`` z adresáře docker je možné vytvořit kontejnery a spustit server.
