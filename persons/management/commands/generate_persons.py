@@ -1,10 +1,12 @@
 from random import choice as random_choice
 from random import randint
+from sys import stderr
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import localdate, timedelta
 
 from persons.models import Person
+from users.models import User
 from vzs.settings import CURRENT_DATETIME
 
 
@@ -17,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         count = options["N"]
 
-        Person.objects.bulk_create(
+        persons = Person.objects.bulk_create(
             Person(
                 email=f"email.osoba.{i}@email.cz",
                 first_name=f"Testovaci",
@@ -31,6 +33,12 @@ class Command(BaseCommand):
             )
             for i in range(count)
         )
+
+        users = User.objects.bulk_create(User(person=person) for person in persons)
+
+        for user in users:
+            user.set_unusable_password()
+            user.save()
 
         self.stdout.write(
             self.style.SUCCESS(f"Successfully created {count} new persons.")

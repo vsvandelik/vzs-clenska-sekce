@@ -1,3 +1,7 @@
+from sys import stderr
+from time import process_time_ns
+from typing import Any
+
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import AbstractBaseUser
@@ -59,22 +63,6 @@ class UserBaseForm(ModelForm):
             user.save()
 
         return user
-
-
-class UserCreateForm(WithoutFormTagMixin, UserBaseForm):
-    """
-    Creates a new user.
-
-    :parameter person: The person associated with the new user.
-
-    **Request parameters**:
-
-    *   ``password``
-    """
-
-    def __init__(self, person, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.instance.person = person
 
 
 class UserChangePasswordForm(WithoutFormTagMixin, UserBaseForm):
@@ -290,3 +278,19 @@ class LogoutForm(Form):
     """
 
     remember = BooleanField(required=False)
+
+
+class UserDeletePasswordForm(ModelForm):
+    class Meta:
+        model = User
+        fields = []
+
+    def save(self, commit=True) -> Any:
+        instance = super().save(commit=False)
+
+        instance.set_unusable_password()
+
+        if commit:
+            instance.save()
+
+        return instance
