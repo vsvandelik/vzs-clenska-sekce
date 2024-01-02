@@ -177,7 +177,7 @@ class OneTimeEvent(Event):
             group=self.group,
             default_participation_fee=self.default_participation_fee,
             category=self.category,
-            state=self.state,
+            state=EventOrOccurrenceState.OPEN,
             training_category=self.training_category,
         )
         event.save()
@@ -403,7 +403,10 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def duplicate(self, event):
         occurrence = OneTimeEventOccurrence(
-            date=self.date, hours=self.hours, event=event, state=self.state
+            date=self.date,
+            hours=self.hours,
+            event=event,
+            state=EventOrOccurrenceState.OPEN,
         )
         occurrence.save()
         return occurrence
