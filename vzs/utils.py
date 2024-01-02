@@ -6,16 +6,18 @@ from urllib import parse
 from urllib.parse import quote
 
 import unicodedata
-from django.core.mail import send_mail
+from django.core.mail import send_mail as django_send_mail
 from django.db.models import Model
 from django.db.models.query import Q, QuerySet
 from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import formats
 from django.utils.timezone import localdate, make_aware, localtime
 
 from vzs import settings
-from vzs.settings import CURRENT_DATETIME
+from vzs.settings import CURRENT_DATETIME, SERVER_DOMAIN, SERVER_PROTOCOL, EMAIL_SENDER
 
 
 def get_csv_writer_http_response(filename):
@@ -71,6 +73,26 @@ def reverse_with_get_params(*args, **kwargs):
     return url
 
 
+def send_mail(subject, message, recipient_list, *args, **kwargs):
+    data = {
+        "title": kwargs.get("title", subject),
+        "body": kwargs.get("html_message", f"<p>{message}</p>"),
+        "protocol": SERVER_PROTOCOL,
+        "url": SERVER_DOMAIN,
+        "logo_url": get_server_url() + static("logo.png"),
+    }
+
+    html_message = render_to_string("email.html", data)
+
+    django_send_mail(
+        subject=subject,
+        message="",
+        html_message=html_message,
+        from_email=EMAIL_SENDER,
+        recipient_list=recipient_list,
+    )
+
+
 def send_notification_email(subject, message, persons_list, *args, **kwargs):
     recipient_set = set()
     for person in persons_list:
@@ -78,9 +100,8 @@ def send_notification_email(subject, message, persons_list, *args, **kwargs):
             recipient_set.add(recipient)
 
     send_mail(
-        message,
         subject,
-        settings.NOTIFICATION_SENDER_EMAIL,
+        message,
         list(recipient_set),
         *args,
         **kwargs,
@@ -136,6 +157,7 @@ def qr(transaction):
         f"&bankCode={settings.FIO_BANK_NUMBER}"
         f"&amount={abs(transaction.amount)}"
         f"&vs={transaction.pk}"
+        f"&message={transaction.reason[:140]}"
     )
 
 
@@ -214,3 +236,7 @@ def today():
 
 def now():
     return localtime(CURRENT_DATETIME())
+
+
+def get_server_url():
+    return f"{settings.SERVER_PROTOCOL}://{settings.SERVER_DOMAIN}"

@@ -3,11 +3,10 @@ from django.contrib.messages import success as success_message
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import BadRequest
 from django.db import IntegrityError
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView
@@ -18,7 +17,6 @@ from persons.models import Person
 from persons.views import PersonPermissionMixin
 from users.permissions import PermissionRequiredMixin
 from vzs.utils import today
-
 from .forms import (
     FeatureAssignmentByFeatureForm,
     FeatureAssignmentByPersonForm,
@@ -227,17 +225,17 @@ class FeatureDetailView(FeaturePermissionMixin, DetailView):
                         person=person,
                         feature=OuterRef("pk"),
                         date_returned__isnull=True,
-                    )
+                    ).filter(Q(date_expire__isnull=True) | Q(date_expire__gte=today()))
                 )
-            ).values_list("is_assigned", flat=True)
+            )
 
-            assigned_features = list(features)
+            assigned_features = [f.is_assigned for f in features]
 
             if any(assigned_features):
                 features_assignment_matrix["rows"].append(
                     {
                         "person": person,
-                        "features": assigned_features,
+                        "features": features,
                     }
                 )
 

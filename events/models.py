@@ -11,7 +11,6 @@ from persons.models import Person
 from vzs import settings
 from vzs.models import RenderableModelMixin
 from vzs.utils import today
-
 from .utils import check_common_requirements
 
 

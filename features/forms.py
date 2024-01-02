@@ -311,6 +311,8 @@ class FeatureAssignmentByFeatureForm(
                 featureassignment__feature=feature
             )
 
+        self.helper.include_media = False
+
         if "fee" in self.fields:
             self.fields["fee"].initial = feature.fee
 

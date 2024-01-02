@@ -53,6 +53,14 @@ def qr(transaction):
     return utils_qr(transaction)
 
 
+@register.simple_tag
+def is_settled(transaction):
+    if transaction.is_reward:
+        return ""
+    else:
+        return display_presence(transaction.is_settled)
+
+
 @register.filter
 def event_type_display_value(value):
     if value in Training.Category.values:
@@ -99,6 +107,12 @@ def getattribute(value, arg):
 @register.filter
 def addstr(arg1, arg2):
     return str(arg1) + str(arg2)
+
+
+@register.filter
+def wrapstr(middle, prefix_suffix):
+    prefix, suffix = prefix_suffix.split(",")
+    return str(prefix) + str(middle) + str(suffix)
 
 
 @register.filter
@@ -197,6 +211,11 @@ def tuple(a, b):
 @register.filter(name="range")
 def filter_range(start, end):
     return range(start, end)
+
+
+@register.filter
+def is_not_empty(value):
+    return value != ""
 
 
 class _PermURLContextVariable:

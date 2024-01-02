@@ -19,7 +19,6 @@
                 <div class="card-header d-flex align-items-center">
                     <div class="card-title h5">Transakce</div>
                     <div class="card-tools ml-auto">
-                        <a class="btn btn-info btn-sm" href="{% url "transactions:send-email" %}?{{ filtered_get }}">Poslat {{ filtered_get|yesno:"vyfiltrovaným,všem" }} e-mail</a>
                         <a class="btn btn-info btn-sm" href="{% url "transactions:export" %}?{{ filtered_get }}">Vyexportovat {{ filtered_get|yesno:"vyfiltrované,všechny" }}</a>
                     </div>
                 </div>
@@ -47,7 +46,7 @@
                                 <tbody>
                                     {% for transaction in transactions %}
                                         <tr>
-                                            <td class="text-center">{{ transaction.is_settled|display_presence }}</td>
+                                            <td class="text-center">{% is_settled transaction %}</td>
                                             <td>{% render transaction.person "inline" %}</td>
                                             <td>{{ transaction.reward_string }}</td>
                                             <td>{{ transaction.amount|absolute }}</td>
@@ -74,11 +73,12 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "transactions/transactions_filter.js" %}"></script>
     <script src="{% static "datatables.js" %}"></script>
     <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "filter_form.js" %}"></script>
     <script>
-        datatableEnable("transactions-table", [1, 3, 4], [0, 1, 2, 3]);
+        datatableEnable("transactions-table", [1, 3, 4], [0, 1, 2, 3], order = [], searchable = false);
         registerModal("delete-transaction-modal");
+        registerFilterForm("transactions-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
 {% endblock %}

@@ -26,23 +26,6 @@
 
                 {% render_menu %}
 
-                <li class="nav-item {% active_link "events:index" "menu-open" strict=True %}">
-                    <a href="#" class="nav-link {% active_link "events:index" %}">
-                        <i class="nav-icon fas fa-calendar"></i>
-                        <p>
-                            Události (ke smazani)
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{% url "events:index" %}" class="nav-link {% active_link "events:index" %}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Seznam událostí</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

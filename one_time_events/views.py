@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 from django.urls import reverse
@@ -41,6 +40,7 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
+    EventAdminListMixin,
 )
 from persons.models import Person, get_active_user
 from users.permissions import LoginRequiredMixin
@@ -70,6 +70,7 @@ from .forms import (
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
+    OneTimeEventsFilterForm,
 )
 from .models import (
     OneTimeEvent,
@@ -184,10 +185,56 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault("enrolled_events", enrolled_events)
         kwargs.setdefault("available_events", available_events)
 
+        self._add_upcoming_events_participant_kwargs(kwargs)
+        self._add_upcoming_events_organizer_kwargs(kwargs)
+
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
         return []
+
+    def _add_upcoming_events_participant_kwargs(self, kwargs):
+        active_person = self.request.active_person
+
+        enrolled_events = OneTimeEvent.get_upcoming_by_participant(active_person)
+        for enrolled_event in enrolled_events:
+            enrolled_event.enrollment = enrolled_event.get_participant_enrollment(
+                active_person
+            )
+
+        available_events = OneTimeEvent.get_available_events_by_participant(
+            active_person
+        )
+
+        kwargs.setdefault("upcoming_events_participant", enrolled_events)
+        kwargs.setdefault("available_events_participant", available_events)
+
+    def _add_upcoming_events_organizer_kwargs(self, kwargs):
+        active_person = self.request.active_person
+
+        enrolled_events = OneTimeEvent.get_upcoming_by_organizer(active_person)
+        available_events = OneTimeEvent.get_available_events_by_organizer(active_person)
+
+        kwargs.setdefault("upcoming_events_organizer", enrolled_events)
+        kwargs.setdefault("available_events_organizer", available_events)
+
+
+class OneTimeEventAdminListView(EventAdminListMixin):
+    template_name = "one_time_events/list_admin.html"
+    context_object_name = "events"
+
+    def get(self, request, *args, **kwargs):
+        self.filter_form = OneTimeEventsFilterForm(request.GET)
+        return super().get(request, *args, **kwargs)
+
+    def get_accessible_events(self):
+        active_person = self.request.active_person
+        active_user = get_active_user(active_person)
+
+        events = OneTimeEvent.objects.all()
+        visible_events_ids = [e.pk for e in events if e.can_user_manage(active_user)]
+
+        return OneTimeEvent.objects.filter(pk__in=visible_events_ids)
 
 
 class OneTimeEventCreateView(

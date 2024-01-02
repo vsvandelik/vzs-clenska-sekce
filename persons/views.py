@@ -26,7 +26,6 @@ from trainings.models import TrainingOccurrence
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, now, today
-
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -361,6 +360,13 @@ class EditHourlyRateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView)
     model = Person
     success_message = _("Hodinové sazby byly úspěšně upraveny.")
     template_name = "persons/edit_hourly_rate.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.person = get_object_or_404(Person, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse("persons:detail", kwargs={"pk": self.person.pk})
 
 
 class SelectedPersonsMixin(View):

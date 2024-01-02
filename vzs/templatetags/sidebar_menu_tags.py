@@ -1,6 +1,8 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from one_time_events.views import OneTimeEventAdminListView
+from trainings.views import TrainingAdminListView
 from vzs.menu_render import MenuItem
 
 register = template.Library()
@@ -29,8 +31,8 @@ def render_menu(context):
                 MenuItem("Vybavení", "equipments:index"),
             ],
         ),
-        MenuItem("Akce", "one_time_events:index", icon="fas fa-calendar"),
-        MenuItem("Tréninky", "trainings:index", icon="fas fa-dumbbell"),
+        get_one_time_events_menu_item(context),
+        get_trainings_menu_item(context),
         MenuItem(
             "Správa událostí",
             icon="fab fa-elementor",
@@ -54,6 +56,8 @@ def render_menu(context):
                 MenuItem("Seznam API tokenů", "api:token:index"),
             ],
         ),
+        MenuItem("Nápověda", "pages:detail napoveda", icon="fas fa-question-circle"),
+        MenuItem("Kontakt", "pages:detail kontakt", icon="fas fa-envelope"),
     ]
 
     output = []
@@ -62,3 +66,41 @@ def render_menu(context):
         output.append(item.render(context))
 
     return mark_safe("".join(output))
+
+
+def get_one_time_events_menu_item(context):
+    can_person_edit_one_time_events = (
+        OneTimeEventAdminListView.view_has_permission_person(context["active_person"])
+    )
+
+    if can_person_edit_one_time_events:
+        return MenuItem(
+            "Akce",
+            icon="fas fa-calendar",
+            children=[
+                MenuItem("Moje akce", "one_time_events:index"),
+                MenuItem("Seznam všech akcí", "one_time_events:list-admin"),
+            ],
+        )
+
+    else:
+        return MenuItem("Akce", "one_time_events:index", icon="fas fa-calendar")
+
+
+def get_trainings_menu_item(context):
+    can_person_edit_trainings = TrainingAdminListView.view_has_permission_person(
+        context["active_person"]
+    )
+
+    if can_person_edit_trainings:
+        return MenuItem(
+            "Tréninky",
+            icon="fas fa-dumbbell",
+            children=[
+                MenuItem("Moje tréninky", "trainings:index"),
+                MenuItem("Seznam všech tréninků", "trainings:list-admin"),
+            ],
+        )
+
+    else:
+        return MenuItem("Tréninky", "trainings:index", icon="fas fa-dumbbell")

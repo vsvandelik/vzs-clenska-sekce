@@ -2,7 +2,7 @@ from collections.abc import Iterable, MutableMapping
 from typing import Any
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Div, Layout, Row, Submit
+from crispy_forms.layout import Column, Div, Layout, Row, Submit, HTML
 from django.db.models import QuerySet
 from django.forms import (
     BooleanField,
@@ -549,6 +549,9 @@ class TransactionFilterForm(Form):
                 ),
                 Div(
                     Div(
+                        HTML(
+                            "<a href='.' class='btn btn-secondary ml-1 float-right'>Zrušit</a>"
+                        ),
                         Submit(
                             "submit",
                             "Filtrovat",
@@ -622,7 +625,7 @@ class TransactionAccountingExportPeriodForm(Form):
         choices=[
             ("", "---------"),
             ("vyplaty", "Výplaty v csv"),
-            ("pohledavky", "Pohledávky v isdoc"),
+            ("pohledavky", "Pohledávky v Pohoda XML"),
         ],
     )
 

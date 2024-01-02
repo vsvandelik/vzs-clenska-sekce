@@ -9,9 +9,9 @@ services:
       # DO NOT EXPOSE THIS ON THE INTERNET
       - 8080:8080
     volumes:
-      # Uncomment if you want to mount gunicorn log
-      # - ./log:/usr/src/app/log
-      - ./.env:/usr/src/app/.env
+      # Uncomment if you want to mount gunicorn log, do not forget to create a local directory that can be mounted
+      # - ./log:/var/log/gunicorn
+      - ../.env:/usr/src/app/.env
       - staticfiles:/usr/src/app/staticfiles
     depends_on:
       - db

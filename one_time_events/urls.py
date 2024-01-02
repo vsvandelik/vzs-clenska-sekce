@@ -6,6 +6,7 @@ app_name = "one_time_events"
 
 urlpatterns = [
     path("", views.OneTimeEventListView.as_view(), name="index"),
+    path("vsechny/", views.OneTimeEventAdminListView.as_view(), name="list-admin"),
     path(
         "<int:pk>/",
         views.OneTimeEventDetailView.as_view(),
