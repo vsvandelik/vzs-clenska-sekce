@@ -12,6 +12,7 @@ Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lo
 Prerekvizity
 --------------
 - Python ≥ 3.11 
+- Node.js ≥ 17.0.0
 - ``pip``
 
 Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislosti.
@@ -43,7 +44,8 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 4. Nainstalujeme závislosti nutné ke spuštění
 
 .. code-block:: console
-
+    
+    npm install
     pip install -r requirements.txt
 
 5. Spustíme migrace
