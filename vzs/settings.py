@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "active_link",
     "crispy_forms",
     "crispy_bootstrap4",
-    "widget_tweaks",
     "tinymce",
     "django_select2",
     "mptt",
@@ -328,4 +327,5 @@ CRONJOBS = [
     ("0 3 * * *", "features.cron.features_expiry_send_mails"),
     ("0 4 * * *", "one_time_events.cron.unclosed_one_time_events_send_mails"),
     ("0 5 * * *", "trainings.cron.unclosed_trainings_send_mails"),
+    ("0 1 * * 0", "users.cron.garbage_collect_tokens"),
 ]
