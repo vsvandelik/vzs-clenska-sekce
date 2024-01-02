@@ -27,4 +27,6 @@ class PersonPermission(PersonPermissionMixin, BasePermission):
     """
 
     def has_permission(self, request, view):
-        return self.view_has_permission_person(request.active_person, **view.kwargs)
+        return self.view_has_permission_person(
+            request.method, request.active_person, **view.kwargs
+        )

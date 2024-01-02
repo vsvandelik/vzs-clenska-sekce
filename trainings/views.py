@@ -28,8 +28,10 @@ from events.views import (
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoContextData,
     InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
     OccurrenceNotOpenedRestrictionMixin,
@@ -41,8 +43,6 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
-    InsertEventIntoSelfObjectMixin,
-    InsertOccurrenceIntoSelfObjectMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
 from persons.models import Person, get_active_user
@@ -51,6 +51,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
+    TrainingCreatePermissionMixin,
 )
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
@@ -59,7 +60,8 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.settings import CURRENT_DATETIME, PARTICIPANT_ENROLL_DEADLINE_DAYS
-from vzs.utils import send_notification_email, date_pretty, export_queryset_csv
+from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
+
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -87,11 +89,11 @@ from .models import (
     CoachOccurrenceAssignment,
     CoachPositionAssignment,
     Training,
+    TrainingAttendance,
     TrainingOccurrence,
     TrainingParticipantAttendance,
     TrainingParticipantEnrollment,
     TrainingReplaceabilityForParticipants,
-    TrainingAttendance,
 )
 
 
@@ -277,7 +279,9 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         )
 
 
-class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):
+class TrainingCreateView(
+    TrainingCreatePermissionMixin, EventGeneratesDatesMixin, EventCreateMixin
+):
     template_name = "trainings/create.html"
     form_class = TrainingForm
 

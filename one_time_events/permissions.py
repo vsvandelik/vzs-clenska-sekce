@@ -1,7 +1,19 @@
 from events.permissions import (
+    EventCreatePermissionMixin,
     EventInteractPermissionMixin,
     OccurrenceManagePermissionMixin2,
 )
+from one_time_events.models import OneTimeEvent
+
+
+class OneTimeEventCreatePermissionMixin(EventCreatePermissionMixin):
+    permissions_formula_GET = [
+        [OneTimeEvent.Category.COMMERCIAL],
+        [OneTimeEvent.Category.COURSE],
+        [OneTimeEvent.Category.FOR_CHILDREN],
+        [OneTimeEvent.Category.PRESENTATION],
+        [OneTimeEvent.Category.SOCIAL],
+    ]
 
 
 class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixin):

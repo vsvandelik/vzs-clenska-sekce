@@ -216,11 +216,12 @@ class _PermURLNode(URLNode):
             )
 
         url_kwargs = {}
-        self.permission_kwargs = {}
+        self.body_parameters = {}
 
         for key, value in url_node.kwargs.items():
-            if key.startswith("permission_"):
-                self.permission_kwargs[key] = value
+            prefix, _, body_parameter = key.partition("permission_POST_")
+            if len(prefix) == 0:
+                self.body_parameters[body_parameter] = value
             else:
                 url_kwargs[key] = value
 
@@ -233,12 +234,16 @@ class _PermURLNode(URLNode):
 
         match = resolve(url)
 
-        permission_kwargs = {
-            key: value.resolve(context) for key, value in self.permission_kwargs.items()
+        body_parameters = {
+            key: value.resolve(context) for key, value in self.body_parameters.items()
         }
 
         permitted = match.func.view_class.view_has_permission_person(
-            context["active_person"], **self.kwargs, **permission_kwargs
+            "GET",
+            context["active_person"],
+            **match.kwargs,
+            GET={},
+            POST=body_parameters,
         )
 
         context[self.asvar] = _PermURLContextVariable(url, permitted)

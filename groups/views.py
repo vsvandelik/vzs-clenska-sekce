@@ -15,6 +15,7 @@ from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
 from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
+
 from .forms import (
     AddMembersGroupForm,
     AddPersonToGroupForm,
@@ -25,7 +26,8 @@ from .models import Group, Person
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
-    permissions_formula = [["skupiny"]]
+    permissions_formula_GET = [["skupiny"]]
+    permissions_formula_POST = permissions_formula_GET
 
 
 class GroupIndexView(GroupPermissionMixin, ListView):

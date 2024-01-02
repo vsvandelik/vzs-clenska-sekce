@@ -51,6 +51,7 @@ from vzs.mixin_extensions import (
 )
 from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import date_pretty, export_queryset_csv, send_notification_email, today
+
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -80,6 +81,7 @@ from .models import (
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
     OccurrenceManagePermissionMixin2,
+    OneTimeEventCreatePermissionMixin,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
 )
@@ -189,7 +191,10 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
 
 
 class OneTimeEventCreateView(
-    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventCreateMixin
+    OneTimeEventCreatePermissionMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventCreateMixin,
 ):
     template_name = "one_time_events/create.html"
     form_class = OneTimeEventForm

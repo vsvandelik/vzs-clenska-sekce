@@ -6,7 +6,7 @@ from django.views.generic.edit import UpdateView
 
 from pages.forms import PageEditForm
 from pages.models import Page
-from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
+from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
@@ -21,7 +21,8 @@ class PageDetailView(DetailView):
 class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = PageEditForm
     model = Page
-    permissions_formula = [["stranky"]]
+    permissions_formula_GET = [["stranky"]]
+    permissions_formula_POST = permissions_formula_GET
     success_message = _("Stránka byla úspěšně upravena.")
     template_name = "pages/edit.html"
 

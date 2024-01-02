@@ -46,7 +46,7 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
         return super().dispatch(request, feature_type, *args, **kwargs)
 
     @classmethod
-    def view_has_permission(cls, active_user, feature_type, **kwargs):
+    def view_has_permission(cls, method, active_user, feature_type, **kwargs):
         return active_user.has_perm(FeatureTypeTexts[feature_type].shortcut)
 
     def get_context_data(self, **kwargs):

@@ -29,6 +29,7 @@ from trainings.models import Training
 from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
+
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
@@ -53,7 +54,8 @@ class TransactionEditPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``users.transakce`` permission.
     """
 
-    permissions_formula = [["transakce"]]
+    permissions_formula_GET = [["transakce"]]
+    permissions_formula_POST = permissions_formula_GET
     """:meta private:"""
 
 

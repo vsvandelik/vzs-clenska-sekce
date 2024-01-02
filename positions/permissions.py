@@ -2,7 +2,7 @@ from users.permissions import PermissionRequiredMixin
 
 
 class PositionPermissionMixin(PermissionRequiredMixin):
-    permissions_formula = [
+    permissions_formula_GET = [
         ["komercni_udalosti"],
         ["kurzy"],
         ["prezentacni_udalosti"],
@@ -12,3 +12,4 @@ class PositionPermissionMixin(PermissionRequiredMixin):
         ["plavecke_treninky"],
         ["zdravoveda"],
     ]
+    permissions_formula_POST = permissions_formula_GET

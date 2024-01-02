@@ -7,13 +7,14 @@ from users.permissions import PermissionRequiredMixin
 
 
 class PersonPermissionMixin(PermissionRequiredMixin):
-    permissions_formula = [
+    permissions_formula_GET = [
         ["clenska_zakladna"],
         ["detska_clenska_zakladna"],
         ["bazenova_clenska_zakladna"],
         ["lezecka_clenska_zakladna"],
         ["dospela_clenska_zakladna"],
     ]
+    permissions_formula_POST = permissions_formula_GET
 
     @staticmethod
     def get_queryset_by_permission(user, queryset=None):

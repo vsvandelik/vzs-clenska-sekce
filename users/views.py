@@ -26,6 +26,7 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
+
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -272,7 +273,8 @@ class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordMix
     form_class = UserChangePasswordRepeatForm
     """:meta private:"""
 
-    permissions_formula = [["superuser"]]
+    permissions_formula_GET = [["superuser"]]
+    permissions_formula_POST = permissions_formula_GET
     """:meta private:"""
 
 

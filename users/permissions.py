@@ -1,11 +1,12 @@
 from collections.abc import Collection, Iterable
 
+from django.contrib.auth.mixins import LoginRequiredMixin as DjangoLoginRequiredMixin
 from django.contrib.auth.mixins import (
     PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-    LoginRequiredMixin as DjangoLoginRequiredMixin,
 )
+from django.core.exceptions import ImproperlyConfigured
 
-from persons.models import get_active_user
+from persons.models import Person, get_active_user
 
 
 class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
@@ -13,22 +14,27 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
     Base class for all permission mixins.
     """
 
-    permissions_formula: Iterable[Collection[str]]
+    permissions_formula_GET: Iterable[Collection[str]] | None = None
     """
-    A DNF formula of required permissions.
+    A DNF formula of required permissions for a GET request.
+    """
+
+    permissions_formula_POST: Iterable[Collection[str]] | None = None
+    """
+    A DNF formula of required permissions for a POST request.
     """
 
     @classmethod
-    def view_has_permission_person(cls, active_person, **kwargs):
+    def view_has_permission_person(cls, method: str, active_person: Person, **kwargs):
         """
         :meta private:
         """
 
         active_user = get_active_user(active_person)
-        return cls.view_has_permission(active_user, **kwargs)
+        return cls.view_has_permission(method, active_user, **kwargs)
 
     @classmethod
-    def view_has_permission(cls, active_user, **kwargs):
+    def view_has_permission(cls, method: str, active_user, **kwargs):
         """
         Should return ``True`` iff the user is permitted to access the view.
 
@@ -38,33 +44,37 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
         Override for custom behavior.
         """
 
-        return any(
-            active_user.has_perms(conjunction)
-            for conjunction in cls.permissions_formula
-        )
+        try:
+            formula = getattr(cls, f"permissions_formula_{method}")
+        except AttributeError:
+            raise ImproperlyConfigured('method must be either "GET" or "POST"')
+
+        if formula is None:
+            raise ImproperlyConfigured(
+                f"permissions_formula_{method} is not defined on {cls.__name__}"
+            )
+
+        return any(active_user.has_perms(conjunction) for conjunction in formula)
 
     def has_permission(self):
         """
         Hooks into Django's permission system. Do not override or use directly.
         """
+        request = self.request
+        method = request.method
 
         return self.view_has_permission_person(
-            self.request.active_person, **self.kwargs
+            method,
+            request.active_person,
+            GET=request.GET,
+            POST=request.POST if method == "POST" else {},
+            **self.kwargs,
         )
 
 
-class LoginRequiredMixin(DjangoLoginRequiredMixin):
+class LoginRequiredMixin(PermissionRequiredMixin):
     @classmethod
-    def view_has_permission_person(cls, active_person, **kwargs):
-        """
-        :meta private:
-        """
-
-        active_user = get_active_user(active_person)
-        return cls.view_has_permission(active_user, **kwargs)
-
-    @classmethod
-    def view_has_permission(cls, active_user, **kwargs):
+    def view_has_permission(cls, method, active_user, **kwargs):
         """
         Should return ``True`` iff the user is logged in.
 
@@ -90,7 +100,7 @@ class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
     """
 
     @classmethod
-    def view_has_permission(cls, active_user, pk):
+    def view_has_permission(cls, method: str, active_user, pk, **kwargs):
         """:meta private:"""
 
         person_pk = pk
@@ -104,7 +114,7 @@ class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
     """
 
     @classmethod
-    def view_has_permission(cls, active_user, pk):
+    def view_has_permission(cls, method: str, active_user, pk, **kwargs):
         """:meta private:"""
 
         person_pk = pk
@@ -120,5 +130,6 @@ class UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``povoleni`` permission.
     """
 
-    permissions_formula = [["povoleni"]]
+    permissions_formula_GET = [["povoleni"]]
+    permissions_formula_POST = permissions_formula_GET
     """:meta private:"""
