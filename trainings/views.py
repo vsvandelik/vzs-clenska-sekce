@@ -264,14 +264,18 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
                 datetime_start__gte=date_start, event__in=replaceable_trainings
             )
             .exclude(participants=active_person)
-            .order_by("datetime_start")[:10]
+            .order_by("datetime_start")
         )
+
+        available_replaceable_occurrences = [
+            o for o in replaceable_occurrences if o.has_free_participant_spot()
+        ][:10]
 
         kwargs.setdefault(
             "participant_count_of_trainings_to_replace", count_of_trainings_to_replace
         )
         kwargs.setdefault(
-            "participant_replaceable_occurrences", replaceable_occurrences
+            "participant_replaceable_occurrences", available_replaceable_occurrences
         )
 
 
