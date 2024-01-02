@@ -9,6 +9,7 @@ Tato stránka obsahuje všechny Django aplikace a jejich popis.
 --------------------------------------
 api
 --------------------------------------
+Tato aplikace obsahuje implementaci API. Více o API se je možné dozvědět na zvláštní stránce :doc:`./api`.
 
 .. _events:
 

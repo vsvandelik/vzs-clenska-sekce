@@ -10,7 +10,7 @@ Lokální debug spuštění
 Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
 
 Prerekvizity
-------------
+--------------
 - Python ≥ 3.11 
 - ``pip``
 
@@ -139,7 +139,7 @@ Produkční nasazení
 Zde si popíšeme, co všechno je potřeba udělat, abychom mohli projekt bezpečně vystavit na Internet.
 
 Prerekvizity
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 - docker ≥ 1.13.1
 
 Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze souboru ``.env.dist`` doplníme zbylé nevyplněné proměnné.

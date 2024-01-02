@@ -13,7 +13,8 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    conventions.rst
    project-structure.rst
    django-apps.rst
-   permission.rst
+   authentication-autorization.rst
+   api.rst
    front-end.rst
    db.rst
    forms.rst

@@ -27,7 +27,7 @@ django-active-links nabízí jednoduchý způsob, kterým je možné zvýrazit a
 ------------------------
 django-crontab
 ------------------------
-Toto rozšíření umožňuje vybrat funkce a nastavit jim periodu, se kterou budou volány pomocí Cronu. :ref:`IS` tuto funkcionalitu využívá např. k periodické kontrole uzavírání událostí. 
+Toto rozšíření umožňuje vybrat funkce a nastavit jim periodu, se kterou budou volány pomocí Cronu. :term:`IS` tuto funkcionalitu využívá např. k periodické kontrole uzavírání událostí. 
 
 Bližší informace o použití Cronu viz :ref:`funkce_volane_daemonem_cron`.
 
@@ -36,14 +36,14 @@ Bližší informace o použití Cronu viz :ref:`funkce_volane_daemonem_cron`.
 ----------------------
 django-crispy-forms
 ----------------------
-Umožnuje flexibilnější nastavení renderování Django forem. :ref:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
+Umožnuje flexibilnější nastavení renderování Django forem. :term:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
 
 .. _django-environ:
 
 ----------------------
 django-environ
 ----------------------
-django-environ je rozšíření, která umožňuje načítání environmentálních proměnných. :ref:`IS` obsahuje několik konfiguračních proměnných v souboru :ref:`.env`, které jsou načítány při spuštění.
+django-environ je rozšíření, která umožňuje načítání environmentálních proměnných. :term:`IS` obsahuje několik konfiguračních proměnných v souboru :ref:`.env`, které jsou načítány při spuštění.
 
 .. _django-polymorphic:
 
@@ -57,7 +57,7 @@ django-polymorphic implementuje polymorfismus u modelů. Modely se poté chovaj�
 ----------------------
 django-macros
 ----------------------
-django-macros je užitečné, pokud máme části Jinja šablony, kterou chceme opakovat. django-macros umožňuje vytvářet makra a opakovatelné bloky. :ref:`IS` konkrétně využívá pouze ``repeated_block`` a ``repeat`` pro nadpis stránky, který se zadefinuje do bloku a poté opakuje ještě do tagu ``<title>``.
+django-macros je užitečné, pokud máme části Jinja šablony, kterou chceme opakovat. django-macros umožňuje vytvářet makra a opakovatelné bloky. :term:`IS` konkrétně využívá pouze ``repeated_block`` a ``repeat`` pro nadpis stránky, který se zadefinuje do bloku a poté opakuje ještě do tagu ``<title>``.
 
 .. _django-mptt:
 
@@ -85,7 +85,7 @@ Výchozí HTML komponenta pro výběr data a času nezobrazuje formát obvyklý 
 ---------------
 django-tinymce
 ---------------
-django-tinymce poskytuje komponenty pro integraci WYSIWYG editoru, který :ref:`IS` využívá v aplikaci :ref:`pages` pro tvorbu statických stránek.
+django-tinymce poskytuje komponenty pro integraci WYSIWYG editoru, který :term:`IS` využívá v aplikaci :ref:`pages` pro tvorbu statických stránek.
 
 
 .. _djangorestframework:
