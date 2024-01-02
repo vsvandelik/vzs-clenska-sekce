@@ -25,7 +25,7 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
-from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
+from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 
@@ -53,8 +53,7 @@ class TransactionEditPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``users.transakce`` permission.
     """
 
-    permissions_formula_GET = [["transakce"]]
-    permissions_formula_POST = permissions_formula_GET
+    permissions_formula = [["transakce"]]
     """:meta private:"""
 
 

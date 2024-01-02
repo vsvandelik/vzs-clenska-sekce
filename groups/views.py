@@ -26,8 +26,7 @@ from .models import Group, Person
 
 
 class GroupPermissionMixin(PermissionRequiredMixin):
-    permissions_formula_GET = [["skupiny"]]
-    permissions_formula_POST = permissions_formula_GET
+    permissions_formula = [["skupiny"]]
 
 
 class GroupIndexView(GroupPermissionMixin, ListView):

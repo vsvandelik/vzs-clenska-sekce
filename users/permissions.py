@@ -14,14 +14,21 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
     Base class for all permission mixins.
     """
 
+    permissions_formula: Iterable[Collection[str]] | None = None
+    """
+    A DNF formula of required permissions for any request.
+    """
+
     permissions_formula_GET: Iterable[Collection[str]] | None = None
     """
-    A DNF formula of required permissions for a GET request.
+    A DNF formula of required permissions for a GET request. Takes precedence over
+    ``permissions_formula`` if overridden.
     """
 
     permissions_formula_POST: Iterable[Collection[str]] | None = None
     """
-    A DNF formula of required permissions for a POST request.
+    A DNF formula of required permissions for a POST request. Takes precedence over
+    ``permissions_formula`` if overridden.
     """
 
     @classmethod
@@ -39,19 +46,21 @@ class PermissionRequiredMixin(DjangoPermissionRequiredMixin):
         Should return ``True`` iff the user is permitted to access the view.
 
         Default implementation checks if the active user's permissions satisfy
-        `permissions_formula`.
+        ``permissions_formula`` or ``permissions_formula_POST``
+        and ``permissions_formula_GET`` if defined, based on the method, respectively.
 
         Override for custom behavior.
         """
 
-        try:
-            formula = getattr(cls, f"permissions_formula_{method}")
-        except AttributeError:
-            raise ImproperlyConfigured('method must be either "GET" or "POST"')
+        formula = getattr(cls, f"permissions_formula_{method}", None)
+
+        if formula is None:
+            formula = getattr(cls, "permissions_formula", None)
 
         if formula is None:
             raise ImproperlyConfigured(
-                f"permissions_formula_{method} is not defined on {cls.__name__}"
+                f"permissions_formula or permissions_formula_{method} "
+                f"is not defined on {cls.__name__}"
             )
 
         return any(active_user.has_perms(conjunction) for conjunction in formula)
@@ -130,6 +139,5 @@ class UserManagePermissionsPermissionMixin(PermissionRequiredMixin):
     Permits users with the ``povoleni`` permission.
     """
 
-    permissions_formula_GET = [["povoleni"]]
-    permissions_formula_POST = permissions_formula_GET
+    permissions_formula = [["povoleni"]]
     """:meta private:"""

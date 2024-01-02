@@ -80,8 +80,7 @@ class PageDetailView(LoginRequiredMixin, DetailView):
 class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = PageEditForm
     model = Page
-    permissions_formula_GET = [["stranky"]]
-    permissions_formula_POST = permissions_formula_GET
+    permissions_formula = [["stranky"]]
     success_message = _("Stránka byla úspěšně upravena.")
     template_name = "pages/edit.html"
 

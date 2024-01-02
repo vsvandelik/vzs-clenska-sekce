@@ -273,8 +273,7 @@ class UserChangePasswordOtherView(PermissionRequiredMixin, UserChangePasswordMix
     form_class = UserChangePasswordRepeatForm
     """:meta private:"""
 
-    permissions_formula_GET = [["superuser"]]
-    permissions_formula_POST = permissions_formula_GET
+    permissions_formula = [["superuser"]]
     """:meta private:"""
 
 
