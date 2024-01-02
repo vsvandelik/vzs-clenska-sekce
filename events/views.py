@@ -1,7 +1,6 @@
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, reverse
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -16,6 +15,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.utils import send_notification_email
+
 from .forms import (
     EventAgeLimitForm,
     EventAllowedPersonTypeForm,
@@ -202,9 +202,7 @@ class EventCreateUpdateMixin(
     pass
 
 
-class EventCreateMixin(
-    EventCreatePermissionMixin, EventCreateUpdateMixin, generic.CreateView
-):
+class EventCreateMixin(EventCreateUpdateMixin, generic.CreateView):
     success_message = "Událost %(name)s úspěšně přidána."
 
 
@@ -283,7 +281,29 @@ class EventDeleteView(
     EventManagePermissionMixin, EventMixin, MessagesMixin, generic.DeleteView
 ):
     template_name = "events/modals/delete.html"
-    success_url = reverse_lazy("events:index")
+
+    def get_success_url(self):
+        one_time_events_index = reverse("one_time_events:index")
+        trainings_index = reverse("trainings:index")
+        admin_one_time_events_index = reverse("one_time_events:list-admin")
+        admin_trainings_index = reverse("trainings:list-admin")
+        coming_from_uri = self.request.META["HTTP_REFERER"]
+        if coming_from_uri not in [
+            one_time_events_index,
+            trainings_index,
+            admin_one_time_events_index,
+            admin_trainings_index,
+        ]:
+            active_user = get_active_user(self.request.active_person)
+            if self.object.is_one_time_event():
+                if active_user.has_perm("one_time_events:list-admin"):
+                    return admin_one_time_events_index
+                return one_time_events_index
+            else:
+                if active_user.has_perm("trainings:list-admin"):
+                    return admin_trainings_index
+                return trainings_index
+        return coming_from_uri
 
     def get_success_message(self, cleaned_data):
         return f"Událost {self.object.name} úspěšně smazána"

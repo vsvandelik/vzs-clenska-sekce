@@ -28,6 +28,7 @@ from trainings.models import Training
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
+
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
@@ -40,8 +41,8 @@ from .forms import (
 )
 from .models import BulkTransaction, Transaction
 from .permissions import (
-    TransactionEditPermissionMixin,
     TransactionDisableEditSettledPermissionMixin,
+    TransactionEditPermissionMixin,
 )
 from .utils import (
     TransactionInfo,

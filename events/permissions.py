@@ -1,8 +1,3 @@
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-)
-
-from persons.models import get_active_user
 from users.views import PermissionRequiredMixin
 
 from .models import (
@@ -14,14 +9,17 @@ from .models import (
 )
 
 
-class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
-    def has_permission(self):
-        request = self.request
+class EventCreatePermissionMixin(PermissionRequiredMixin):
+    @classmethod
+    def view_has_permission_POST(cls, active_user, POST, **kwargs):
+        return active_user.has_perm(POST["category"])
 
-        if request.method != "POST":
-            return True
+    @classmethod
+    def view_has_permission(cls, method: str, active_user, **kwargs):
+        if method == "POST":
+            return cls.view_has_permission_POST(active_user, **kwargs)
 
-        return get_active_user(request.active_person).has_perm(request.POST["category"])
+        return super().view_has_permission(method, active_user, **kwargs)
 
 
 class ObjectPermissionMixin(PermissionRequiredMixin):
@@ -34,7 +32,7 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
         raise NotImplementedError
 
     @classmethod
-    def view_has_permission(cls, active_user, **kwargs):
+    def view_has_permission(cls, method:str, active_user, **kwargs):
         instances = {
             instance_name: model_class.objects.filter(
                 pk=kwargs[path_parameter_name]

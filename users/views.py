@@ -25,6 +25,7 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
 from vzs.utils import send_mail
+
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -39,11 +40,11 @@ from .forms import (
 )
 from .models import Permission, ResetPasswordToken, User
 from .permissions import (
+    LoginRequiredMixin,
     PermissionRequiredMixin,
     UserCreateDeletePermissionMixin,
     UserGeneratePasswordPermissionMixin,
     UserManagePermissionsPermissionMixin,
-    LoginRequiredMixin,
 )
 from .utils import create_random_password
 
