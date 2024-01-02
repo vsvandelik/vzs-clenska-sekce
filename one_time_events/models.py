@@ -270,7 +270,7 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
         else:
             salary = 0
 
-        return salary + wage_hour * hours
+        return {"sum": salary + wage_hour * hours, "person_rates": person_rates}
 
     @property
     def is_present(self):
