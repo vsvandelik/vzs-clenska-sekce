@@ -99,6 +99,37 @@ Soubory implementující příkazy musí vycházet z následující šablony. P�
             # TODO: implement this function
             pass
 
+.. _vytvoreni_vlastniho_filtru:
+
+-------------------------------
+Vytvoření vlastního filtru
+-------------------------------
+Nejprve je nutné se rozhodnout, zda filtr, který chci vytvořit je obecný nebo specifický. Více informací o typech filtrů se nachází v dokumentu :doc:`./template-filters`.
+
+Obecné filtry patří do souboru templatetags/vzs_filters.py aplikace :ref:`vzs`. Specifické filtry patří do konkrétní aplikace, která je bude využívat. Jako adresář doporučujeme opět použít templatetags/ a jako název souboru s filtry např. filters.py. 
+
+Poté je potřeba se rozhodnout, zda chceme vytvořit template filter, template tag, inclusion tag, nebo simple tag. Mezi těmito primitivy jsou drobné rozdíly, většinou se hodí template filter, doporučujeme si přečíst `stránku na stackoverflow <https://stackoverflow.com/questions/5586774/django-template-filters-tags-simple-tags-and-inclusion-tags>`_, kde jsou rozdíly detailně popsány.
+
+Po implementaci, která může např vypadat takto
+
+.. code-block:: console
+
+    @register.filter
+    def addstr(arg1, arg2):
+        return str(arg1) + str(arg2)
+
+můžeme tento filtr používat v Jinja šablonách. Nesmíme však zapomenout na načtení souboru obsahující implementaci filtrů, např. ``{% load vzs_filters %}`` (bez přípony .py).
+
+Příklad použití:
+
+.. code-block:: console
+
+    {% load vzs_filters %}
+    <ul>
+        <li>Jméno: {{ person.first_name|addstr:' '|addstr:person.last_name }}</li>
+        ...
+    </ul>
+
 .. _funkce_volane_daemonem_cron:
 
 -------------------------------
