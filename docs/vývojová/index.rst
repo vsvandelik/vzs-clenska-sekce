@@ -20,7 +20,7 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    commands.rst
    django-extensions.rst
    dependencies.rst
-   template-tags.rst
+   template-filters.rst
    how-to.rst
    testing.rst
    requirements-evaluation.rst

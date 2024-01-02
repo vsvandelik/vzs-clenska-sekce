@@ -154,7 +154,7 @@ Shell script, který sestaví docker image pro :term:`IS`.
 
 docker/docker-compose.yaml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Docker compose skript, který vytvoří kontejner ochestrací images :term:`IS`, PostgreSQL a Caddy.
+Docker compose skript, který vytvoří kontejner orchestrací images :term:`IS`, PostgreSQL a Caddy.
 
 .. _docker/Dockerfile:
 
