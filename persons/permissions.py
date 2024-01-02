@@ -8,7 +8,7 @@ from users.permissions import PermissionRequiredMixin
 
 class PersonPermissionMixin(PermissionRequiredMixin):
     """
-    Mixin for Person views' permissions.
+    A mixin for person views' permissions.
 
     Permits users with one of the following permissions:
     *   "clenska_zakladna"
@@ -126,7 +126,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
 
 class PersonPermissionQuerysetMixin:
     """
-    A mixin for Person views' permissions.
+    A mixin for person views' permissions.
 
     Its :func:`get_queryset` filters all persons by the active user's permissions.
     """

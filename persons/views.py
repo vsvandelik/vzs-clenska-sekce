@@ -759,7 +759,8 @@ class SelectedPersonsMixin(View):
 
 class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
     """
-    Redirects to an open email with filterd persons set as recipients.
+    Redirects to an open Gmail email with filtered persons
+    and their managing persons set as recipients.
 
     Filters using :class:`PersonsFilter`.
 
