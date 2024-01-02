@@ -55,6 +55,10 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    @property
+    def is_open(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
     def does_participant_satisfy_requirements(self, person):
         if not super().does_participant_satisfy_requirements(person):
             return False
