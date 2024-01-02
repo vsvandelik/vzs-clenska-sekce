@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 
+from transactions.models import Transaction
 from users.permissions import PermissionRequiredMixin
 
 
@@ -18,16 +19,14 @@ class TransactionDisableEditSettledPermissionMixin(TransactionEditPermissionMixi
     to edit transactions that are not settled.
     """
 
-    def dispatch(self, request: HttpRequest, *args, **kwargs):
-        """:meta private:"""
+    @classmethod
+    def view_has_permission(cls, method: str, active_user, pk, **kwargs):
+        transaction = Transaction.objects.filter(pk=pk).first()
 
-        self.object = self.get_object()
+        if transaction is None:
+            return False
 
-        if self.object.is_settled:
-            return self.handle_no_permission()
+        if transaction.is_settled:
+            return False
 
-        return super().dispatch(request, *args, **kwargs)
-
-    # TODO: promyslet, jestli by se dala nejak prepsat metoda view_has_permission, tak,
-    # aby se dalo pouzit iferm na zjisteni, jestli je transakce settled, a pokud je,
-    # tak se ifperm vyhodnoti jako false
+        return super().view_has_permission(method, active_user, pk=pk, **kwargs)
