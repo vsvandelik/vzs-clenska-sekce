@@ -1,8 +1,8 @@
 from collections.abc import Collection, Iterable
 
+from django.contrib.auth.mixins import LoginRequiredMixin as DjangoLoginRequiredMixin
 from django.contrib.auth.mixins import (
     PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-    LoginRequiredMixin as DjangoLoginRequiredMixin,
 )
 
 from persons.models import get_active_user
@@ -84,7 +84,7 @@ def _user_can_manage_person(user, person_pk):
     )
 
 
-class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
+class UserCreateDeletePasswordPermissionMixin(PermissionRequiredMixin):
     """
     Permits superusers and users that manage the given person's membership type.
     """
