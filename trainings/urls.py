@@ -141,7 +141,7 @@ urlpatterns = [
         name="unenroll-myself-participant-occurrence",
     ),
     path(
-        "<int:event_id>/detail-dne<int:occurrence_id>/pridat-jednorazoveho-ucastnika/",
+        "<int:event_id>/detail-dne/<int:occurrence_id>/pridat-jednorazoveho-ucastnika/",
         views.AddOneTimeParticipantView.as_view(),
         name="add-one-time-participant",
     ),
