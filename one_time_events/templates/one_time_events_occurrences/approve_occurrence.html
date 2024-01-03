@@ -76,30 +76,43 @@
                     </thead>
                     <tbody>
                         {% for organizer_assignment in occurrence.approved_organizer_assignments %}
-                            <tr {% if organizer_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
-                                <td>
-                                    <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
-                                </td>
-                                <td>
-                                    <div class="custom-control custom-checkbox">
-                                        <input id="{{ organizer_assignment.id }}_organizer_checkbox" type="checkbox"
-                                               {% if organizer_assignment in organizer_assignments %}checked{% endif %}
-                                               class="custom-control-input" name="organizers"
-                                               value="{{ organizer_assignment.id }}"
-                                               {% if organizer_assignment.transaction is None or not organizer_assignment.transaction.is_settled %}onchange="organizerAttendaceChanged(this)"{% endif %}
+
+                            {% with organizer_amount=organizer_amounts|index:organizer_assignment.id %}
+                                <tr {% if organizer_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
+                                    <td>
+                                        <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input id="{{ organizer_assignment.id }}_organizer_checkbox" type="checkbox"
+                                                   {% if organizer_assignment in organizer_assignments %}checked{% endif %}
+                                                   class="custom-control-input" name="organizers"
+                                                   value="{{ organizer_assignment.id }}"
+                                                   {% if organizer_assignment.transaction is None or not organizer_assignment.transaction.is_settled %}onchange="organizerAttendaceChanged(this)"{% endif %}
+                                            >
+                                            <label for="{{ organizer_assignment.id }}_organizer_checkbox"
+                                                   class="custom-control-label"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
+                                               class="form-control"
+                                               type="number" value="{{ organizer_amount.sum }}" min="0"
+                                               {% if organizer_assignment.transaction is not None and organizer_assignment.transaction.is_settled %}disabled{% endif %}
                                         >
-                                        <label for="{{ organizer_assignment.id }}_organizer_checkbox"
-                                               class="custom-control-label"></label>
-                                    </div>
-                                </td>
-                                <td>
-                                    <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
-                                           class="form-control"
-                                           type="number" value="{{ organizer_amounts|index:organizer_assignment.id }}" min="0"
-                                           {% if organizer_assignment.transaction is not None and organizer_assignment.transaction.is_settled %}disabled{% endif %}
-                                    >
-                                </td>
-                            </tr>
+
+                                    </td>
+                                </tr>
+                                {% if not organizer_amount.person_rates %}
+                                    <tr>
+                                        <td colspan="3" class="text-center border-top-0 p-0">
+                                            <div class="alert alert-warning">
+                                                Organizátor nemá nastavenou hodinovou sazbu pro tento typ akce.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -110,9 +123,4 @@
 
 {% block scripts %}
     <script src="{% static 'one_time_events_occurrences/approve_occurrence.js' %}"></script>
-    <script src="{% static "datatables.js" %}"></script>
-    <script>
-        simpleOrderableTableEnable("participants-table", [0])
-        simpleOrderableTableEnable("organizers-table", [0])
-    </script>
 {% endblock %}
