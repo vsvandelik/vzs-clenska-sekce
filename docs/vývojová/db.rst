@@ -7,6 +7,12 @@ Pro práci s databází se používá Django ORM, které umožňuje komunikovat 
 
 Databázový model se nenachází na jenom místě, je rozdělen na části. Každá aplikace obsahuje v souboru models.py část modelu, se kterou pracuje. Modely, které pomyslně leží na pomezí dvou aplikací a propojují tak modely do dohromady, se nachází v té aplikaci, která model využívá více.
 
+Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující závislosti a propojení jednotlivých entit.
+
+.. image:: ../pic/model.png
+    :target: ../../../pic/model.png
+
+
 ---------------------
 Migrace
 ---------------------

@@ -28,3 +28,5 @@ U HTML id atributů platí výjimka pro prvky automaticky generované Djangem p�
 Formátování kódu
 -----------------
 Pro formátování kódu se používá Black Code Formatter, soubory HTML/CSS/JS jsou formátovány pomocí djhtml, které umí formátovat Jinja kód. 
+
+Více informací o workflow se nachází v samostatné sekci :doc:`./contribute`.
