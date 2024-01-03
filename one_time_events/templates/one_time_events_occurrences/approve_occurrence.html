@@ -36,7 +36,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for participant_assignment in occurrence.approved_participant_assignments %}
+                        {% for participant_assignment in occurrence.approved_participant_assignments_sorted %}
                             <tr>
                                 <td>
                                     <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
@@ -75,7 +75,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for organizer_assignment in occurrence.approved_organizer_assignments %}
+                        {% for organizer_assignment in occurrence.approved_organizer_assignments_sorted %}
 
                             {% with organizer_amount=organizer_amounts|index:organizer_assignment.id %}
                                 <tr {% if organizer_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
@@ -123,4 +123,9 @@
 
 {% block scripts %}
     <script src="{% static 'one_time_events_occurrences/approve_occurrence.js' %}"></script>
+    <script src="{% static 'datatables.js' %}"></script>
+    <script>
+        simpleOrderableTableEnable('participants-table', [0])
+        {# TODO: make work simpleOrderableTableEnable('organizers-table', [0, 2])#}
+    </script>
 {% endblock %}

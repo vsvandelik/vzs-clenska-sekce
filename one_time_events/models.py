@@ -353,10 +353,20 @@ class OneTimeEventOccurrence(EventOccurrence):
         return self.onetimeeventparticipantattendance_set.filter(q_condition)
 
     def approved_participant_assignments(self):
-        return self.participants_assignment_by_Q(Q()).order_by("person")
+        return self.participants_assignment_by_Q(Q())
 
-    def approved_organizer_assignment(self):
+    def approved_participant_assignments_sorted(self):
+        return self.participants_assignment_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
+
+    def approved_organizer_assignments(self):
         return self.organizers_assignments_by_Q(Q())
+
+    def approved_organizer_assignments_sorted(self):
+        return self.organizers_assignments_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
 
     def missing_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(

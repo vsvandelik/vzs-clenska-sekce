@@ -23,7 +23,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for participant_assignment in occurrence.approved_participant_assignments %}
+                        {% for participant_assignment in occurrence.approved_participant_assignments_sorted %}
                             <tr>
                                 <td>
                                     <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
@@ -61,7 +61,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for organizer_assignment in occurrence.approved_organizer_assignments %}
+                        {% for organizer_assignment in occurrence.approved_organizer_assignments_sorted %}
                             <tr>
                                 <td>
                                     <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
@@ -86,9 +86,9 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "datatables.js" %}"></script>
+    <script src="{% static 'datatables.js' %}"></script>
     <script>
-        simpleOrderableTableEnable("participants-table", [0])
-        simpleOrderableTableEnable("organizers-table", [0])
+        simpleOrderableTableEnable('participants-table', [0])
+        simpleOrderableTableEnable('organizers-table', [0])
     </script>
 {% endblock %}
