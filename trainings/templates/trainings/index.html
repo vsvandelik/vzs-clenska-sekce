@@ -7,6 +7,18 @@
 {% block title %}Tréninky{% endblock %}
 
 {% block content %}
+    {% if not participant_replaceable_occurrences and not participant_enrolled_trainings and not coach_regular_trainings and not participant_upcoming_occurrences and not coach_upcoming_occurrences and not participant_available_trainings %}
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <p>Žádné tréninky nejsou k dispozici.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if participant_replaceable_occurrences %}
         <div class="row">
             {% include "trainings/index_components/participant_replacing_trainings.html" %}
