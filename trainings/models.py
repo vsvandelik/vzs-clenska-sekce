@@ -540,29 +540,29 @@ class TrainingOccurrence(EventOccurrence):
         return self.participants_assignment_by_Q(
             Q(person__in=self.event.enrolled_participants.all())
             & ~Q(state=TrainingAttendance.EXCUSED)
-        ).order_by("person")
+        ).order_by("person__last_name", "person__first_name")
 
     def one_time_present_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(state=TrainingAttendance.PRESENT)
             & ~Q(person__in=self.event.enrolled_participants.all())
-        ).order_by("person")
+        ).order_by("person__last_name", "person__first_name")
 
     def one_time_not_excused_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             ~Q(state=TrainingAttendance.EXCUSED)
             & ~Q(person__in=self.event.enrolled_participants.all())
-        ).order_by("person")
+        ).order_by("person__last_name", "person__first_name")
 
     def excused_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(state=TrainingAttendance.EXCUSED)
-        ).order_by("person")
+        ).order_by("person__last_name", "person__first_name")
 
     def unexcused_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
             Q(state=TrainingAttendance.UNEXCUSED)
-        ).order_by("person")
+        ).order_by("person__last_name", "person__first_name")
 
     def get_participant_attendance(self, person):
         return self.trainingparticipantattendance_set.filter(
