@@ -13,6 +13,7 @@
             <div class="btn-group-md btn-group mb-3 elevation-2">
                 {% block delete_form %}{% endblock %}
             </div>
+            {% block notification %}{% endblock %}
             <div class="card">
                 <form method="POST"
                       action="{% block form_action %}{% endblock %}"

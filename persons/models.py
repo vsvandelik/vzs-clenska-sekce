@@ -4,6 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.validators import RegexValidator
 from django.db.models import (
     CASCADE,
+    BooleanField,
     Case,
     CharField,
     DateField,
@@ -19,7 +20,6 @@ from django.db.models import (
     TextChoices,
     Value,
     When,
-    BooleanField,
 )
 from django.db.models.functions import ExtractYear
 from django.urls import reverse

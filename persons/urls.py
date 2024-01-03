@@ -15,8 +15,8 @@ from users.views import (
     UserAssignPermissionView,
     UserChangePasswordOtherView,
     UserChangePasswordSelfView,
-    UserCreateView,
-    UserDeleteView,
+    UserCreatePasswordView,
+    UserDeletePasswordView,
     UserGenerateNewPasswordView,
     UserRemovePermissionView,
 )
@@ -28,15 +28,15 @@ from .views import (
     ExportSelectedPersonsView,
     MyProfileUpdateView,
     MyProfileView,
+    PersonCreateChildParentView,
+    PersonCreateChildView,
     PersonCreateView,
     PersonDeleteView,
     PersonDetailView,
     PersonIndexView,
+    PersonStatsView,
     PersonUpdateView,
     SendEmailToSelectedPersonsView,
-    PersonStatsView,
-    PersonCreateChildView,
-    PersonCreateChildParentView,
 )
 
 app_name = "persons"
@@ -87,14 +87,14 @@ urlpatterns = [
     path("<int:pk>/upravit/", PersonUpdateView.as_view(), name="edit"),
     path("<int:pk>/smazat/", PersonDeleteView.as_view(), name="delete"),
     path(
-        "<int:pk>/ucet/pridat/",
-        UserCreateView.as_view(),
-        name="user-add",
+        "<int:pk>/ucet/pridat-heslo/",
+        UserCreatePasswordView.as_view(),
+        name="user-add-password",
     ),
     path(
-        "<int:pk>/ucet/smazat/",
-        UserDeleteView.as_view(),
-        name="user-delete",
+        "<int:pk>/ucet/smazat-heslo/",
+        UserDeletePasswordView.as_view(),
+        name="user-delete-password",
     ),
     path(
         "<int:pk>/ucet/zmenit-heslo/",

@@ -1,4 +1,3 @@
-import datetime
 from datetime import date, datetime
 
 from django.contrib import messages
@@ -26,6 +25,7 @@ from trainings.models import TrainingOccurrence
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, now, today
+
 from .forms import (
     AddManagedPersonForm,
     DeleteManagedPersonForm,
@@ -45,21 +45,61 @@ from .utils import (
 
 
 class PersonIndexView(PersonPermissionMixin, ListView):
+    """
+    Displays a list of all persons.
+
+    Allow direct deletion using modals.
+
+    Filters regular transactions using :class:`PersonsFilterForm`.
+
+    **Permissions**:
+
+    Users with ``*clenska_zakladna`` permissions see the corresponding set of persons.
+
+    **Query parameters:**
+
+    *   ``name``
+    *   ``email``
+    *   ``qualification``
+    *   ``permission``
+    *   ``equipment``
+    *   ``person_type``
+    *   ``age_from``
+    *   ``age_to``
+    """
+
     context_object_name = "persons"
+    """:meta private:"""
+
     model = Person
+    """:meta private:"""
+
     template_name = "persons/index.html"
+    """:meta private:"""
 
     def __init__(self, **kwargs):
+        """:meta private:"""
+
         super().__init__(**kwargs)
         self.filter_form = None
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``filter_form`` - the :class:`PersonsFilterForm`
+        *   ``filtered_get`` - url encoded GET parameters
+            that were used to filter the persons
+        """
+
         kwargs.setdefault("filter_form", self.filter_form)
         kwargs.setdefault("filtered_get", self.request.GET.urlencode())
 
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
+        """
+        Orders the persons by their last name.
+        """
+
         persons_objects = self._filter_queryset_by_permission(Person.objects.with_age())
 
         self.filter_form = PersonsFilterForm(self.request.GET)
@@ -74,10 +114,37 @@ class PersonIndexView(PersonPermissionMixin, ListView):
 class PersonDetailView(
     PersonPermissionQuerysetMixin, PersonPermissionMixin, DetailView
 ):
+    """
+    Displays an admin view of a person.
+
+    See :func:`get_queryset` for more information.
+
+    **Permissions**:
+
+    *   users that manage the person's membership type
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the person
+    """
+
     model = Person
+    """:meta private:"""
+
     template_name = "persons/detail.html"
+    """:meta private:"""
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``qualifications`` - qualifications of the person
+        *   ``permissions`` - permissions of the person
+        *   ``equipment`` - equipment of the person
+        *   ``persons_to_manage`` - persons that could be managed by the person
+            but are not
+        *   ``available_groups`` - groups that the person could be a part of but is not
+        *   ``features_texts`` - helper for Czech translations
+            of feature related strings. See ``FeatureTypeTexts`` for more.
+        """
         person: Person = self.object
 
         extend_kwargs_of_assignment_features(person, kwargs)
@@ -101,10 +168,17 @@ class PersonDetailView(
 
 class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
     form_class = PersonForm
+    """:meta private:"""
+
     model = Person
+    """:meta private:"""
+
     template_name = "persons/edit.html"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs["available_person_types"] = self._get_available_person_types()
@@ -113,46 +187,160 @@ class PersonCreateUpdateMixin(PersonPermissionMixin, MessagesMixin):
 
 
 class PersonCreateView(PersonCreateUpdateMixin, CreateView):
+    """
+    Creates a new :class:`persons.models.Person`.
+
+    **Success redirection view**: :class:`persons.views.PersonIndexView`
+
+    **Permissions**:
+
+    Users that manage the created person's membership type.
+
+    **Request body parameters:**
+
+    *   ``first_name``
+    *   ``last_name``
+    *   ``person_type``
+    *   ``sex``
+    *   ``email``
+    *   ``phone``
+    *   ``date_of_birth``
+    *   ``birth_number``
+    *   ``health_insurance_company``
+    *   ``city``
+    *   ``postcode``
+    *   ``street``
+    *   ``swimming_time``
+    """
+
     error_message = _("Nepodařilo se vytvořit novou osobu. Opravte chyby ve formuláři.")
+    """:meta private:"""
+
     success_message = _("Osoba byla úspěšně vytvořena")
+    """:meta private:"""
 
 
 class PersonCreateChildView(PersonCreateUpdateMixin, CreateView):
+    """
+    Creates a new child :class:`persons.models.Person`.
+
+    Allow for a simpler creation of children and their parents.
+
+    **Success redirection view**: :class:`persons.views.PersonCreateChildParentView`
+
+    **Permissions**:
+
+    Users that manage the child person membership type.
+
+    **Request body parameters:**
+
+    *   ``first_name``
+    *   ``last_name``
+    *   ``person_type`` - must be "dite"
+    *   ``sex``
+    *   ``email``
+    *   ``phone``
+    *   ``date_of_birth``
+    *   ``birth_number``
+    *   ``health_insurance_company``
+    *   ``city``
+    *   ``postcode``
+    *   ``street``
+    *   ``swimming_time``
+    """
+
     template_name = "persons/create_child.html"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["available_person_types"] = [Person.Type.CHILD]
         return kwargs
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse("persons:add-child-parent", kwargs={"pk": self.object.pk})
 
 
 class PersonCreateChildParentView(PersonCreateUpdateMixin, CreateView):
+    """
+    Creates a new parent :class:`persons.models.Person`.
+
+    Allow for a simpler creation of children and their parents.
+
+    **Success redirection view**: :class:`persons.views.PersonCreateChildParentView`
+    or :class:`persons.views.PersonDetailView` depending on the ``add_another_parent``
+    parameter.
+
+    **Permissions**:
+
+    Users that manage the child person membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - the ID of the created parent's child
+
+    **Request body parameters:**
+
+    *   ``first_name``
+    *   ``last_name``
+    *   ``person_type``
+    *   ``sex``
+    *   ``email``
+    *   ``phone``
+    *   ``date_of_birth``
+    *   ``birth_number``
+    *   ``health_insurance_company``
+    *   ``city``
+    *   ``postcode``
+    *   ``street``
+    *   ``swimming_time``
+    """
+
     template_name = "persons/create_child_parent.html"
+    """:meta private:"""
 
     def __init__(self, **kwargs):
+        """:meta private:"""
+
         super().__init__(**kwargs)
-        self.child = None
+        self.child: Person
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.child = get_object_or_404(Person, pk=self.kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``child`` - the currently created parent's child
+        *   ``parent_idx`` - the index of the currently created parent
+            among the child's parents
+        """
         kwargs.setdefault("child", self.child)
         kwargs.setdefault("parent_idx", self.child.managed_by.count() + 1)
+
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
+
         kwargs["initial"] = {"person_type": Person.Type.PARENT.value}
         kwargs["is_add_child_parent_form"] = True
+
         return kwargs
 
     def form_valid(self, form):
+        """:meta private:"""
+
         _ = super().form_valid(form)
+
         form.instance.managed_persons.add(self.child)
 
         if form.cleaned_data["add_another_parent"]:
@@ -164,12 +352,38 @@ class PersonCreateChildParentView(PersonCreateUpdateMixin, CreateView):
 
 
 class PersonStatsView(PersonPermissionMixin, UpdateView):
-    model = Person
-    template_name = "persons/stats.html"
+    """
+    Displays statistics of a person.
+
+    **Permissions**:
+
+    Users that manage the person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the person
+
+    **Query parameters:**
+
+    *   ``date_start`` - start date for the statistics
+    *   ``date_end`` - end date for the statistics
+    """
+
     form_class = PersonStatsForm
+    """:meta private:"""
+
     http_method_names = ["get"]
+    """:meta private:"""
+
+    model = Person
+    """:meta private:"""
+
+    template_name = "persons/stats.html"
+    """:meta private:"""
 
     def _get_parse_dates(self):
+        """:meta private:"""
+
         year = today().year
         default_dates = [
             date(year=year, month=1, day=1),
@@ -200,12 +414,18 @@ class PersonStatsView(PersonPermissionMixin, UpdateView):
         return dates[0], dates[1]
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
+
         kwargs["date_start"] = self.date_start
         kwargs["date_end"] = self.date_end
+
         return kwargs
 
     def _get_stats(self):
+        """:meta private:"""
+
         person = self.object
         one_time_event_categories = OneTimeEvent.Category.choices
         one_time_event_categories = sorted(
@@ -246,6 +466,10 @@ class PersonStatsView(PersonPermissionMixin, UpdateView):
             return one_time_events_out
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``stats`` - the statistics
+        """
+
         self.date_start, self.date_end = self._get_parse_dates()
         kwargs.setdefault("stats", self._get_stats())
         return super().get_context_data(**kwargs)
@@ -254,19 +478,81 @@ class PersonStatsView(PersonPermissionMixin, UpdateView):
 class PersonUpdateView(
     PersonPermissionQuerysetMixin, PersonCreateUpdateMixin, UpdateView
 ):
+    """
+    Edits an existing :class:`persons.models.Person`.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the edited person
+
+    **Permissions**:
+
+    Users that manage the edited person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the edited person
+
+    **Request body parameters:**
+
+    *   ``first_name``
+    *   ``last_name``
+    *   ``person_type``
+    *   ``sex``
+    *   ``email``
+    *   ``phone``
+    *   ``date_of_birth``
+    *   ``birth_number``
+    *   ``health_insurance_company``
+    *   ``city``
+    *   ``postcode``
+    *   ``street``
+    *   ``swimming_time``
+    """
+
     error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
+    """:meta private:"""
+
     success_message = _("Osoba byla úspěšně upravena")
+    """:meta private:"""
 
 
 class PersonDeleteView(
     PersonPermissionQuerysetMixin, PersonPermissionMixin, DeleteView
 ):
+    """
+    Deletes or anonymizes an existing :class:`persons.models.Person`.
+
+    The person must not be a part of an upcoming event
+    or have any borrowed equipment.
+
+    Anonymization happens only if the person was part of a past event.
+
+    **Success redirection view**: :class:`persons.views.PersonIndexView`
+
+    **Permissions**:
+
+    Users that manage the deleted person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the deleted person
+    """
+
     model = Person
+    """:meta private:"""
+
     success_message = _("Osoba byla úspěšně smazána")
+    """:meta private:"""
+
     success_url = reverse_lazy("persons:index")
+    """:meta private:"""
+
     template_name = "persons/delete.html"
+    """:meta private:"""
 
     def form_valid(self, form):
+        """:meta private:"""
+
         person = self.object
 
         if self._is_person_in_events(person, only_upcoming=True):
@@ -305,6 +591,8 @@ class PersonDeleteView(
 
     @staticmethod
     def _is_person_in_events(person, only_upcoming=False):
+        """:meta private:"""
+
         one_time_occurrences = OneTimeEventOccurrence.objects.filter(
             Q(organizers=person) | Q(participants=person)
         )
@@ -323,6 +611,8 @@ class PersonDeleteView(
 
     @staticmethod
     def _has_person_equipment(person):
+        """:meta private:"""
+
         equipment = (
             FeatureAssignment.objects.filter(
                 person=person, feature__feature_type=Feature.Type.EQUIPMENT
@@ -336,49 +626,126 @@ class PersonDeleteView(
 
 class AddDeleteManagedPersonMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
     error_message: str
+    """:meta private:"""
+
     http_method_names = ["post"]
+    """:meta private:"""
+
     model = Person
+    """:meta private:"""
 
     def get_error_message(self, errors):
+        """:meta private:"""
+
         return self.error_message + " ".join(errors["managed_person"])
 
 
 class AddManagedPersonView(AddDeleteManagedPersonMixin):
+    """
+    Adds a person to a persons's managed persons.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the managing person
+
+    **Permissions**:
+
+    Users that manage the managing person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the managing person
+
+    **Request body parameters:**
+
+    *   ``managed_person`` - ID of the person to be added to managed persons
+    """
+
     error_message = _("Nepodařilo se uložit novou spravovanou osobu. ")
+    """:meta private:"""
+
     form_class = AddManagedPersonForm
+    """:meta private:"""
+
     success_message = _("Nová spravovaná osoba byla přidána.")
+    """:meta private:"""
 
 
 class DeleteManagedPersonView(AddDeleteManagedPersonMixin):
+    """
+    Removes a person from a persons's managed persons.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the managing person
+
+    **Permissions**:
+
+    Users that manage the managing person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the managing person
+
+    **Request body parameters:**
+
+    *   ``managed_person`` - ID of the person to be removed from managed persons
+    """
+
     error_message = _("Nepodařilo se odebrat spravovanou osobu. ")
+    """:meta private:"""
+
     form_class = DeleteManagedPersonForm
+    """:meta private:"""
+
     success_message = _("Odebrání spravované osoby bylo úspěšné.")
+    """:meta private:"""
 
 
 class EditHourlyRateView(PersonPermissionMixin, SuccessMessageMixin, UpdateView):
+    """
+    Edits the hourly rates of a person.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the managing person
+
+    **Permissions**:
+
+    Users that manage the managing person's membership type.
+
+    **Path parameters:**
+
+    *   ``pk`` - ID of the edited person
+    """
+
     form_class = PersonHourlyRateForm
+    """:meta private:"""
+
     model = Person
+    """:meta private:"""
+
     success_message = _("Hodinové sazby byly úspěšně upraveny.")
+    """:meta private:"""
+
     template_name = "persons/edit_hourly_rate.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.person = get_object_or_404(Person, pk=self.kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse("persons:detail", kwargs={"pk": self.person.pk})
+    """:meta private:"""
 
 
 class SelectedPersonsMixin(View):
     http_method_names = ["get"]
+    """:meta private:"""
 
     def _get_queryset(self):
+        """:meta private:"""
+
         raise NotImplementedError
 
     def _process_selected_persons(self, selected_persons):
+        """:meta private:"""
+
         raise NotImplementedError
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         selected_persons = filter_queryset(
             PersonPermissionMixin.get_queryset_by_permission(
                 self.request.user, self._get_queryset()
@@ -391,26 +758,90 @@ class SelectedPersonsMixin(View):
 
 
 class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
+    """
+    Redirects to an open Gmail email with filtered persons
+    and their managing persons set as recipients.
+
+    Filters using :class:`PersonsFilter`.
+
+    **Permissions**:
+
+    Anyone.
+
+    **Query parameters:**
+
+    *   ``name``
+    *   ``email``
+    *   ``qualificationon``
+    *   ``equipment``
+    *   ``person_type``
+    *   ``age_from``
+    *   ``age_to``
+    *   ``event_id``
+    """
+
     def _get_queryset(self):
+        """:meta private:"""
+
         return Person.objects.all()
 
     def _process_selected_persons(self, selected_persons):
+        """:meta private:"""
+
         return send_email_to_selected_persons(selected_persons)
 
 
 class ExportSelectedPersonsView(SelectedPersonsMixin):
+    """
+    Exports filtered persons as a CSV file.
+
+    Filters using :class:`PersonsFilter`.
+
+    **Permissions**:
+
+    Anyone.
+
+    **Query parameters:**
+
+    *   ``name``
+    *   ``email``
+    *   ``qualificationon``
+    *   ``equipment``
+    *   ``person_type``
+    *   ``age_from``
+    *   ``age_to``
+    *   ``event_id``
+    """
+
     def _get_queryset(self):
+        """:meta private:"""
+
         return Person.objects.with_age()
 
     def _process_selected_persons(self, selected_persons):
+        """:meta private:"""
+
         return export_queryset_csv("vzs_osoby_export", selected_persons)
 
 
 class MyProfileView(LoginRequiredMixin, DetailView):
+    """
+    Displays basic information about the active person.
+
+    **Permissions**:
+
+    Anyone.
+    """
+
     model = Person
+    """:meta private:"""
+
     template_name = "persons/my_profile.html"
+    """:meta private:"""
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         return self.request.active_person
 
     def get_context_data(self, **kwargs):
@@ -421,12 +852,44 @@ class MyProfileView(LoginRequiredMixin, DetailView):
 
 
 class MyProfileUpdateView(LoginRequiredMixin, MessagesMixin, UpdateView):
+    """
+    Edits basic info about the active person.
+
+    **Success redirection view**: :class:`persons.views.MyProfileView`
+
+    **Permissions**:
+
+    Anyone.
+
+    **Query parameters:**
+
+    *   ``email``
+    *   ``phone``
+    *   ``health_insurance_company``
+    *   ``street``
+    *   ``city``
+    *   ``postcode``
+    """
+
     error_message = _("Změny se nepodařilo uložit. Opravte chyby ve formuláři.")
+    """:meta private:"""
+
     form_class = MyProfileUpdateForm
+    """:meta private:"""
+
     model = Person
+    """:meta private:"""
+
     success_message = _("Váš profil byl úspěšně upraven.")
+    """:meta private:"""
+
     success_url = reverse_lazy("my-profile:index")
+    """:meta private:"""
+
     template_name = "persons/my_profile_edit.html"
+    """:meta private:"""
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         return self.request.active_person

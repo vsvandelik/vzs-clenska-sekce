@@ -261,8 +261,10 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     def receive_amount(self):
+        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
+
         if self.transaction is not None:
-            return self.transaction.amount
+            return {"sum": self.transaction.amount, "person_rates": person_rates}
 
         hours = self.occurrence.hours
         wage_hour = self.position_assignment.position.wage_hour
@@ -353,10 +355,20 @@ class OneTimeEventOccurrence(EventOccurrence):
         return self.onetimeeventparticipantattendance_set.filter(q_condition)
 
     def approved_participant_assignments(self):
-        return self.participants_assignment_by_Q(Q()).order_by("person")
+        return self.participants_assignment_by_Q(Q())
 
-    def approved_organizer_assignment(self):
+    def approved_participant_assignments_sorted(self):
+        return self.participants_assignment_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
+
+    def approved_organizer_assignments(self):
         return self.organizers_assignments_by_Q(Q())
+
+    def approved_organizer_assignments_sorted(self):
+        return self.organizers_assignments_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
 
     def missing_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
