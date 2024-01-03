@@ -1,3 +1,4 @@
+from users.permissions import LoginRequiredMixin
 from users.views import PermissionRequiredMixin
 
 from .models import (
@@ -22,7 +23,7 @@ class EventCreatePermissionMixin(PermissionRequiredMixin):
         return super().view_has_permission(method, active_user, **kwargs)
 
 
-class ObjectPermissionMixin(PermissionRequiredMixin):
+class ObjectPermissionMixin(LoginRequiredMixin):
     @classmethod
     def get_path_parameter_mapping(cls):
         raise NotImplementedError
@@ -32,7 +33,12 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
         raise NotImplementedError
 
     @classmethod
-    def view_has_permission(cls, method:str, active_user, **kwargs):
+    def view_has_permission(cls, method: str, active_user, **kwargs):
+        logged_in = super().view_has_permission(method, active_user, **kwargs)
+
+        if not logged_in:
+            return False
+
         instances = {
             instance_name: model_class.objects.filter(
                 pk=kwargs[path_parameter_name]
@@ -42,6 +48,10 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
                 instance_name,
             ) in cls.get_path_parameter_mapping().items()
         }
+
+        # permit for non-existent instances, so we can return 404 on the actual request
+        if any(instance is None for instance in instances.values()):
+            return True
 
         return cls.permission_predicate(active_user=active_user, **instances)
 

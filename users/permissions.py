@@ -116,7 +116,7 @@ class UserCreateDeletePasswordPermissionMixin(PermissionRequiredMixin):
         return _user_can_manage_person(active_user, person_pk)
 
 
-class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
+class UserGeneratePasswordPermissionMixin(LoginRequiredMixin):
     """
     Permits superusers and users that manage the given person's membership type
     except for the person's own user account.
@@ -125,6 +125,11 @@ class UserGeneratePasswordPermissionMixin(PermissionRequiredMixin):
     @classmethod
     def view_has_permission(cls, method: str, active_user, pk, **kwargs):
         """:meta private:"""
+
+        logged_in = super().view_has_permission(method, active_user, **kwargs)
+
+        if not logged_in:
+            return False
 
         person_pk = pk
 
