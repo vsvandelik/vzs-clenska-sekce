@@ -49,6 +49,7 @@ jestli jsou či nejsou přenášeny do výstupního souboru.
    :header-rows: 1
 
 .. _popis_nejcastejsich_chyb:
+
 ------------------------
 Popis nejčastějších chyb
 ------------------------
