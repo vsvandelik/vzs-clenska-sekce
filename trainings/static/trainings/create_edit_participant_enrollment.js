@@ -9,8 +9,11 @@ function stateChanged() {
     if(newValue === 'schvalen' || newValue === 'nahradnik')
         weekdaysSelectionElement.show()
 
-    else
+    else {
         weekdaysSelectionElement.hide()
+        const firstCheckbox = weekdaysSelectionElement[0].getElementsByTagName('input')[0]
+        firstCheckbox.checked = true
+    }
 
 }
 
