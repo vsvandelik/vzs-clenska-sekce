@@ -3,3 +3,10 @@
 {% block form_action %}{% url 'one_time_events:edit' event.id %}{% endblock %}
 {% block card_title %}Úprava{% endblock %}
 {% block savebtn_value %}Uložit{% endblock %}
+{% block notification %}
+    {% if not event.is_open %}
+        <div class="alert alert-danger">
+            Tato událost je již {{ event.get_state_display }}. Přidání nového data konání způsobí její otevření.
+        </div>
+    {% endif %}
+{% endblock %}

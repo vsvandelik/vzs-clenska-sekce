@@ -1,8 +1,9 @@
 from re import sub as regex_sub
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Fieldset, Layout, Submit, HTML
+from crispy_forms.layout import HTML, Div, Fieldset, Layout, Submit
 from django.forms import (
+    BooleanField,
     CharField,
     ChoiceField,
     DateField,
@@ -12,13 +13,13 @@ from django.forms import (
     ModelChoiceField,
     ModelForm,
     ValidationError,
-    BooleanField,
 )
 from django.utils.translation import gettext_lazy as _
 
 from features.models import Feature
 from one_time_events.models import OneTimeEvent
 from trainings.models import Training
+from users.models import User
 from vzs.forms import WithoutFormTagFormHelper
 from vzs.mixin_extensions import (
     RelatedAddMixin,
@@ -27,6 +28,7 @@ from vzs.mixin_extensions import (
 )
 from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
+
 from .models import Person, PersonHourlyRate
 
 
@@ -93,7 +95,7 @@ class PersonForm(ModelForm):
     def clean_birth_number(self):
         birth_number = self.cleaned_data["birth_number"]
 
-        if birth_number.isdigit() and len(birth_number) in {9, 10}:
+        if birth_number and birth_number.isdigit() and len(birth_number) in {9, 10}:
             birth_number = birth_number[:6] + "/" + birth_number[6:]
 
         persons_with_same_birth_number = Person.objects.filter(
@@ -145,6 +147,16 @@ class PersonForm(ModelForm):
             cleaned_data["person_type"] = self.person_type
 
         return cleaned_data
+
+    def save(self, commit=True):
+        person = super().save(commit=False)
+
+        if commit:
+            person.save()
+            if not User.objects.filter(person=person).exists():
+                User.objects.create_user(person)  # type: ignore
+
+        return person
 
 
 class MyProfileUpdateForm(PersonForm):

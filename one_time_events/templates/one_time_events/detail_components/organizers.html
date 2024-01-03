@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12">
     <div class="card">
         <div class="card-header d-flex align-items-center border-0">
@@ -24,11 +25,17 @@
 
             </div>
         </div>
-        <div class="card-footer text-center">
-            <a href="{% url 'one_time_events:bulk-delete-organizer' event.id %}" class="btn-danger btn mr-3">Odebrat
-                organizátora</a>
-            <a href="{% url 'one_time_events:bulk-add-organizer' event.id %}" class="btn-primary btn mr-3">Přidat nového
-                organizátora</a>
-        </div>
+        {% if event.is_open %}
+            <div class="card-footer text-center">
+                {% ifperm 'one_time_events:bulk-delete-organizer' event.id as perm %}
+                    <a href="{{ perm.url }}" class="btn-danger btn mr-3">Odebrat
+                        organizátora</a>
+                {% endifperm %}
+                {% ifperm 'one_time_events:bulk-add-organizer' event.id as perm %}
+                    <a href="{{ perm.url }}" class="btn-primary btn mr-3">Přidat nového
+                        organizátora</a>
+                {% endifperm %}
+            </div>
+        {% endif %}
     </div>
 </div>

@@ -103,7 +103,7 @@ def _user_can_manage_person(user, person_pk):
     )
 
 
-class UserCreateDeletePermissionMixin(PermissionRequiredMixin):
+class UserCreateDeletePasswordPermissionMixin(PermissionRequiredMixin):
     """
     Permits superusers and users that manage the given person's membership type.
     """
