@@ -305,6 +305,10 @@ class TrainingForm(
         return instance
 
     def _save_add_trainings(self, event, new_dates, commit=True):
+        if len(new_dates) > 0:
+            event.state = EventOrOccurrenceState.OPEN
+            if commit:
+                event.save()
         for datetime_start, datetime_end in new_dates:
             occurrence = TrainingOccurrence(
                 event=event,
