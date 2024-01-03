@@ -1,0 +1,21 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Nadcházející náhrady na tomto tréninku</div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for occurrence in upcoming_one_time_occurrences %}
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header border-0 mx-auto text-nowrap">
+                            <div class="card-title h5 text-bold text-center">{{ occurrence.datetime_start|date:"l" }}<br/>{{ occurrence.datetime_start|date:"j. n. y" }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="row ">
+            <p class="text-muted text-right d-block ml-auto p-0 m-0">Zobrazuje se maximálně 10 nadcházejících tréninků.</p>
+        </div>
+    </div>
+</div>

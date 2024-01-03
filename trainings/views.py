@@ -137,6 +137,18 @@ class TrainingDetailView(EventDetailBaseView):
             TrainingReplaceabilityForParticipants.objects.filter(training_1=self.object)
         )
 
+        upcoming_one_time_occurrences = []
+        if not self.object.enrolled_participants.filter(pk=active_person.pk).exists():
+            upcoming_one_time_occurrences = (
+                self.object.sorted_occurrences_list()
+                .filter(
+                    datetime_start__gte=now(),
+                    trainingparticipantattendance__person=active_person,
+                    trainingparticipantattendance__state=TrainingAttendance.PRESENT,
+                )
+                .all()
+            )
+
         kwargs.setdefault(
             "trainings_for_replacement", trainings_for_replacement_to_choose
         )
@@ -150,6 +162,9 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
         kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
         kwargs.setdefault("past_occurrences", past_occurrences)
+        kwargs.setdefault(
+            "upcoming_one_time_occurrences", upcoming_one_time_occurrences
+        )
 
         self._add_coaches_detail_kwargs(kwargs)
 
