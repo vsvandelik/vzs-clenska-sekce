@@ -9,8 +9,8 @@ Databázový model se nenachází na jenom místě, je rozdělen na části. Ka�
 
 Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující závislosti a propojení jednotlivých entit.
 
-.. image:: ../pic/model.png
-    :target: ../../../pic/model.png
+.. image:: ../_static/model.png
+    :target: ../_static/model.png
 
 
 ---------------------
