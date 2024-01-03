@@ -1,8 +1,9 @@
 from re import sub as regex_sub
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Fieldset, Layout, Submit, HTML
+from crispy_forms.layout import HTML, Div, Fieldset, Layout, Submit
 from django.forms import (
+    BooleanField,
     CharField,
     ChoiceField,
     DateField,
@@ -12,7 +13,6 @@ from django.forms import (
     ModelChoiceField,
     ModelForm,
     ValidationError,
-    BooleanField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -27,6 +27,7 @@ from vzs.mixin_extensions import (
 )
 from vzs.utils import today
 from vzs.widgets import DatePickerWithIcon
+
 from .models import Person, PersonHourlyRate
 
 
@@ -326,7 +327,7 @@ class PersonHourlyRateForm(Form):
             person=self.person_instance, event_type__in=types_to_remove
         ).delete()
 
-        return self.person_instance.hourly_rates
+        return self.person_instance
 
 
 class PersonStatsForm(ModelForm):
