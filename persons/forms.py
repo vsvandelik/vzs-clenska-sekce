@@ -338,7 +338,7 @@ class PersonHourlyRateForm(Form):
             person=self.person_instance, event_type__in=types_to_remove
         ).delete()
 
-        return self.person_instance.hourly_rates
+        return self.person_instance
 
 
 class PersonStatsForm(ModelForm):

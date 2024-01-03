@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 
 from events.models import Event
 from features.models import Feature, FeatureAssignment
-from persons.models import PersonHourlyRate, Person
+from persons.models import Person, PersonHourlyRate
 
 
 class PersonsFilter(TypedDict, total=False):
@@ -55,6 +55,11 @@ class PersonsFilter(TypedDict, total=False):
 
 
 def send_email_to_selected_persons(selected_persons):
+    """
+    Redirects to Gmail with the ``selected_persons``' emails
+    and emails of persons that manage the ``selected_persons`` set as recipients.
+    """
+
     recipients = []
     for person in selected_persons:
         if person.email is not None:
@@ -75,6 +80,13 @@ def send_email_to_selected_persons(selected_persons):
 
 
 def extend_kwargs_of_assignment_features(person, kwargs):
+    """
+    Extends the ``kwargs`` dictionary with the following keys:
+    *   ``qualifications`` - qualifications of the ``person``
+    *   ``permissions`` - permissions of the ``person``
+    *   ``equipments`` - equipments of the ``person``
+    """
+
     kwargs.setdefault(
         "qualifications",
         FeatureAssignment.objects.filter(
@@ -100,6 +112,13 @@ def extend_kwargs_of_assignment_features(person, kwargs):
 
 
 def anonymize_person(person):
+    """
+    Anonymizes ``person`` by clearing all data about the person
+    except settled transactions.
+
+    This does not delete the person.
+    """
+
     # Features
     FeatureAssignment.objects.filter(person=person).delete()
 
