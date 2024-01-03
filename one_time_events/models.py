@@ -55,6 +55,10 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    @property
+    def is_open(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
     def does_participant_satisfy_requirements(self, person):
         if not super().does_participant_satisfy_requirements(person):
             return False
@@ -177,7 +181,7 @@ class OneTimeEvent(Event):
             group=self.group,
             default_participation_fee=self.default_participation_fee,
             category=self.category,
-            state=self.state,
+            state=EventOrOccurrenceState.OPEN,
             training_category=self.training_category,
         )
         event.save()
@@ -270,7 +274,7 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
         else:
             salary = 0
 
-        return salary + wage_hour * hours
+        return {"sum": salary + wage_hour * hours, "person_rates": person_rates}
 
     @property
     def is_present(self):
@@ -403,7 +407,10 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def duplicate(self, event):
         occurrence = OneTimeEventOccurrence(
-            date=self.date, hours=self.hours, event=event, state=self.state
+            date=self.date,
+            hours=self.hours,
+            event=event,
+            state=EventOrOccurrenceState.OPEN,
         )
         occurrence.save()
         return occurrence
