@@ -21,6 +21,7 @@ Autoři & přispěvovatelé
    uživatelská/index.rst
    instalační/installation.rst
    team-work.rst
+   specification-status.rst
    support.rst
    contributors.rst
    future.rst
