@@ -123,9 +123,4 @@
 
 {% block scripts %}
     <script src="{% static 'one_time_events_occurrences/approve_occurrence.js' %}"></script>
-    <script src="{% static 'datatables.js' %}"></script>
-    <script>
-        simpleOrderableTableEnable('participants-table', [0])
-        {# TODO: make work simpleOrderableTableEnable('organizers-table', [0, 2])#}
-    </script>
 {% endblock %}

@@ -84,11 +84,3 @@
         </div>
     </div>
 {% endblock %}
-
-{% block scripts %}
-    <script src="{% static 'datatables.js' %}"></script>
-    <script>
-        simpleOrderableTableEnable('participants-table', [0])
-        simpleOrderableTableEnable('organizers-table', [0])
-    </script>
-{% endblock %}
