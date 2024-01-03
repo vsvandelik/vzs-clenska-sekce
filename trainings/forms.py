@@ -42,6 +42,7 @@ from vzs.utils import (
     send_notification_email,
     time_pretty,
     filter_queryset,
+    now,
 )
 from vzs.widgets import TimePickerWithIcon
 from .models import (
@@ -61,7 +62,8 @@ class CoachAssignmentUpdateAttendanceProvider:
     def coach_assignment_update_attendance(self, instance, event, occurrences=None):
         if occurrences is None:
             occurrences = event.eventoccurrence_set.filter(
-                state=EventOrOccurrenceState.OPEN
+                state=EventOrOccurrenceState.OPEN,
+                trainingoccurrence__datetime_start__gte=now(),
             )
 
         for occurrence in occurrences:
@@ -696,7 +698,10 @@ class CoachAssignmentDeleteForm(ModelForm):
         self._assignment_delete_send_mail(instance)
         if commit:
             CoachOccurrenceAssignment.objects.filter(
-                person=instance.person, occurrence__event=instance.training
+                person=instance.person,
+                occurrence__event=instance.training,
+                occurrence__datetime_start__gte=now(),
+                occurrence__state=EventOrOccurrenceState.OPEN,
             ).delete()
             instance.delete()
         return instance
