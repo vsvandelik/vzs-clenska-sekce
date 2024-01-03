@@ -25,9 +25,10 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
-from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
+from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
+
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
