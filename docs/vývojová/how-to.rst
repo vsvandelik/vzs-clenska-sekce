@@ -42,7 +42,7 @@ Nyní zbývá poslední krok a tím je spuštění JS. Při zobrazení modální
 
 Příklad:
 
-.. code-block:: console
+.. code-block:: javascript
 
     registerModal("unenroll-myself-participant-modal")
 
@@ -72,7 +72,7 @@ Pokud vytvoříme formulářové pole, které bude mít na výběr více polože
 
 Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutíme použití Select2.
 
-.. code-block:: console
+.. code-block:: python
 
     class GroupMembershipForm(ModelForm):
     class Meta:
@@ -90,7 +90,7 @@ Vlastní Django příkaz se vždy nachází uvnitř nějaké aplikace. Je vhodn�
 
 Soubory implementující příkazy musí vycházet z následující šablony. Při spuštění příkazu se spustí funkce handle.
 
-.. code-block:: console
+.. code-block:: python
 
     class Command(BaseCommand):
         help = "TODO: Write here useful help message"
@@ -112,7 +112,7 @@ Poté je potřeba se rozhodnout, zda chceme vytvořit template filter, template 
 
 Po implementaci, která může např vypadat takto
 
-.. code-block:: console
+.. code-block:: python
 
     @register.filter
     def addstr(arg1, arg2):
@@ -153,7 +153,7 @@ Příklad ``CRONJOBS``:
 
 Příklad ``features.cron.features_expiry_send_mails``
 
-.. code-block:: console
+.. code-block:: python
 
     def features_expiry_send_mails():
         call_command("send_feature_expiry_mail")

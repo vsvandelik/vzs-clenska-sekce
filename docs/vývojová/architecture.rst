@@ -28,7 +28,7 @@ Back-end se dělí na 12 Django aplikací.
 
 Po kliknutí na název aplikace se zobrazí detailnější popis vybrané aplikace.
 
-Každá z těchto aplikací řeší samostatný, dobře definovaný celek, který je patrný z názvu aplikace. Např. aplikace transactions sdružuje veškerou implementaci týkající se tranksakcí, které se mohou uvnitř :term:`IS` provádět. Aplikace mezi sebou komunikují a sdružují všechny URL cesty pod společný základ, např. všechny URL cesty aplikace trainings začínají ``udalost/treninky/``. Toto neplatí pouze pro aplikaci features, kde vlastnosti mohou být jedním ze tří druhů, proto aplikace využívá tři URL cesty ``kvalifikace/``, ``opravneni/``, ``vybaveni/``.
+Každá z těchto aplikací řeší samostatný, dobře definovaný celek, který je patrný z názvu aplikace. Např. aplikace transactions sdružuje veškerou implementaci týkající se tranksakcí, které se mohou uvnitř :term:`IS` provádět. Aplikace mezi sebou komunikují a většinou sdružují všechny URL cesty pod společný základ, např. všechny URL cesty aplikace trainings začínají ``treninky/``. Toto neplatí např. pro aplikaci features, kde vlastnosti mohou být jedním ze tří druhů, proto aplikace využívá tři URL cesty ``kvalifikace/``, ``opravneni/``, ``vybaveni/``.
 
 ---------------------
 Front-end

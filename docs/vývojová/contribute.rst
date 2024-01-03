@@ -22,7 +22,7 @@ Workflow
 
 5. Proveďte implementaci a průběžně provádějte commity.
 
-6. Před otevřením PR proveďte squash všech Vašich commitů do jednoho, můžete použít např. příkaz ``git rebase -i HEAD~n``, kde ``n`` je počet commitů, které chcete spojit do jednoho.
+6. Před otevřením PR proveďte spojení všech Vašich commitů do jednoho, můžete použít např. příkaz ``git rebase -i HEAD~n``, kde ``n`` je počet commitů, které chcete spojit do jednoho.
 
 7. Otevřte PR na GitHubu a počkejte na review.
 
