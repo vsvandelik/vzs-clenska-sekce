@@ -25,7 +25,7 @@ from persons.models import Person, get_active_user
 from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
-from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
+from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 
@@ -40,21 +40,16 @@ from .forms import (
     TransactionFilterForm,
 )
 from .models import BulkTransaction, Transaction
+from .permissions import (
+    TransactionDisableEditSettledPermissionMixin,
+    TransactionEditPermissionMixin,
+)
 from .utils import (
     TransactionInfo,
     export_debts_to_xml,
     export_rewards_to_csv,
     send_email_transaction,
 )
-
-
-class TransactionEditPermissionMixin(PermissionRequiredMixin):
-    """
-    Permits users with the ``users.transakce`` permission.
-    """
-
-    permissions_formula = [["transakce"]]
-    """:meta private:"""
 
 
 class TransactionCreateView(TransactionEditPermissionMixin, CreateView):
@@ -312,7 +307,9 @@ class TransactionEditMixin(TransactionEditPermissionMixin, UpdateView):
         return super().get_form()
 
 
-class TransactionEditFromPersonView(TransactionEditMixin):
+class TransactionEditFromPersonView(
+    TransactionDisableEditSettledPermissionMixin, TransactionEditMixin
+):
     """
     Edits a transaction.
 
@@ -330,7 +327,9 @@ class TransactionEditFromPersonView(TransactionEditMixin):
         return reverse("persons:transaction-list", kwargs={"pk": self.old_person.pk})
 
 
-class TransactionEditView(TransactionEditMixin):
+class TransactionEditView(
+    TransactionDisableEditSettledPermissionMixin, TransactionEditMixin
+):
     """
     Edits a transaction.
 

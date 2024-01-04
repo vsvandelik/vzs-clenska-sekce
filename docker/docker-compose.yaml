@@ -27,8 +27,11 @@ services:
       - db
 
   db:
-    container_name: postgres
-    image: postgres:15
+    build:
+      dockerfile: ./Dockerfile-postgres
+      context: .
+    image: postgres-cz
+    container_name: postgres-cz
     restart: unless-stopped
     env_file: ./.env_psql
     volumes:
