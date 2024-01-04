@@ -2,6 +2,5 @@
 .github
 .idea
 __pycache__
-data
 node_modules
 db.sqlite3
