@@ -261,10 +261,8 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
     state = models.CharField(max_length=8, choices=OneTimeEventAttendance.choices)
 
     def receive_amount(self):
-        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
-
         if self.transaction is not None:
-            return {"sum": self.transaction.amount, "person_rates": person_rates}
+            return self.transaction.amount
 
         hours = self.occurrence.hours
         wage_hour = self.position_assignment.position.wage_hour
@@ -276,7 +274,14 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
         else:
             salary = 0
 
-        return {"sum": salary + wage_hour * hours, "person_rates": person_rates}
+        return salary + wage_hour * hours
+
+    def has_rate(self):
+        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
+        category = self.occurrence.event.category
+        if category in person_rates:
+            return True
+        return False
 
     @property
     def is_present(self):
