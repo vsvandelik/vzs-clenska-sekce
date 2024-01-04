@@ -15,6 +15,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install -r requirements_prod.txt
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN mkdir -p /var/log/gunicorn
 
 EXPOSE 8080
