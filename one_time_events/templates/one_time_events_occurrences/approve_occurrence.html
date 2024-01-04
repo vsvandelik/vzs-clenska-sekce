@@ -103,15 +103,17 @@
 
                                     </td>
                                 </tr>
-                                {% if not organizer_amount.person_rates %}
-                                    <tr>
-                                        <td colspan="3" class="text-center border-top-0 p-0">
-                                            <div class="alert alert-warning">
-                                                Organizátor nemá nastavenou hodinovou sazbu pro tento typ akce.
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                {% with rate=organizer_amount.person_rates|index_safe:event.category %}
+                                    {% if rate is None %}
+                                        <tr>
+                                            <td colspan="3" class="text-center border-top-0 p-0">
+                                                <div class="alert alert-warning">
+                                                    Organizátor nemá nastavenou hodinovou sazbu pro tento typ akce.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endwith %}
                             {% endwith %}
                         {% endfor %}
                     </tbody>
