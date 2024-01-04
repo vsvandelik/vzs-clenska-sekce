@@ -95,25 +95,24 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <input id="{{ organizer_assignment.id }}_organizer_amount" name="{{ organizer_assignment.id }}_organizer_amount"
+                                        <input id="{{ organizer_assignment.id }}_organizer_amount"
+                                               name="{{ organizer_assignment.id }}_organizer_amount"
                                                class="form-control"
-                                               type="number" value="{{ organizer_amount.sum }}" min="0"
+                                               type="number" value="{{ organizer_amount }}" min="0"
                                                {% if organizer_assignment.transaction is not None and organizer_assignment.transaction.is_settled %}disabled{% endif %}
                                         >
 
                                     </td>
                                 </tr>
-                                {% with rate=organizer_amount.person_rates|index_safe:event.category %}
-                                    {% if rate is None %}
-                                        <tr>
-                                            <td colspan="3" class="text-center border-top-0 p-0">
-                                                <div class="alert alert-warning">
-                                                    Organizátor nemá nastavenou hodinovou sazbu pro tento typ akce.
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endwith %}
+                                {% if not organizer_assignment.has_rate %}
+                                    <tr>
+                                        <td colspan="3" class="text-center border-top-0 p-0">
+                                            <div class="alert alert-warning">
+                                                Organizátor nemá nastavenou hodinovou sazbu pro tento typ akce.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endwith %}
                         {% endfor %}
                     </tbody>
