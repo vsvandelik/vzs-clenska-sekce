@@ -10,4 +10,5 @@ Tato stránka slouží jako rozcestník uživatelské dokumentace.
 
    use-cases.rst
    export-for-accountant.rst
+   email-notifications.rst
    data-conversion.rst
