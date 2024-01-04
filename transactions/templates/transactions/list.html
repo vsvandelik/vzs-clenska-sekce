@@ -12,7 +12,7 @@
         </div>
     {% endifperm %}
 
-    {% include "transactions/list_parts/list.html" with edit=True%}
+    {% include "transactions/list_parts/list.html" %}
 
     {% include "modal_include.html" with id="delete-transaction-modal" %}
 {% endblock %}

@@ -54,7 +54,9 @@
                                             <td>{{ transaction.date_due }}</td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <a class="btn btn-success btn-sm" href="{% url "transactions:edit" transaction.pk %}"><i class="fas fa-pen"></i></a>
+                                                    {% ifperm "transactions:edit" transaction.pk as perm %}
+                                                        <a class="btn btn-success btn-sm" href="{{ perm.url }}"><i class="fas fa-pen"></i></a>
+                                                    {% endifperm %}
                                                     {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
                                                 </div>
                                             </td>
