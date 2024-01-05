@@ -35,12 +35,27 @@ from .permissions import (
 
 
 class EventMixin:
+    """
+    Base mixin for views that operate on the :class:`Event` model.
+
+    Also sets the ``context_object_name`` to ``event``.
+    """
+
     context_object_name = "event"
+    """:meta private:"""
+
     model = Event
+    """:meta private:"""
 
 
 class RedirectToEventDetailMixin:
+    """
+    Base mixin for views that redirect to the detail view of an event.
+    """
+
     def get_redirect_viewname_id(self):
+        """:meta private:"""
+
         if "event_id" in self.kwargs:
             id = self.kwargs["event_id"]
         elif "occurrence_id" in self.kwargs:
@@ -70,12 +85,16 @@ class RedirectToEventDetailMixin:
 
 class RedirectToEventDetailOnSuccessMixin(RedirectToEventDetailMixin):
     def get_success_url(self):
+        """:meta private:"""
+
         viewname, id = super().get_redirect_viewname_id()
         return reverse(viewname, args=[id])
 
 
 class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
     def form_invalid(self, form):
+        """:meta private:"""
+
         super().form_invalid(form)
         viewname, id = super().get_redirect_viewname_id()
         return redirect(viewname, pk=id)
@@ -83,6 +102,8 @@ class RedirectToEventDetailOnFailureMixin(RedirectToEventDetailMixin):
 
 class RedirectToOccurrenceFallbackEventDetailMixin:
     def get_redirect_viewname_id(self):
+        """:meta private:"""
+
         if "occurrence_id" in self.kwargs:
             id = EventOccurrence.objects.get(pk=self.kwargs["occurrence_id"]).id
         elif hasattr(self, "object") and (
@@ -118,6 +139,8 @@ class RedirectToOccurrenceFallbackEventDetailOnSuccessMixin(
     RedirectToOccurrenceFallbackEventDetailMixin
 ):
     def get_success_url(self):
+        """:meta private:"""
+
         viewname, *params = super().get_redirect_viewname_id()
         return reverse(viewname, args=params)
 
@@ -126,6 +149,8 @@ class RedirectToOccurrenceFallbackEventDetailOnFailureMixin(
     RedirectToOccurrenceFallbackEventDetailMixin
 ):
     def form_invalid(self, form):
+        """:meta private:"""
+
         super().form_invalid(form)
         viewname, *params = super().get_redirect_viewname_id()
         return HttpResponseRedirect(reverse(viewname, args=params))
@@ -133,16 +158,22 @@ class RedirectToOccurrenceFallbackEventDetailOnFailureMixin(
 
 class InsertEventIntoSelfObjectMixin:
     event_id_key = "event_id"
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.event = get_object_or_404(Event, pk=self.kwargs[self.event_id_key])
         return super().dispatch(request, *args, **kwargs)
 
 
 class InsertOccurrenceIntoSelfObjectMixin:
     occurrence_id_key = "occurrence_id"
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.occurrence = get_object_or_404(
             EventOccurrence, pk=self.kwargs[self.occurrence_id_key]
         )
@@ -151,6 +182,8 @@ class InsertOccurrenceIntoSelfObjectMixin:
 
 class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.event
         return kwargs
@@ -158,6 +191,10 @@ class InsertEventIntoModelFormKwargsMixin(InsertEventIntoSelfObjectMixin):
 
 class InsertOccurrenceIntoModelFormKwargsMixin(InsertOccurrenceIntoSelfObjectMixin):
     def get_form_kwargs(self):
+        """:meta private:"""
+
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["occurrence"] = self.occurrence
         return kwargs
@@ -178,8 +215,11 @@ class InsertOccurrenceIntoContextData(InsertOccurrenceIntoSelfObjectMixin):
 
 class InsertPositionAssignmentIntoSelfObject:
     position_assignment_id_key = "position_assignment_id"
+    """:meta private:"""
 
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.position_assignment = get_object_or_404(
             EventPositionAssignment, pk=self.kwargs[self.position_assignment_id_key]
         )
@@ -190,6 +230,8 @@ class InsertPositionAssignmentIntoModelFormKwargs(
     InsertPositionAssignmentIntoSelfObject
 ):
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["position_assignment"] = self.position_assignment
         return kwargs
@@ -197,6 +239,7 @@ class InsertPositionAssignmentIntoModelFormKwargs(
 
 class EventRestrictionMixin(RedirectToEventDetailOnSuccessMixin):
     model = Event
+    """:meta private:"""
 
 
 class EventCreateUpdateMixin(
@@ -207,20 +250,26 @@ class EventCreateUpdateMixin(
 
 class EventCreateMixin(EventCreatePermissionMixin, EventCreateUpdateMixin, CreateView):
     success_message = "Událost %(name)s úspěšně přidána."
+    """:meta private:"""
 
 
 class EventUpdateMixin(EventManagePermissionMixin, EventCreateUpdateMixin, UpdateView):
     success_message = "Událost %(name)s úspěšně upravena."
+    """:meta private:"""
 
 
 class EventGeneratesDatesMixin:
     def get_context_data(self, **kwargs):
+        """:meta private:"""
+
         kwargs.setdefault("dates", self.get_form().generate_dates())
         return super().get_context_data(**kwargs)
 
 
 class PersonTypeInsertIntoContextDataMixin:
     def get_context_data(self, **kwargs):
+        """:meta private:"""
+
         kwargs.setdefault("available_person_types", Person.Type.valid_choices())
         kwargs.setdefault(
             "person_types_required",
@@ -258,8 +307,11 @@ class EventDetailBaseView(
 
 class EventAdminListMixin(PermissionRequiredMixin, ListView):
     permissions_formula = [[]]  # TODO: permissions
+    """:meta private:"""
 
     def __init__(self, **kwargs):
+        """:meta private:"""
+
         super().__init__(**kwargs)
         self.filter_form = None
 
@@ -282,8 +334,11 @@ class EventDeleteView(
     EventManagePermissionMixin, EventMixin, MessagesMixin, DeleteView
 ):
     template_name = "events/modals/delete.html"
+    """:meta private:"""
 
     def get_success_url(self):
+        """:meta private:"""
+
         one_time_events_index = reverse("one_time_events:index")
         trainings_index = reverse("trainings:index")
         admin_one_time_events_index = reverse("one_time_events:list-admin")
@@ -307,6 +362,8 @@ class EventDeleteView(
         return coming_from_uri
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return f"Událost {self.object.name} úspěšně smazána"
 
 
@@ -314,12 +371,18 @@ class EventPositionAssignmentMixin(
     EventManagePermissionMixin, MessagesMixin, RedirectToEventDetailOnSuccessMixin
 ):
     context_object_name = "position_assignment"
+    """:meta private:"""
+
     event_id_key = "event_id"
+    """:meta private:"""
+
     model = EventPositionAssignment
+    """:meta private:"""
 
 
 class EventPositionAssignmentCreateUpdateMixin(EventPositionAssignmentMixin):
     form_class = EventPositionAssignmentForm
+    """:meta private:"""
 
 
 class EventPositionAssignmentCreateView(
@@ -328,16 +391,24 @@ class EventPositionAssignmentCreateView(
     CreateView,
 ):
     success_message = "Organizátorská pozice %(position)s přidána"
+    """:meta private:"""
+
     template_name = "events/create_event_position_assignment.html"
+    """:meta private:"""
 
 
 class EventPositionAssignmentUpdateView(
     EventPositionAssignmentCreateUpdateMixin, UpdateView
 ):
     success_message = "Organizátorská pozice %(position)s upravena"
+    """:meta private:"""
+
     template_name = "events/edit_event_position_assignment.html"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.object.event
         kwargs["position"] = self.object.position
@@ -346,8 +417,11 @@ class EventPositionAssignmentUpdateView(
 
 class EventPositionAssignmentDeleteView(EventPositionAssignmentMixin, DeleteView):
     template_name = "events/modals/delete_event_position_assignment.html"
+    """:meta private:"""
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return f"Organizátorská pozice {self.object.position} smazána"
 
 
@@ -355,16 +429,26 @@ class EditAgeLimitView(
     EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, UpdateView
 ):
     form_class = EventAgeLimitForm
+    """:meta private:"""
+
     success_message = "Změna věkového omezení uložena"
+    """:meta private:"""
+
     template_name = "events/edit_age_limit.html"
+    """:meta private:"""
 
 
 class EditGroupMembershipView(
     EventManagePermissionMixin, MessagesMixin, EventRestrictionMixin, UpdateView
 ):
     form_class = EventGroupMembershipForm
+    """:meta private:"""
+
     success_message = "Změna vyžadování skupiny uložena"
+    """:meta private:"""
+
     template_name = "events/edit_group_membership.html"
+    """:meta private:"""
 
 
 class AddRemoveAllowedPersonTypeView(
@@ -375,11 +459,20 @@ class AddRemoveAllowedPersonTypeView(
     UpdateView,
 ):
     event_id_key = "pk"
+    """:meta private:"""
+
     form_class = EventAllowedPersonTypeForm
+    """:meta private:"""
+
     model = Event
+    """:meta private:"""
+
     success_message = "Změna omezení na typ členství uložena"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.event
         return kwargs
@@ -387,6 +480,7 @@ class AddRemoveAllowedPersonTypeView(
 
 class ParticipantEnrollmentMixin(RedirectToEventDetailOnSuccessMixin, MessagesMixin):
     context_object_name = "enrollment"
+    """:meta private:"""
 
 
 class ParticipantEnrollmentCreateMixin(
@@ -397,6 +491,7 @@ class ParticipantEnrollmentCreateMixin(
     CreateView,
 ):
     success_message = "Přihlášení nového účastníka proběhlo úspěšně"
+    """:meta private:"""
 
 
 class ParticipantEnrollmentUpdateMixin(
@@ -404,14 +499,19 @@ class ParticipantEnrollmentUpdateMixin(
     UpdateView,
 ):
     success_message = "Změna přihlášky proběhla úspěšně"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.object.event
         kwargs["person"] = self.object.person
         return kwargs
 
     def get_context_data(self, **kwargs):
+        """:meta private:"""
+
         kwargs.setdefault("event", self.object.event)
         return super().get_context_data(**kwargs)
 
@@ -420,9 +520,14 @@ class ParticipantEnrollmentDeleteMixin(
     EventManagePermissionMixin, ParticipantEnrollmentMixin, DeleteView
 ):
     event_id_key = "event_id"
+    """:meta private:"""
+
     model = ParticipantEnrollment
+    """:meta private:"""
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return f"Přihláška osoby {self.object.person} smazána"
 
 
@@ -446,11 +551,20 @@ class UnenrollMyselfParticipantView(
     DeleteView,
 ):
     context_object_name = "enrollment"
+    """:meta private:"""
+
     model = ParticipantEnrollment
+    """:meta private:"""
+
     success_message = "Odhlášení z události proběhlo úspěšně"
+    """:meta private:"""
+
     template_name = "events/modals/unenroll_myself_participant.html"
+    """:meta private:"""
 
     def form_valid(self, form):
+        """:meta private:"""
+
         enrollment = self.object
         send_notification_email(
             _("Odhlášení z události"),
@@ -470,10 +584,17 @@ class BulkApproveParticipantsMixin(
     UpdateView,
 ):
     event_id_key = "pk"
+    """:meta private:"""
+
     model = Event
+    """:meta private:"""
+
     success_message = "Počet schválených přihlášek: %(count)s"
+    """:meta private:"""
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["instance"] = self.event
         return kwargs
@@ -499,6 +620,8 @@ class GetOccurrenceProvider:
 
 class OccurrenceRestrictionMixin(GetOccurrenceProvider):
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         occurrence = super().get_occurrence(*args, **kwargs)
         if occurrence is None:
             raise Http404("Tato stránka není dostupná")
@@ -507,6 +630,8 @@ class OccurrenceRestrictionMixin(GetOccurrenceProvider):
 
 class EventOccurrenceIdCheckMixin(GetOccurrenceProvider):
     def dispatch(self, request, *args, **kwargs):
+        """:meta private:"""
+
         occurrence = super().get_occurrence(*args, **kwargs)
         if occurrence.event.id != kwargs["event_id"]:
             raise Http404("Tato stránka není dostupná")
@@ -521,23 +646,29 @@ class OccurrenceDetailBaseView(
     DetailView,
 ):
     occurrence_id_key = "pk"
+    """:meta private:"""
 
 
 class OccurrenceOpenRestrictionMixin(OccurrenceRestrictionMixin):
     occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.OPEN)
+    """:meta private:"""
 
 
 class OccurrenceNotOpenedRestrictionMixin(OccurrenceRestrictionMixin):
     occurrence_q_condition_restriction = ~Q(state=EventOrOccurrenceState.OPEN)
+    """:meta private:"""
 
 
 class OccurrenceIsClosedRestrictionMixin(OccurrenceRestrictionMixin):
     occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.CLOSED)
+    """:meta private:"""
 
 
 class OccurrenceIsApprovedRestrictionMixin(OccurrenceRestrictionMixin):
     occurrence_q_condition_restriction = Q(state=EventOrOccurrenceState.COMPLETED)
+    """:meta private:"""
 
 
 class OccurrenceNotApprovedRestrictionMixin(OccurrenceRestrictionMixin):
     occurrence_q_condition_restriction = ~Q(state=EventOrOccurrenceState.COMPLETED)
+    """:meta private:"""
