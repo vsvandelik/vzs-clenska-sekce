@@ -4,15 +4,16 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment, EventOrOccurrenceState
+from events.models import EventOrOccurrenceState, ParticipantEnrollment
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     OccurrenceUnenrollOrganizerPermissionMixin,
 )
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
+    EventAdminListMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
@@ -40,7 +41,6 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
-    EventAdminListMixin,
 )
 from persons.models import Person, get_active_user
 from users.permissions import LoginRequiredMixin
@@ -65,12 +65,12 @@ from .forms import (
     OneTimeEventFillAttendanceForm,
     OneTimeEventForm,
     OneTimeEventParticipantEnrollmentForm,
+    OneTimeEventsFilterForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
-    OneTimeEventsFilterForm,
 )
 from .models import (
     OneTimeEvent,
@@ -81,7 +81,7 @@ from .models import (
 )
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     OneTimeEventCreatePermissionMixin,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
@@ -323,7 +323,7 @@ class OneTimeEventEnrollMyselfParticipantView(
 
 
 class OrganizerForOccurrenceMixin(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     RedirectToEventDetailOnSuccessMixin,
     MessagesMixin,
 ):
@@ -572,7 +572,7 @@ class OneTimeEventFillAttendanceView(
 
 
 class ApproveOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     MessagesMixin,
     OneTimeEventFillAttendanceInsertAssignmentsIntoContextData,
     EventOccurrenceIdCheckMixin,
@@ -594,7 +594,7 @@ class ApproveOccurrenceView(
 
 
 class ReopenOneTimeEventOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     MessagesMixin,
     OccurrenceIsClosedRestrictionMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
@@ -611,7 +611,7 @@ class ReopenOneTimeEventOccurrenceView(
 
 
 class CancelOccurrenceApprovementView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     MessagesMixin,
     OccurrenceIsApprovedRestrictionMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
@@ -682,7 +682,7 @@ class OneTimeEventExportOrganizersView(
 
 
 class OneTimeEventExportOrganizersOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoSelfObjectMixin,
     generic.View,

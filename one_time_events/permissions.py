@@ -1,7 +1,7 @@
 from events.permissions import (
     EventCreatePermissionMixin,
     EventInteractPermissionMixin,
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
 )
 from one_time_events.models import OneTimeEvent
 
@@ -28,13 +28,13 @@ class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixin)
         return event.can_unenroll_organizer(active_user.person)
 
 
-class OccurrenceFillAttendancePermissionMixin(OccurrenceManagePermissionMixin2):
+class OccurrenceFillAttendancePermissionMixin(OccurrenceManagePermissionMixinPK):
     @classmethod
     def permission_predicate(cls, occurrence, active_user):
         return occurrence.can_user_fill_attendance(active_user)
 
 
-class OccurrenceDetailPermissionMixin(OccurrenceManagePermissionMixin2):
+class OccurrenceDetailPermissionMixin(OccurrenceManagePermissionMixinPK):
     @classmethod
     def permission_predicate(cls, occurrence, active_user):
         return occurrence.can_user_manage(
