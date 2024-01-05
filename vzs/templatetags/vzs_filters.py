@@ -246,7 +246,11 @@ class _PermURLNode(URLNode):
         match = resolve(url)
 
         permitted = match.func.view_class.view_has_permission_person(
-            context["active_person"], **match.kwargs
+            "GET",
+            context["active_person"],
+            **match.kwargs,
+            GET={},
+            POST={},
         )
 
         context[self.asvar] = _PermURLContextVariable(url, permitted)

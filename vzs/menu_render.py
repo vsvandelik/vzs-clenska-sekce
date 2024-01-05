@@ -1,4 +1,4 @@
-from django.urls import reverse, resolve
+from django.urls import resolve, reverse
 from django.utils.encoding import escape_uri_path
 
 
@@ -127,7 +127,7 @@ class MenuItem:
         match = resolve(reverse_link)
 
         return match.func.view_class.view_has_permission_person(
-            context["active_person"], **match.kwargs
+            "GET", context["active_person"], GET={}, POST={}, **match.kwargs
         )
 
     @staticmethod

@@ -1,4 +1,13 @@
-from events.permissions import OccurrencePermissionMixin
+from events.permissions import EventCreatePermissionMixin, OccurrencePermissionMixin
+from trainings.models import Training
+
+
+class TrainingCreatePermissionMixin(EventCreatePermissionMixin):
+    permissions_formula_GET = [
+        [Training.Category.CLIMBING],
+        [Training.Category.MEDICAL],
+        [Training.Category.SWIMMING],
+    ]
 
 
 class OccurrenceExcuseMyselfOrganizerPermissionMixin(OccurrencePermissionMixin):

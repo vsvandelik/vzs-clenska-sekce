@@ -20,6 +20,7 @@ from events.permissions import (
 from events.views import (
     BulkApproveParticipantsMixin,
     EnrollMyselfParticipantMixin,
+    EventAdminListMixin,
     EventCreateMixin,
     EventDetailBaseView,
     EventGeneratesDatesMixin,
@@ -27,8 +28,10 @@ from events.views import (
     EventUpdateMixin,
     InsertEventIntoContextData,
     InsertEventIntoModelFormKwargsMixin,
+    InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoContextData,
     InsertOccurrenceIntoModelFormKwargsMixin,
+    InsertOccurrenceIntoSelfObjectMixin,
     InsertPositionAssignmentIntoModelFormKwargs,
     OccurrenceDetailBaseView,
     OccurrenceNotOpenedRestrictionMixin,
@@ -40,9 +43,6 @@ from events.views import (
     RedirectToEventDetailOnSuccessMixin,
     RedirectToOccurrenceFallbackEventDetailOnFailureMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
-    InsertEventIntoSelfObjectMixin,
-    InsertOccurrenceIntoSelfObjectMixin,
-    EventAdminListMixin,
 )
 from one_time_events.permissions import OccurrenceFillAttendancePermissionMixin
 from persons.models import Person, get_active_user
@@ -51,6 +51,7 @@ from trainings.permissions import (
     OccurrenceExcuseMyselfOrganizerPermissionMixin,
     OccurrenceExcuseMyselfParticipantPermissionMixin,
     OccurrenceUnenrollMyselfParticipantPermissionMixin,
+    TrainingCreatePermissionMixin,
 )
 from users.permissions import LoginRequiredMixin
 from vzs.mixin_extensions import (
@@ -59,7 +60,8 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.settings import PARTICIPANT_ENROLL_DEADLINE_DAYS
-from vzs.utils import send_notification_email, date_pretty, export_queryset_csv, now
+from vzs.utils import date_pretty, export_queryset_csv, now, send_notification_email
+
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -80,19 +82,19 @@ from .forms import (
     TrainingParticipantAttendanceForm,
     TrainingParticipantEnrollmentForm,
     TrainingReplaceableForm,
+    TrainingsFilterForm,
     TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
     TrainingUnenrollMyselfParticipantFromOccurrenceForm,
-    TrainingsFilterForm,
 )
 from .models import (
     CoachOccurrenceAssignment,
     CoachPositionAssignment,
     Training,
+    TrainingAttendance,
     TrainingOccurrence,
     TrainingParticipantAttendance,
     TrainingParticipantEnrollment,
     TrainingReplaceabilityForParticipants,
-    TrainingAttendance,
 )
 
 
@@ -137,6 +139,18 @@ class TrainingDetailView(EventDetailBaseView):
             TrainingReplaceabilityForParticipants.objects.filter(training_1=self.object)
         )
 
+        upcoming_one_time_occurrences = []
+        if not self.object.enrolled_participants.filter(pk=active_person.pk).exists():
+            upcoming_one_time_occurrences = (
+                self.object.sorted_occurrences_list()
+                .filter(
+                    datetime_start__gte=now(),
+                    trainingparticipantattendance__person=active_person,
+                    trainingparticipantattendance__state=TrainingAttendance.PRESENT,
+                )
+                .all()
+            )
+
         kwargs.setdefault(
             "trainings_for_replacement", trainings_for_replacement_to_choose
         )
@@ -150,6 +164,9 @@ class TrainingDetailView(EventDetailBaseView):
         kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
         kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
         kwargs.setdefault("past_occurrences", past_occurrences)
+        kwargs.setdefault(
+            "upcoming_one_time_occurrences", upcoming_one_time_occurrences
+        )
 
         self._add_coaches_detail_kwargs(kwargs)
 
@@ -264,14 +281,18 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
                 datetime_start__gte=date_start, event__in=replaceable_trainings
             )
             .exclude(participants=active_person)
-            .order_by("datetime_start")[:10]
+            .order_by("datetime_start")
         )
+
+        available_replaceable_occurrences = [
+            o for o in replaceable_occurrences if o.has_free_participant_spot()
+        ][:10]
 
         kwargs.setdefault(
             "participant_count_of_trainings_to_replace", count_of_trainings_to_replace
         )
         kwargs.setdefault(
-            "participant_replaceable_occurrences", replaceable_occurrences
+            "participant_replaceable_occurrences", available_replaceable_occurrences
         )
 
 
@@ -295,7 +316,9 @@ class TrainingAdminListView(EventAdminListMixin):
         return Training.objects.filter(pk__in=visible_trainings_ids)
 
 
-class TrainingCreateView(EventGeneratesDatesMixin, EventCreateMixin):
+class TrainingCreateView(
+    TrainingCreatePermissionMixin, EventGeneratesDatesMixin, EventCreateMixin
+):
     template_name = "trainings/create.html"
     form_class = TrainingForm
 

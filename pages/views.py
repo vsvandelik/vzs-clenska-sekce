@@ -6,13 +6,13 @@ from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView
 
-from features.models import FeatureAssignment, Feature
+from features.models import Feature, FeatureAssignment
 from one_time_events.models import OneTimeEvent
 from pages.forms import PageEditForm
 from pages.models import Page
 from trainings.models import TrainingOccurrence
 from transactions.models import Transaction
-from users.permissions import PermissionRequiredMixin, LoginRequiredMixin
+from users.permissions import LoginRequiredMixin, PermissionRequiredMixin
 from vzs.utils import today
 
 

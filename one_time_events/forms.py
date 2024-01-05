@@ -185,10 +185,13 @@ class OneTimeEventForm(
                     if child.hours != occurrence[1]:
                         child.hours = occurrence[1]
                         child.save()
-                    self.cleaned_data["occurrences"].remove(occurrence)
+                    occurrences.remove(occurrence)
                 else:
                     child.delete()
 
+            if len(occurrences) > 0:
+                instance.state = EventOrOccurrenceState.OPEN
+                instance.save()
             for date, hours in occurrences:
                 occurrence_obj = OneTimeEventOccurrence(
                     event=instance,

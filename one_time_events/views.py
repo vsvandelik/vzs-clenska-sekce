@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
-from events.models import ParticipantEnrollment
+from events.models import ParticipantEnrollment, EventOrOccurrenceState
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
     OccurrenceManagePermissionMixin,
@@ -51,6 +51,7 @@ from vzs.mixin_extensions import (
 )
 from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import date_pretty, export_queryset_csv, send_notification_email, today
+
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -81,6 +82,7 @@ from .models import (
 from .permissions import (
     OccurrenceFillAttendancePermissionMixin,
     OccurrenceManagePermissionMixin2,
+    OneTimeEventCreatePermissionMixin,
     OneTimeEventEnrollOrganizerPermissionMixin,
     OneTimeEventUnenrollOrganizerPermissionMixin,
 )
@@ -203,6 +205,13 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         available_events = OneTimeEvent.get_available_events_by_participant(
             active_person
         )
+        for event in available_events:
+            event.active_person_can_enroll = event.can_person_enroll_as_participant(
+                active_person
+            )
+            event.active_person_can_enroll_as_waiting = (
+                event.can_person_enroll_as_waiting(active_person)
+            )
 
         kwargs.setdefault("upcoming_events_participant", enrolled_events)
         kwargs.setdefault("available_events_participant", available_events)
@@ -236,7 +245,10 @@ class OneTimeEventAdminListView(EventAdminListMixin):
 
 
 class OneTimeEventCreateView(
-    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventCreateMixin
+    OneTimeEventCreatePermissionMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventCreateMixin,
 ):
     template_name = "one_time_events/create.html"
     form_class = OneTimeEventForm
@@ -400,7 +412,9 @@ class BulkDeleteOrganizerFromOneTimeEventView(
         event = self.event
 
         OrganizerOccurrenceAssignment.objects.filter(
-            person=person, occurrence__event=event
+            person=person,
+            occurrence__event=event,
+            occurrence__state=EventOrOccurrenceState.OPEN,
         ).delete()
 
         send_notification_email(

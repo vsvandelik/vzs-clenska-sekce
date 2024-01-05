@@ -1,8 +1,4 @@
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin as DjangoPermissionRequiredMixin,
-)
-
-from persons.models import get_active_user
+from users.permissions import LoginRequiredMixin
 from users.views import PermissionRequiredMixin
 
 from .models import (
@@ -14,17 +10,20 @@ from .models import (
 )
 
 
-class EventCreatePermissionMixin(DjangoPermissionRequiredMixin):
-    def has_permission(self):
-        request = self.request
+class EventCreatePermissionMixin(PermissionRequiredMixin):
+    @classmethod
+    def view_has_permission_POST(cls, active_user, POST, **kwargs):
+        return active_user.has_perm(POST["category"])
 
-        if request.method != "POST":
-            return True
+    @classmethod
+    def view_has_permission(cls, method: str, active_user, **kwargs):
+        if method == "POST":
+            return cls.view_has_permission_POST(active_user, **kwargs)
 
-        return get_active_user(request.active_person).has_perm(request.POST["category"])
+        return super().view_has_permission(method, active_user, **kwargs)
 
 
-class ObjectPermissionMixin(PermissionRequiredMixin):
+class ObjectPermissionMixin(LoginRequiredMixin):
     @classmethod
     def get_path_parameter_mapping(cls):
         raise NotImplementedError
@@ -34,7 +33,12 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
         raise NotImplementedError
 
     @classmethod
-    def view_has_permission(cls, active_user, **kwargs):
+    def view_has_permission(cls, method: str, active_user, **kwargs):
+        logged_in = super().view_has_permission(method, active_user, **kwargs)
+
+        if not logged_in:
+            return False
+
         instances = {
             instance_name: model_class.objects.filter(
                 pk=kwargs[path_parameter_name]
@@ -44,6 +48,10 @@ class ObjectPermissionMixin(PermissionRequiredMixin):
                 instance_name,
             ) in cls.get_path_parameter_mapping().items()
         }
+
+        # permit for non-existent instances, so we can return 404 on the actual request
+        if any(instance is None for instance in instances.values()):
+            return True
 
         return cls.permission_predicate(active_user=active_user, **instances)
 

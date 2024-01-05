@@ -1,11 +1,29 @@
-<a
-    href="#"
-    data-toggle="modal"
-    data-target="#{{ id }}"
-    {% if pattern %}
-        data-action="{% url pattern object.pk %}"
-    {% endif %}
-    class="btn btn-danger {% block classes %}{% endblock %}"
->
-    {% block body %}{% endblock %}
+{% load vzs_filters %}
+{% load repeatedblocks %}
+
+{% if pattern %}
+    {% ifperm pattern object.pk as perm %}
+        <a
+            href="#"
+            data-toggle="modal"
+            data-target="#{{ id }}"
+            data-action="{{ perm.url }}"
+            class="btn btn-danger {% repeated_block classes %}{% endblock %}"
+    >
+        {% repeated_block body %}{% endblock %}
 </a>
+
+{% endifperm %}
+{% else %}
+
+    <a
+        href="#"
+        data-toggle="modal"
+        data-target="#{{ id }}"
+        class="btn btn-danger {% repeat classes %}"
+    >
+        {% repeat body %}
+    </a>
+
+{% endif %}
+

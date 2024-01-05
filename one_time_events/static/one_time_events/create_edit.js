@@ -55,6 +55,7 @@ function validateDate(report = false) {
     if (span < 0 || isNaN(span)) {
         window._datesValid = false
         setReportValidity(timeEndEl, 'Konec události nesmí být dříve než její začátek', report)
+        $('#single-hour-count-div').hide()
         return false
     } else {
         window._datesValid = true

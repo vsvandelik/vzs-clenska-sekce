@@ -55,6 +55,10 @@ class OneTimeEvent(Event):
 
     state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
+    @property
+    def is_open(self):
+        return self.state == EventOrOccurrenceState.OPEN
+
     def does_participant_satisfy_requirements(self, person):
         if not super().does_participant_satisfy_requirements(person):
             return False
@@ -177,7 +181,7 @@ class OneTimeEvent(Event):
             group=self.group,
             default_participation_fee=self.default_participation_fee,
             category=self.category,
-            state=self.state,
+            state=EventOrOccurrenceState.OPEN,
             training_category=self.training_category,
         )
         event.save()
@@ -272,6 +276,13 @@ class OrganizerOccurrenceAssignment(OrganizerAssignment):
 
         return salary + wage_hour * hours
 
+    def has_rate(self):
+        person_rates = PersonHourlyRate.get_person_hourly_rates(self.person)
+        category = self.occurrence.event.category
+        if category in person_rates:
+            return True
+        return False
+
     @property
     def is_present(self):
         return self.state == OneTimeEventAttendance.PRESENT
@@ -349,10 +360,20 @@ class OneTimeEventOccurrence(EventOccurrence):
         return self.onetimeeventparticipantattendance_set.filter(q_condition)
 
     def approved_participant_assignments(self):
-        return self.participants_assignment_by_Q(Q()).order_by("person")
+        return self.participants_assignment_by_Q(Q())
 
-    def approved_organizer_assignment(self):
+    def approved_participant_assignments_sorted(self):
+        return self.participants_assignment_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
+
+    def approved_organizer_assignments(self):
         return self.organizers_assignments_by_Q(Q())
+
+    def approved_organizer_assignments_sorted(self):
+        return self.organizers_assignments_by_Q(Q()).order_by(
+            "person__last_name", "person__first_name"
+        )
 
     def missing_participants_assignments_sorted(self):
         return self.participants_assignment_by_Q(
@@ -403,7 +424,10 @@ class OneTimeEventOccurrence(EventOccurrence):
 
     def duplicate(self, event):
         occurrence = OneTimeEventOccurrence(
-            date=self.date, hours=self.hours, event=event, state=self.state
+            date=self.date,
+            hours=self.hours,
+            event=event,
+            state=EventOrOccurrenceState.OPEN,
         )
         occurrence.save()
         return occurrence
