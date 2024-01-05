@@ -1,9 +1,6 @@
 from datetime import date, datetime
 
 from persons.models import Person
-from positions.models import EventPosition
-
-from .models import Event
 
 
 def parse_czech_date(date_str) -> date:
@@ -14,9 +11,7 @@ def parse_czech_date(date_str) -> date:
     return datetime.strptime(date_str, "%d. %m. %Y").date()
 
 
-def check_common_requirements(
-    event_or_position: Event | EventPosition, person: Person
-) -> bool:
+def check_common_requirements(event_or_position, person: Person) -> bool:
     """
     Checks for common requirements of events or event positions.
 
