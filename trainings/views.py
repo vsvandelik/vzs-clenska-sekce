@@ -22,7 +22,7 @@ from events.views import (
     EnrollMyselfParticipantMixin,
     EventAdminListMixin,
     EventCreateMixin,
-    EventDetailBaseView,
+    EventDetailMixin,
     EventGeneratesDatesMixin,
     EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
@@ -98,7 +98,7 @@ from .models import (
 )
 
 
-class TrainingDetailView(EventDetailBaseView):
+class TrainingDetailView(EventDetailMixin):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         trainings_for_replacement_to_choose = (

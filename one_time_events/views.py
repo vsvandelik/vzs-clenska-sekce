@@ -15,7 +15,7 @@ from events.views import (
     EnrollMyselfParticipantMixin,
     EventAdminListMixin,
     EventCreateMixin,
-    EventDetailBaseView,
+    EventDetailMixin,
     EventGeneratesDatesMixin,
     EventManagePermissionMixin,
     EventOccurrenceIdCheckMixin,
@@ -88,7 +88,7 @@ from .permissions import (
 )
 
 
-class OneTimeEventDetailView(EventDetailBaseView):
+class OneTimeEventDetailView(EventDetailMixin):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         kwargs.setdefault(
