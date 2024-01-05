@@ -436,7 +436,7 @@ templatetags/
 ^^^^^^^^^^^^^^^^^^
 Vlastní šablonové tagy a filtry využívané pouze v rámci aplikace pro Jinja renderovací engine Djanga. Neplatí pro aplikace :ref:`events` a :ref:`vzs`. První zmíněná sdružuje kód jednorázových událostí (aplikace :ref:`one_time_events`) a tréninků (aplikace :ref:`trainings`). Druhá zmíněná obsahuje společný kód využívaný všemi ostatními aplikacemi.
 
-Template filtrům je věnována samostatný kapitola viz :doc:`./template-filters`
+Template filtrům je věnována samostatný kapitola viz :doc:`./template-filters`.
 
 .. _apps.py:
 
