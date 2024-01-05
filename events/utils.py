@@ -1,36 +1,56 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from persons.models import Person
+from positions.models import EventPosition
+
+from .models import Event
 
 
-def parse_czech_date(date_str):
+def parse_czech_date(date_str) -> date:
+    """
+    Parses a date string in the format ``DD. MM. YYYY``.
+    """
+
     return datetime.strptime(date_str, "%d. %m. %Y").date()
 
 
-def check_common_requirements(req_obj, person):
+def check_common_requirements(
+    event_or_position: Event | EventPosition, person: Person
+) -> bool:
+    """
+    Checks for common requirements of events or event positions.
+
+    Namely:
+    *   minimum age
+    *   maximum age
+    *   group
+    *   allowed person types
+    """
+
     from events.models import EventPersonTypeConstraint
 
     person_with_age = Person.objects.with_age().get(id=person.id)
 
     missing_age = person_with_age.age is None and (
-        req_obj.min_age is not None or req_obj.max_age is not None
+        event_or_position.min_age is not None or event_or_position.max_age is not None
     )
 
-    min_age_out = req_obj.min_age is not None and (
-        missing_age or req_obj.min_age > person_with_age.age
+    min_age_out = event_or_position.min_age is not None and (
+        missing_age or event_or_position.min_age > person_with_age.age
     )
 
-    max_age_out = req_obj.max_age is not None and (
-        missing_age or req_obj.max_age < person_with_age.age
+    max_age_out = event_or_position.max_age is not None and (
+        missing_age or event_or_position.max_age < person_with_age.age
     )
 
     group_unsatisfied = (
-        req_obj.group is not None and req_obj.group not in person.groups.all()
+        event_or_position.group is not None
+        and event_or_position.group not in person.groups.all()
     )
 
     allowed_person_types_unsatisfied = (
-        req_obj.allowed_person_types.exists()
-        and not req_obj.allowed_person_types.contains(
+        event_or_position.allowed_person_types.exists()
+        and not event_or_position.allowed_person_types.contains(
             EventPersonTypeConstraint.get_or_create(person.person_type)
         )
     )
