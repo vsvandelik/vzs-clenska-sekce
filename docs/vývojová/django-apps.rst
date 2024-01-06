@@ -13,12 +13,12 @@ Tato aplikace obsahuje implementaci API.
 
 Model
 ^^^^^^^^^^^^^^^^^
-Model aplikace :ref:`api` rozšiřuje funkčnost modelu Token, který je součástí :ref:`djangorestframework`. Rozšíření spočívá v přidání atributu ``name`` (jméno tokenu).
+Model aplikace :ref:`api` rozšiřuje funkčnost modelu Token, který je součástí :ref:`djangorestframework`. Rozšíření spočívá v přidání atributu :py:attr:`~api.models.Token.name` (jméno tokenu).
 
 Mezi další důležité atributy, které jsou obsaženy v rodiči, patří:
 
-- ``created`` (datum a čas vytvoření) 
-- ``key`` (API klíč), pokud jeho hodnota není vyplněna, bude při uložení modelu automaticky vygenerována.
+- :py:attr:`~api.models.Token.created` (datum a čas vytvoření) 
+- :py:attr:`~api.models.Token.key` (API klíč), pokud jeho hodnota není vyplněna, bude při uložení modelu automaticky vygenerována.
 
 .. image:: ../_static/api-model.png
     :target: ../_static/api-model.png
@@ -67,11 +67,20 @@ persons
 --------------------------------------
 positions
 --------------------------------------
-Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí ``EventPositionAssignment``, které navíc specifikuje další vlastnosti jako např. počet lidí, kteří jsou na pozici vyžadováni.
+Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další vlastnosti jako např. počet lidí, kteří jsou na pozici vyžadováni.
 
 Model
 ^^^^^^^^^^^^^^^^^
-Model aplikace :ref:`positions` definuje vlastnosti pozic mezi které patří: název (``name``), hodinový příplatek za pozici (``wage_hour``), požadované kvalifikace/oprávnění/vybavení (``required_features``), věkové omezení (``min_age``, ``max_age``), skupina, v níž je vyžadováno členství (``group``)  a omezení na typ členství (``allowed_person_types``). Poskytuje také několik metod, které usnadní práci s modelem. Významnou metodou je ``does_person_satisfy_requirements``, která ověřuje, zda osoba splňuje požadavky na pozici k určitému datu.
+Model aplikace :ref:`positions` definuje vlastnosti pozic mezi které patří: 
+
+- :py:attr:`~positions.models.EventPosition.name` (název)
+- :py:attr:`~positions.models.EventPosition.wage_hour` (hodinový příplatek za pozici)
+- :py:attr:`~positions.models.EventPosition.required_features` (požadované kvalifikace/oprávnění/vybavení)
+- :py:attr:`~positions.models.EventPosition.min_age`, :py:attr:`~positions.models.EventPosition.max_age` (věkové omezení)
+- :py:attr:`~positions.models.EventPosition.group` (skupina, v níž je vyžadováno členství)
+- :py:attr:`~positions.models.EventPosition.allowed_person_types` (omezení na typ členství)
+
+Model také poskytuje také několik metod, které usnadní práci s modelem. Významnou metodou je :py:meth:`~positions.models.EventPosition.does_person_satisfy_requirements`, která ověřuje, zda osoba splňuje požadavky na pozici k určitému datu.
 
 .. image:: ../_static/position-model.png
     :target: ../_static/position-model.png
