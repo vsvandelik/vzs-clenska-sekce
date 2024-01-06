@@ -1,7 +1,9 @@
 ***************************************
 API
 ***************************************
-Popsat
+Nějaký základ je popsán :ref:`zde <api>`
+
+Tady bych popsal
 
 - jaké endpointy už máme
 - jak fungují oprávnění (tokeny, generování nových tokenů)

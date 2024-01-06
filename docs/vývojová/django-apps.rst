@@ -9,7 +9,21 @@ Tato stránka obsahuje všechny Django aplikace a jejich popis.
 --------------------------------------
 api
 --------------------------------------
-Tato aplikace obsahuje implementaci API. Více o API se je možné dozvědět na zvláštní stránce :doc:`./api`.
+Tato aplikace obsahuje implementaci API. 
+
+Model
+^^^^^^^^^^^^^^^^^
+Model aplikace :ref:`api` rozšiřuje funkčnost modelu Token, který je součástí :ref:`djangorestframework`. Rozšíření spočívá v přidání atributu ``name`` (jméno tokenu).
+
+Mezi další důležité atributy, které jsou obsaženy v rodiči, patří:
+
+- ``created`` (datum a čas vytvoření) 
+- ``key`` (API klíč), pokud jeho hodnota není vyplněna, bude při uložení modelu automaticky vygenerována.
+
+.. image:: ../_static/api-model.png
+    :target: ../_static/api-model.png
+
+Více informací API, včetně příkladů použítí, je možné se dozvědět na zvláštní stránce :doc:`./api`.
 
 .. _events:
 
@@ -57,7 +71,7 @@ Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým ud�
 
 Model
 ^^^^^^^^^^^^^^^^^
-Model aplikace positions definuje vlastnosti pozic mezi které patří: název (``name``), hodinový příplatek za pozici (``wage_hour``), požadované kvalifikace/oprávnění/vybavení (``required_features``), věkové omezení (``min_age``, ``max_age``), skupina, v níž je vyžadováno členství (``group``)  a omezení na typ členství (``allowed_person_types``). Poskytuje také několik metod, které usnadní práci s modelem. Významnou metodou je ``does_person_satisfy_requirements``, která ověřuje, zda osoba splňuje požadavky na pozici k určitému datu.
+Model aplikace :ref:`positions` definuje vlastnosti pozic mezi které patří: název (``name``), hodinový příplatek za pozici (``wage_hour``), požadované kvalifikace/oprávnění/vybavení (``required_features``), věkové omezení (``min_age``, ``max_age``), skupina, v níž je vyžadováno členství (``group``)  a omezení na typ členství (``allowed_person_types``). Poskytuje také několik metod, které usnadní práci s modelem. Významnou metodou je ``does_person_satisfy_requirements``, která ověřuje, zda osoba splňuje požadavky na pozici k určitému datu.
 
 .. image:: ../_static/position-model.png
     :target: ../_static/position-model.png
