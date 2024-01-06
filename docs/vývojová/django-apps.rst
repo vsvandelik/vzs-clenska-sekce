@@ -108,6 +108,6 @@ users
 --------------------------------------
 vzs
 --------------------------------------
-Aplikace :ref:`vzs` má speciální postavení, jedná se o první a tudíž výchozí aplikaci celého projektu. Její součástí není konkrétní specifická funkcionalita, tato aplikace pouze sdržuju nezařaditelný společný kód, různé pomocné funkce a v nachází se zde konfigurace celého projektu.
+Aplikace :ref:`vzs` má speciální postavení, jedná se o první a tudíž výchozí aplikaci celého projektu. Její součástí není konkrétní specifická funkcionalita, tato aplikace pouze sdržuje nezařaditelný společný kód, různé pomocné funkce a nachází se zde konfigurace celého projektu.
 
 Aplikace nevyužívá konkrétní model, v souboru ``models.py`` se nachází pouze několik obecných ``Mixin`` tříd, např. :py:class:`~vzs.models.ExportableCSVMixin`, které je možné použít na libovolný model a zajistit tak funkci exportu do formátu CSV.
