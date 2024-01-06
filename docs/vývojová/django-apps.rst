@@ -42,6 +42,19 @@ features
 --------------------------------------
 groups
 --------------------------------------
+Aplikace groups definuje skupiny, ve kterých se sdružují osoby.
+
+Model
+^^^^^^^^^^^^^^^^^
+Mezi atributy definované modelem patří:
+
+- :py:attr:`~groups.models.Group.name` (jméno)
+- :py:attr:`~groups.models.Group.google_email` (emailová adresa skupiny uvnitř Google Workspace)
+- :py:attr:`~groups.models.Group.google_as_members_authority` (flag indikující, zda je Google autoritou skupiny)
+- :py:attr:`~groups.models.Group.members` (seznam členů skupiny)
+
+.. image:: ../_static/groups-model.png
+    :target: ../_static/groups-model.png
 
 .. _one_time_events:
 
@@ -67,11 +80,11 @@ persons
 --------------------------------------
 positions
 --------------------------------------
-Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další vlastnosti jako např. počet lidí, kteří jsou na pozici vyžadováni.
+Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další atributy jako např. počet lidí, kteří jsou na pozici vyžadováni.
 
 Model
 ^^^^^^^^^^^^^^^^^
-Model aplikace :ref:`positions` definuje vlastnosti pozic mezi které patří: 
+Model aplikace :ref:`positions` definuje atributy pozic mezi které patří: 
 
 - :py:attr:`~positions.models.EventPosition.name` (název)
 - :py:attr:`~positions.models.EventPosition.wage_hour` (hodinový příplatek za pozici)
