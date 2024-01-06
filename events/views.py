@@ -52,14 +52,12 @@ class RedirectToEventDetailMixin:
     """
     Base mixin for views that redirect to the detail view of an event.
 
-    The primary key of the event to which the view redirects
-    is determined by the following order:
+    The event to which the view redirects is determined by the following order:
 
-    1.  ``event_id`` URL keyword argument, if present
-    2.  ``occurrence_id`` URL keyword argument, if present
-    3.  ``object`` attribute of the view, if it is an instance of an event
-    4.  ``event`` attribute of the ``object`` attribute of the view,
-        if it is an instance of an event
+    1.  event with PK ``event_id`` URL keyword argument, if present
+    2.  event of the occurence with PK ``occurrence_id`` URL keyword argument, if present
+    3.  ``self.object``, if it is an instance of an event
+    4.  ``self.object.event``, if it is an instance of an event
 
     If none of the above applies, :class:`NotImplementedError` is raised.
     """
