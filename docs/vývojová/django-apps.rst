@@ -42,7 +42,7 @@ features
 --------------------------------------
 groups
 --------------------------------------
-Aplikace groups definuje skupiny, ve kterých se sdružují osoby.
+Aplikace groups definuje skupiny, ve kterých se sdružují osoby. Součástí aplikace je několik pohledů, šablon a formulářů pro správu skupin.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -68,6 +68,21 @@ one_time_events
 --------------------------------------
 pages
 --------------------------------------
+Aplikace pages definuje statické stránky, které je možné prohlížet a editovat.
+
+
+Model
+^^^^^^^^^^^^^^^^^
+Model je určen k ukládání statických stránek. Každá stránka obsahuje:
+
+- :py:attr:`~pages.models.Page.title` (název)
+- :py:attr:`~pages.models.Page.content` (obsah ve formátu HTML)
+- :py:attr:`~pages.models.Page.slug` (URL slug) 
+- :py:attr:`~pages.models.Page.last_update` (datum a čas poslední aktualizace)
+
+
+.. image:: ../_static/pages-model.png
+    :target: ../_static/pages-model.png
 
 .. _persons:
 
@@ -80,7 +95,7 @@ persons
 --------------------------------------
 positions
 --------------------------------------
-Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další atributy jako např. počet lidí, kteří jsou na pozici vyžadováni.
+Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další atributy jako např. počet lidí, kteří jsou na pozici vyžadováni. Součástí aplikace je několik pohledů, šablon a formulářů pro správu pozic.
 
 Model
 ^^^^^^^^^^^^^^^^^
