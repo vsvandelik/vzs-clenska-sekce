@@ -3,9 +3,9 @@
 ***************************************
 Formuláře
 ***************************************
-Django obsahuje celou řadu vzorů a komponent pro práci s formuláři. Tyto komponenty se nacházejí v knihovně ``django.forms`` a jsou v maximální možné míře využívány. Základním stavebním prvek jsou třídy ``Form`` a  ``ModelForm``, které definují políčka formuláře. :term:`IS` používá pouze zejména třídu ``ModelForm``.
+Django obsahuje celou řadu vzorů a komponent pro práci s formuláři. Tyto komponenty se nacházejí v knihovně ``django.forms`` a jsou v maximální možné míře využívány. Základním stavebním prvkem jsou třídy ``Form`` a  ``ModelForm``, které definují políčka formuláře. :term:`IS` používá zejména třídu ``ModelForm``.
 
-Třída ``ModelForm`` umožňuje narozdíl od třídy ``Form`` vytvořit formulář mapující se na konkrétní model. Výhodou tohoto přístupu narozíl od ručního vytváření formulářů je automatická základní server-side validace dat. Pokud je vyžadována pokročílá validace, je možné ji implementovat přetížením metody ``clean``. V případě použití třídy ``ModelForm`` se dokonce sami namapují políčka formuláře na model, který je možné před uložením upravit přetížením funkce ``save``.
+Třída ``ModelForm`` umožňuje narozdíl od třídy ``Form`` vytvořit formulář mapující se na konkrétní model. Výhodou tohoto přístupu narozdíl od ručního vytváření formulářů je automatická základní server-side validace dat. Pokud je vyžadována pokročílá validace, je možné ji implementovat přetížením metody ``clean``. V případě použití třídy ``ModelForm`` se dokonce sama namapují políčka formuláře na model, který je možné před uložením upravit přetížením funkce ``save``.
 
 Pro účely zlepšení UX byla pro všechny formuláře implementována i validace na straně klienta pomocí Javascriptu, v případech, kdy to bylo výhodné z hlediska přehlednosti a množství kódu, bylo využito jQuery. 
 
@@ -62,7 +62,7 @@ Příklad formuláře:
                 [attendance.person],
             )
 
-Tento formuláře byl záměrně vybrán pro účely demonstrace použití formulářů, protože je jednoduchý a implementuje obě funkce ``clean`` i ``save``.
+Tento formulář byl záměrně vybrán pro účely demonstrace použití formulářů, protože je jednoduchý a implementuje obě funkce ``clean`` i ``save``.
 
 Formulář je využíván při přihlášení náhradní účasti na trénink. Formulář vyžaduje osobu (``person``), den tréninku (``occurrence``). Osoba je aktuálně přihlášená ze session, formulář ji získá v ``self.person`` při použítí ``ActivePersonFormMixin``. Den tréninku víme z URL cesty, formulář ho získá v ``self.occurrence`` při použití ``OccurrenceFormMixin``.
 

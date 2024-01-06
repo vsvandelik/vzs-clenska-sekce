@@ -4,7 +4,7 @@
 Testování
 ##########################
 
-Pro účely lepšího představaní zamýšleného použití a testování projektu jsme připravili fiktivní data, která rámcově odpovídají realitě. 
+Pro účely lepšího představení zamýšleného použití a testování projektu jsme připravili fiktivní data, která rámcově odpovídají realitě. 
 
 ***************************************
 Import dat

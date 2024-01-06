@@ -48,7 +48,7 @@ python-dateutil přináší pokročilejší funkce pro práci s daty a časy. :t
 -----------------------------------------------------
 Závislosti definované v souboru requirements_dev.txt
 -----------------------------------------------------
-Zde jsou obsaženy závislosti, které je, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj. Konkrétně se jedná o:
+Zde jsou obsaženy závislosti, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj. Konkrétně se jedná o:
 
 - :ref:`Genderize`
 - :ref:`pre-commit`

@@ -43,7 +43,7 @@ Umožnuje flexibilnější nastavení renderování Django forem. :term:`IS` kon
 ----------------------
 django-environ
 ----------------------
-django-environ je rozšíření, která umožňuje načítání environmentálních proměnných. :term:`IS` obsahuje několik konfiguračních proměnných v souboru :ref:`.env`, které jsou načítány při spuštění.
+django-environ je rozšíření, které umožňuje načítání environmentálních proměnných. :term:`IS` obsahuje několik konfiguračních proměnných v souboru :ref:`.env`, které jsou načítány při spuštění.
 
 .. _django-polymorphic:
 
