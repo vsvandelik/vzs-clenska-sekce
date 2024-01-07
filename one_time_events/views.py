@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.http import Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -7,7 +6,6 @@ from django.views import generic
 from events.models import ParticipantEnrollment, EventOrOccurrenceState
 from events.permissions import (
     OccurrenceEnrollOrganizerPermissionMixin,
-    OccurrenceManagePermissionMixin,
     OccurrenceUnenrollOrganizerPermissionMixin,
 )
 from events.views import (
@@ -50,8 +48,7 @@ from vzs.mixin_extensions import (
     MessagesMixin,
 )
 from vzs.settings import GOOGLE_MAPS_API_KEY
-from vzs.utils import date_pretty, export_queryset_csv, send_notification_email, today
-
+from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -64,13 +61,20 @@ from .forms import (
     OneTimeEventEnrollMyselfParticipantForm,
     OneTimeEventFillAttendanceForm,
     OneTimeEventForm,
-    OneTimeEventParticipantEnrollmentForm,
     OneTimeEventUnenrollMyselfOrganizerForm,
     OneTimeEventUnenrollMyselfOrganizerOccurrenceForm,
     OrganizerOccurrenceAssignmentForm,
     ReopenOneTimeEventOccurrenceForm,
     TrainingCategoryForm,
     OneTimeEventsFilterForm,
+)
+from .mixins import (
+    BulkCreateDeleteOrganizerMixin,
+    OrganizerForOccurrenceMixin,
+    OneTimeEventParticipantEnrollmentCreateUpdateMixin,
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
+    OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
+    OrganizerSelectOccurrencesMixin,
 )
 from .models import (
     OneTimeEvent,
@@ -246,6 +250,7 @@ class OneTimeEventAdminListView(OneTimeEventCreatePermissionMixin, EventAdminLis
 
 class OneTimeEventCreateView(
     OneTimeEventCreatePermissionMixin,
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     EventGeneratesDatesMixin,
     EventCreateMixin,
@@ -255,7 +260,10 @@ class OneTimeEventCreateView(
 
 
 class OneTimeEventUpdateView(
-    InsertRequestIntoModelFormKwargsMixin, EventGeneratesDatesMixin, EventUpdateMixin
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
+    InsertRequestIntoModelFormKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventUpdateMixin,
 ):
     template_name = "one_time_events/edit.html"
     form_class = OneTimeEventForm
@@ -267,14 +275,6 @@ class EditTrainingCategoryView(
     template_name = "one_time_events/edit_training_category.html"
     form_class = TrainingCategoryForm
     success_message = "Změna vyžadování skupiny uložena"
-
-
-class OneTimeEventParticipantEnrollmentCreateUpdateMixin(
-    EventManagePermissionMixin, InsertRequestIntoModelFormKwargsMixin
-):
-    model = OneTimeEventParticipantEnrollment
-    form_class = OneTimeEventParticipantEnrollmentForm
-    event_id_key = "event_id"
 
 
 class OneTimeEventParticipantEnrollmentCreateView(
@@ -320,14 +320,6 @@ class OneTimeEventEnrollMyselfParticipantView(
     form_class = OneTimeEventEnrollMyselfParticipantForm
     template_name = "one_time_events/modals/enroll_waiting.html"
     success_message = "Přihlášení na událost proběhlo úspěšně"
-
-
-class OrganizerForOccurrenceMixin(
-    OccurrenceManagePermissionMixin,
-    RedirectToEventDetailOnSuccessMixin,
-    MessagesMixin,
-):
-    pass
 
 
 class AddOrganizerForOccurrenceView(
@@ -381,22 +373,6 @@ class DeleteOrganizerForOccurrenceView(
             [assignment.person],
         )
         return super().form_valid(form)
-
-
-class BulkCreateDeleteOrganizerMixin(
-    EventManagePermissionMixin,
-    MessagesMixin,
-    RedirectToEventDetailOnSuccessMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
-):
-    pass
-
-
-class OrganizerSelectOccurrencesMixin:
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("checked_occurrences", self.get_form().checked_occurrences())
-        return super().get_context_data(**kwargs)
 
 
 class BulkDeleteOrganizerFromOneTimeEventView(
@@ -530,14 +506,6 @@ class OneTimeEventEnrollMyselfOrganizerView(
 class OneTimeOccurrenceDetailView(OccurrenceDetailBaseView):
     model = OneTimeEventOccurrence
     template_name = "one_time_events_occurrences/detail.html"
-
-
-class OneTimeEventOccurrenceAttendanceCanBeFilledMixin:
-    def dispatch(self, request, *args, **kwargs):
-        occurrence = self.get_object()
-        if today() < occurrence.date:
-            raise Http404("Tato stránka není dostupná")
-        return super().dispatch(request, *args, **kwargs)
 
 
 class OneTimeEventFillAttendanceInsertAssignmentsIntoContextData:

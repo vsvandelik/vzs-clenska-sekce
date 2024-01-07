@@ -94,8 +94,10 @@ class OneTimeEventForm(
 
     def __init__(self, *args, **kwargs):
         self.hours = kwargs.pop("request").POST.getlist("hours")
+        available_categories = kwargs.pop("available_categories")
         super().__init__(*args, **kwargs)
 
+        self._prepare_category_field(available_categories)
         self.helper = WithoutFormTagFormHelper()
 
     def _check_date_constraints(self):
