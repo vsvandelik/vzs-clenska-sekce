@@ -14,6 +14,7 @@ Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující
 
 
 .. _migrations:
+
 ---------------------
 Migrace
 ---------------------
