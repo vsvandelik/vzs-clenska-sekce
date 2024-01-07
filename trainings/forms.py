@@ -157,7 +157,9 @@ class TrainingForm(
         } | EventForm.Meta.widgets
 
     def __init__(self, **kwargs):
+        available_categories = kwargs.pop("available_categories")
         super().__init__(**kwargs)
+
         event = kwargs["instance"]
         if event is not None:
             self.initial["date_start"] = event.date_start
@@ -169,6 +171,7 @@ class TrainingForm(
                 if attr[3:] == "from" or attr[3:] == "to":
                     self.initial[attr] = value
 
+        self._prepare_category_field(available_categories)
         self.helper = WithoutFormTagFormHelper()
 
     po = forms.BooleanField(

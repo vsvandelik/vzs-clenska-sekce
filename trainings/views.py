@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
@@ -27,7 +26,6 @@ from events.views import (
     EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
     InsertEventIntoContextData,
-    InsertEventIntoModelFormKwargsMixin,
     InsertEventIntoSelfObjectMixin,
     InsertOccurrenceIntoContextData,
     InsertOccurrenceIntoModelFormKwargsMixin,
@@ -61,12 +59,10 @@ from vzs.mixin_extensions import (
 )
 from vzs.settings import PARTICIPANT_ENROLL_DEADLINE_DAYS
 from vzs.utils import date_pretty, export_queryset_csv, now, send_notification_email
-
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
     CoachAssignmentDeleteForm,
-    CoachAssignmentForm,
     CoachExcuseForm,
     CoachOccurrenceAssignmentForm,
     ExcuseMyselfCoachForm,
@@ -80,11 +76,18 @@ from .forms import (
     TrainingFillAttendanceForm,
     TrainingForm,
     TrainingParticipantAttendanceForm,
-    TrainingParticipantEnrollmentForm,
     TrainingReplaceableForm,
     TrainingsFilterForm,
     TrainingUnenrollMyselfOrganizerFromOccurrenceForm,
     TrainingUnenrollMyselfParticipantFromOccurrenceForm,
+)
+from .mixins import (
+    CoachAssignmentCreateUpdateMixin,
+    CoachAssignmentMixin,
+    TrainingWeekdaysSelectionMixin,
+    TrainingParticipantEnrollmentCreateUpdateMixin,
+    TrainingOccurrenceAttendanceCanBeFilledMixin,
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
 )
 from .models import (
     CoachOccurrenceAssignment,
@@ -317,13 +320,20 @@ class TrainingAdminListView(TrainingCreatePermissionMixin, EventAdminListMixin):
 
 
 class TrainingCreateView(
-    TrainingCreatePermissionMixin, EventGeneratesDatesMixin, EventCreateMixin
+    TrainingCreatePermissionMixin,
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventCreateMixin,
 ):
     template_name = "trainings/create.html"
     form_class = TrainingForm
 
 
-class TrainingUpdateView(EventGeneratesDatesMixin, EventUpdateMixin):
+class TrainingUpdateView(
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
+    EventGeneratesDatesMixin,
+    EventUpdateMixin,
+):
     template_name = "trainings/edit.html"
     form_class = TrainingForm
 
@@ -365,20 +375,6 @@ class TrainingRemoveReplaceableTrainingView(EventManagePermissionMixin, generic.
             messages.error(request, "Nebyly nalezeny tréninky k odebrání.")
 
         return redirect(reverse("trainings:detail", args=[event_id]))
-
-
-class TrainingWeekdaysSelectionMixin:
-    def get_context_data(self, **kwargs):
-        kwargs.setdefault("checked_weekdays", self.get_form().checked_weekdays())
-        return super().get_context_data(**kwargs)
-
-
-class TrainingParticipantEnrollmentCreateUpdateMixin(
-    EventManagePermissionMixin, TrainingWeekdaysSelectionMixin
-):
-    model = TrainingParticipantEnrollment
-    form_class = TrainingParticipantEnrollmentForm
-    event_id_key = "event_id"
 
 
 class TrainingParticipantEnrollmentCreateView(
@@ -424,23 +420,6 @@ class TrainingEnrollMyselfParticipantView(
     form_class = TrainingEnrollMyselfParticipantForm
     template_name = "trainings/enroll_myself_participant.html"
     success_message = "Přihlášení na trénink proběhlo úspěšně"
-
-
-class CoachAssignmentMixin(
-    EventManagePermissionMixin,
-    MessagesMixin,
-    RedirectToEventDetailOnSuccessMixin,
-):
-    model = CoachPositionAssignment
-    context_object_name = "coach_assignment"
-
-
-class CoachAssignmentCreateUpdateMixin(
-    CoachAssignmentMixin,
-    InsertEventIntoModelFormKwargsMixin,
-    InsertEventIntoContextData,
-):
-    form_class = CoachAssignmentForm
 
 
 class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
@@ -756,14 +735,6 @@ class EnrollMyselfParticipantFromOccurrenceView(
     form_class = TrainingEnrollMyselfParticipantOccurrenceForm
     success_message = "Přihlášení jako jednorázový účastník proběhlo úspěšně"
     template_name = "trainings_occurrences/detail.html"
-
-
-class TrainingOccurrenceAttendanceCanBeFilledMixin:
-    def dispatch(self, request, *args, **kwargs):
-        occurrence = self.get_object()
-        if now() < timezone.localtime(occurrence.datetime_start):
-            raise Http404("Tato stránka není dostupná")
-        return super().dispatch(request, *args, **kwargs)
 
 
 class TrainingFillAttendanceView(
