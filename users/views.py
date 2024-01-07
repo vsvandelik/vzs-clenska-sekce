@@ -25,6 +25,7 @@ from django.views.generic.list import ListView, MultipleObjectMixin
 from persons.models import Person
 from vzs.settings import LOGIN_REDIRECT_URL, SERVER_DOMAIN, SERVER_PROTOCOL
 from vzs.utils import send_mail
+
 from .backends import GoogleBackend
 from .forms import (
     ChangeActivePersonForm,
@@ -34,137 +35,18 @@ from .forms import (
     UserChangePasswordForm,
     UserChangePasswordOldAndRepeatForm,
     UserChangePasswordRepeatForm,
-    UserCreateForm,
+    UserDeletePasswordForm,
     UserResetPasswordRequestForm,
 )
 from .models import Permission, ResetPasswordToken, User
 from .permissions import (
+    LoginRequiredMixin,
     PermissionRequiredMixin,
-    UserCreateDeletePermissionMixin,
+    UserCreateDeletePasswordPermissionMixin,
     UserGeneratePasswordPermissionMixin,
     UserManagePermissionsPermissionMixin,
-    LoginRequiredMixin,
 )
 from .utils import create_random_password
-
-
-class UserCreateView(UserCreateDeletePermissionMixin, SuccessMessageMixin, CreateView):
-    """
-    Creates a new user.
-
-    **Success redirection view**: :class:`persons.views.PersonDetailView`
-    of the person whose user account was created.
-
-    **Permissions**:
-
-    Users that can manage the person's membership type.
-
-    **Request body parameters**:
-
-    * ``person``: The ID of the person for whom a user account should be created.
-    """
-
-    form_class = UserCreateForm
-    """:meta private:"""
-
-    queryset = Person.objects.filter(user__isnull=True)
-    """:meta private:"""
-
-    template_name = "users/create.html"
-    """:meta private:"""
-
-    def get_success_url(self):
-        """:meta private:"""
-
-        return reverse("persons:detail", kwargs={"pk": self.person.pk})
-
-    def get_success_message(self, cleaned_data):
-        """:meta private:"""
-
-        return _(f"{self.object} byl úspěšně přidán.")
-
-    def dispatch(self, request, *args, **kwargs):
-        """:meta private:"""
-
-        self.person = self.get_object()
-        if self.person.email is None:
-            error_message(
-                request,
-                _(
-                    "Nelze vytvořit uživatelský účet, protože osoba nemá vyplněnou e-mailovou adresu."
-                ),
-            )
-            return HttpResponseRedirect(self.get_success_url())
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_form_kwargs(self):
-        """:meta private:"""
-
-        kwargs = super().get_form_kwargs()
-
-        kwargs["person"] = self.person
-
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        """
-        *   ``person``
-        """
-
-        kwargs.setdefault("person", self.person)
-
-        return super().get_context_data(**kwargs)
-
-
-class UserDeleteView(UserCreateDeletePermissionMixin, SuccessMessageMixin, DeleteView):
-    """
-    Deletes an existing user.
-
-    **Success redirection view**: :class:`persons.views.PersonDetailView`
-    of the person whose user account was created.
-
-    **Permissions**:
-
-    Users that can manage the person's membership type.
-
-    **Path parameters**:
-
-    *   ``pk``: The ID of the user to be deleted.
-    """
-
-    context_object_name = "user_object"
-    """:meta private:"""
-
-    model = User
-    """:meta private:"""
-
-    template_name = "users/delete.html"
-    """:meta private:"""
-
-    def dispatch(self, request, *args, **kwargs):
-        """:meta private:"""
-
-        self.person = self.get_object().person
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        """:meta private:"""
-
-        return reverse("persons:detail", kwargs={"pk": self.person.pk})
-
-    def form_valid(self, form):
-        """:meta private:"""
-
-        # success_message is sent after object deletion so we need to save the data
-        # we will need later
-        self.user_representation = str(self.object)
-        self.person = self.object.person
-        return super().form_valid(form)
-
-    def get_success_message(self, cleaned_data):
-        """:meta private:"""
-
-        return _(f"{self.user_representation} byl úspěšně odstraněn.")
 
 
 class UserChangePasswordBaseMixin(UpdateView):
@@ -817,3 +699,85 @@ class LogoutView(BaseLogoutView):
             response.set_cookie("logout_remember", "true")
 
         return response
+
+
+class UserCreatePasswordView(
+    UserCreateDeletePasswordPermissionMixin,
+    SuccessMessageMixin,
+    UserChangePasswordBaseMixin,
+):
+    """
+    Creates a new user password.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the person whose user account password was created.
+
+    **Permissions**:
+
+    Users that can manage the person's membership type.
+
+    **Request body parameters**:
+
+    * ``person``: The ID of the person for whom a user account password should be created.
+    """
+
+    form_class = UserChangePasswordRepeatForm
+    """:meta private:"""
+
+    template_name = "users/create_password.html"
+    """:meta private:"""
+
+    def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
+        return _(f"Heslo pro {self.object} bylo úspěšně přidáno.")
+
+
+class UserDeletePasswordView(
+    UserCreateDeletePasswordPermissionMixin, SuccessMessageMixin, UpdateView
+):
+    """
+    Deletes a user's password.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+    of the person whose password was deleted.
+
+    **Permissions**:
+
+    Users that can manage the person's membership type.
+
+    **Path parameters**:
+
+    *   ``pk``: The ID of the user whose password should be deleted.
+    """
+
+    context_object_name = "user_object"
+    """:meta private:"""
+
+    form_class = UserDeletePasswordForm
+    """:meta private:"""
+
+    model = User
+    """:meta private:"""
+
+    template_name = "users/delete_password.html"
+    """:meta private:"""
+
+    def get_success_url(self):
+        """:meta private:"""
+
+        return reverse("persons:detail", kwargs={"pk": self.person.pk})
+
+    def form_valid(self, form):
+        """:meta private:"""
+
+        # success_message is sent after object deletion so we need to save the data
+        # we will need later
+        self.user_representation = str(self.object)
+        self.person = self.object.person
+        return super().form_valid(form)
+
+    def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
+        return _(f"Heslo pro {self.user_representation} bylo úspěšně odstraněno.")

@@ -18,7 +18,6 @@ Prerekvizity
 -------------------
 - Python ≥ 3.11 
 - Node.js ≥ 17.0.0
-- ``pip``
 
 Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislosti.
 

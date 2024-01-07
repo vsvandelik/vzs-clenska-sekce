@@ -33,6 +33,7 @@ class PositionCreateUpdateMixin(MessagesMixin, PositionMixin):
 class PositionIndexView(PositionMixin, ListView):
     context_object_name = "positions"
     template_name = "positions/index.html"
+    ordering = ["name"]
 
 
 class PositionCreateView(PositionCreateUpdateMixin, CreateView):

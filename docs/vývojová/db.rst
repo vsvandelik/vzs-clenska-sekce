@@ -13,6 +13,7 @@ Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující
     :target: ../_static/model.png
 
 
+.. _migrations:
 ---------------------
 Migrace
 ---------------------

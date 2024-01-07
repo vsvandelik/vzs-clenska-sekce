@@ -13,7 +13,7 @@ Budeme vytvářet tlačítko a modální okno. Po stisku tlačítka se zobrazí 
 
 Vytvoření tlačítka
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Rozmyslíme se id modálního okna, které budeme vytvářet v dalším kroku. Definujeme ho jako ``"unenroll-myself-participant-modal"``. Modální okno bude zobrazovat odpověď požadavku z akce ``{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}``, která je dobře definována.
+Rozmyslíme si id modálního okna, které budeme vytvářet v dalším kroku. Definujeme ho jako ``"unenroll-myself-participant-modal"``. Modální okno bude zobrazovat odpověď požadavku z akce ``{% url 'events:unenroll-myself-participant' active_person_enrollment.id %}``, která je dobře definována.
 
 Potom můžeme vytvořit tlačítko.
 
@@ -104,7 +104,7 @@ Soubory implementující příkazy musí vycházet z následující šablony. P�
 -------------------------------
 Vytvoření vlastního filtru
 -------------------------------
-Nejprve je nutné se rozhodnout, zda filtr, který chci vytvořit je obecný nebo specifický. Více informací o typech filtrů se nachází v dokumentu :doc:`./template-filters`.
+Nejprve je nutné se rozhodnout, zda filtr, který chceme vytvořit je obecný nebo specifický. Více informací o typech filtrů se nachází v dokumentu :doc:`./template-filters`.
 
 Obecné filtry patří do souboru templatetags/vzs_filters.py aplikace :ref:`vzs`. Specifické filtry patří do konkrétní aplikace, která je bude využívat. Jako adresář doporučujeme opět použít templatetags/ a jako název souboru s filtry např. filters.py. 
 

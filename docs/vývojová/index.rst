@@ -24,6 +24,4 @@ Tato stránka slouží jako rozcestník vývojové dokumentace.
    template-filters.rst
    how-to.rst
    testing.rst
-   requirements-evaluation.rst
    contribute.rst
-.. .. include:: technologies.rst

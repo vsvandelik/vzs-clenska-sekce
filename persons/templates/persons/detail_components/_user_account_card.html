@@ -7,9 +7,9 @@
     <div class="card-header">
         <div class="card-title h5">Uživatelský účet</div>
     </div>
-    <div class="card-body {% if person.user %}p-0{% endif %}">
-        {% if not person.user %}
-            <p class="text-center">Účet není zřízen.
+    <div class="card-body {% if person.user.has_usable_password %}p-0{% endif %}">
+        {% if not person.user.has_usable_password %}
+            <p class="text-center">Účet nemá heslo.
                 {% if not person.email %}
                     Pro zřízení účtu je potřeba doplnit e-mailovou adresu.
                 {% endif %}
@@ -45,9 +45,9 @@
     </div>
     {% if person.email %}
         <div class="card-footer text-center">
-            {% if not person.user %}
-                {% ifperm "persons:user-add" person.pk as perm %}
-                    <a href="{{ perm.url }}" class="btn-primary btn">Založit uživatelský účet</a>
+            {% if not person.user.has_usable_password %}
+                {% ifperm "persons:user-add-password" person.pk as perm %}
+                    <a href="{{ perm.url }}" class="btn-primary btn">Vytvořit heslo</a>
                 {% endifperm %}
             {% else %}
                 {% if perm_generate_new_password %}
@@ -70,8 +70,8 @@
                     <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
                 {% endif %}
 
-                {% ifperm "persons:user-delete" person.pk as perm %}
-                    <a href="#" data-toggle="modal" data-target="#delete-user-modal" class="btn btn-danger">Smazat uživatelský účet</a>
+                {% ifperm "persons:user-delete-password" person.pk as perm %}
+                    <a href="#" data-toggle="modal" data-target="#delete-user-password-modal" class="btn btn-danger">Smazat heslo</a>
                 {% endifperm %}
             {% endif %}
         </div>

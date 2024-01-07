@@ -21,8 +21,12 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 |   ├── :ref:`data/db.json`
 |   ├── :ref:`data/db-backup.bat`
 |   ├── :ref:`data/db-backup.sh`
+|   ├── :ref:`data/db-backup-from-docker.bat`
+|   ├── :ref:`data/db-backup-from-docker.sh`
 |   ├── :ref:`data/db-restore.bat`
 |   ├── :ref:`data/db-restore.sh`
+|   ├── :ref:`data/db-restore-to-docker.bat`
+|   ├── :ref:`data/db-restore-to-docker.sh`
 | ├── :ref:`docker/`
 |   ├── :ref:`docker/.env_caddy`
 |   ├── :ref:`docker/.env_psql`
@@ -30,6 +34,7 @@ Pořadí je vzestupné podle abecedy, první jsou adresáře, které jsou zakon�
 |   ├── :ref:`docker/docker-build.sh`
 |   ├── :ref:`docker/docker-compose.yaml`
 |   ├── :ref:`docker/Dockerfile`
+|   ├── :ref:`docker/Dockerfile-postgres`
 | ├── :ref:`docs/`
 | ├── :ref:`events/`
 | ├── :ref:`features/`
@@ -94,25 +99,49 @@ Testovací data, více informací o použití testovací dat viz :ref:`testing`.
 
 data/db-backup.bat
 ^^^^^^^^^^^^^^^^^^^
-Windows Batch script pro zálohu databáze.
+Windows Batch skript pro zálohu databáze.
 
 .. _data/db-backup.sh:
 
 data/db-backup.sh
 ^^^^^^^^^^^^^^^^^^^
-Shell script pro zálohu databáze.
+Shell skript pro zálohu databáze.
+
+.. _data/db-backup-from-docker.bat:
+
+data/db-backup-from-docker.bat
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Windows Batch skript pro zálohu databáze z docker kontejneru vzs-clenska-sekce-backend.
+
+.. _data/db-backup-from-docker.sh:
+
+data/db-backup-from-docker.sh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Shell skript pro zálohu databáze z docker kontejneru vzs-clenska-sekce-backend.
 
 .. _data/db-restore.bat:
 
 data/db-restore.bat
 ^^^^^^^^^^^^^^^^^^^^
-Windows Batch script pro obnovu databáze.
+Windows Batch skript pro obnovu databáze.
 
 .. _data/db-restore.sh:
 
 data/db-restore.sh
 ^^^^^^^^^^^^^^^^^^^
-Shell script pro obnovu databáze.
+Shell skript pro obnovu databáze.
+
+.. _data/db-restore-to-docker.bat:
+
+data/db-restore-to-docker.bat
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Windows Batch skript pro obnovu databáze do docker kontejneru vzs-clenska-sekce-backend.
+
+.. _data/db-restore-to-docker.sh:
+
+data/db-restore-to-docker.sh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Shell skript pro obnovu databáze do docker kontejneru vzs-clenska-sekce-backend.
 
 .. _docker/:
 
@@ -142,13 +171,13 @@ Konfigurační soubor pro reverse proxy Caddy, relevantní pouze při produkčn�
 
 docker/docker-build.bat
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Windows Batch script, který sestaví docker image pro :term:`IS`.
+Windows Batch skript, který sestaví docker image pro :term:`IS`.
 
 .. _docker/docker-build.sh:
 
 docker/docker-build.sh
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Shell script, který sestaví docker image pro :term:`IS`.
+Shell skript, který sestaví docker image pro :term:`IS`.
 
 .. _docker/docker-compose.yaml:
 
@@ -162,6 +191,11 @@ docker/Dockerfile
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Soubor popisující, jak sestavit docker image pro :term:`IS`.
 
+.. _docker/Dockerfile-postgres:
+
+docker/Dockerfile-postgres
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Soubor popisující, jak sestavit docker image PostgreSQL s nastaveným ``LC_COLLATE=cs_CZ.UTF-8``.
 
 .. _docs/:
 
@@ -270,7 +304,7 @@ Django aplikace :ref:`vzs`.
 
 .dockerignore
 ^^^^^^^^^^^^^^^^^^
-TODO napsat neco
+Definuje soubory a adresáře, které jsou ignorovány Dockerem při sestavování image.
 
 .. _.env:
 
@@ -382,7 +416,7 @@ Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Djang
 
 migrations/
 ^^^^^^^^^^^^^^^^^^
-Soubory popisující migrace modelu aplikace. Migrace představují způsob, jak změny provedené v modelech přenést do schématu databáze. 
+Soubory popisující migrace modelu aplikace. Migrace představují způsob, jak změny provedené v modelech přenést do schématu databáze. Více informací o migracích se nachází na stránce :ref:`migrations`.
 
 .. _static_app/:
 
@@ -394,13 +428,15 @@ Sdružuje statický obsah (CSS, JS, obrázky, ...) používané pouze touto apli
 
 templates/
 ^^^^^^^^^^^^^^^^^^
-Sdružuje HTML šablony používané pouze touto aplikací.
+Sdružuje HTML šablony určené pro šablonovací nástroj Jinja, které se výhradně používají v rámci této aplikace.
 
 .. _templatetags/:
 
 templatetags/
 ^^^^^^^^^^^^^^^^^^
-Vlastní šablonové tagy využívané pouze v rámci aplikace pro Jinja renderovací engine Djanga. Neplatí pro aplikace :ref:`events` a :ref:`vzs`. První zmíněná sdružuje kód jednorázových událostí (aplikace :ref:`one_time_events`) a tréninků (aplikace :ref:`trainings`). Druhá zmíněná obsahuje společný kód využívaný všemi ostatními aplikacemi.
+Vlastní šablonové tagy a filtry využívané pouze v rámci aplikace pro Jinja renderovací engine Djanga. Neplatí pro aplikace :ref:`events` a :ref:`vzs`. První zmíněná sdružuje kód jednorázových událostí (aplikace :ref:`one_time_events`) a tréninků (aplikace :ref:`trainings`). Druhá zmíněná obsahuje společný kód využívaný všemi ostatními aplikacemi.
+
+Template filtrům je věnována samostatný kapitola viz :doc:`./template-filters`.
 
 .. _apps.py:
 
