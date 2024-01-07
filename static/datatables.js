@@ -4,6 +4,11 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
+$.fn.dataTable.moment( 'D. M. YYYY', 'cs' );
+$.fn.dataTable.moment( 'D. M. YYYY HH:mm', 'cs' );
+$.fn.dataTable.moment( 'D. M. YYYY HH:mm:ss', 'cs' );
+$.fn.dataTable.moment( 'HH:mm', 'cs' );
+
 function datatableEnable(id, searchableColumns, orderableColumns, order = [], searchable = true) {
     if (!window.initializedDataTables) {
         window.initializedDataTables = {};

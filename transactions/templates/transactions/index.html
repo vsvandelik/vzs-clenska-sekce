@@ -79,7 +79,7 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script src="{% static "filter_form.js" %}"></script>
     <script>
-        datatableEnable("transactions-table", [1, 3, 4], [0, 1, 2, 3], order = [], searchable = false);
+        datatableEnable("transactions-table", [1, 3, 4], [0, 1, 2, 3, 5], order = [], searchable = false);
         registerModal("delete-transaction-modal");
         registerFilterForm("transactions-filter-form", {{ filtered_get|is_not_empty|lower }});
     </script>
