@@ -44,7 +44,7 @@ groups
 --------------------------------------
 Aplikace groups definuje skupiny, ve kterých se sdružují osoby. Součástí aplikace je několik pohledů, šablon a formulářů pro správu skupin.
 
-.. Každá skupina má definováno zda využívá synchronizaci s odpovídající skupinou v Google Workspace. Pokud je synchronizace povolena, tak je skupina uvnitř :term:`IS`  změna členství v  jedné libovolné straně se promítne do členství na straně druhé.
+Každá skupina má definováno zda využívá synchronizaci s odpovídající skupinou v Google Workspace (tj. zda je emailová adresa této skupiny vyplněna v atributu :py:attr:`~groups.models.Group.google_email`). Pokud je synchronizace povolena, tak změna členství na jedné straně se promítne do skupiny na druhé straně, případné konflikty se vyřeší dle nastavení atributu :py:attr:`~groups.models.Group.google_as_members_authority`.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -52,7 +52,7 @@ Mezi atributy definované modelem patří:
 
 - :py:attr:`~groups.models.Group.name` (jméno)
 - :py:attr:`~groups.models.Group.google_email` (emailová adresa skupiny uvnitř Google Workspace)
-- :py:attr:`~groups.models.Group.google_as_members_authority` (flag indikující, zda Google skupina s emailovou adresou :py:attr:`~groups.models.Group.google_email` je autoritou)
+- :py:attr:`~groups.models.Group.google_as_members_authority` (flag indikující, zda Google skupina s emailovou adresou :py:attr:`~groups.models.Group.google_email` je autoritou při synchronizaci osob)
 - :py:attr:`~groups.models.Group.members` (seznam členů skupiny)
 
 .. image:: ../_static/groups-model.png

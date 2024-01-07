@@ -50,8 +50,3 @@ Testování tréninků
 U tréninků vytvořená testovací data rámcově reflektují skutečnou strukturu tréninků. Vzhledem k množství reálných dat, jsme se rozhodli, že se omezíme pouze na tréninky ``plavecký trénink 8-13 let skup. 1 Hostivař`` a ``plavecký trénink 8-13 let skup. 2 Hostivař``, kde jsme vyplnili osoby a docházku několik prvních konání tréninku.
 
 Při testování se doporučujeme zaměřit na osoby ``Jan Beneš``, ``Andrea Horáková`` a ``Jana Marečková``.
-
-.. ***************************************
-.. Nastavení času
-.. ***************************************
-.. Některé úkony není možné provést pokud jiná akce neproběhla. Pro důkladné ověření funkcionality je zapotřebí přepsat aktuální čas. To je možné provést nastavením proměnné ``CURRENT_DATETIME`` v souboru ``.env`` na vhodný čas s časovým pásmem ve formátu ISO 8601. Na začátek můžeme doporučit nastavení ``CURRENT_DATETIME=2023-09-01T00:00:00+01:00``, kdy existují proběhlé i nadcházející události.
