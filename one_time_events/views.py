@@ -226,7 +226,7 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault("available_events_organizer", available_events)
 
 
-class OneTimeEventAdminListView(EventAdminListMixin):
+class OneTimeEventAdminListView(OneTimeEventCreatePermissionMixin, EventAdminListMixin):
     template_name = "one_time_events/list_admin.html"
     context_object_name = "events"
 

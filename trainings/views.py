@@ -296,7 +296,7 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         )
 
 
-class TrainingAdminListView(EventAdminListMixin):
+class TrainingAdminListView(TrainingCreatePermissionMixin, EventAdminListMixin):
     template_name = "trainings/list_admin.html"
     context_object_name = "trainings"
 
