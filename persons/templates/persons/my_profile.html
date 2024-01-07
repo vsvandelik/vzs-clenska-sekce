@@ -9,7 +9,7 @@
     <div class="btn-group-md btn-group mb-3 elevation-2">
         <a href="{% url 'my-profile:edit' %}" class="btn btn-success">Upravit kontaktní údaje</a>
     </div>
-    
+
     {% if person.user.has_usable_password %}
         <div class="btn-group-md btn-group mb-3 elevation-2">
             <a href="{% url 'my-profile:change-password' %}" class="btn btn-info">Změnit heslo</a>
@@ -35,6 +35,11 @@
         {% if person.managed_by.count %}
             <div class="col-12 col-md-4">
                 {% include "persons/my_profile_parts/managing_me_persons_card.html" %}
+            </div>
+        {% endif %}
+        {% if person.hourly_rates.count %}
+            <div class="col-12 col-md-4">
+                {% include "persons/my_profile_parts/hourly_rates.html" %}
             </div>
         {% endif %}
         {% if qualifications %}

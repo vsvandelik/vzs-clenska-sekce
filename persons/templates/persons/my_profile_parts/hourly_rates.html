@@ -1,0 +1,23 @@
+{% load vzs_filters %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title h5">Hodinové sazby</div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped m-0">
+            <tbody>
+                {% for hourly_rate in person.hourly_rates.all %}
+                    <tr>
+                        <td>
+                            {{ hourly_rate.event_type|event_type_display_value }}
+                        </td>
+                        <td class="text-center">
+                            {{ hourly_rate.hourly_rate }} Kč / hod
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
