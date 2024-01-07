@@ -68,4 +68,26 @@ Přihlášení na trénink ve veřejné části systému
 
 Toto chování nebylo po dohodě s organizací implementováno, protože to odporuje reálnému procsu v organizaci, kdy administrátoři zakládají osoby ručně, až po návštěve dítěte na prvním ukázkovém tréninku.
 
-skoncil jsem u Export kontaktních údajů. Duklarna kontrola povoleni!!
+Rozdělení na Django aplikace
+----
+(str. 28; "...je možné IS rozdělit na tři aplikace: Users, Members a Events.")
+
+Nakonec jsme :term:IS rozdělili na více aplikací, aby byla možná lepší distribuce práce a přehlednost kódu. Výsledným počtem je 11 aplikací.
+
+Datový model
+----
+(str. 28)
+
+Datový model doznal větších úprav z důvodu efektivity výsledného kódu, ale základní myšlenky zůstaly zachované.
+
+Use-cases
+----
+(str. 30)
+
+Podobně jako u datového modelu i zde došlo k větším úpravám. Myšlenka všech scénářů zůstala zachována, ale podoba a umístění tlačítek a celkový proces byl upraven, aby lépe odpovídal výslednému systému.
+
+Harmonogram
+----
+(str. 40)
+
+K velkému zdržení došlo u harmonogramu. Zdržení bylo způsobeno především časovým vytížením některých členů projektového týmu v průběhu letních prázdnin a podzimu.
