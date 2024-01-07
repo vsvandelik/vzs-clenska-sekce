@@ -17,9 +17,36 @@ from vzs.utils import today
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
+    """
+    Displays the home page.
+
+    Contains a dashboard with various information about the active person.
+    See :meth:`get_context_data` for more information.
+
+    If there is no information to display, logo of the Organization is shown instead.
+    """
+
     template_name = "pages/home.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``multiple_managed_people``: whether the active person
+            manages more than one person
+        *   ``unsettled_transactions``: unsettled transactions of the active person
+        *   ``soon_expiring_qualifications``: qualifications of the active person
+            that expire in 90 days or less
+        *   ``soon_returning_equipment``: equipment of the active person that
+            has to be returned in 30 days or less
+        *   ``upcoming_trainings_participant``: upcoming trainings where the active
+            person is a participant
+        *   ``upcoming_trainings_coach``: upcoming trainings where the active
+            person is a coach
+        *   ``upcoming_onetimeevents_participant``: upcoming one-time events where
+            the active person is a participant
+        *   ``upcoming_onetimeevents_organizer``: upcoming one-time events where
+            the active person is an organizer
+        """
+
         active_person = self.request.active_person
 
         kwargs.setdefault(
@@ -57,6 +84,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
     def _get_unsettled_transactions(self):
+        """:meta private:"""
+
         return Transaction.objects.filter(
             person=self.request.active_person,
             fio_transaction__isnull=True,
@@ -64,6 +93,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
         ).all()
 
     def _get_soon_expiring_features(self, feature_type, days):
+        """:meta private:"""
+
         return FeatureAssignment.objects.filter(
             person=self.request.active_person,
             feature__feature_type=feature_type,
@@ -73,11 +104,43 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
 
 class PageDetailView(LoginRequiredMixin, DetailView):
+    """
+    Displays an editable page.
+
+    Shows an edit button to users with ``stranky`` permission.
+
+    **Path parameters**:
+
+    *   ``slug`` - page slug
+    """
+
     model = Page
     template_name = "pages/detail.html"
 
 
 class PageEditView(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
+    """
+    Edits a page.
+
+    Slug can be changed, therefore the URL of the page can change.
+
+    **Success redirection view**: :class:`PageDetailView` of the edited page.
+
+    **Permissions**:
+
+    Users with ``stranky`` permission.
+
+    **Path parameters**:
+
+    *   ``slug`` - page slug
+
+    **Request body parameters**:
+
+    *   ``title``
+    *   ``content``
+    *   ``slug``
+    """
+
     form_class = PageEditForm
     model = Page
     permissions_formula = [["stranky"]]
