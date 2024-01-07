@@ -13,7 +13,6 @@ from django.views.generic.list import ListView
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
-from users.permissions import PermissionRequiredMixin
 from vzs.mixin_extensions import MessagesMixin
 
 from .forms import (
@@ -23,10 +22,7 @@ from .forms import (
     RemovePersonFromGroupForm,
 )
 from .models import Group, Person
-
-
-class GroupPermissionMixin(PermissionRequiredMixin):
-    permissions_formula = [["skupiny"]]
+from .permissions import GroupPermissionMixin
 
 
 class GroupIndexView(GroupPermissionMixin, ListView):
