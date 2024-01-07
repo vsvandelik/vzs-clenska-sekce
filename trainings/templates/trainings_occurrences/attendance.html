@@ -185,15 +185,3 @@
         </div>
     </div>
 {% endblock %}
-
-{% block scripts %}
-    <script src="{% static "datatables.js" %}"></script>
-    <script>
-        simpleOrderableTableEnable("regular-participants-attendance-table", [0])
-        simpleOrderableTableEnable("one-time-participants-attendance-table", [0])
-
-        simpleOrderableTableEnable("regular-coaches-attendance-table", [0, 1])
-        simpleOrderableTableEnable("one-time-coaches-attendance-table", [0, 1])
-
-    </script>
-{% endblock %}
