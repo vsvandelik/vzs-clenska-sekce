@@ -81,6 +81,39 @@ Aplikace :ref:`events` obsahuje několik modelů z nichž všechny kromě :py:cl
 --------------------------------------
 features
 --------------------------------------
+Vlastnosti jsou jedním ze tří druhů. Vždy se jedná o kvalifikaci, oprávnění, nebo vybavení, ty se přiřazují osobám a definují tak kompetence osoby (např. možnost přihlášení na konkrétní pozici). Některé vlastnosti mohou být časově omezené. U vybavení se eviduje datum vrácení, protože Organizace vybavení půjčuje.
+
+Tato aplikace definuje vlastnosti a poskytuje pohledy, formuláře a další nástroje pro jejich správu, včetně možnosti přiřazení vlastnosti ke konkrétní osobě.
+
+Model
+^^^^^^^^^^^^^^^^^
+Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~features.models.Feature` (vlastnost) a :py:class:`~features.models.FeatureAssignment` (přiřazení vlastnosti k osobě). Model :py:class:`~features.models.Feature` využívá rozšíření :ref:`django-mptt`. Vlastnosti je možné uložit jako stromová data a je možné definovat, zda je vlastnost přiřaditelná k osobě (zpravidla chceme zakázat pro uzly, které nejsou listy).
+
+:py:class:`~features.models.Feature`
+
+- :py:attr:`~features.models.Feature.feature_type` (druh vlastnosti – kvalifikace, oprávnění, vybavení)
+- :py:attr:`~features.models.Feature.name` (název vlastnosti)
+- :py:attr:`~features.models.Feature.assignable` (flag indikující, zda je vlastnost přiřaditelná)
+- :py:attr:`~features.models.Feature.never_expires` (flag indikující, zda vlastnosti nikdy neexpiruje)
+- :py:attr:`~features.models.Feature.fee` (poplatek za vlastnost, využíván jako poplatek za půjčení vybavení)
+- :py:attr:`~features.models.Feature.tier` (TODO)
+- :py:attr:`~features.models.Feature.collect_issuers` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění vydavatele)
+- :py:attr:`~features.models.Feature.collect_codes` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění ID vlastnosti)
+
+:py:class:`~features.models.FeatureAssignment`
+
+- :py:attr:`~features.models.FeatureAssignment.person` (osoba, ke které se vlastnost přiřazuje)
+- :py:attr:`~features.models.FeatureAssignment.feature` (vlastnost, která se k osobě přiřazuje)
+- :py:attr:`~features.models.FeatureAssignment.date_assigned` (datum přiřazení)
+- :py:attr:`~features.models.FeatureAssignment.date_expire` (datum expirace)
+- :py:attr:`~features.models.FeatureAssignment.date_returned` (datum vrácení – pouze pro vybavení)
+- :py:attr:`~features.models.FeatureAssignment.issuer` (vydavatel vlastnosti)
+- :py:attr:`~features.models.FeatureAssignment.code` (ID vlastnosti)
+- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag indikujíjí, zda byl notifikační email oznamující expiraci, jíž osobě odeslán)
+
+
+.. image:: ../_static/features-model.png
+    :target: ../_static/features-model.png
 
 .. _groups:
 
