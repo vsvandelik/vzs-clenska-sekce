@@ -1,0 +1,2337 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/features/:
+    get:
+      operationId: api_features_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feature'
+          description: ''
+    post:
+      operationId: api_features_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feature'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Feature'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Feature'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+          description: ''
+  /api/features/{id}/:
+    get:
+      operationId: api_features_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feature.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+          description: ''
+    put:
+      operationId: api_features_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feature.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feature'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Feature'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Feature'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+          description: ''
+    patch:
+      operationId: api_features_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feature.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFeature'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFeature'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFeature'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+          description: ''
+    delete:
+      operationId: api_features_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feature.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/groups/:
+    get:
+      operationId: api_groups_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+          description: ''
+    post:
+      operationId: api_groups_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Group'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Group'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+  /api/groups/{id}/:
+    get:
+      operationId: api_groups_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    put:
+      operationId: api_groups_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Group'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Group'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    patch:
+      operationId: api_groups_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGroup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGroup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGroup'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    delete:
+      operationId: api_groups_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this group.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/one-time/:
+    get:
+      operationId: api_one_time_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OneTimeEvent'
+          description: ''
+    post:
+      operationId: api_one_time_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneTimeEvent'
+          description: ''
+  /api/one-time/{id}/:
+    get:
+      operationId: api_one_time_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this one time event.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneTimeEvent'
+          description: ''
+    put:
+      operationId: api_one_time_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this one time event.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OneTimeEvent'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneTimeEvent'
+          description: ''
+    patch:
+      operationId: api_one_time_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this one time event.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOneTimeEvent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOneTimeEvent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOneTimeEvent'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneTimeEvent'
+          description: ''
+    delete:
+      operationId: api_one_time_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this one time event.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/persons/:
+    get:
+      operationId: api_persons_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+          description: ''
+    post:
+      operationId: api_persons_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Person'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+          description: ''
+  /api/persons/{id}/:
+    get:
+      operationId: api_persons_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this person.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+          description: ''
+    put:
+      operationId: api_persons_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this person.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Person'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+          description: ''
+    patch:
+      operationId: api_persons_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this person.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPerson'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPerson'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPerson'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+          description: ''
+    delete:
+      operationId: api_persons_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this person.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/persons/exists/:
+    post:
+      operationId: api_persons_exists_create
+      description: ':meta private:'
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/positions/:
+    get:
+      operationId: api_positions_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+          description: ''
+    post:
+      operationId: api_positions_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Position'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Position'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+  /api/positions/{id}/:
+    get:
+      operationId: api_positions_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this event position.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    put:
+      operationId: api_positions_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this event position.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Position'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Position'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    patch:
+      operationId: api_positions_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this event position.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPosition'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPosition'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPosition'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    delete:
+      operationId: api_positions_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this event position.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/trainings/:
+    get:
+      operationId: api_trainings_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Training'
+          description: ''
+    post:
+      operationId: api_trainings_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Training'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Training'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Training'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Training'
+          description: ''
+  /api/trainings/{id}/:
+    get:
+      operationId: api_trainings_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this training.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Training'
+          description: ''
+    put:
+      operationId: api_trainings_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this training.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Training'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Training'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Training'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Training'
+          description: ''
+    patch:
+      operationId: api_trainings_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this training.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTraining'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTraining'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTraining'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Training'
+          description: ''
+    delete:
+      operationId: api_trainings_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this training.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/transactions/:
+    get:
+      operationId: api_transactions_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+          description: ''
+    post:
+      operationId: api_transactions_create
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/transactions/{id}/:
+    get:
+      operationId: api_transactions_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    put:
+      operationId: api_transactions_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    patch:
+      operationId: api_transactions_partial_update
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    delete:
+      operationId: api_transactions_destroy
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/:
+    get:
+      operationId: api_users_list
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/{person}/:
+    get:
+      operationId: api_users_retrieve
+      description: |-
+        Permits users with the ``api`` permission
+        and requests with a valid token in the header.
+      parameters:
+      - in: path
+        name: person
+        schema:
+          type: integer
+        description: A unique value identifying this uživatel.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+components:
+  schemas:
+    BlankEnum:
+      enum:
+      - ''
+    Feature:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        feature_type:
+          $ref: '#/components/schemas/FeatureTypeEnum'
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        assignable:
+          type: boolean
+          title: Přiřaditelné osobě
+        never_expires:
+          type: boolean
+          nullable: true
+        fee:
+          type: integer
+          nullable: true
+          title: Poplatek
+        tier:
+          type: integer
+          nullable: true
+          title: Úroveň
+        collect_issuers:
+          type: boolean
+          nullable: true
+          title: Evidovat vydavatele kvalifikace
+        collect_codes:
+          type: boolean
+          nullable: true
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          title: Nadřazená kategorie
+      required:
+      - feature_type
+      - name
+      - url
+    FeatureTypeEnum:
+      enum:
+      - kvalifikace
+      - vybaveni
+      - opravneni
+      type: string
+      description: |-
+        * `kvalifikace` - kvalifikace
+        * `vybaveni` - vybavení
+        * `opravneni` - oprávnění
+    Group:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        members:
+          type: array
+          items:
+            type: string
+            format: uri
+        name:
+          type: string
+          title: Název skupiny
+          maxLength: 255
+        google_email:
+          type: string
+          format: email
+          nullable: true
+          title: E-mailová adresa skupiny v Google Workspace
+          maxLength: 255
+        google_as_members_authority:
+          type: boolean
+          title: Je Google autorita seznamu členů?
+      required:
+      - google_as_members_authority
+      - members
+      - name
+      - url
+    HealthInsuranceCompanyEnum:
+      enum:
+      - '111'
+      - '201'
+      - '205'
+      - '207'
+      - '209'
+      - '211'
+      - '213'
+      type: string
+      description: |-
+        * `111` - 111 - Všeobecná zdravotní pojišťovna České republiky
+        * `201` - 201 - Vojenská zdravotní pojišťovna České republiky
+        * `205` - 205 - Česká průmyslová zdravotní pojišťovna
+        * `207` - 207 - Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví
+        * `209` - 209 - Zaměstnanecká pojišťovna Škoda
+        * `211` - 211 - Zdravotní pojišťovna ministerstva vnitra České republiky
+        * `213` - 213 - Revírní bratrská pokladna, zdravotní pojišťovna
+    NullEnum:
+      enum:
+      - null
+    OneTimeEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+          title: Popis
+        location:
+          type: string
+          nullable: true
+          title: Místo konání
+          maxLength: 200
+        date_start:
+          type: string
+          format: date
+          title: Začíná
+        date_end:
+          type: string
+          format: date
+          title: Končí
+        participants_enroll_state:
+          allOf:
+          - $ref: '#/components/schemas/ParticipantsEnrollStateEnum'
+          title: Přidat nové účastníky jako
+        capacity:
+          type: integer
+          nullable: true
+          title: Maximální počet účastníků
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk účastníků
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk účastníků
+        default_participation_fee:
+          type: integer
+          nullable: true
+          title: Standardní výše poplatku pro účastníky
+        category:
+          allOf:
+          - $ref: '#/components/schemas/OneTimeEventCategory'
+          title: Druh události
+        training_category:
+          nullable: true
+          title: Kategorie tréninku
+          oneOf:
+          - $ref: '#/components/schemas/TrainingCategory'
+          - $ref: '#/components/schemas/NullEnum'
+        state:
+          $ref: '#/components/schemas/StateEnum'
+        group:
+          type: integer
+          nullable: true
+          title: Skupina
+        positions:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        enrolled_participants:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+      required:
+      - allowed_person_types
+      - category
+      - date_end
+      - date_start
+      - enrolled_participants
+      - id
+      - name
+      - positions
+      - state
+    OneTimeEventCategory:
+      enum:
+      - komercni
+      - kurz
+      - prezentacni
+      - pro-deti
+      - spolecenska
+      type: string
+      description: |-
+        * `komercni` - komerční
+        * `kurz` - kurz
+        * `prezentacni` - prezentační
+        * `pro-deti` - pro děti
+        * `spolecenska` - společenská
+    ParticipantsEnrollStateEnum:
+      enum:
+      - nahradnik
+      - schvalen
+      type: string
+      description: |-
+        * `nahradnik` - nahradník
+        * `schvalen` - schválen
+    PatchedFeature:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        feature_type:
+          $ref: '#/components/schemas/FeatureTypeEnum'
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        assignable:
+          type: boolean
+          title: Přiřaditelné osobě
+        never_expires:
+          type: boolean
+          nullable: true
+        fee:
+          type: integer
+          nullable: true
+          title: Poplatek
+        tier:
+          type: integer
+          nullable: true
+          title: Úroveň
+        collect_issuers:
+          type: boolean
+          nullable: true
+          title: Evidovat vydavatele kvalifikace
+        collect_codes:
+          type: boolean
+          nullable: true
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          title: Nadřazená kategorie
+    PatchedGroup:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        members:
+          type: array
+          items:
+            type: string
+            format: uri
+        name:
+          type: string
+          title: Název skupiny
+          maxLength: 255
+        google_email:
+          type: string
+          format: email
+          nullable: true
+          title: E-mailová adresa skupiny v Google Workspace
+          maxLength: 255
+        google_as_members_authority:
+          type: boolean
+          title: Je Google autorita seznamu členů?
+    PatchedOneTimeEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+          title: Popis
+        location:
+          type: string
+          nullable: true
+          title: Místo konání
+          maxLength: 200
+        date_start:
+          type: string
+          format: date
+          title: Začíná
+        date_end:
+          type: string
+          format: date
+          title: Končí
+        participants_enroll_state:
+          allOf:
+          - $ref: '#/components/schemas/ParticipantsEnrollStateEnum'
+          title: Přidat nové účastníky jako
+        capacity:
+          type: integer
+          nullable: true
+          title: Maximální počet účastníků
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk účastníků
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk účastníků
+        default_participation_fee:
+          type: integer
+          nullable: true
+          title: Standardní výše poplatku pro účastníky
+        category:
+          allOf:
+          - $ref: '#/components/schemas/OneTimeEventCategory'
+          title: Druh události
+        training_category:
+          nullable: true
+          title: Kategorie tréninku
+          oneOf:
+          - $ref: '#/components/schemas/TrainingCategory'
+          - $ref: '#/components/schemas/NullEnum'
+        state:
+          $ref: '#/components/schemas/StateEnum'
+        group:
+          type: integer
+          nullable: true
+          title: Skupina
+        positions:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        enrolled_participants:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+    PatchedPerson:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        managed_persons:
+          type: array
+          items:
+            type: string
+            format: uri
+        features:
+          type: array
+          items:
+            type: string
+            format: uri
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: E-mailová adressa
+          maxLength: 254
+        first_name:
+          type: string
+          title: Křestní jméno
+          maxLength: 50
+        last_name:
+          type: string
+          title: Příjmení
+          maxLength: 50
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Datum narození
+        sex:
+          allOf:
+          - $ref: '#/components/schemas/SexEnum'
+          title: Pohlaví
+        person_type:
+          allOf:
+          - $ref: '#/components/schemas/PersonTypeEnum'
+          title: Typ osoby
+        birth_number:
+          type: string
+          nullable: true
+          title: Rodné číslo
+          pattern: \d{2}(0[1-9]|1[0-2]|5[1-9]|6[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])\/\d{3,4}
+          maxLength: 11
+        health_insurance_company:
+          nullable: true
+          title: Zdravotní pojišťovna
+          oneOf:
+          - $ref: '#/components/schemas/HealthInsuranceCompanyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        phone:
+          type: string
+          nullable: true
+          title: Telefon
+          maxLength: 20
+        street:
+          type: string
+          nullable: true
+          title: Ulice a číslo popisné
+          maxLength: 255
+        city:
+          type: string
+          nullable: true
+          title: Město
+          maxLength: 255
+        postcode:
+          type: integer
+          nullable: true
+          title: PSČ
+        swimming_time:
+          type: string
+          nullable: true
+          title: Čas na 100m
+          pattern: \d{2}:\d{2}\.\d{2}
+          maxLength: 8
+        is_deleted:
+          type: boolean
+          title: Smazáno
+    PatchedPosition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        required_features:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        wage_hour:
+          type: integer
+          minimum: 1
+          title: Hodinová sazba
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk
+        group:
+          type: integer
+          nullable: true
+    PatchedTraining:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+          title: Popis
+        location:
+          type: string
+          nullable: true
+          title: Místo konání
+          maxLength: 200
+        date_start:
+          type: string
+          format: date
+          title: Začíná
+        date_end:
+          type: string
+          format: date
+          title: Končí
+        participants_enroll_state:
+          allOf:
+          - $ref: '#/components/schemas/ParticipantsEnrollStateEnum'
+          title: Přidat nové účastníky jako
+        capacity:
+          type: integer
+          nullable: true
+          title: Maximální počet účastníků
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk účastníků
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk účastníků
+        category:
+          allOf:
+          - $ref: '#/components/schemas/TrainingCategory'
+          title: Druh události
+        po_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        po_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ut_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ut_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        st_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        st_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ct_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ct_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        pa_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        pa_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        so_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        so_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ne_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ne_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        group:
+          type: integer
+          nullable: true
+          title: Skupina
+        main_coach_assignment:
+          type: integer
+          nullable: true
+        positions:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        enrolled_participants:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        coaches:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+    PatchedTransaction:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        event:
+          type: integer
+        amount:
+          type: integer
+          title: Suma
+        reason:
+          type: string
+          title: Popis transakce
+          maxLength: 150
+        date_due:
+          type: string
+          format: date
+          title: Datum splatnosti
+        person:
+          type: string
+          format: uri
+          title: Osoba
+        feature_assigment:
+          type: string
+          format: uri
+          nullable: true
+          title: Vybavení
+        bulk_transaction:
+          type: string
+          format: uri
+          nullable: true
+        fio_transaction:
+          type: string
+          format: uri
+          nullable: true
+    Person:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        managed_persons:
+          type: array
+          items:
+            type: string
+            format: uri
+        features:
+          type: array
+          items:
+            type: string
+            format: uri
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: E-mailová adressa
+          maxLength: 254
+        first_name:
+          type: string
+          title: Křestní jméno
+          maxLength: 50
+        last_name:
+          type: string
+          title: Příjmení
+          maxLength: 50
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Datum narození
+        sex:
+          allOf:
+          - $ref: '#/components/schemas/SexEnum'
+          title: Pohlaví
+        person_type:
+          allOf:
+          - $ref: '#/components/schemas/PersonTypeEnum'
+          title: Typ osoby
+        birth_number:
+          type: string
+          nullable: true
+          title: Rodné číslo
+          pattern: \d{2}(0[1-9]|1[0-2]|5[1-9]|6[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])\/\d{3,4}
+          maxLength: 11
+        health_insurance_company:
+          nullable: true
+          title: Zdravotní pojišťovna
+          oneOf:
+          - $ref: '#/components/schemas/HealthInsuranceCompanyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        phone:
+          type: string
+          nullable: true
+          title: Telefon
+          maxLength: 20
+        street:
+          type: string
+          nullable: true
+          title: Ulice a číslo popisné
+          maxLength: 255
+        city:
+          type: string
+          nullable: true
+          title: Město
+          maxLength: 255
+        postcode:
+          type: integer
+          nullable: true
+          title: PSČ
+        swimming_time:
+          type: string
+          nullable: true
+          title: Čas na 100m
+          pattern: \d{2}:\d{2}\.\d{2}
+          maxLength: 8
+        is_deleted:
+          type: boolean
+          title: Smazáno
+      required:
+      - features
+      - first_name
+      - last_name
+      - managed_persons
+      - person_type
+      - sex
+      - url
+    PersonTypeEnum:
+      enum:
+      - radny
+      - cekatel
+      - cestny
+      - dite
+      - externi
+      - rodic
+      - byvaly
+      - neznamy
+      type: string
+      description: |-
+        * `radny` - řádný člen
+        * `cekatel` - člen - čekatel
+        * `cestny` - čestný člen
+        * `dite` - dítě
+        * `externi` - externí spolupracovník
+        * `rodic` - rodič
+        * `byvaly` - bývalý člen
+        * `neznamy` - neznámý
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        required_features:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        wage_hour:
+          type: integer
+          minimum: 1
+          title: Hodinová sazba
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk
+        group:
+          type: integer
+          nullable: true
+      required:
+      - allowed_person_types
+      - id
+      - name
+      - required_features
+      - wage_hour
+    SexEnum:
+      enum:
+      - M
+      - F
+      - U
+      type: string
+      description: |-
+        * `M` - muž
+        * `F` - žena
+        * `U` - neznámé
+    StateEnum:
+      enum:
+      - neuzavrena
+      - uzavrena
+      - zpracovana
+      type: string
+      description: |-
+        * `neuzavrena` - neuzavřena
+        * `uzavrena` - uzavřena
+        * `zpracovana` - zpracována
+    Training:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        allowed_person_types:
+          type: array
+          items:
+            type: integer
+        name:
+          type: string
+          title: Název
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+          title: Popis
+        location:
+          type: string
+          nullable: true
+          title: Místo konání
+          maxLength: 200
+        date_start:
+          type: string
+          format: date
+          title: Začíná
+        date_end:
+          type: string
+          format: date
+          title: Končí
+        participants_enroll_state:
+          allOf:
+          - $ref: '#/components/schemas/ParticipantsEnrollStateEnum'
+          title: Přidat nové účastníky jako
+        capacity:
+          type: integer
+          nullable: true
+          title: Maximální počet účastníků
+        min_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Minimální věk účastníků
+        max_age:
+          type: integer
+          maximum: 99
+          minimum: 1
+          nullable: true
+          title: Maximální věk účastníků
+        category:
+          allOf:
+          - $ref: '#/components/schemas/TrainingCategory'
+          title: Druh události
+        po_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        po_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ut_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ut_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        st_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        st_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ct_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ct_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        pa_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        pa_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        so_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        so_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        ne_from:
+          type: string
+          format: time
+          nullable: true
+          title: Od*
+        ne_to:
+          type: string
+          format: time
+          nullable: true
+          title: Do*
+        group:
+          type: integer
+          nullable: true
+          title: Skupina
+        main_coach_assignment:
+          type: integer
+          nullable: true
+        positions:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        enrolled_participants:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+        coaches:
+          type: array
+          items:
+            type: integer
+          readOnly: true
+      required:
+      - allowed_person_types
+      - category
+      - coaches
+      - date_end
+      - date_start
+      - enrolled_participants
+      - id
+      - name
+      - positions
+    TrainingCategory:
+      enum:
+      - lezecky
+      - plavecky
+      - zdravoveda
+      type: string
+      description: |-
+        * `lezecky` - lezecký
+        * `plavecky` - plavecký
+        * `zdravoveda` - zdravověda
+    Transaction:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        event:
+          type: integer
+        amount:
+          type: integer
+          title: Suma
+        reason:
+          type: string
+          title: Popis transakce
+          maxLength: 150
+        date_due:
+          type: string
+          format: date
+          title: Datum splatnosti
+        person:
+          type: string
+          format: uri
+          title: Osoba
+        feature_assigment:
+          type: string
+          format: uri
+          nullable: true
+          title: Vybavení
+        bulk_transaction:
+          type: string
+          format: uri
+          nullable: true
+        fio_transaction:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - amount
+      - date_due
+      - event
+      - person
+      - reason
+      - url
+    User:
+      type: object
+      description: Provides serialization for the :class:`users.models.User` model.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        person:
+          type: string
+          format: uri
+        last_login:
+          type: string
+          format: date-time
+          nullable: true
+          title: Poslední přihlášení
+        is_superuser:
+          type: boolean
+          title: Superuživatel
+          description: Určuje, že uživatel má veškerá oprávnění bez jejich explicitního
+            přiřazení.
+        is_staff:
+          type: boolean
+          title: Administrační přístup
+          description: Určuje, zda se uživatel může přihlásit do správy tohoto webu.
+        is_active:
+          type: boolean
+          title: Aktivní
+          description: Určuje, zda bude uživatel považován za aktivního. Použijte
+            tuto možnost místo odstranění účtů.
+        groups:
+          type: array
+          items:
+            type: string
+            format: uri
+            title: Skupiny
+          title: Skupiny
+          description: Skupiny, do kterých tento uživatel patří. Uživatel dostane
+            všechna oprávnění udělená každé z jeho skupin.
+        user_permissions:
+          type: array
+          items:
+            type: string
+            format: uri
+            title: Uživatelská oprávnění
+          title: Uživatelská oprávnění
+          description: Konkrétní oprávnění tohoto uživatele.
+      required:
+      - person
+      - url
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
