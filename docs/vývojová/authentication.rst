@@ -84,8 +84,8 @@ Postup celé autentizace je následující:
 1.  View, který zpracovává požadavek uživatele na přihlášení pomocí Google,
     přesměruje na Google autentizační stránku. Té je nutné zadat url,
     na kterou chceme dostat odpověď. Tato url musí být zaregistrována
-    v Google konzole jako povolena. Také je možné v query parametru ``state``
-    prodat libovolný řetězec. Ten dostaneme v odpovědi od autentizačního serveru.
+    v Google konzoli jako povolena. Také je možné v query parametru ``state``
+    přidat libovolný řetězec. Ten dostaneme v odpovědi od autentizačního serveru.
 
 2.  Uživatel se přihlásí na Google autentizační stránce a ta jej přesměruje
     na url, kterou jsme zadali v předchozím kroku.
