@@ -76,8 +76,8 @@ lze přidat takto::
 Tento backend autentizuje uživatele na základě tokenu,
 který je zaslán v GET requestu od Google autentizačního serveru.
 
-Používá knihovny `google-auth <https://google-auth.readthedocs.io/en/latest/>`
-a `google-auth-oauthlib <https://google-auth-oauthlib.readthedocs.io/en/latest/>`.
+Používá knihovny `google-auth <https://google-auth.readthedocs.io/en/latest/>`_
+a `google-auth-oauthlib <https://google-auth-oauthlib.readthedocs.io/en/latest/>`_.
 
 Postup celé autentizace je následující:
 
