@@ -3,7 +3,7 @@ Autentizace
 ***************************************
 
 :term:`IS` používá pro autentizaci standardní nástroje Djanga
-s drobným přizpůsobením. V této stránce je popsán základní přehled fungování
+s drobným přizpůsobením. Na této stránce je popsán základní přehled fungování
 těchto nástrojů a všechna přizpůsobení. Rovněž je zde popsáno, jak se dá
 systém rozšířit.
 
@@ -39,6 +39,33 @@ Jediným rozdílem je, že standardní ``ModelBackend`` ověřuje pouze na zákl
 uživatelského modelu, zatímco ``PasswordBackend`` ověřuje také na základě e-mailu,
 který je obsažen v modelu osoby.
 Před autentizací tedy musí získat instanci osoby podle e-mailu.
+
+Při ověření hesla se používá koncept validátorů. Ty lze přidat do pole
+``vzs.settings.AUTH_PASSWORD_VALIDATORS``. :term:`IS` používá několik vestavěných
+validátorů a dva vlastní: ``MinimumNumericValidator`` a ``MinimumCapitalValidator``.
+Vlastní validátory se nacházejí v ``users.validators``. Nový vlastní validátor
+lze přidat takto::
+
+    # users.validators
+    class NewValidator:
+        def validate(self, password, user=None):
+            # logic
+
+            if failure:
+                raise ValidationError(_("Popis chyby."),code="code")
+
+            # success
+
+        def get_help_text(self):
+            return _("Popis.")
+
+    # vzs.settings
+    AUTH_PASSWORD_VALIDATORS = [
+        {
+            # ...,
+            "NAME": 'users.validators.NewValidator",
+        },
+    ]
 
 ``GoogleBackend``
 ^^^^^^^^^^^^^^^^^
@@ -77,3 +104,22 @@ přesměrování na původní stránku pomocí použití
 ``next`` query parametru v login stránce.
 Aby bylo možné přesměrovat na správnou stránku i při použití Google autentizace,
 je tento parametr zakódován do ``state`` query parametru.
+
+-------
+Session
+-------
+Pro ukládání informací o přihlášeném uživateli se používají Django sessions.
+Tato funkce je vestavěná v Django middlewarech ``SessionMiddleware``
+a ``AuthenticationMiddleware``. Ty nastaví ve views atribut ``request.user``
+na instanci uživatele, který je přihlášen, jinak na ``AnonymousUser``.
+
+Pro nastavení přihlášeného uživatele se používá ``django.contrib.auth.login`` funkce.
+Celé použití autentizace ve views vypadá tedy takto::
+    
+     user = authenticate(request, **credentials)
+     login(request, user)
+
+Při změně hesla uživatele přestane být hash uložen v session aktuální. Pokud potřebujeme
+zachovat přihlášení při změně hesla, je nutné aktualizovat tuto hodnotu takto::
+
+     update_session_auth_hash(request, user)
