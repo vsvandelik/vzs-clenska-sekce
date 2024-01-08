@@ -5,7 +5,7 @@ from google_integration import google_directory
 from groups.models import Group
 from persons.models import Person
 from vzs.forms import WithoutFormTagMixin
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     RelatedAddMixin,
     RelatedAddOrRemoveFormMixin,
     RelatedRemoveMixin,

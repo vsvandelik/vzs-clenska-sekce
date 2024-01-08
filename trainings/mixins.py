@@ -11,7 +11,7 @@ from persons.models import get_active_user
 from trainings.forms import TrainingParticipantEnrollmentForm, CoachAssignmentForm
 from trainings.models import TrainingParticipantEnrollment, CoachPositionAssignment
 from trainings.permissions import TrainingCreatePermissionMixin
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixins import MessagesMixin
 from vzs.utils import now
 
 

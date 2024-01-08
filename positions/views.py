@@ -6,7 +6,7 @@ from django.views.generic.list import ListView
 
 from events.views import PersonTypeInsertIntoContextDataMixin
 from features.models import Feature
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixins import MessagesMixin
 
 from .forms import (
     AddFeatureRequirementPositionForm,

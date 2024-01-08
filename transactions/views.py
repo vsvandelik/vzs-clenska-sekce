@@ -26,7 +26,7 @@ from persons.utils import PersonsFilter
 from persons.views import PersonPermissionMixin
 from trainings.models import Training
 from users.permissions import LoginRequiredMixin
-from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin
+from vzs.mixins import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 
 from .forms import (

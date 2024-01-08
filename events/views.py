@@ -10,7 +10,7 @@ from one_time_events.permissions import OccurrenceDetailPermissionMixin
 from persons.models import Person, get_active_user
 from trainings.models import Training, TrainingOccurrence
 from users.permissions import PermissionRequiredMixin
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     InsertActivePersonIntoModelFormKwargsMixin,
     MessagesMixin,
 )

@@ -13,7 +13,7 @@ from one_time_events.forms import OneTimeEventParticipantEnrollmentForm
 from one_time_events.models import OneTimeEventParticipantEnrollment
 from one_time_events.permissions import OneTimeEventCreatePermissionMixin
 from persons.models import get_active_user
-from vzs.mixin_extensions import InsertRequestIntoModelFormKwargsMixin, MessagesMixin
+from vzs.mixins import InsertRequestIntoModelFormKwargsMixin, MessagesMixin
 from vzs.utils import today
 
 

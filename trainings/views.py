@@ -52,7 +52,7 @@ from trainings.permissions import (
     TrainingCreatePermissionMixin,
 )
 from users.permissions import LoginRequiredMixin
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,

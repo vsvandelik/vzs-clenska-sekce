@@ -14,7 +14,7 @@ from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
 from persons.views import PersonPermissionMixin
 from users.permissions import PermissionRequiredMixin
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixins import MessagesMixin
 
 from .forms import (
     AddMembersGroupForm,

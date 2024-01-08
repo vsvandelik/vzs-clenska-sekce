@@ -42,7 +42,7 @@ from events.views import (
 )
 from persons.models import Person, get_active_user
 from users.permissions import LoginRequiredMixin
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     InsertActivePersonIntoModelFormKwargsMixin,
     InsertRequestIntoModelFormKwargsMixin,
     MessagesMixin,
