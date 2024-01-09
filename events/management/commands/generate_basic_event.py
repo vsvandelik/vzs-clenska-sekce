@@ -1,8 +1,9 @@
-import random
 from datetime import date, datetime, timedelta
+from random import choice as random_choice
+from random import randint
+from random import sample as random_sample
 
 from django.core.management.base import CommandError
-from django.utils import timezone
 
 from events.models import EventPersonTypeConstraint
 from groups.models import Group
@@ -13,16 +14,18 @@ from vzs.commands_utils import age_int, non_negative_int, positive_int
 
 
 def _generate_age(min, max):
-    if random.randint(0, 1):
-        return random.randint(min, max)
+    if randint(0, 1):
+        return randint(min, max)
+
     return None
 
 
 def _generate_random_date():
     while True:
-        year = random.randint(2020, 2023)
-        month = random.randint(1, 12)
-        day = random.randint(1, 31)
+        year = randint(2020, 2023)
+        month = randint(1, 12)
+        day = randint(1, 31)
+
         try:
             return date(year=year, month=month, day=day)
         except ValueError:
@@ -59,9 +62,7 @@ def generate_group_requirement(options):
     if not options["disable_group_restrictions"]:
         if groups_count == 0 and options["requires_group"]:
             raise CommandError("--requires-group requires an existing group in the DB")
-        elif groups_count > 0 and (
-            options["requires_group"] or bool(random.randint(0, 1))
-        ):
+        elif groups_count > 0 and (options["requires_group"] or bool(randint(0, 1))):
             group = Group.objects.order_by("?").first()
     return group
 
@@ -69,10 +70,10 @@ def generate_group_requirement(options):
 def generate_allowed_person_types_requirement(options):
     chosen_person_types = []
     if options["person_type"] is None:
-        if random.randint(1, 10) > 6:
+        if randint(1, 10) > 6:
             person_types = list(Person.Type.values)
-            chosen_person_types = random.sample(
-                person_types, k=random.randint(0, len(person_types) - 1)
+            chosen_person_types = random_sample(
+                person_types, k=randint(0, len(person_types) - 1)
             )
     else:
         chosen_person_types = [
@@ -88,14 +89,10 @@ def generate_allowed_person_types_requirement(options):
 def _generate_start_end_dates(min_days_delta, max_days_delta, options):
     if options["date_start"] is not None and options["date_end"] is None:
         date_start = options["date_start"]
-        date_end = date_start + timedelta(
-            days=random.randint(min_days_delta, max_days_delta)
-        )
+        date_end = date_start + timedelta(days=randint(min_days_delta, max_days_delta))
     elif options["date_start"] is None and options["date_end"] is not None:
         date_end = options["date_end"]
-        date_start = date_end - timedelta(
-            days=random.randint(min_days_delta, max_days_delta)
-        )
+        date_start = date_end - timedelta(days=randint(min_days_delta, max_days_delta))
     elif options["date_start"] is not None and options["date_end"] is not None:
         date_start = options["date_start"]
         date_end = options["date_end"]
@@ -103,9 +100,7 @@ def _generate_start_end_dates(min_days_delta, max_days_delta, options):
             raise CommandError("--date-start has greater value than --date-end")
     else:
         date_start = _generate_random_date()
-        date_end = date_start + timedelta(
-            days=random.randint(min_days_delta, max_days_delta)
-        )
+        date_end = date_start + timedelta(days=randint(min_days_delta, max_days_delta))
     return date_start, date_end
 
 
@@ -115,12 +110,10 @@ def generate_basic_event(t, name, min_days_delta, max_days_delta, options):
     )
 
     capacity = (
-        options["capacity"]
-        if options["capacity"] is not None
-        else random.randint(4, 32)
+        options["capacity"] if options["capacity"] is not None else randint(4, 32)
     )
 
-    location = random.choice(
+    location = random_choice(
         [
             "klubovna",
             "tělocvična",

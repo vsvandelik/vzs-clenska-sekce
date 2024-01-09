@@ -1,20 +1,34 @@
 from datetime import timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import (
+    CASCADE,
+    SET_NULL,
+    CharField,
+    DateField,
+    DateTimeField,
+    ForeignKey,
+    ManyToManyField,
+    Model,
+    PositiveSmallIntegerField,
+    Q,
+    QuerySet,
+    TextChoices,
+    TextField,
+)
 from django.utils.translation import gettext_lazy as _
 from polymorphic.managers import PolymorphicManager
 from polymorphic.models import PolymorphicModel
 
 from persons.models import Person
-from vzs import settings
 from vzs.models import RenderableModelMixin
+from vzs.settings import PARTICIPANT_ENROLL_DEADLINE_DAYS
 from vzs.utils import today
+
 from .utils import check_common_requirements
 
 
-class EventOrOccurrenceState(models.TextChoices):
+class EventOrOccurrenceState(TextChoices):
     # attendance not filled
     OPEN = "neuzavrena", _("neuzavřena")
 
@@ -26,32 +40,30 @@ class EventOrOccurrenceState(models.TextChoices):
 
 
 class ParticipantEnrollment(PolymorphicModel):
-    class State(models.TextChoices):
+    class State(TextChoices):
         APPROVED = "schvalen", _("schválen")
         SUBSTITUTE = "nahradnik", _("nahradník")
         REJECTED = "odmitnut", _("odmítnut")
 
     objects = PolymorphicManager()
 
-    created_datetime = models.DateTimeField()
-    state = models.CharField("Stav přihlášky", max_length=10, choices=State.choices)
+    created_datetime = DateTimeField()
+    state = CharField("Stav přihlášky", max_length=10, choices=State.choices)
 
 
 class Event(RenderableModelMixin, PolymorphicModel):
-    name = models.CharField(_("Název"), max_length=50)
-    description = models.TextField(_("Popis"), null=True, blank=True)
-    location = models.CharField(
-        _("Místo konání"), null=True, blank=True, max_length=200
-    )
+    name = CharField(_("Název"), max_length=50)
+    description = TextField(_("Popis"), null=True, blank=True)
+    location = CharField(_("Místo konání"), null=True, blank=True, max_length=200)
 
-    date_start = models.DateField(_("Začíná"))
-    date_end = models.DateField(_("Končí"))
+    date_start = DateField(_("Začíná"))
+    date_end = DateField(_("Končí"))
 
-    positions = models.ManyToManyField(
+    positions = ManyToManyField(
         "positions.EventPosition", through="events.EventPositionAssignment"
     )
 
-    participants_enroll_state = models.CharField(
+    participants_enroll_state = CharField(
         "Přidat nové účastníky jako",
         max_length=10,
         default=ParticipantEnrollment.State.SUBSTITUTE.value,
@@ -68,29 +80,29 @@ class Event(RenderableModelMixin, PolymorphicModel):
     )
 
     # requirements for participants
-    capacity = models.PositiveSmallIntegerField(
+    capacity = PositiveSmallIntegerField(
         _("Maximální počet účastníků"), null=True, blank=True
     )
-    min_age = models.PositiveSmallIntegerField(
+    min_age = PositiveSmallIntegerField(
         _("Minimální věk účastníků"),
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
 
-    max_age = models.PositiveSmallIntegerField(
+    max_age = PositiveSmallIntegerField(
         _("Maximální věk účastníků"),
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
 
-    group = models.ForeignKey(
-        "groups.Group", null=True, verbose_name="Skupina", on_delete=models.SET_NULL
+    group = ForeignKey(
+        "groups.Group", null=True, verbose_name="Skupina", on_delete=SET_NULL
     )
 
     # if NULL -> no effect (all person types are allowed)
-    allowed_person_types = models.ManyToManyField(
+    allowed_person_types = ManyToManyField(
         "events.EventPersonTypeConstraint",
         related_name="event_person_type_constraint_set",
     )
@@ -129,7 +141,7 @@ class Event(RenderableModelMixin, PolymorphicModel):
         return (
             self.can_person_enroll_as_waiting(person)
             and self.has_free_spot()
-            and today() + timedelta(days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS)
+            and today() + timedelta(days=PARTICIPANT_ENROLL_DEADLINE_DAYS)
             <= self.date_start
         )
 
@@ -241,8 +253,8 @@ class Event(RenderableModelMixin, PolymorphicModel):
 
 
 class EventOccurrence(PolymorphicModel):
-    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    state = models.CharField(max_length=10, choices=EventOrOccurrenceState.choices)
+    event = ForeignKey("events.Event", on_delete=CASCADE)
+    state = CharField(max_length=10, choices=EventOrOccurrenceState.choices)
 
     def get_person_organizer_assignment(self, person):
         return self.organizeroccurrenceassignment_set.filter(person=person)
@@ -321,12 +333,12 @@ class EventOccurrence(PolymorphicModel):
         return self.can_user_manage(user)  # TODO: implement
 
 
-class EventPositionAssignment(models.Model):
-    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    position = models.ForeignKey(
-        "positions.EventPosition", verbose_name="Pozice", on_delete=models.CASCADE
+class EventPositionAssignment(Model):
+    event = ForeignKey("events.Event", on_delete=CASCADE)
+    position = ForeignKey(
+        "positions.EventPosition", verbose_name="Pozice", on_delete=CASCADE
     )
-    count = models.PositiveSmallIntegerField(
+    count = PositiveSmallIntegerField(
         _("Počet organizátorů"), default=1, validators=[MinValueValidator(1)]
     )
 
@@ -345,9 +357,7 @@ class EventPositionAssignment(models.Model):
 
 
 class OrganizerAssignment(PolymorphicModel):
-    transaction = models.ForeignKey(
-        "transactions.Transaction", null=True, on_delete=models.SET_NULL
-    )
+    transaction = ForeignKey("transactions.Transaction", null=True, on_delete=SET_NULL)
 
     def can_unenroll(self):
         return self.occurrence.can_unenroll_position(
@@ -358,8 +368,8 @@ class OrganizerAssignment(PolymorphicModel):
         return self.transaction is not None and self.transaction.is_settled
 
 
-class EventPersonTypeConstraint(models.Model):
-    person_type = models.CharField(
+class EventPersonTypeConstraint(Model):
+    person_type = CharField(
         _("Typ osoby"), unique=True, max_length=10, choices=Person.Type.valid_choices()
     )
 

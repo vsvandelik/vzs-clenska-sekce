@@ -13,8 +13,8 @@ from events.models import ParticipantEnrollment
 from events.permissions import (
     EventManagePermissionMixin,
     OccurrenceEnrollOrganizerPermissionMixin,
-    OccurrenceManagePermissionMixin,
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinID,
+    OccurrenceManagePermissionMixinPK,
     OccurrenceUnenrollOrganizerPermissionMixin,
 )
 from events.views import (
@@ -22,7 +22,7 @@ from events.views import (
     EnrollMyselfParticipantMixin,
     EventAdminListMixin,
     EventCreateMixin,
-    EventDetailBaseView,
+    EventDetailMixin,
     EventGeneratesDatesMixin,
     EventOccurrenceIdCheckMixin,
     EventUpdateMixin,
@@ -98,7 +98,7 @@ from .models import (
 )
 
 
-class TrainingDetailView(EventDetailBaseView):
+class TrainingDetailView(EventDetailMixin):
     def get_context_data(self, **kwargs):
         active_person = self.request.active_person
         trainings_for_replacement_to_choose = (
@@ -508,7 +508,7 @@ class CoachOccurrenceBaseView(
 
 
 class CancelCoachExcuseView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -541,7 +541,7 @@ class ExcuseMyselfCoachView(
 
 
 class CoachExcuseView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -565,7 +565,7 @@ class EnrollMyselfOrganizerForOccurrenceView(
 
 
 class OneTimeCoachDeleteView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     CoachOccurrenceBaseView,
     generic.DeleteView,
 ):
@@ -604,7 +604,7 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
 
 
 class AddOneTimeCoachView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     InsertOccurrenceIntoModelFormKwargsMixin,
     CoachOccurrenceBaseView,
     generic.CreateView,
@@ -615,7 +615,7 @@ class AddOneTimeCoachView(
 
 
 class EditOneTimeCoachView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     MessagesMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
     EventOccurrenceIdCheckMixin,
@@ -654,7 +654,7 @@ class ParticipantOccurrenceBaseView(
 
 
 class ExcuseParticipantView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -664,7 +664,7 @@ class ExcuseParticipantView(
 
 
 class CancelParticipantExcuseView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
@@ -710,7 +710,7 @@ class UnenrollMyselfParticipantFromOccurrenceView(
 
 
 class AddOneTimeParticipantView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     InsertOccurrenceIntoModelFormKwargsMixin,
     ParticipantOccurrenceBaseView,
     generic.CreateView,
@@ -721,7 +721,7 @@ class AddOneTimeParticipantView(
 
 
 class OneTimeParticipantDeleteView(
-    OccurrenceManagePermissionMixin,
+    OccurrenceManagePermissionMixinID,
     ParticipantOccurrenceBaseView,
     generic.DeleteView,
 ):
@@ -794,7 +794,7 @@ class TrainingFillAttendanceView(
 
 
 class ReopenTrainingOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     MessagesMixin,
     OccurrenceNotOpenedRestrictionMixin,
     RedirectToOccurrenceFallbackEventDetailOnSuccessMixin,
@@ -854,7 +854,7 @@ class TrainingExportCoachesView(
 
 
 class TrainingExportOrganizersOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoSelfObjectMixin,
     generic.View,
@@ -873,7 +873,7 @@ class TrainingExportOrganizersOccurrenceView(
 
 
 class TrainingExportParticipantsOccurrenceView(
-    OccurrenceManagePermissionMixin2,
+    OccurrenceManagePermissionMixinPK,
     EventOccurrenceIdCheckMixin,
     InsertOccurrenceIntoSelfObjectMixin,
     generic.View,
