@@ -206,6 +206,48 @@ trainings
 --------------------------------------
 transactions
 --------------------------------------
+Transakce definují platební styk mezi :term:`Organizací <Organizace>` a osobu evidovanou v :term:`IS`. Druh transakce se určuje z pohledu osob, jedná se vždy buďto o dluh nebo odměnu. Dluh je částka, kterou osoba má zaplatit Organizaci a odměna je částka, kterou má osoba od :term:`Organizace` obdržet.
+
+IS umožňuje ruční vytváření a editaci transakcí, zpravidla jsou však transakce vytvářeny automaticky jako součást jiné práce s :term:`IS`, např. schválení přihlášky vytvoří transakci typu dluh, zapsání prezence organizátora vytvoří transakci typu odměna. 
+
+Logika týkající se transakcí se často nachází na pomezí aplikací, např. vytvoření transakce schválením přihlášky události. Abychom předešli rozptýlení kódu po celém Django projektu, bylo určena, že veškerá logika, která se týká transakcí, je strikně umístěna v této aplikaci, pro účely lepší přehlednosti.
+
+:term:`Organizace` má účet vedený u Fio banky, která nabízí svým klientům API, `odkaz <https://www.fio.cz/docs/cz/API_Bankovnictvi.pdf>`_. Pro Python existuje implementace v balíčku :ref:`fiobank`, která je závislostí :term:`IS`. Toto API je zejména využíváno pro kontrolu příchozích plateb a synchronizaci stavu transakcní uvnitř :term:`IS` vůči skutečném stavu na bankovním účtu.
+
+Model
+^^^^^^^^^^^^^^^^^
+
+Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o: :py:class:`~transactions.models.BulkTransaction` (skupinu transakcí, které byly vytvořené v jedné dávce), :py:class:`~transactions.models.Transaction` (transakci), :py:class:`~transactions.models.FioTransaction` (reprezentace transakce z Fio API), :py:class:`~transactions.models.FioSettings` (singleton model ukládající informace vztažené k Fio)
+
+:py:class:`~transactions.models.BulkTransaction`
+
+- :py:attr:`~transactions.models.BulkTransaction.reason` (důvod pro všechny transakce z jedné dávky)
+- :py:attr:`~transactions.models.BulkTransaction.event` (událost, vůči které jsou transakce vztaženy)
+
+:py:class:`~transactions.models.Transaction`
+
+- primární klíč slouží jako variabilní symbol
+- :py:attr:`~transactions.models.Transaction.amount` (částka)
+- :py:attr:`~transactions.models.Transaction.reason` (důvod)
+- :py:attr:`~transactions.models.Transaction.date_due` (datum splatnosti)
+- :py:attr:`~transactions.models.Transaction.person` (osoba, vůči které je transakce vztažena)
+- :py:attr:`~transactions.models.Transaction.event` (událost, vůči které je transakce vztažena)
+- :py:attr:`~transactions.models.Transaction.feature_assignment` (vlastnost, vůči které je transakce vztažena)
+- :py:attr:`~transactions.models.Transaction.bulk_transaction` (hromadná transakce, které je tato transakce součástí)
+- :py:attr:`~transactions.models.Transaction.fio_transaction` (Fio transakce, odpovídající transakci uvnitř :term:`IS`)
+
+:py:class:`~transactions.models.FioTransaction`
+
+- :py:attr:`~transactions.models.FioTransaction.date_settled` (datum urovnání transakce – zaplacení, či obdržení)
+- :py:attr:`~transactions.models.FioTransaction.fio_id` (ID transakce z Fio API)
+
+:py:class:`~transactions.models.FioSettings`
+
+- :py:attr:`~transactions.models.FioSettings.last_fio_fetch_time` (datum a čas poslední synchronizace transakcí s Fio API)
+
+
+.. image:: ../_static/transactions-model.png
+    :target: ../_static/transactions-model.png
 
 .. _users:
 
