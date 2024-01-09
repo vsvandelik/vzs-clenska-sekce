@@ -15,19 +15,25 @@ from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-from users.permissions import PermissionRequiredMixin
+from vzs.mixin_extensions import MessagesMixin
 from vzs.utils import today
+
 from .forms import (
     FeatureAssignmentByFeatureForm,
     FeatureAssignmentByPersonForm,
     FeatureForm,
 )
 from .models import Feature, FeatureAssignment, FeatureTypeTexts
+from .permissions import FeaturePermissionMixin
 from .utils import extend_form_of_labels
 
 
-class FeaturePermissionMixin(PermissionRequiredMixin):
+class FeatureMixin(FeaturePermissionMixin):
+    """:meta private:"""
+
     def __init__(self):
+        """:meta private:"""
+
         super().__init__()
 
         self.feature_type = None
@@ -35,6 +41,8 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
         self.person = None
 
     def dispatch(self, request, feature_type, *args, **kwargs):
+        """:meta private:"""
+
         self.feature_type = feature_type
         self.feature_type_texts = FeatureTypeTexts[feature_type]
 
@@ -43,11 +51,9 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
 
         return super().dispatch(request, feature_type, *args, **kwargs)
 
-    @classmethod
-    def view_has_permission(cls, method, active_user, feature_type, **kwargs):
-        return active_user.has_perm(FeatureTypeTexts[feature_type].shortcut)
-
     def get_context_data(self, **kwargs):
+        """:meta private:"""
+
         kwargs.setdefault("texts", self.feature_type_texts)
         kwargs.setdefault("feature_type", self.feature_type)
 
@@ -62,10 +68,28 @@ class FeaturePermissionMixin(PermissionRequiredMixin):
             raise Http404()
 
 
-class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, View):
+class FeatureAssignReturnEquipmentView(FeatureMixin, View):
+    """
+    Returns a piece of equipment borrowed by a person.
+    Sets the date of return to today.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+
+    **Permissions**:
+
+    Users with permission ``vybaveni``.
+
+    **Path parameters**:
+
+    *   ``person`` - person ID
+    *   ``pk`` - equipment ID
+    """
+
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         equipment_pk = kwargs["pk"]
 
         assigned_equipment = get_object_or_404(
@@ -81,24 +105,61 @@ class FeatureAssignReturnEquipmentView(FeaturePermissionMixin, View):
         assigned_equipment.date_returned = today()
         assigned_equipment.save()
 
-        return redirect(reverse("persons:detail", args=[self.person]))
+        return redirect("persons:detail", self.person)
 
 
-class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
+class FeatureAssignEditView(FeatureMixin, UpdateView):
+    """
+    Assigns a feature of a certain category to a person or edits an existing assignment.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+
+    **Path parameters**:
+
+    *   ``person`` - person ID
+    *   ``pk``? - feature assignment ID, necessary for editing
+
+    **Request body parameters**:
+
+    *   ``feature``
+    *   ``date_assigned``
+    *   ``date_expire``
+    *   ``date_returned``
+    *   ``issuer``
+    *   ``code``
+    """
+
     form_class = FeatureAssignmentByPersonForm
     model = FeatureAssignment
     template_name = "features_assignment/edit.html"
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse("persons:detail", args=[self.person])
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         try:
             return super().get_object(queryset)
         except AttributeError:
             return None
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person``
+        *   ``features`` - assignable features of the category
+        """
+
         kwargs.setdefault("person", self.get_person_with_permission_check())
         kwargs.setdefault(
             "features",
@@ -110,11 +171,15 @@ class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
         return super().get_context_data(**kwargs)
 
     def get_form(self, form_class=None):
+        """:meta private:"""
+
         form = super().get_form(form_class)
 
         return extend_form_of_labels(form, self.feature_type_texts.form_labels)
 
     def form_valid(self, form):
+        """:meta private:"""
+
         form.instance.person = self.get_person_with_permission_check()
 
         if not form.instance.pk:
@@ -137,6 +202,8 @@ class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
             return super().form_invalid(form)
 
     def form_invalid(self, form):
+        """:meta private:"""
+
         feature_name_4 = self.feature_type_texts.name_4
 
         error_message(self.request, _(f"Nepodařilo se uložit {feature_name_4}."))
@@ -144,6 +211,8 @@ class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs["feature_type"] = self.feature_type_texts.shortcut
@@ -152,22 +221,47 @@ class FeatureAssignEditView(FeaturePermissionMixin, UpdateView):
         return kwargs
 
 
-class FeatureAssignDeleteView(FeaturePermissionMixin, SuccessMessageMixin, DeleteView):
+class FeatureAssignDeleteView(FeatureMixin, SuccessMessageMixin, DeleteView):
+    """
+    Unaasigns a feature from a person.
+
+    **Success redirection view**: :class:`persons.views.PersonDetailView`
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **Path parameters**:
+
+    *   ``person`` - person ID
+    *   ``pk`` - feature assignment ID
+    """
+
     model = FeatureAssignment
     template_name = "features_assignment/delete.html"
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse("persons:detail", args=[self.person])
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return self.feature_type_texts.success_message_assigning_delete
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``person``
+        """
+
         kwargs.setdefault("person", self.get_person_with_permission_check())
 
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
+        """:meta private:"""
+
         if (
             hasattr(self.object, "transaction")
             and not self.object.transaction.is_settled
@@ -177,32 +271,69 @@ class FeatureAssignDeleteView(FeaturePermissionMixin, SuccessMessageMixin, Delet
         return super().form_valid(form)
 
 
-class FeatureIndexView(FeaturePermissionMixin, ListView):
+class FeatureIndexView(FeatureMixin, ListView):
+    """
+    Displays a list of all features of a certain category.
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+    """
+
     context_object_name = "features"
     model = Feature
     template_name = "features/index.html"
 
     def get_queryset(self):
+        """:meta private:"""
+
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
 
-class FeatureDetailView(FeaturePermissionMixin, DetailView):
+class FeatureDetailView(FeatureMixin, DetailView):
+    """
+    Displays a detail of a feature of a certain category.
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+
+    **Path parameters**:
+
+    *   ``pk`` - feature ID
+    """
+
     model = Feature
+    template_name = "features/detail.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``assignment_matrix`` - matrix of persons
+            and their assignments of the feature
+        """
+
         kwargs.setdefault("assignment_matrix", self._get_features_assignment_matrix())
 
         return super().get_context_data(**kwargs)
 
-    def get_template_names(self):
-        return f"features/detail.html"
-
     def get_queryset(self):
+        """:meta private:"""
+
         feature_type_params = self.feature_type_texts
         return super().get_queryset().filter(feature_type=feature_type_params.shortcut)
 
     def _get_features_assignment_matrix(self):
+        """:meta private:"""
+
         all_features = (
             self.object.get_descendants(include_self=True)
             .filter(assignable=True)
@@ -242,38 +373,60 @@ class FeatureDetailView(FeaturePermissionMixin, DetailView):
         return features_assignment_matrix
 
 
-class FeatureEditView(FeaturePermissionMixin, UpdateView):
+class FeatureEditView(FeatureMixin, MessagesMixin, UpdateView):
+    """
+    Creates or edits a feature of a certain category.
+
+    **Success redirection view**: :class:`features.views.FeatureDetailView`
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+
+    **Path parameters**:
+
+    *   ``pk``? - feature ID, necessary for editing
+    """
+
     form_class = FeatureForm
     model = Feature
     template_name = "features/edit.html"
+    error_message = _("Formulář se nepodařilo uložit. Opravte chyby a zkuste to znovu.")
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         try:
             return super().get_object(queryset)
         except AttributeError:
             return None
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse(f"{self.feature_type}:detail", args=[self.object.pk])
 
+    def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
+        return self.feature_type_texts.success_message_save
+
     def form_valid(self, form):
+        """:meta private:"""
+
         feature_type_texts = self.feature_type_texts
 
         form.instance.feature_type = feature_type_texts.shortcut
 
-        success_message(self.request, feature_type_texts.success_message_save)
-
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        error_message(
-            self.request,
-            _("Formulář se nepodařilo uložit. Opravte chyby a zkuste to znovu."),
-        )
-
-        return super().form_invalid(form)
-
     def get_form(self, form_class=None):
+        """:meta private:"""
+
         form = super().get_form(form_class)
 
         feature_type_texts = self.feature_type_texts
@@ -286,6 +439,8 @@ class FeatureEditView(FeaturePermissionMixin, UpdateView):
         return form
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs["feature_type"] = self.feature_type_texts.shortcut
@@ -293,38 +448,91 @@ class FeatureEditView(FeaturePermissionMixin, UpdateView):
         return kwargs
 
 
-class FeatureDeleteView(FeaturePermissionMixin, SuccessMessageMixin, DeleteView):
-    model = Feature
+class FeatureDeleteView(FeatureMixin, SuccessMessageMixin, DeleteView):
+    """
+    Deletes a feature of a certain category.
 
-    def get_template_names(self):
-        return f"features/delete.html"
+    **Success redirection view**: :class:`features.views.FeatureIndexView`
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+
+    **Path parameters**:
+
+    *   ``pk`` - feature ID
+    """
+
+    model = Feature
+    template_name = "features/delete.html"
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse(f"{self.feature_type}:index")
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return self.feature_type_texts.success_message_delete
 
 
-class FeatureAssignToSelectedPersonView(
-    FeaturePermissionMixin, SuccessMessageMixin, CreateView
-):
+class FeatureAssignToSelectedPersonView(FeatureMixin, SuccessMessageMixin, CreateView):
+    """
+    Assigns a feature of a certain category to a person.
+
+    **Success redirection view**: :class:`features.views.FeatureDetailView`
+
+    **Permissions**:
+
+    Users with the appropriate feature category permission.
+
+    **View parameters**:
+
+    *   ``feature_type`` - feature category
+
+    **Path parameters**:
+
+    *   ``pk`` - feature ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``date_assigned``
+    *   ``date_expire``
+    *   ``date_returned``
+    *   ``issuer``
+    *   ``code``
+    """
+
     form_class = FeatureAssignmentByFeatureForm
     model = FeatureAssignment
     success_message = _("Vlastnost byla úspěšně přiřazena.")
     template_name = "features_assignment/assign_to_selected_person.html"
 
     def dispatch(self, request, feature_type, pk, *args, **kwargs):
+        """:meta private:"""
+
         self.feature = get_object_or_404(Feature, pk=pk)
 
         return super().dispatch(request, feature_type, pk, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``feature``
+        """
+
         kwargs.setdefault("feature", self.feature)
 
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
 
         kwargs["feature"] = self.feature
@@ -332,14 +540,20 @@ class FeatureAssignToSelectedPersonView(
         return kwargs
 
     def get_form(self, form_class=None):
+        """:meta private:"""
+
         form = super().get_form(form_class)
 
         return extend_form_of_labels(form, self.feature_type_texts.form_labels)
 
     def get_success_url(self):
+        """:meta private:"""
+
         return reverse(f"{self.feature_type}:detail", args=[self.feature.pk])
 
     def form_valid(self, form: FeatureAssignmentByFeatureForm):
+        """:meta private:"""
+
         response = super().form_valid(form)
 
         form.add_transaction_if_necessary()
