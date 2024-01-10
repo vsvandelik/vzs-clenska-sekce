@@ -1,3 +1,23 @@
 .nav-link-no-hover:hover {
-    color: rgba(0,0,0,.5) !important;
+    color: rgba(0, 0, 0, .5) !important;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+h5 {
+    font-size: .875rem;
+}
+
+h6 {
+    font-size: .75rem;
 }

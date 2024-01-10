@@ -211,6 +211,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "insertfile image media pageembed template link anchor codesample | "
     "a11ycheck ltr rtl",
     "custom_undo_redo_levels": 10,
+    "entity_encoding": "raw",
 }
 
 # Default primary key field type

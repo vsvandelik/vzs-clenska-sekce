@@ -57,7 +57,7 @@ def render_menu(context):
             ],
         ),
         MenuItem("Nápověda", "pages:detail napoveda", icon="fas fa-question-circle"),
-        MenuItem("Kontakt", "pages:detail kontakt", icon="fas fa-envelope"),
+        MenuItem("Kontakty", "pages:detail kontakty", icon="fas fa-envelope"),
     ]
 
     output = []
