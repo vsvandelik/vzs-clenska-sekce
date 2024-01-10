@@ -96,7 +96,7 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 - :py:attr:`~features.models.Feature.assignable` (flag indikující, zda je vlastnost přiřaditelná)
 - :py:attr:`~features.models.Feature.never_expires` (flag indikující, zda vlastnosti nikdy neexpiruje)
 - :py:attr:`~features.models.Feature.fee` (poplatek za vlastnost, využíván jako poplatek za půjčení vybavení)
-- :py:attr:`~features.models.Feature.tier` (TODO)
+- :py:attr:`~features.models.Feature.tier` (úroveň vlastnosti, využíváno u kvalifikací)
 - :py:attr:`~features.models.Feature.collect_issuers` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění vydavatele)
 - :py:attr:`~features.models.Feature.collect_codes` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění ID vlastnosti)
 
@@ -254,6 +254,37 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 --------------------------------------
 users
 --------------------------------------
+Tato aplikace obsahuje implementaci uživatelských účtů. Každá osoba evidovaná v :term:`IS` má právě jeden uživatelský účet, který ji může být zpřístupněn. Účet je zpřístupněný, pokud má nastavené heslo a je možné se k němu přihlásit. Osoba se pomocí svého uživatelského účtu může do :term:`IS` přihlásit (více viz :doc:`./authentication`) a následně dle svého oprávnění vidí, může pracovat a spravovat relavantní záležitosti (více viz :doc:`./authorization`). Osoba může spravovat více uživatelských účtů (např. rodič dítěte).
+
+Model
+^^^^^^^^^^^^^^^^^
+Aplikace :ref:`users` obsahuje tři modely a vlastní Django Manager pro model :py:class:`~users.models.User`.
+
+:py:class:`~users.models.UserManager` (vlastní manager pro model :py:class:`~users.models.User`)
+
+- :py:meth:`~users.models.UserManager.create_user` (vytvoří uživatele osoby s daným heslem)
+- :py:meth:`~users.models.UserManager.create_superuser` (vytvoří osobu a uživatele se všemi povoleními dle parametrů)
+
+:py:class:`~users.models.User` (model uživatele)
+
+- :py:attr:`~users.models.User.objects` (instance :py:class:`~users.models.UserManager`)
+- :py:attr:`~users.models.User.person` (osoba uživatele)
+- další atributy z modelu ``AbstractUser``
+
+:py:class:`~users.models.Permission` (vlastní model pro povolení)
+
+- :py:attr:`~users.models.Permission.description` (popis povolení)
+- další atributy z modelu ``BasePermission``
+
+
+:py:class:`~users.models.ResetPasswordToken` (model obsahující tokeny pro reset hesla)
+
+- :py:attr:`~users.models.ResetPasswordToken.user` (uživatel, ke kterému je token přiřazen)
+- další atributy z modelu ``BaseToken``
+- :py:meth:`~users.models.ResetPasswordToken.has_expired` (vrátí Q objekt pro filtrování expirovaných tokenů)
+
+.. image:: ../_static/users-model.png
+    :target: ../_static/users-model.png
 
 .. _vzs:
 
