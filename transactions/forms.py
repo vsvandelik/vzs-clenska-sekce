@@ -2,7 +2,7 @@ from collections.abc import Iterable, MutableMapping
 from typing import Any
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Div, Layout, Row, Submit, HTML
+from crispy_forms.layout import HTML, Column, Div, Layout, Row, Submit
 from django.db.models import QuerySet
 from django.forms import (
     BooleanField,
@@ -13,6 +13,7 @@ from django.forms import (
     IntegerField,
     ModelChoiceField,
     ModelForm,
+    RadioSelect,
     ValidationError,
 )
 from django.utils.translation import gettext_lazy as _
@@ -33,11 +34,12 @@ from vzs.utils import (
     today,
 )
 from vzs.widgets import DatePickerWithIcon
+
 from .models import BulkTransaction, Transaction
 from .utils import TransactionFilter, TransactionInfo
 
 
-class TransactionCreateEditMixin(ModelForm):
+class TransactionCreateEditFormMixin(ModelForm):
     """
     A mixin form for creating and editing transactions.
 
@@ -46,8 +48,10 @@ class TransactionCreateEditMixin(ModelForm):
     *   ``amount``
     *   ``reason``
     *   ``date_due``
-    *   ``is_reward``
+    *   ``reward_type``
     """
+
+    RewardChoices = [("reward", "Odměna"), ("debt", "Dluh")]
 
     class Meta:
         model = Transaction
@@ -59,7 +63,11 @@ class TransactionCreateEditMixin(ModelForm):
     amount = IntegerField(
         min_value=1, label=Transaction._meta.get_field("amount").verbose_name
     )
-    is_reward = BooleanField(required=False, label=_("Je transakce odměna?"))
+    reward_type = ChoiceField(
+        choices=RewardChoices, label=_("Typ transakce"), widget=RadioSelect
+    )
+
+    field_order = ["reward_type", "amount", "reason", "date_due"]
 
     def clean_date_due(self):
         """
@@ -81,15 +89,17 @@ class TransactionCreateEditMixin(ModelForm):
         cleaned_data = super().clean()
 
         amount = cleaned_data["amount"]
-        is_reward = cleaned_data["is_reward"]
+        reward_type = cleaned_data["reward_type"]
 
-        if not is_reward:
+        if not reward_type == "reward":
             cleaned_data["amount"] = -amount
 
         return cleaned_data
 
 
-class TransactionCreateFromPersonForm(WithoutFormTagMixin, TransactionCreateEditMixin):
+class TransactionCreateFromPersonForm(
+    WithoutFormTagMixin, TransactionCreateEditFormMixin
+):
     """
     Creates a transaction for a given person.
 
@@ -109,7 +119,7 @@ class TransactionCreateFromPersonForm(WithoutFormTagMixin, TransactionCreateEdit
         self.instance.person = person
 
 
-class TransactionCreateBulkForm(TransactionCreateEditMixin):
+class TransactionCreateBulkForm(TransactionCreateEditFormMixin):
     """
     Creates transactions for a set of persons.
 
@@ -151,7 +161,7 @@ class TransactionCreateBulkForm(TransactionCreateEditMixin):
     def _prepare_transaction_form(self):
         self.transaction_helper = WithoutFormTagFormHelper()
         self.transaction_helper.layout = Layout(
-            "amount", "reason", "date_due", "is_reward"
+            "reward_type", "amount", "reason", "date_due"
         )
 
     def clean(self):
@@ -420,8 +430,8 @@ class TransactionCreateBulkConfirmForm(
         )
 
 
-class TransactionCreateEditPersonSelectMixin(
-    WithoutFormTagMixin, TransactionCreateEditMixin
+class TransactionCreateEditPersonSelectFormMixin(
+    WithoutFormTagMixin, TransactionCreateEditFormMixin
 ):
     """
     A mixin for creating or editing a transaction.
@@ -440,13 +450,13 @@ class TransactionCreateEditPersonSelectMixin(
 
         self.helper.include_media = False
 
-    class Meta(TransactionCreateEditMixin.Meta):
-        fields = ["person"] + TransactionCreateEditMixin.Meta.fields
-        widgets = TransactionCreateEditMixin.Meta.widgets
+    class Meta(TransactionCreateEditFormMixin.Meta):
+        fields = ["person"] + TransactionCreateEditFormMixin.Meta.fields
+        widgets = TransactionCreateEditFormMixin.Meta.widgets
         widgets["person"] = PersonSelectWidget()
 
 
-class TransactionCreateForm(TransactionCreateEditPersonSelectMixin):
+class TransactionCreateForm(TransactionCreateEditPersonSelectFormMixin):
     """
     Creates a transaction for a given person.
 
@@ -456,7 +466,7 @@ class TransactionCreateForm(TransactionCreateEditPersonSelectMixin):
     pass
 
 
-class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
+class TransactionEditForm(TransactionCreateEditPersonSelectFormMixin):
     """
     Edits a transaction.
 
@@ -466,7 +476,7 @@ class TransactionEditForm(TransactionCreateEditPersonSelectMixin):
     def __init__(
         self, initial: MutableMapping[str, Any], instance: Transaction, *args, **kwargs
     ):
-        initial["is_reward"] = instance.amount > 0
+        initial["reward_type"] = "reward" if instance.amount > 0 else "debt"
         instance.amount = abs(instance.amount)
 
         super().__init__(*args, initial=initial, instance=instance, **kwargs)
