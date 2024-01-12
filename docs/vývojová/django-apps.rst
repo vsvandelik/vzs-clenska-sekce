@@ -171,6 +171,48 @@ Model je určen k ukládání statických stránek. Každá stránka obsahuje:
 --------------------------------------
 persons
 --------------------------------------
+Aplikace :ref:`persons` obsahuje implementaci správy členské základny. Konkrétně se jedná o formuláře, pohledy a nástroje pro správu osob, kteří mají nějaký vztah k :ref:`Organizaci <Organizace>`.
+
+Model
+^^^^^^^^^^^^^^^^^
+Aplikace :ref:`persons` obsahuje dva modely a jeden vlastní Django Manager pro model :py:class:`~persons.models.Person`.
+
+:py:class:`~persons.models.PersonsManager` (vlastní manager pro model :py:class:`~persons.models.Person`)
+
+- :py:meth:`~persons.models.PersonsManager.get_queryset` (vrátí seznam všech osob vyjma osob smazaných)
+- :py:meth:`~persons.models.PersonsManager.with_age` (přidá osobě políčko ``age`` obsahující vypočtený věk z data narození a aktuálního času)
+
+:py:class:`~persons.models.Person` (Osoba)
+
+- :py:attr:`~persons.models.Person.objects` (instance :py:class:`~persons.models.PersonsManager`)
+- :py:attr:`~persons.models.Person.email` (email)
+- :py:attr:`~persons.models.Person.first_name` (jméno)
+- :py:attr:`~persons.models.Person.last_name` (příjmení)
+- :py:attr:`~persons.models.Person.date_of_birth` (datum narození)
+- :py:attr:`~persons.models.Person.sex` (pohlaví)
+- :py:attr:`~persons.models.Person.person_type` (typ členství)
+- :py:attr:`~persons.models.Person.birth_number` (rodné číslo)
+- :py:attr:`~persons.models.Person.health_insurance_company` (zdravotní pojišťovna)
+- :py:attr:`~persons.models.Person.phone` (tel. číslo)
+- :py:attr:`~persons.models.Person.street` (ulice)
+- :py:attr:`~persons.models.Person.city` (město)
+- :py:attr:`~persons.models.Person.postcode` (PSČ)
+- :py:attr:`~persons.models.Person.swimming_time` (čas nutný k uplavání 100m)
+- :py:attr:`~persons.models.Person.features` (přiřazené vlastnosti)
+- :py:attr:`~persons.models.Person.managed_persons` (spravované osoby)
+- :py:attr:`~persons.models.Person.is_deleted` (flag indikující, zda je osoba smazána)
+
+
+:py:class:`~persons.models.PersonHourlyRate` (Sazby definující základní plat osoby za jednu hodinu organizátorské práce)
+
+- :py:attr:`~persons.models.PersonHourlyRate.person` (osoba)
+- :py:attr:`~persons.models.PersonHourlyRate.event_type` (typ události)
+- :py:attr:`~persons.models.PersonHourlyRate.hourly_rate` (sazba za jednu hodinu)
+- :py:meth:`~persons.models.PersonHourlyRate.get_person_hourly_rates` (vrátí seznam všech sazeb pro konkrétní osoby)
+
+.. image:: ../_static/persons-model.png
+    :target: ../_static/persons-model.png
+
 
 .. _positions:
 
