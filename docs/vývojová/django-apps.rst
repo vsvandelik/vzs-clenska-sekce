@@ -349,8 +349,41 @@ Konkrétně modely :py:class:`~trainings.models.Training`, :py:class:`~trainings
 
 :py:class:`~trainings.models.CoachOccurrenceAssignment` dědí z :py:class:`~events.models.OrganizerAssignment`
 
-- A
+- :py:attr:`~trainings.models.CoachOccurrenceAssignment.position_assignment` (pozice přiřazená ke tréninku)
+- :py:attr:`~trainings.models.CoachOccurrenceAssignment.person` (osoba)
+- :py:attr:`~trainings.models.CoachOccurrenceAssignment.occurrence` (den události)
+- :py:attr:`~trainings.models.CoachOccurrenceAssignment.state` (stav docházky – prezence, omluven(a), neomluvena(a))
 - další atributy z :py:class:`~events.models.OrganizerAssignment`
+
+:py:class:`~trainings.models.TrainingOccurrence` dědí z :py:class:`~events.models.EventOccurrence`
+
+- :py:attr:`~trainings.models.TrainingOccurrence.datetime_start` (datum a čas začátku tréninku konkrétního dne)
+- :py:attr:`~trainings.models.TrainingOccurrence.datetime_end` (datum a čas konce tréninku konkrétního dne)
+- :py:attr:`~trainings.models.TrainingOccurrence.coaches` (trenéři včetně docházky)
+- :py:attr:`~trainings.models.TrainingOccurrence.participants` (účastníci včetně docházky)
+- další atributy z :py:class:`~events.models.EventOccurrence`
+
+:py:class:`~trainings.models.TrainingParticipantAttendance`
+
+- :py:attr:`~trainings.models.TrainingParticipantAttendance.enrollment` (přihláška účastníka na událost)
+- :py:attr:`~trainings.models.TrainingParticipantAttendance.person` (osoba)
+- :py:attr:`~trainings.models.TrainingParticipantAttendance.occurrence` (konkrétní den tréninku)
+- :py:attr:`~trainings.models.TrainingParticipantAttendance.state` (stav docházky – prezence, omluven(a), neomluvena(a))
+
+:py:class:`~trainings.models.TrainingParticipantEnrollment` dědí z :py:class:`~events.models.ParticipantEnrollment`
+
+- :py:attr:`~trainings.models.TrainingParticipantEnrollment.training` (trénink)
+- :py:attr:`~trainings.models.TrainingParticipantEnrollment.person` (osoba)
+- :py:attr:`~trainings.models.TrainingParticipantEnrollment.weekdays` (dny v týdnu, které se osoba řádně účastní tréninku)
+- :py:attr:`~trainings.models.TrainingParticipantEnrollment.transactions` (transakce za účast)
+- další atributy z :py:class:`~events.models.ParticipantEnrollment`
+
+
+:py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, ve které účastník řádně dochází na trénink)
+
+- :py:attr:`~trainings.models.TrainingWeekdays.weekday` (index dne v týdnu)
+
+
 
 
 .. image:: ../_static/trainings-model.png
