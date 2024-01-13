@@ -23,7 +23,7 @@ from one_time_events.models import (
 from persons.models import Person
 from trainings.models import TrainingOccurrence
 from users.permissions import LoginRequiredMixin
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixins import MessagesMixin
 from vzs.utils import export_queryset_csv, filter_queryset, now, today
 
 from .forms import (

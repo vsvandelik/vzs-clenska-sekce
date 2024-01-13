@@ -4,7 +4,7 @@ from events.forms_bases import AgeLimitForm, AllowedPersonTypeForm, GroupMembers
 from features.models import Feature
 from positions.models import EventPosition
 from vzs.forms import WithoutFormTagMixin
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     RelatedAddMixin,
     RelatedAddOrRemoveFormMixin,
     RelatedRemoveMixin,

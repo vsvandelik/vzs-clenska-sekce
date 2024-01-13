@@ -21,7 +21,7 @@ from one_time_events.models import OneTimeEvent
 from trainings.models import Training
 from users.models import User
 from vzs.forms import WithoutFormTagFormHelper
-from vzs.mixin_extensions import (
+from vzs.mixins import (
     RelatedAddMixin,
     RelatedAddOrRemoveFormMixin,
     RelatedRemoveMixin,
