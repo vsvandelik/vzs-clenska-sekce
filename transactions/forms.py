@@ -435,14 +435,6 @@ class TransactionCreateEditPersonSelectFormMixin(
 ):
     """
     A mixin for creating or editing a transaction.
-
-    The person is selected in the form and sent in the request body
-    in contrast to :class:`TransactionCreateFromPersonForm`.
-
-    **Request parameters:**
-
-    *   ``person`` - the primary key of the person to create the transaction for
-    *   all from :class:`TransactionCreateEditMixin`
     """
 
     def __init__(self, *args, **kwargs):
@@ -450,27 +442,39 @@ class TransactionCreateEditPersonSelectFormMixin(
 
         self.helper.include_media = False
 
+
+class TransactionCreateForm(TransactionCreateEditPersonSelectFormMixin):
+    """
+    Creates a transaction for a given person.
+
+    The person is selected in the form and sent in the request body
+    in contrast to :class:`TransactionCreateFromPersonForm`.
+
+    **Request parameters:**
+
+    *   ``person``
+    *   ``amount``
+    *   ``reason``
+    *   ``date_due``
+    *   ``reward_type``
+    """
+
     class Meta(TransactionCreateEditFormMixin.Meta):
         fields = ["person"] + TransactionCreateEditFormMixin.Meta.fields
         widgets = TransactionCreateEditFormMixin.Meta.widgets
         widgets["person"] = PersonSelectWidget()
 
 
-class TransactionCreateForm(TransactionCreateEditPersonSelectFormMixin):
-    """
-    Creates a transaction for a given person.
-
-    See :class:`TransactionCreateEditPersonSelectMixin`.
-    """
-
-    pass
-
-
 class TransactionEditForm(TransactionCreateEditPersonSelectFormMixin):
     """
     Edits a transaction.
 
-    See :class:`TransactionCreateEditPersonSelectMixin`.
+    **Request parameters:**
+
+    *   ``amount``
+    *   ``reason``
+    *   ``date_due``
+    *   ``reward_type``
     """
 
     def __init__(
