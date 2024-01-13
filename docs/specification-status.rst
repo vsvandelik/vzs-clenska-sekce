@@ -2,7 +2,7 @@
 Vypořádání specifikace
 ##########################
 
-Na této stránce popisujeme rozdíly ve finální implementaci oproti specifikaci,
+Na této stránce popisujeme rozdíly mezi finální implementací a specifikací,
 která byla schválena projektovou komisí. U jednotlivých odlišností uvádíme i důvod,
 proč k dané změně došlo.
 
@@ -27,7 +27,7 @@ Závazky za tréninky
 -------------------
 (str. 13; "Platební povinnost za celý školní rok je rozdělena na 3 části.")
 
-Zvolili jsme obecnější řešení, které umožňuje dynamický počet plateb za tréninky v průběhu roku.
+Zvolili jsme obecnější řešení, které umožňuje dynamický počet plateb za tréninky během roku.
 
 Statický typy jednorázových událostí
 ------------------------------------
@@ -52,7 +52,7 @@ Změny v entitách a vztazích
 ---------------------------
 (str. 15 až 18)
 
-V reálné implementaci došlo k několika dílčím změnám v návrhu oproti kapitole 3.2 Entity a vztahy. Tyto úpravy vycházely především z potřeb organizace a dalších návazností systému, které se ukázaly až v průběhu implementace. Změny jsou malého rozsahu (např. evidence údaje navíc u osoby oproti předepsanému seznamu). Větší změna nastala u struktury událostí, kdy jsme opustili původní stromový návrh událostí a využili raději plochý návrh, který umožnil přímočařejší implementaci.
+V reálné implementaci došlo k několika dílčím změnám v návrhu oproti kapitole 3.2 - Entity a vztahy. Tyto úpravy vycházely především z potřeb organizace a dalších návazností systému, které se ukázaly až v průběhu implementace. Změny jsou malého rozsahu (např. evidence údaje navíc u osoby oproti předepsanému seznamu). Větší změna nastala u struktury událostí, kdy jsme opustili původní stromový návrh událostí a využili raději plochý návrh, který umožnil přímočařejší implementaci.
 
 Účty vs. osoby
 --------------
@@ -82,16 +82,16 @@ Datový model
 ------------
 (str. 28)
 
-Datový model doznal větších úprav z důvodu efektivity výsledného kódu, ale základní myšlenky zůstaly zachované.
+Datový model prošel většími úpravami z důvodu efektivity výsledného kódu, ale základní myšlenky zůstaly zachovány.
 
 Use-cases
 ---------
 (str. 30)
 
-Podobně jako u datového modelu i zde došlo k větším úpravám. Myšlenka všech scénářů zůstala zachována, ale podoba a umístění tlačítek a celkový proces byl upraven, aby lépe odpovídal výslednému systému.
+Podobně jako u datového modelu, i zde došlo k větším úpravám. Myšlenka všech scénářů zůstala zachována, ale podoba a umístění tlačítek a celkový proces byl upraven, aby lépe odpovídal výslednému systému.
 
 Harmonogram
 -----------
 (str. 40)
 
-K velkému zdržení došlo u harmonogramu. Zdržení bylo způsobeno především časovým vytížením některých členů projektového týmu v průběhu letních prázdnin a podzimu.
+Došlo k významnému zpoždění v harmonogramu. Zdržení bylo způsobeno především časovým vytížením některých členů projektového týmu v průběhu letních prázdnin a podzimu.
