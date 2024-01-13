@@ -20,27 +20,29 @@
                     {% csrf_token %}
                 </form>
             {% endif %}
-            <table class="table table-striped">
-                <tbody>
-                    {% if not person.user.is_superuser %}
-                        {% for permission in person.user.user_permissions.all %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <tbody>
+                        {% if not person.user.is_superuser %}
+                            {% for permission in person.user.user_permissions.all %}
+                                <tr>
+                                    <td class="align-middle">{{ permission.name }}</td>
+                                    <td class="text-center">
+                                        {% if perm_remove_permission %}
+                                            <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <td class="align-middle">{{ permission.name }}</td>
-                                <td class="text-center">
-                                    {% if perm_remove_permission %}
-                                        <button type="submit" form="permission-delete-form" class="btn btn-danger btn-sm" name="permission" value="{{ permission.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                    {% endif %}
-                                </td>
+                                <td>Tato osoba má všechna povolení, protože je administrátor.</td>
+                                <td></td>
                             </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td>Tato osoba má všechna povolení, protože je administrátor.</td>
-                            <td></td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </div>
     {% if person.email %}

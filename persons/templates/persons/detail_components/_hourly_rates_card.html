@@ -8,20 +8,22 @@
         {% if not person.hourly_rates.count %}
             <p class="text-center">Osoba nemá definované žádné hodinové sazby.</p>
         {% else %}
-            <table class="table table-striped m-0">
-                <tbody>
-                    {% for hourly_rate in person.hourly_rates.all %}
-                        <tr>
-                            <td>
-                                {{ hourly_rate.event_type|event_type_display_value }}
-                            </td>
-                            <td class="text-center">
-                                {{ hourly_rate.hourly_rate}} Kč / hod
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-striped m-0">
+                    <tbody>
+                        {% for hourly_rate in person.hourly_rates.all %}
+                            <tr>
+                                <td>
+                                    {{ hourly_rate.event_type|event_type_display_value }}
+                                </td>
+                                <td class="text-center">
+                                    {{ hourly_rate.hourly_rate }} Kč / hod
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </div>
     <div class="card-footer text-center">

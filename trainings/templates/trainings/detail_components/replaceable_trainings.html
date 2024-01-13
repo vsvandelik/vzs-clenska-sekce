@@ -8,16 +8,18 @@
     <div class="card-body p-0">
         <form method="post" action="{% url "trainings:remove-replaceable-training" object.pk %}" id="remove-replaceable-training">
             {% csrf_token %}
-            <table class="table table-stripped">
-                {% for replaceable_training in selected_replaceable_trainings %}
-                    <tr>
-                        <td>{{ replaceable_training.training_2 }}</td>
-                        <td>
-                            <button type="submit" name="training_2" value="{{ replaceable_training.training_2.pk }}" form="remove-replaceable-training" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+            <div class="table-responsive">
+                <table class="table table-stripped">
+                    {% for replaceable_training in selected_replaceable_trainings %}
+                        <tr>
+                            <td>{{ replaceable_training.training_2 }}</td>
+                            <td>
+                                <button type="submit" name="training_2" value="{{ replaceable_training.training_2.pk }}" form="remove-replaceable-training" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
         </form>
     </div>
 
