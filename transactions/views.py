@@ -28,7 +28,6 @@ from trainings.models import Training
 from users.permissions import LoginRequiredMixin
 from vzs.mixins import InsertRequestIntoModelFormKwargsMixin
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
-
 from .forms import (
     TransactionAccountingExportPeriodForm,
     TransactionAddTrainingPaymentForm,
@@ -470,7 +469,7 @@ class TransactionIndexView(TransactionEditPermissionMixin, ListView):
         Orders the transactions by due date.
         """
 
-        return self.filter_form.process_filter().order_by("date_due")
+        return self.filter_form.process_filter().order_by("-pk")
 
 
 class TransactionCreateBulkView(TransactionEditPermissionMixin, FormView):
