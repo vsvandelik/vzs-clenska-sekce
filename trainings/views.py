@@ -59,6 +59,7 @@ from vzs.mixins import (
 )
 from vzs.settings import PARTICIPANT_ENROLL_DEADLINE_DAYS
 from vzs.utils import date_pretty, export_queryset_csv, now, send_notification_email
+
 from .forms import (
     CancelCoachExcuseForm,
     CancelParticipantExcuseForm,
@@ -84,10 +85,10 @@ from .forms import (
 from .mixins import (
     CoachAssignmentCreateUpdateMixin,
     CoachAssignmentMixin,
-    TrainingWeekdaysSelectionMixin,
-    TrainingParticipantEnrollmentCreateUpdateMixin,
-    TrainingOccurrenceAttendanceCanBeFilledMixin,
     InsertAvailableCategoriesIntoFormsKwargsMixin,
+    TrainingOccurrenceAttendanceCanBeFilledMixin,
+    TrainingParticipantEnrollmentCreateUpdateMixin,
+    TrainingWeekdaysSelectionMixin,
 )
 from .models import (
     CoachOccurrenceAssignment,
@@ -102,7 +103,36 @@ from .models import (
 
 
 class TrainingDetailView(EventDetailMixin):
+    """
+    Displays an admin detail of a training.
+
+    **Permissions**:
+
+    Users that can manage the training or interact with it.
+
+    **Path parameters**:
+
+    *   ``pk`` - training ID
+    """
+
     def get_context_data(self, **kwargs):
+        """
+        *   ``trainings_for_replacement`` - trainings that can be added
+            as a possible replacement for this training
+        *   ``selected_replaceable_trainings`` - trainings that
+            can replace this training
+        *   ``active_person_participant_enrollment`` - participant enrollment
+            of the active person
+        *   ``enrollment_states`` - possible states of participant enrollment
+        *   ``upcoming_occurrences`` - upcoming occurrences of this training
+        *   ``past_occurrences`` - past occurrences of this training
+        *   ``upcoming_one_time_occurrences`` - upcoming occurrences of this training
+            where the active person is one time participant
+        *   ``participants_by_weekdays`` - participants of this training
+            grouped by weekdays
+        *   ``occurrences`` - occurrences of this training
+        """
+
         active_person = self.request.active_person
         trainings_for_replacement_to_choose = (
             Training.objects.filter(
@@ -176,6 +206,8 @@ class TrainingDetailView(EventDetailMixin):
         return super().get_context_data(**kwargs)
 
     def get_template_names(self):
+        """:meta private:"""
+
         active_person = self.request.active_person
         active_user = get_active_user(active_person)
         if self.object.can_user_manage(active_user):
@@ -186,6 +218,8 @@ class TrainingDetailView(EventDetailMixin):
             return "trainings/detail_participant.html"
 
     def _add_coaches_detail_kwargs(self, kwargs):
+        """:meta private:"""
+
         occurrences = self.object.sorted_occurrences_list()
 
         nearest_occurrence_found = False
@@ -210,9 +244,30 @@ class TrainingDetailView(EventDetailMixin):
 
 
 class TrainingListView(LoginRequiredMixin, generic.ListView):
+    """
+    Displays a list of all trainings related to the active person.
+
+    **Permissions**:
+
+    Logged in users.
+    """
+
     template_name = "trainings/index.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``coach_regular_trainings`` - trainings where the active person
+            is a coach
+        *   ``coach_upcoming_occurrences`` - upcoming occurrences where
+            the active person is a coach
+        *   ``participant_enrolled_trainings`` - trainings where the active person
+            is enrolled as a participant
+        *   ``participant_available_trainings`` - trainings where the active person
+            can enroll as a participant
+        *   ``participant_upcoming_occurrences`` - upcoming occurrences where
+            the active person is a participant
+        """
+
         active_person = self.request.active_person
 
         self._add_participant_kwargs(kwargs, active_person)
@@ -221,9 +276,13 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         return super().get_context_data(**kwargs)
 
     def get_queryset(self):
+        """:meta private:"""
+
         return []
 
     def _add_coaches_kwargs(self, kwargs, active_person):
+        """:meta private:"""
+
         regular_trainings = Training.get_unfinished_trainings_by_coach(active_person)
         upcoming_occurrences = TrainingOccurrence.get_upcoming_by_coach(
             active_person, False
@@ -236,6 +295,8 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault("coach_upcoming_occurrences", upcoming_occurrences)
 
     def _add_participant_kwargs(self, kwargs, active_person):
+        """:meta private:"""
+
         available_trainings = Training.get_available_trainings_by_participant(
             active_person
         )
@@ -266,6 +327,8 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
     def _add_trainings_replacing_kwargs(
         self, kwargs, active_person, enrolled_trainings
     ):
+        """:meta private:"""
+
         count_of_trainings_to_replace = (
             TrainingParticipantAttendance.count_of_trainings_to_replace(active_person)
         )
@@ -300,14 +363,37 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
 
 
 class TrainingAdminListView(TrainingCreatePermissionMixin, EventAdminListMixin):
+    """
+    Displays an admin list of all trainings.
+
+    Uses :class:`TrainingsFilterForm` to filter trainings.
+
+    Users only see trainings they can manage.
+
+    **Permissions**:
+
+    Users that can manage at least one training category.
+
+    **Query parameters**:
+
+    *   ``category``
+    *   ``year_start``
+    *   ``main_coach``
+    *   ``only_opened``
+    """
+
     template_name = "trainings/list_admin.html"
     context_object_name = "trainings"
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         self.filter_form = TrainingsFilterForm(request.GET)
         return super().get(request, *args, **kwargs)
 
     def get_accessible_events(self):
+        """:meta private:"""
+
         active_person = self.request.active_person
         active_user = get_active_user(active_person)
 
@@ -325,6 +411,43 @@ class TrainingCreateView(
     EventGeneratesDatesMixin,
     EventCreateMixin,
 ):
+    """
+    Creates a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the created training.
+
+    **Permissions**:
+
+    POST: Users that manage the training category sent in the request.
+    GET: Users that manage at least one training category.
+
+    **Request body parameters**:
+
+    *   ``category``
+    *   ``po_from``
+    *   ``po_to``
+    *   ``ut_from``
+    *   ``ut_to``
+    *   ``st_from``
+    *   ``st_to``
+    *   ``ct_from``
+    *   ``ct_to``
+    *   ``pa_from``
+    *   ``pa_to``
+    *   ``so_from``
+    *   ``so_to``
+    *   ``ne_from``
+    *   ``ne_t``
+    *   ``name``
+    *   ``category``
+    *   ``description``
+    *   ``capacity``
+    *   ``location``
+    *   ``date_start``
+    *   ``date_end``
+    *   ``participants_enroll_state``
+    """
+
     template_name = "trainings/create.html"
     form_class = TrainingForm
 
@@ -334,6 +457,46 @@ class TrainingUpdateView(
     EventGeneratesDatesMixin,
     EventUpdateMixin,
 ):
+    """
+    Edits a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the edited training
+
+    **Permissions**:
+
+    Users that manage the training.
+
+    **Path parameters:**
+
+    *   ``pk`` - training ID
+
+    **Request body parameters**:
+
+    *   ``category``
+    *   ``po_from``
+    *   ``po_to``
+    *   ``ut_from``
+    *   ``ut_to``
+    *   ``st_from``
+    *   ``st_to``
+    *   ``ct_from``
+    *   ``ct_to``
+    *   ``pa_from``
+    *   ``pa_to``
+    *   ``so_from``
+    *   ``so_to``
+    *   ``ne_from``
+    *   ``ne_t``
+    *   ``name``
+    *   ``category``
+    *   ``description``
+    *   ``capacity``
+    *   ``location``
+    *   ``date_start``
+    *   ``date_end``
+    *   ``participants_enroll_state``
+    """
+
     template_name = "trainings/edit.html"
     form_class = TrainingForm
 
@@ -345,22 +508,64 @@ class TrainingAddReplaceableTrainingView(
     RedirectToEventDetailOnFailureMixin,
     generic.CreateView,
 ):
+    """
+    Adds a training as a possible replacement for a training. Both directions
+    of the relation are added.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that manage the training.
+
+    **Path parameters:**
+
+    *   ``event_id`` - training ID
+
+    **Request body parameters**:
+
+    *   ``training_2`` - ID of the training to add as a possible replacement
+    """
+
     form_class = TrainingReplaceableForm
     success_message = _("Tréninky pro náhrady byl přidán.")
     model = TrainingReplaceabilityForParticipants
     event_id_key = "event_id"
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["training_1"] = get_object_or_404(Training, pk=self.kwargs["event_id"])
         return kwargs
 
 
 class TrainingRemoveReplaceableTrainingView(EventManagePermissionMixin, generic.View):
+    """
+    Removes a training as a possible replacement for a training.
+    Removes both directions of the relation.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that manage the training.
+
+    **Path parameters:**
+
+    *   ``event_id`` - training ID
+
+    **Request body parameters**:
+
+    *   ``training_2`` - ID of the training to remove as a possible replacement
+    """
+
     http_method_names = ["post"]
     event_id_key = "event_id"
 
     def post(self, request, event_id, *args, **kwargs):
+        """:meta private:"""
+
         training_1 = event_id
         training_2 = request.POST.get("training_2")
 
@@ -380,19 +585,79 @@ class TrainingRemoveReplaceableTrainingView(EventManagePermissionMixin, generic.
 class TrainingParticipantEnrollmentCreateView(
     TrainingParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentCreateMixin
 ):
+    """
+    Enrolls a person as a participant of a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters:**
+
+    *   ``event_id`` - training ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``state``
+    *   ``weekdays``
+    """
+
     template_name = "trainings/create_participant_enrollment.html"
 
 
 class TrainingParticipantEnrollmentUpdateView(
     TrainingParticipantEnrollmentCreateUpdateMixin, ParticipantEnrollmentUpdateMixin
 ):
+    """
+    Edits a person's enrollment for a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters:**
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - enrollment ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``state``
+    *   ``weekdays``
+    """
+
     template_name = "trainings/edit_participant_enrollment.html"
 
 
 class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
+    """
+    Unenrolls a person from a training.
+
+    Sends a notification email to the person.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - enrollment ID
+    """
+
     template_name = "trainings/modals/delete_participant_enrollment.html"
 
     def form_valid(self, form):
+        """:meta private:"""
+
         enrollment = self.object
         if enrollment.state == ParticipantEnrollment.State.REJECTED:
             send_notification_email(
@@ -416,6 +681,24 @@ class TrainingParticipantEnrollmentDeleteView(ParticipantEnrollmentDeleteMixin):
 class TrainingEnrollMyselfParticipantView(
     TrainingWeekdaysSelectionMixin, EnrollMyselfParticipantMixin
 ):
+    """
+    Enrolls the active person as a participant of a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can interact with the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+
+    **Request body parameters**:
+
+    *   ``weekdays``
+    """
+
     model = TrainingParticipantEnrollment
     form_class = TrainingEnrollMyselfParticipantForm
     template_name = "trainings/enroll_myself_participant.html"
@@ -423,21 +706,79 @@ class TrainingEnrollMyselfParticipantView(
 
 
 class CoachAssignmentCreateView(CoachAssignmentCreateUpdateMixin, generic.CreateView):
+    """
+    Assigns a person as a coach of a training on a certain position.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``position_assignment``
+    """
+
     template_name = "trainings/create_coach_assignment.html"
     success_message = "Trenér %(person)s přidán"
 
 
 class CoachAssignmentUpdateView(CoachAssignmentCreateUpdateMixin, generic.UpdateView):
+    """
+    Edits a coach assignment.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - assignment ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``position_assignment``
+    """
+
     template_name = "trainings/edit_coach_assignment.html"
     success_message = "Trenér %(person)s upraven"
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["person"] = self.object.person
         return kwargs
 
 
 class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.UpdateView):
+    """
+    Unassigns a person from a training as a coach.
+
+    Sends a notification email to the person.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - assignment ID
+    """
+
     success_message = "Odhlášení trenéra proběhlo úspěšně"
     template_name = "trainings/modals/delete_coach_assignment.html"
     form_class = CoachAssignmentDeleteForm
@@ -445,14 +786,52 @@ class CoachAssignmentDeleteView(CoachAssignmentMixin, generic.UpdateView):
 
 
 class TrainingBulkApproveParticipantsView(BulkApproveParticipantsMixin):
+    """
+    Approved all participant enrollments of a training.
+
+    **Success redirection view**: :class:`TrainingDetailView` of the training
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``pk`` - training ID
+    """
+
     form_class = TrainingBulkApproveParticipantsForm
 
 
 class TrainingOccurrenceDetailView(OccurrenceDetailBaseView):
+    """
+    Displays a detail of a training occurrence.
+
+    **Permissions**:
+
+    Users that can manage the event occurrence or fill its attendance.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - occurrence ID
+    """
+
     model = TrainingOccurrence
     template_name = "trainings_occurrences/detail.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``active_person_can_coach_excuse`` - whether the active person
+            can excuse themselves as a coach
+        *   ``active_person_can_participant_excuse`` - whether the active person
+            can excuse themselves as a participant
+        *   ``active_person_can_participant_unenroll`` - whether the active person
+            can unenroll themselves as a participant
+        *   ``active_person_can_participant_enroll`` - whether the active person
+            can enroll themselves as a participant
+        """
+
         active_person = self.request.active_person
         kwargs.setdefault(
             "active_person_can_coach_excuse",
@@ -482,6 +861,8 @@ class CoachOccurrenceBaseView(
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
 ):
+    """:meta private:"""
+
     model = CoachOccurrenceAssignment
     context_object_name = "assignment"
 
@@ -491,6 +872,23 @@ class CancelCoachExcuseView(
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Cancels a coach excuse.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - coach assignment ID
+    """
+
     form_class = CancelCoachExcuseForm
     template_name = "trainings_occurrences/modals/cancel_coach_excuse.html"
     success_message = "Zrušení omluvenky trenéra proběhlo úspěšně"
@@ -502,11 +900,29 @@ class ExcuseMyselfCoachView(
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Excuses the active person as a coach from a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can excuse themselves as a coach of the training occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    """
+
     form_class = ExcuseMyselfCoachForm
     template_name = "trainings_occurrences/modals/excuse_myself_coach.html"
     success_message = "Vaše trenérská neúčast byla úspěšně nahlášena"
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         active_person = self.request.active_person
         if active_person is None:
             raise Http404("Tato stránka není dostupná")
@@ -524,6 +940,23 @@ class CoachExcuseView(
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Excuses a coach from a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - coach assignment ID
+    """
+
     form_class = CoachExcuseForm
     template_name = "trainings_occurrences/modals/coach_excuse.html"
     success_message = "Omluvení trenéra proběhlo úspěšně"
@@ -538,6 +971,24 @@ class EnrollMyselfOrganizerForOccurrenceView(
     CoachOccurrenceBaseView,
     generic.CreateView,
 ):
+    """
+    Adds the active person as a one-time coach on a certain position
+    of a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can enroll on the position in the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``position_assignment_id`` - position assignment ID
+    """
+
     form_class = TrainingEnrollMyselfOrganizerOccurrenceForm
     success_message = "Přihlášení jako jednorázový trenér proběhlo úspěšně"
     template_name = "trainings_occurrences/detail.html"
@@ -548,14 +999,37 @@ class OneTimeCoachDeleteView(
     CoachOccurrenceBaseView,
     generic.DeleteView,
 ):
+    """
+    Unassigns a person from a training occurrence as a one-time coach.
+
+    Sends a notification email to the person.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - coach assignment ID
+    """
+
     template_name = "trainings_occurrences/modals/delete_one_time_coach.html"
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return (
             f"Osoba {self.object.person} byla úspěšně odebrána jako jednorázový trenér"
         )
 
     def form_valid(self, form):
+        """:meta private:"""
+
         assignment = self.object
         send_notification_email(
             _("Zrušení jednorázové trenérské účasti"),
@@ -573,12 +1047,31 @@ class UnenrollMyselfOrganizerFromOccurrenceView(
     CoachOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Unenrolls the active person from a training occurrence as a one-time coach.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can unenroll from the position in the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - coach assignment ID
+    """
+
     form_class = TrainingUnenrollMyselfOrganizerFromOccurrenceForm
     template_name = (
         "trainings_occurrences/modals/unenroll_myself_organizer_occurrence.html"
     )
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return f"Odhlášení z jednorázové trenérské pozice proběhlo úspěšně"
 
 
@@ -588,6 +1081,27 @@ class AddOneTimeCoachView(
     CoachOccurrenceBaseView,
     generic.CreateView,
 ):
+    """
+    Assigns a person as a one-time coach of a training occurrence on a certain position.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``position_assignment``
+    """
+
     form_class = CoachOccurrenceAssignmentForm
     template_name = "trainings_occurrences/create_coach_occurrence_assignment.html"
     success_message = "Jednorázový trenér %(person)s přidán"
@@ -601,6 +1115,28 @@ class EditOneTimeCoachView(
     OccurrenceOpenRestrictionMixin,
     generic.UpdateView,
 ):
+    """
+    Edits a one-time coach assignment.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - coach assignment ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    *   ``position_assignment``
+    """
+
     model = CoachOccurrenceAssignment
     form_class = CoachOccurrenceAssignmentForm
     context_object_name = "assignment"
@@ -608,12 +1144,19 @@ class EditOneTimeCoachView(
     success_message = "Přihláska jednorázového trenéra %(person)s upravena"
 
     def get_form_kwargs(self):
+        """:meta private:"""
+
         kwargs = super().get_form_kwargs()
         kwargs["occurrence"] = self.object.occurrence
         kwargs["person"] = self.object.person
         return kwargs
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``occurrence`` - occurrence of the assignment
+        *   ``event`` - training associated with the occurrence
+        """
+
         kwargs.setdefault("occurrence", self.object.occurrence)
         kwargs.setdefault("event", self.object.occurrence.event)
         return super().get_context_data(**kwargs)
@@ -628,6 +1171,8 @@ class ParticipantOccurrenceBaseView(
     OccurrenceOpenRestrictionMixin,
     generic.FormView,
 ):
+    """:meta private:"""
+
     model = TrainingParticipantAttendance
     context_object_name = "participant_attendance"
 
@@ -663,6 +1208,8 @@ class ExcuseMyselfParticipantView(
     success_message = "Vaše neúčast jako účastník byla úspěšně nahlášena"
 
     def get_object(self, queryset=None):
+        """:meta private:"""
+
         active_person = self.request.active_person
         if active_person is None:
             raise Http404("Tato stránka není dostupná")
@@ -707,9 +1254,13 @@ class OneTimeParticipantDeleteView(
     template_name = "trainings_occurrences/modals/delete_one_time_participant.html"
 
     def get_success_message(self, cleaned_data):
+        """:meta private:"""
+
         return f"Osoba {self.object.person} byla úspěšně odebrána jako účastník"
 
     def form_valid(self, form):
+        """:meta private:"""
+
         attendance = self.object
         send_notification_email(
             _("Zrušení jednorázové účasti účastníka"),
@@ -755,6 +1306,10 @@ class TrainingFillAttendanceView(
     template_name = "trainings_occurrences/attendance.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *
+        """
+
         kwargs.setdefault(
             "participant_assignments", self.get_form().checked_participant_assignments()
         )
@@ -802,6 +1357,8 @@ class TrainingExportParticipantsView(
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         approved_persons_id = self.event.trainingparticipantenrollment_set.filter(
             state=ParticipantEnrollment.State.APPROVED
         ).values_list("person_id")
@@ -816,6 +1373,8 @@ class TrainingExportCoachesView(
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         coaches_id = CoachPositionAssignment.objects.filter(
             training=self.event
         ).values_list("person_id")
@@ -834,6 +1393,8 @@ class TrainingExportOrganizersOccurrenceView(
     occurrence_id_key = "pk"
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         coaches_id = CoachOccurrenceAssignment.objects.filter(
             occurrence=self.occurrence, state=TrainingAttendance.PRESENT
         ).values_list("person_id")
@@ -853,6 +1414,8 @@ class TrainingExportParticipantsOccurrenceView(
     occurrence_id_key = "pk"
 
     def get(self, request, *args, **kwargs):
+        """:meta private:"""
+
         participants_id = TrainingParticipantAttendance.objects.filter(
             occurrence=self.occurrence, state=TrainingAttendance.PRESENT
         ).values_list("person_id")
