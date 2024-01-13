@@ -1,5 +1,5 @@
 ***************************************
-Template filters
+Template filtry
 ***************************************
 Šablonovací nástroj Jinja umožňuje provádět transformaci dat pomocí tzv. filtrů. Mnoho užitečných filtrů je v základní instalaci vestavěno. Typickým příkladem může být filtr ``length``, který odpovídá funkci ``len`` v Pythonu. 
 

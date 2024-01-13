@@ -30,9 +30,9 @@ Více informací API, včetně příkladů použítí, je možné se dozvědět 
 --------------------------------------
 events
 --------------------------------------
-Události jsou vždy jedním ze dvou druhů; buďto se jedná o jednorázové události, nebo tréninky. Většina operací prováděná nad událostmi bez ohledu jejich na druh má společný základ, který je implementován právě v aplikace :ref:`events`. Specifická funkcionalita závislá na druhu události je potom zajištěna pomocí dědičnosti a nachází se v aplikacích :ref:`one_time_events`, nebo :ref:`trainings`.
+Události jsou vždy jedním ze dvou druhů; buďto se jedná o jednorázové události, nebo tréninky. Většina operací prováděná nad událostmi bez ohledu na jejich druh má společný základ, který je implementován právě v aplikaci :ref:`events`. Specifická funkcionalita závislá na druhu události je potom zajištěna pomocí dědičnosti a nachází se v aplikacích :ref:`one_time_events`, nebo :ref:`trainings`.
 
-Součástí aplikace jsou template filtery specifické pro doménu událostí, které se nachází v souboru templatetags/events_template_tags.py. Více o template filtrech je možné se dočíst v části :doc:`./template-filters`.
+Součástí aplikace jsou template filtry specifické pro doménu událostí, které se nachází v souboru templatetags/events_template_tags.py. Více o template filtrech je možné se dočíst v části :doc:`./template-filters`.
 
 Formuláře patřící do této aplikace zpravidla implementují pouze společný základ pro jednorázové události a tréninky, konečná implementace využívaného formuláře se nachází v aplikacích :ref:`one_time_events` a :ref:`trainings`.
 
@@ -42,7 +42,7 @@ Model
 ^^^^^^^^^^^^^^^^^
 Aplikace :ref:`events` obsahuje několik modelů z nichž všechny kromě :py:class:`~events.models.EventPositionAssignment` jsou polymorfní a jsou dále rozšířeny v modelech aplikací :ref:`one_time_events` a :ref:`trainings`.
 
-:py:class:`~events.models.EventPositionAssignment` definuje přiřazení pozice definované v aplikace :ref:`positions` k události. Model :py:class:`~events.models.EventPositionAssignment` navíc obsahuje atribut :py:attr:`~events.models.EventPositionAssignment.count` (počet osob, které jsou na danou pozici vyžadováni).
+:py:class:`~events.models.EventPositionAssignment` definuje přiřazení pozice definované v aplikaci :ref:`positions` k události. Model :py:class:`~events.models.EventPositionAssignment` navíc obsahuje atribut :py:attr:`~events.models.EventPositionAssignment.count` (počet osob, který jsou na danou pozici vyžadován).
 
 :py:class:`~events.models.ParticipantEnrollment` definuje přihlášku účastníka, obsahuje:
 
@@ -57,12 +57,12 @@ Aplikace :ref:`events` obsahuje několik modelů z nichž všechny kromě :py:cl
 - :py:attr:`~events.models.Event.date_start` (datum začátku)
 - :py:attr:`~events.models.Event.date_end` (datum konce)
 - :py:attr:`~events.models.Event.positions` (přiřazené pozice)
-- :py:attr:`~events.models.Event.participants_enroll_state` (výchozí stav aplikované na nové účastníky)
+- :py:attr:`~events.models.Event.participants_enroll_state` (výchozí stav, který je aplikovan na nové účastníky)
 - :py:attr:`~events.models.Event.capacity` (maximální počet účastníků)
 - :py:attr:`~events.models.Event.min_age` (minimální věk účastníků)
 - :py:attr:`~events.models.Event.max_age` (maximální věk účastníků)
-- :py:attr:`~events.models.Event.group` (skupina, v níž je u účastníků vyžadované členství)
-- :py:attr:`~events.models.Event.allowed_person_types` (typ členství vyžadovaný u účastníků)
+- :py:attr:`~events.models.Event.group` (skupina, ve které musí být účastníci členem)
+- :py:attr:`~events.models.Event.allowed_person_types` (typ členství, které je vyžadováno u účastníků)
 
 :py:class:`~events.models.EventOccurrence` definuje jedno konání události, obsahuje:
 
@@ -109,7 +109,7 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 - :py:attr:`~features.models.FeatureAssignment.date_returned` (datum vrácení – pouze pro vybavení)
 - :py:attr:`~features.models.FeatureAssignment.issuer` (vydavatel vlastnosti)
 - :py:attr:`~features.models.FeatureAssignment.code` (ID vlastnosti)
-- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag indikujíjí, zda byl notifikační email oznamující expiraci, jíž osobě odeslán)
+- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag indikující, zda byl osobě odeslán notifikační email oznamující expiraci)
 
 
 .. image:: ../_static/features-model.png
@@ -310,7 +310,7 @@ Aplikace obsahuje modely:
 - :py:class:`~trainings.models.TrainingOccurrence` (den konání tréninku)
 - :py:class:`~trainings.models.TrainingParticipantAttendance` (docházka účastníka na konkrétním dni tréninku)
 - :py:class:`~trainings.models.TrainingParticipantEnrollment` (přihláška účastníka na trénink)
-- :py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, ve které účastník řádně dochází na trénink)
+- :py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, kdy účastník řádně dochází na trénink)
 
 Konkrétně modely :py:class:`~trainings.models.Training`, :py:class:`~trainings.models.CoachOccurrenceAssignment`, :py:class:`~trainings.models.TrainingOccurrence` a :py:class:`~trainings.models.TrainingParticipantEnrollment` dědí z rodiče, který je polymorfním modelem. Ostatní modely nejsou polymorfní, ale specifické pouze pro tréninky.
 
@@ -374,12 +374,12 @@ Konkrétně modely :py:class:`~trainings.models.Training`, :py:class:`~trainings
 
 - :py:attr:`~trainings.models.TrainingParticipantEnrollment.training` (trénink)
 - :py:attr:`~trainings.models.TrainingParticipantEnrollment.person` (osoba)
-- :py:attr:`~trainings.models.TrainingParticipantEnrollment.weekdays` (dny v týdnu, které se osoba řádně účastní tréninku)
+- :py:attr:`~trainings.models.TrainingParticipantEnrollment.weekdays` (dny v týdnu, kdy se osoba řádně účastní tréninku)
 - :py:attr:`~trainings.models.TrainingParticipantEnrollment.transactions` (transakce za účast)
 - další atributy z :py:class:`~events.models.ParticipantEnrollment`
 
 
-:py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, ve které účastník řádně dochází na trénink)
+:py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, kdy účastník řádně dochází na trénink)
 
 - :py:attr:`~trainings.models.TrainingWeekdays.weekday` (index dne v týdnu)
 
@@ -410,7 +410,7 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 :py:class:`~transactions.models.BulkTransaction`
 
 - :py:attr:`~transactions.models.BulkTransaction.reason` (důvod pro všechny transakce z jedné dávky)
-- :py:attr:`~transactions.models.BulkTransaction.event` (událost, vůči které jsou transakce vztaženy)
+- :py:attr:`~transactions.models.BulkTransaction.event` (událost vůči které jsou transakce vztaženy)
 
 :py:class:`~transactions.models.Transaction`
 
@@ -418,11 +418,11 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 - :py:attr:`~transactions.models.Transaction.amount` (částka)
 - :py:attr:`~transactions.models.Transaction.reason` (důvod)
 - :py:attr:`~transactions.models.Transaction.date_due` (datum splatnosti)
-- :py:attr:`~transactions.models.Transaction.person` (osoba, vůči které je transakce vztažena)
-- :py:attr:`~transactions.models.Transaction.event` (událost, vůči které je transakce vztažena)
+- :py:attr:`~transactions.models.Transaction.person` (osoba vůči které je transakce vztažena)
+- :py:attr:`~transactions.models.Transaction.event` (událost vůči které je transakce vztažena)
 - :py:attr:`~transactions.models.Transaction.feature_assignment` (vlastnost, vůči které je transakce vztažena)
 - :py:attr:`~transactions.models.Transaction.bulk_transaction` (hromadná transakce, které je tato transakce součástí)
-- :py:attr:`~transactions.models.Transaction.fio_transaction` (Fio transakce, odpovídající transakci uvnitř :term:`IS`)
+- :py:attr:`~transactions.models.Transaction.fio_transaction` (Fio transakce odpovídající transakci uvnitř :term:`IS`)
 
 :py:class:`~transactions.models.FioTransaction`
 

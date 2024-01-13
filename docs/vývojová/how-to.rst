@@ -108,7 +108,7 @@ Nejprve je nutné se rozhodnout, zda filtr, který chceme vytvořit je obecný n
 
 Obecné filtry patří do souboru templatetags/vzs_filters.py aplikace :ref:`vzs`. Specifické filtry patří do konkrétní aplikace, která je bude využívat. Jako adresář doporučujeme opět použít templatetags/ a jako název souboru s filtry např. filters.py. 
 
-Poté je potřeba se rozhodnout, zda chceme vytvořit template filter, template tag, inclusion tag, nebo simple tag. Mezi těmito primitivy jsou drobné rozdíly, většinou se hodí template filter, doporučujeme si přečíst `stránku na stackoverflow <https://stackoverflow.com/questions/5586774/django-template-filters-tags-simple-tags-and-inclusion-tags>`_, kde jsou rozdíly detailně popsány.
+Poté je potřeba se rozhodnout, zda chceme vytvořit template filtr, template tag, inclusion tag, nebo simple tag. Mezi těmito primitivy jsou drobné rozdíly, většinou se hodí template filtr, doporučujeme si přečíst `stránku na stackoverflow <https://stackoverflow.com/questions/5586774/django-template-filters-tags-simple-tags-and-inclusion-tags>`_, kde jsou rozdíly detailně popsány.
 
 Po implementaci, která může např vypadat takto
 
