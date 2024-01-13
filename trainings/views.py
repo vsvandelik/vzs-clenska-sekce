@@ -157,6 +157,10 @@ class TrainingDetailView(EventDetailMixin):
             )
 
         participant_enrollment = self.object.get_participant_enrollment(active_person)
+        if participant_enrollment:
+            enrolled_weekdays = participant_enrollment.participant_weekdays_as_list()
+        else:
+            enrolled_weekdays = []
 
         kwargs.setdefault(
             "trainings_for_replacement", trainings_for_replacement_to_choose
@@ -168,8 +172,7 @@ class TrainingDetailView(EventDetailMixin):
             "active_person_participant_enrollment", participant_enrollment
         )
         kwargs.setdefault(
-            "active_person_participant_enrolled_weekdays",
-            participant_enrollment.participant_weekdays_as_list(),
+            "active_person_participant_enrolled_weekdays", enrolled_weekdays
         )
         kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
         kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
