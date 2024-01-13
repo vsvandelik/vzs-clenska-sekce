@@ -12,7 +12,6 @@ from django.views.generic.list import ListView
 
 from google_integration import google_directory
 from groups.utils import sync_single_group_with_google
-from persons.views import PersonPermissionMixin
 from vzs.mixins import MessagesMixin
 from .forms import (
     AddMembersGroupForm,
@@ -321,7 +320,7 @@ class SyncGroupMembersWithGoogleAllView(GroupPermissionMixin, View):
         return redirect(reverse("groups:index"))
 
 
-class AddRemovePersonToGroupMixin(PersonPermissionMixin, MessagesMixin, UpdateView):
+class AddRemovePersonToGroupMixin(GroupPermissionMixin, MessagesMixin, UpdateView):
     """:meta private:"""
 
     error_message: str
