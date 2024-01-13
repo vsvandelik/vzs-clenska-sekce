@@ -143,7 +143,58 @@ Mezi atributy definované modelem patří:
 --------------------------------------
 one_time_events
 --------------------------------------
+Aplikace :ref:`one_time_events` obsahuje implementaci jednorázových událostí. Nachází se zde veškerá implementace zahrnující pohledy, formuláře, pomocné funkce atd. Součástí aplikace je i několik druhů pohledů určených pro různé úrovně oprávnění. 
 
+Implementace transakcí týkajících se jednorázových událostí se nachází výhradně v aplikace :ref:`transactions`.
+
+Model
+^^^^^^^^^^^^^^^^^
+Vzhledem k tomu, že aplikace implementuje klíčovou funkcionalitu :term:`IS`, je model poměrně rozsáhlý. 
+
+Aplikace obsahuje modely: 
+
+- :py:class:`~one_time_events.models.OneTimeEvent` (jednorázová událost)
+- :py:class:`~one_time_events.models.OrganizerOccurrenceAssignment` (přiřazení organizátora na pozici události k určitému dni)
+- :py:class:`~one_time_events.models.OneTimeEventParticipantAttendance` (docházka účastníka události k určitému dni)
+- :py:class:`~one_time_events.models.OneTimeEventOccurrence` (den události)
+- :py:class:`~one_time_events.models.OneTimeEventParticipantEnrollment` (přihláška účastníka události)
+
+Všechny modely vyjma :py:class:`~one_time_events.models.OneTimeEventParticipantAttendance` dědí z rodiče, který je polymorfním modelem.
+
+:py:class:`~one_time_events.models.OneTimeEvent` dědí z :py:class:`~events.models.Event`
+
+- :py:attr:`~one_time_events.models.OneTimeEvent.enrolled_participants` (přihlášení účastníci)
+- :py:attr:`~one_time_events.models.OneTimeEvent.default_participation_fee` (výchozí výše poplatku pro účastníky)
+- :py:attr:`~one_time_events.models.OneTimeEvent.category` (druh události – komerční, kurz, prezentační, pro děti, společenská)
+- :py:attr:`~one_time_events.models.OneTimeEvent.training_category` (druh tréninku, na kterém musí být účastník této události schváleným účastníkem)
+- :py:attr:`~one_time_events.models.OneTimeEvent.state` (stav události – nezavřena, uzavřena, zpracována)
+- další atributy z :py:class:`~events.models.Event`
+
+:py:class:`~one_time_events.models.OrganizerOccurrenceAssignment` dědí z :py:class:`~events.models.OrganizerAssignment`
+
+- :py:attr:`~one_time_events.models.OrganizerOccurrenceAssignment.position_assignment` (pozice přiřazená k události)
+- :py:attr:`~one_time_events.models.OrganizerOccurrenceAssignment.person` (osoba)
+- :py:attr:`~one_time_events.models.OrganizerOccurrenceAssignment.occurrence` (den události)
+- :py:attr:`~one_time_events.models.OrganizerOccurrenceAssignment.state` (stav dne události – nezavřen, uzavřen, zpracován)
+- další atributy z :py:class:`~events.models.OrganizerAssignment`
+
+:py:class:`~one_time_events.models.OneTimeEventParticipantAttendance`
+
+- :py:attr:`~one_time_events.models.OneTimeEventParticipantAttendance.enrollment` (přihláška účastníka na událost)
+- :py:attr:`~one_time_events.models.OneTimeEventParticipantAttendance.person` (osoba)
+- :py:attr:`~one_time_events.models.OneTimeEventParticipantAttendance.occurrence` (den události)
+- :py:attr:`~one_time_events.models.OneTimeEventParticipantAttendance.state` (stav docházky – prezence, absence)
+
+:py:class:`~one_time_events.models.OneTimeEventOccurrence` dědí z :py:class:`~events.models.EventOccurrence`
+
+- :py:attr:`~one_time_events.models.OneTimeEventOccurrence.organizers` (osoby, které jsou organizátory dne)
+- :py:attr:`~one_time_events.models.OneTimeEventOccurrence.participants` (účastníci dne včetně docházky)
+- :py:attr:`~one_time_events.models.OneTimeEventOccurrence.date` (datum konání dne události)
+- :py:attr:`~one_time_events.models.OneTimeEventOccurrence.hours` (počet hodin konání)
+- další atributy z :py:class:`~events.models.EventOccurrence`
+
+.. image:: ../_static/one_time_events-model.png
+    :target: ../_static/one_time_events-model.png
 
 .. _pages:
 
