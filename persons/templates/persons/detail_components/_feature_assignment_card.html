@@ -40,7 +40,9 @@
             </table>
         {% endif %}
     </div>
-    <div class="card-footer text-center">
-        <a href="{% url add_url person.id %}" class="btn-primary btn">Přidat {{ texts.name_4 }}</a>
-    </div>
+    {% ifperm add_url person.id as perm %}
+        <div class="card-footer text-center">
+            <a href="{{ perm.url }}" class="btn-primary btn">Přidat {{ texts.name_4 }}</a>
+        </div>
+    {% endifperm %}
 </div>
