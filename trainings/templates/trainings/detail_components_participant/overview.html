@@ -19,6 +19,7 @@
                         <td class="w-100">
                             {% for weekday in event.weekdays_list %}
                                 {% include 'trainings/components/weekday.html' %}
+                                {% if weekday not in active_person_participant_enrolled_weekdays %}<span class="text-muted">(nepřihlášen)</span>{% endif %}
                                 {% if not forloop.last %} <br> {% endif %}
                             {% endfor %}
                         </td>
