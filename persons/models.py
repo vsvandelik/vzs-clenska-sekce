@@ -54,6 +54,9 @@ class PersonsManager(Manager):
 
 
 class Person(ExportableCSVMixin, RenderableModelMixin, Model):
+    class Meta:
+        ordering = ["last_name", "first_name"]
+
     class Type(TextChoices):
         ADULT = "radny", _("řádný člen")
         EXPECTANT = "cekatel", _("člen - čekatel")
@@ -199,6 +202,7 @@ class PersonHourlyRate(Model):
 
     class Meta:
         unique_together = ["person", "event_type"]
+        ordering = ["person__last_name", "person__first_name", "event_type"]
 
     def __str__(self):
         return f"{self.person} - {self.event_type} - {self.hourly_rate} Kč / hod"

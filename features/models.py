@@ -162,6 +162,9 @@ FeatureTypeTexts = {
 
 
 class FeatureAssignment(Model):
+    class Meta:
+        ordering = ["-date_assigned"]
+
     person = ForeignKey("persons.Person", verbose_name=_("Osoba"), on_delete=CASCADE)
     feature = ForeignKey(Feature, on_delete=CASCADE)
     date_assigned = DateField()
