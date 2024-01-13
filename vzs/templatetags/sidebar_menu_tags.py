@@ -46,7 +46,7 @@ def render_menu(context):
             children=[
                 MenuItem("Seznam transakcí", "transactions:index"),
                 MenuItem("Hromadné transakce", "transactions:index-bulk"),
-                MenuItem("Účetní podklady", "transactions:accounting-export"),
+                MenuItem("Export podkladů", "transactions:accounting-export"),
             ],
         ),
         MenuItem(
