@@ -40,7 +40,7 @@
                                         <th scope="col">Suma</th>
                                         <th scope="col">Popis</th>
                                         <th scope="col">Datum splatnosti</th>
-                                        <th scope="col"></th>
+                                        <th scope="col" style="width: 60px"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -53,10 +53,9 @@
                                             <td>{{ transaction.reason }}</td>
                                             <td>{{ transaction.date_due }}</td>
                                             <td>
-                                                <div class="btn-group">
-                                                    {% ifperm "transactions:edit" transaction.pk as perm %}
-                                                        <a class="btn btn-success btn-sm" href="{{ perm.url }}"><i class="fas fa-pen"></i></a>
-                                                    {% endifperm %}
+                                                <div class="btn-group d-flex">
+                                                    {% perm_url "transactions:edit" transaction.pk as perm %}
+                                                    <a class="btn btn-success btn-sm w-100 {% if not perm %}disabled{% endif %}" href="{{ perm.url }}"><i class="fas fa-pen"></i></a>
                                                     {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
                                                 </div>
                                             </td>
