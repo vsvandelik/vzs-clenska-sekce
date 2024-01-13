@@ -18,13 +18,13 @@
                     <div class="card-title h5">Skupiny</div>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-striped">
+                    <table class="table table-striped responsive" id="groups-table">
                         <thead>
                             <tr>
-                                <th scope="col">Název</th>
+                                <th scope="col" data-priority="1">Název</th>
                                 <th scope="col">E-mailová adresa</th>
-                                <th scope="col">Počet členů</th>
-                                <th scope="col" style="width: 90px"></th>
+                                <th scope="col" data-priority="3">Počet členů</th>
+                                <th scope="col" data-priority="2" style="width: 90px"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,7 +60,9 @@
 
 {% block scripts %}
     <script src="{% static "register_modal.js" %}"></script>
+    <script src="{% static "datatables.js" %}"></script>
     <script>
         registerModal("delete-group-modal");
+        datatableEnable("groups-table", [0,1], [0]);
     </script>
 {% endblock %}
