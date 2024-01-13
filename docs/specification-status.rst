@@ -12,13 +12,16 @@ Změna osobních údajů samotnou osobou a následné schválení správcem
 ------------------------------------------------------------------
 (str 6; "Změna údajů může probíhat i tak, že uživatel navrhne změnu a jiný uživatel s dostatečným oprávněním mu změnu schválí a provede.")
 
-K DISKUSI.
+Kontaktní údaje si uživatel může měnit sám, bez nutnosti schvalování správcem. Ostatní údaje
+jsou ale spíše interními informacemi, a tedy nedává smysl, aby si je uživatel sám měnil.
 
 Evidence služby na Orlíku
 -------------------------
 (str. 6; ". Z těchto důvodu je potřeba evidovat služby během letních měsíců ...)
 
-K DISKUSI. Lze implementovat pomocí jednorázových akcí, případě vyargumentovat jinak.
+Na toto nebyl ve výsledné implementaci kladen větší důraz, protože se v době řešení
+projektu změnil způsob evidence služeb v organizaci. Služby se nyní evidují v jiném systému.
+V našem systému to ale i tak možné realizovat je pomocí jednorázových akcí.
 
 Závazky za tréninky
 -------------------
@@ -36,7 +39,8 @@ Zákaz přihlášení jen na část události jako organizátor
 ------------------------------------------------------
 (str. 14; "Osoby se mohou na Událost (Pozici) přihlásit jen na část doby (definováno pomocí půldnů), pokud to nastavení Události dovolí.")
 
-K DISKUSI.
+Při zevrubnější analýze se ukázalo, že četnost dle půldnů je nadbytečná a stačí přihlášení jen
+na jednotlivé dny.
 
 Nezapočítávání kvalifikací do výpočtu odměn
 -------------------------------------------
