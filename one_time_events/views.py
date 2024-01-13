@@ -272,7 +272,7 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         kwargs.setdefault("available_events_organizer", available_events)
 
 
-class OneTimeEventAdminListView(EventAdminListMixin):
+class OneTimeEventAdminListView(OneTimeEventCreatePermissionMixin, EventAdminListMixin):
     """
     Displays the list of one-time events that the active user can manage.
 
@@ -290,11 +290,8 @@ class OneTimeEventAdminListView(EventAdminListMixin):
     *   ``state`` - filter
     """
 
-
-class OneTimeEventAdminListView(OneTimeEventCreatePermissionMixin, EventAdminListMixin):
     template_name = "one_time_events/list_admin.html"
     context_object_name = "events"
-    template_name = "one_time_events/list_admin.html"
 
     def get(self, request, *args, **kwargs):
         """:meta private:"""
