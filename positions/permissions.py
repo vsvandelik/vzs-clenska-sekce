@@ -2,6 +2,10 @@ from users.permissions import PermissionRequiredMixin
 
 
 class PositionPermissionMixin(PermissionRequiredMixin):
+    """
+    Permits users who manage any event category.
+    """
+
     permissions_formula = [
         ["komercni_udalosti"],
         ["kurzy"],

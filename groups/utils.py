@@ -3,6 +3,14 @@ from persons.models import Person
 
 
 def sync_single_group_with_google(local_group):
+    """
+    Synchronizes members of a local IS group with a Google group.
+
+    If the Google group is the authority,
+    then the local group is updated to match the Google group.
+    Otherwise, the Google group is updated to match the local group.
+    """
+
     google_email = local_group.google_email
 
     local_emails = {p.email for p in local_group.members.all() if p.email is not None}
