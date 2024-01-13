@@ -488,9 +488,6 @@ class EventAdminListMixin(PermissionRequiredMixin, ListView):
     Uses ``self.filter_form`` to filter the events. Set in child classes.
     """
 
-    permissions_formula = [[]]  # TODO: permissions
-    """:meta private:"""
-
     def __init__(self, **kwargs):
         """:meta private:"""
 
