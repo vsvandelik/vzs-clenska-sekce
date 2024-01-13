@@ -8,8 +8,8 @@ from one_time_events.models import OneTimeEvent
 
 class OneTimeEventCreatePermissionMixin(EventCreatePermissionMixin):
     """
-    POST: Users that manage the event category sent in the request.
-    GET: Users that manage at least one event category.
+    POST: Users that manage the one-time event category sent in the request.
+    GET: Users that manage at least one one-time event category.
     """
 
     permissions_formula_GET = [
@@ -23,7 +23,7 @@ class OneTimeEventCreatePermissionMixin(EventCreatePermissionMixin):
 
 class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     """
-    Permits only users that can enroll as organizers of the event.
+    Permits users that can enroll as organizers of the event.
     """
 
     @classmethod
@@ -33,7 +33,7 @@ class OneTimeEventEnrollOrganizerPermissionMixin(EventInteractPermissionMixin):
 
 class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixin):
     """
-    Permits only users that can unenroll as organizers of the event.
+    Permits users that can unenroll as organizers of the event.
     """
 
     @classmethod
@@ -43,7 +43,7 @@ class OneTimeEventUnenrollOrganizerPermissionMixin(EventInteractPermissionMixin)
 
 class OccurrenceFillAttendancePermissionMixin(OccurrenceManagePermissionMixinPK):
     """
-    Permits only users that can fill the attendance of the event occurrence.
+    Permits users that can fill the attendance of the event occurrence.
     """
 
     @classmethod
@@ -53,7 +53,7 @@ class OccurrenceFillAttendancePermissionMixin(OccurrenceManagePermissionMixinPK)
 
 class OccurrenceDetailPermissionMixin(OccurrenceManagePermissionMixinPK):
     """
-    Permits only users that can manage the event occurrence or fill its attendance.
+    Permits users that can manage the event occurrence or fill its attendance.
     """
 
     @classmethod
