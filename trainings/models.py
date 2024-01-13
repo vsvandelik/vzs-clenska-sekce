@@ -116,6 +116,9 @@ class Training(Event):
         return map(weekday_pretty, self.weekdays_list())
 
     def can_be_replaced_by(self, training):
+        if self == training:
+            return True
+
         replaceability = TrainingReplaceabilityForParticipants.objects.filter(
             training_1=self, training_2=training
         ).first()
@@ -602,18 +605,12 @@ class TrainingOccurrence(EventOccurrence):
 
     def can_participant_enroll(self, person):
         no_free_spot_for_participant = not self.has_free_participant_spot()
-        is_attending_occurrence = self.get_participant_attendance(person) is not None
-        is_regular_participant = self.event.enrolled_participants.contains(person)
+        is_training_participant = self.participants.contains(person)
         is_past_deadline = CURRENT_DATETIME() + timedelta(
             days=settings.PARTICIPANT_ENROLL_DEADLINE_DAYS
         ) > timezone.localtime(self.datetime_start)
 
-        if (
-            no_free_spot_for_participant
-            or is_attending_occurrence
-            or is_regular_participant
-            or is_past_deadline
-        ):
+        if no_free_spot_for_participant or is_training_participant or is_past_deadline:
             return False
 
         (
@@ -784,6 +781,9 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
             return True
         except TrainingWeekdays.DoesNotExist:
             return False
+
+    def participant_weekdays_as_list(self):
+        return self.weekdays.all().values_list("weekday", flat=True)
 
     def participant_attendance(self, occurrence):
         attendance = self.trainingparticipantattendance_set.filter(

@@ -757,7 +757,7 @@ class SelectedPersonsMixin(View):
         return self._process_selected_persons(selected_persons)
 
 
-class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
+class SendEmailToSelectedPersonsView(PersonPermissionMixin, SelectedPersonsMixin):
     """
     Redirects to an open Gmail email with filtered persons
     and their managing persons set as recipients.
@@ -791,7 +791,7 @@ class SendEmailToSelectedPersonsView(SelectedPersonsMixin):
         return send_email_to_selected_persons(selected_persons)
 
 
-class ExportSelectedPersonsView(SelectedPersonsMixin):
+class ExportSelectedPersonsView(PersonPermissionMixin, SelectedPersonsMixin):
     """
     Exports filtered persons as a CSV file.
 

@@ -113,7 +113,8 @@ class TrainingDetailView(EventDetailMixin):
         )
 
         upcoming_occurrences = self.object.sorted_occurrences_list().filter(
-            datetime_start__gte=now()
+            datetime_start__gte=now(),
+            participants=active_person,
         )[:10]
         for occurrence in upcoming_occurrences:
             occurrence.can_excuse = occurrence.can_participant_excuse(active_person)
@@ -126,7 +127,8 @@ class TrainingDetailView(EventDetailMixin):
             )
 
         past_occurrences = self.object.sorted_occurrences_list().filter(
-            datetime_start__lte=now()
+            datetime_start__lte=now(),
+            participants=active_person,
         )[:20]
         for occurrence in past_occurrences:
             if occurrence.is_closed and occurrence.get_participant_attendance(
@@ -154,6 +156,12 @@ class TrainingDetailView(EventDetailMixin):
                 .all()
             )
 
+        participant_enrollment = self.object.get_participant_enrollment(active_person)
+        if participant_enrollment:
+            enrolled_weekdays = participant_enrollment.participant_weekdays_as_list()
+        else:
+            enrolled_weekdays = []
+
         kwargs.setdefault(
             "trainings_for_replacement", trainings_for_replacement_to_choose
         )
@@ -161,8 +169,10 @@ class TrainingDetailView(EventDetailMixin):
             "selected_replaceable_trainings", selected_replaceable_trainings
         )
         kwargs.setdefault(
-            "active_person_participant_enrollment",
-            self.object.get_participant_enrollment(active_person),
+            "active_person_participant_enrollment", participant_enrollment
+        )
+        kwargs.setdefault(
+            "active_person_participant_enrolled_weekdays", enrolled_weekdays
         )
         kwargs.setdefault("enrollment_states", ParticipantEnrollment.State)
         kwargs.setdefault("upcoming_occurrences", upcoming_occurrences)
@@ -273,7 +283,7 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         if count_of_trainings_to_replace <= 0:
             return
 
-        replaceable_trainings = []
+        replaceable_trainings = list(enrolled_trainings)
 
         for enrolled_training in enrolled_trainings:
             replaceable_trainings += enrolled_training.replaces_training_list()
@@ -288,7 +298,9 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
         )
 
         available_replaceable_occurrences = [
-            o for o in replaceable_occurrences if o.has_free_participant_spot()
+            o
+            for o in replaceable_occurrences
+            if o.can_participant_enroll(active_person)
         ][:10]
 
         kwargs.setdefault(
