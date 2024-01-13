@@ -99,7 +99,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Jméno</th>
+                                    <th>Osoba</th>
                                     {% for feature in assignment_matrix.columns %}
                                         <th class="text-center">{{ feature.name }}</th>
                                     {% endfor %}
@@ -108,7 +108,7 @@
                             <tbody>
                                 {% for row in assignment_matrix.rows %}
                                     <tr>
-                                        <th>{% render row.person "inline" %}</th>
+                                        <th>{% render row.person "inline_with_year" %}</th>
                                         {% for feature in row.features %}
                                             <td class="text-center">{% if feature.is_assigned %}<a href="{% url feature_type|wrapstr:"persons:,:edit" row.person.pk feature.pk %}"><i class="fas fa-check"></i></a>{% endif %}</td>
                                         {% endfor %}

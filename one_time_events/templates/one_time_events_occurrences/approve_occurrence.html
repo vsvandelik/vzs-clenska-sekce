@@ -38,9 +38,7 @@
                     <tbody>
                         {% for participant_assignment in occurrence.approved_participant_assignments_sorted %}
                             <tr>
-                                <td>
-                                    <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
-                                </td>
+                                <td>{% render participant_assignment.person "inline_with_year" %}</td>
                                 <td>
                                     <div class="custom-control custom-checkbox">
                                         <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
@@ -79,9 +77,7 @@
 
                             {% with organizer_amount=organizer_amounts|index:organizer_assignment.id %}
                                 <tr {% if organizer_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
-                                    <td>
-                                        <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render organizer_assignment.person "inline_with_year" %}</td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
                                             <input id="{{ organizer_assignment.id }}_organizer_checkbox" type="checkbox"

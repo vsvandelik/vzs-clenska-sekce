@@ -17,9 +17,7 @@
                 <tbody>
                     {% for coach in event.coachpositionassignment_set.all %}
                         <tr>
-                            <td>
-                                <a href="{% url 'persons:detail' coach.person.id %}">{{ coach.person }}</a>
-                            </td>
+                            <td>{% render coach.person "inline_with_year" %}</td>
                             <td><a href="{% url 'positions:detail' coach.position_assignment.position.id %}">{{ coach.position_assignment.position }}</a></td>
                             <td>
                                 {% if coach.training.main_coach_assignment == coach %}

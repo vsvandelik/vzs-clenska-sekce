@@ -49,6 +49,7 @@
                                 <thead>
                                     <tr>
                                         <th scope="col">Jméno</th>
+                                        <th scope="col">Rok narození</th>
                                         <th scope="col">E-mail</th>
                                         <th scope="col" style="width: 90px"></th>
                                     </tr>
@@ -56,7 +57,8 @@
                                 <tbody>
                                     {% for person in persons %}
                                         <tr>
-                                            <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
+                                            <td>{% render person "inline" %}</td>
+                                            <td>{{ person.date_of_birth|date:"Y" }}</td>
                                             <td>{% if person.email %}<a href="mailto:{{ person.email }}">{{ person.email }}</a>{% endif %}</td>
                                             <td>
                                                 <div class="btn-group d-flex">
