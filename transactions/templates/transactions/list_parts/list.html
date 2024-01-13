@@ -27,7 +27,7 @@
                                 <td>
                                     <div class="btn-group float-right">
                                         {% if not transaction.is_settled %}
-                                            <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm">
+                                            <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm" title="Informace o transakci vč. QR kódu">
                                                 <i class="fas fa-qrcode" aria-hidden="true"></i>
                                             </a>
                                         {% endif %}

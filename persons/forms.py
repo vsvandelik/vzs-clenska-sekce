@@ -45,9 +45,9 @@ class PersonForm(ModelForm):
             "date_of_birth",
             "birth_number",
             "health_insurance_company",
+            "street",
             "city",
             "postcode",
-            "street",
             "swimming_time",
         ]
         widgets = {"date_of_birth": DatePickerWithIcon()}
@@ -145,6 +145,17 @@ class PersonForm(ModelForm):
         cleaned_data = super().clean()
         if self.person_type:
             cleaned_data["person_type"] = self.person_type
+
+        street = cleaned_data.get("street")
+        city = cleaned_data.get("city")
+        postcode = cleaned_data.get("postcode")
+
+        if any([street, city, postcode]) and not all([street, city, postcode]):
+            raise ValidationError(
+                _(
+                    "Pokud je vyplněna ulice, město nebo PSČ, musí být vyplněna všechna tato pole."
+                )
+            )
 
         return cleaned_data
 
