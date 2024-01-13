@@ -508,11 +508,13 @@ class UserAssignPermissionView(MultipleObjectMixin, UserAssignRemovePermissionVi
     template_name = "users/assign_permission.html"
     """:meta private:"""
 
+    context_object_name = "permissions"
+    """:meta private:"""
+
     def get_context_data(self, **kwargs):
         """
         *   ``person``
         """
-
         self.object_list = self.get_queryset()
 
         kwargs.setdefault("person", self.object.person)
@@ -521,11 +523,13 @@ class UserAssignPermissionView(MultipleObjectMixin, UserAssignRemovePermissionVi
 
     def get_queryset(self):
         """:meta private:"""
+        permissions = Permission.objects.all()
+        user_permissions = self.object.user_permissions.values_list("pk", flat=True)
 
-        # TODO should be:
-        # return Permission.objects.difference(self.object.user_permissions.all())
-        # but SQlite doesn't support it, change when we start using PostgreSQL
-        return Permission.objects.all()
+        for permission in permissions:
+            permission.assigned = permission.pk in user_permissions
+
+        return permissions
 
     @staticmethod
     def change_user_permission(user, permission):

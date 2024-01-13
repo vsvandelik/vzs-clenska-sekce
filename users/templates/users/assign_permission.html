@@ -22,11 +22,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for permission in object_list %}
+                        {% for permission in permissions %}
                             <tr>
-                                <td>{{ permission.name }}</td>
+                                <td>
+                                    {{ permission.name }}
+                                    {% if permission.assigned %}<span class="badge badge-success">přidáno</span>{% endif %}
+                                </td>
                                 <td>{{ permission.description }}</td>
-                                <td><button type="submit" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}">Přidat</button></td>
+                                <td>
+                                    <button type="submit" class="btn btn-primary btn-sm" name="permission" value="{{ permission.pk }}" {% if permission.assigned %}disabled{% endif %}>Přidat</button>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
