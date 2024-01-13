@@ -1182,6 +1182,23 @@ class ExcuseParticipantView(
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Excuces a participant from a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - participant attendance ID
+    """
+
     form_class = ParticipantExcuseForm
     template_name = "trainings_occurrences/modals/participant_excuse.html"
     success_message = "Omluvení účastníka proběhlo úspěšně"
@@ -1192,6 +1209,23 @@ class CancelParticipantExcuseView(
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Cancels a training occurrence participant excuse.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - participant attendance ID
+    """
+
     form_class = CancelParticipantExcuseForm
     template_name = "trainings_occurrences/modals/cancel_participant_excuse.html"
     success_message = "Zrušení omluvenky účastníka proběhlo úspěšně"
@@ -1203,6 +1237,22 @@ class ExcuseMyselfParticipantView(
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Excuses the active person as a participant from a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can excuse themselves as a participant of the training occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    """
+
     form_class = ExcuseMyselfParticipantForm
     template_name = "trainings_occurrences/modals/excuse_myself_participant.html"
     success_message = "Vaše neúčast jako účastník byla úspěšně nahlášena"
@@ -1228,6 +1278,23 @@ class UnenrollMyselfParticipantFromOccurrenceView(
     ParticipantOccurrenceBaseView,
     generic.UpdateView,
 ):
+    """
+    Unenrolls the active person from a training occurrence as a one-time participant.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can unenroll themselves as a participant of the training occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - participant attendance ID
+    """
+
     form_class = TrainingUnenrollMyselfParticipantFromOccurrenceForm
     template_name = (
         "trainings_occurrences/modals/unenroll_myself_participant_occurrence.html"
@@ -1241,6 +1308,26 @@ class AddOneTimeParticipantView(
     ParticipantOccurrenceBaseView,
     generic.CreateView,
 ):
+    """
+    Enrolls a person as a one-time participant of a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+
+    **Request body parameters**:
+
+    *   ``person``
+    """
+
     form_class = TrainingParticipantAttendanceForm
     template_name = "trainings_occurrences/create_one_time_participant.html"
     success_message = "Jednorázový účastník %(person)s přidán"
@@ -1251,6 +1338,25 @@ class OneTimeParticipantDeleteView(
     ParticipantOccurrenceBaseView,
     generic.DeleteView,
 ):
+    """
+    Unenrolls a person from a training occurrence as a one-time participant.
+
+    Sends a notification email to the person.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    *   ``pk`` - participant attendance ID
+    """
+
     template_name = "trainings_occurrences/modals/delete_one_time_participant.html"
 
     def get_success_message(self, cleaned_data):
@@ -1283,6 +1389,22 @@ class EnrollMyselfParticipantFromOccurrenceView(
     OccurrenceOpenRestrictionMixin,
     generic.CreateView,
 ):
+    """
+    Enrolls the active person as a one-time participant of a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can enroll themselves as a participant of the training occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``occurrence_id`` - occurrence ID
+    """
+
     form_class = TrainingEnrollMyselfParticipantOccurrenceForm
     success_message = "Přihlášení jako jednorázový účastník proběhlo úspěšně"
     template_name = "trainings_occurrences/detail.html"
@@ -1299,6 +1421,27 @@ class TrainingFillAttendanceView(
     InsertEventIntoContextData,
     generic.UpdateView,
 ):
+    """
+    Fills the attendance of a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can fill the attendance of the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - occurrence ID
+
+    **Request body parameters**:
+
+    *   ``coaches``
+    *   ``participants``
+    """
+
     form_class = TrainingFillAttendanceForm
     model = TrainingOccurrence
     occurrence_id_key = "pk"
@@ -1307,7 +1450,8 @@ class TrainingFillAttendanceView(
 
     def get_context_data(self, **kwargs):
         """
-        *
+        *   ``participant_assignments`` - participant assignments of the occurrence
+        *   ``coach_assignments`` - coach assignments of the occurrence
         """
 
         kwargs.setdefault(
@@ -1329,6 +1473,22 @@ class ReopenTrainingOccurrenceView(
     InsertOccurrenceIntoContextData,
     generic.UpdateView,
 ):
+    """
+    Reopens a training occurrence.
+
+    **Success redirection view**: :class:`TrainingOccurrenceDetailView`
+    of the occurrence
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - occurrence ID
+    """
+
     form_class = ReopenTrainingOccurrenceForm
     model = TrainingOccurrence
     occurrence_id_key = "pk"
@@ -1339,6 +1499,18 @@ class ReopenTrainingOccurrenceView(
 class TrainingOpenOccurrencesOverviewView(
     EventManagePermissionMixin, InsertEventIntoContextData, generic.TemplateView
 ):
+    """
+    Displays an overview of open occurrences of a training.
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    """
+
     template_name = "trainings/modals/open_occurrences_overview.html"
 
 
@@ -1348,12 +1520,36 @@ class TrainingShowAttendanceView(
     InsertEventIntoContextData,
     generic.TemplateView,
 ):
+    """
+    Displays an overview of attendance of a training.
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    """
+
     template_name = "trainings/show_attendance.html"
 
 
 class TrainingExportParticipantsView(
     EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
 ):
+    """
+    Exports information about training participants as a CSV file.
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    """
+
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
@@ -1370,6 +1566,18 @@ class TrainingExportParticipantsView(
 class TrainingExportCoachesView(
     EventManagePermissionMixin, InsertEventIntoSelfObjectMixin, generic.View
 ):
+    """
+    Exports information about training coaches as a CSV file.
+
+    **Permissions**:
+
+    Users that can manage the training.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    """
+
     http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
@@ -1389,6 +1597,19 @@ class TrainingExportOrganizersOccurrenceView(
     InsertOccurrenceIntoSelfObjectMixin,
     generic.View,
 ):
+    """
+    Exports information about coaches of a training occurrence as a CSV file.
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - occurrence ID
+    """
+
     http_method_names = ["get"]
     occurrence_id_key = "pk"
 
@@ -1410,6 +1631,19 @@ class TrainingExportParticipantsOccurrenceView(
     InsertOccurrenceIntoSelfObjectMixin,
     generic.View,
 ):
+    """
+    Exports information about participants of a training occurrence as a CSV file.
+
+    **Permissions**:
+
+    Users that can manage the occurrence.
+
+    **Path parameters**:
+
+    *   ``event_id`` - training ID
+    *   ``pk`` - occurrence ID
+    """
+
     http_method_names = ["get"]
     occurrence_id_key = "pk"
 
