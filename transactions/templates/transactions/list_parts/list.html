@@ -26,17 +26,13 @@
                                 <td>{{ transaction.date_due }}</td>
                                 <td>
                                     <div class="btn-group float-right">
-                                        {% if not transaction.is_settled %}
-                                            <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm" title="Informace o transakci vč. QR kódu">
-                                                <i class="fas fa-qrcode" aria-hidden="true"></i>
-                                            </a>
-                                        {% endif %}
-
-                                        {% ifperm "transactions:edit-from-person" transaction.pk as perm %}
-                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-pen" aria-hidden="true"></i>
-                                            </a>
-                                        {% endifperm %}
+                                        <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm {% if transaction.is_settled %}disabled{% endif %}" title="Informace o transakci vč. QR kódu">
+                                            <i class="fas fa-qrcode" aria-hidden="true"></i>
+                                        </a>
+                                        {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
+                                        <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
+                                            <i class="fas fa-pen" aria-hidden="true"></i>
+                                        </a>
 
                                         {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
                                     </div>
@@ -71,11 +67,10 @@
                                 <td>{{ transaction.date_due }}</td>
                                 <td>
                                     <div class="btn-group float-right">
-                                        {% ifperm "transactions:edit-from-person" transaction.pk as perm %}
-                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm">
-                                                <i class="fas fa-pen" aria-hidden="true"></i>
-                                            </a>
-                                        {% endifperm %}
+                                        {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
+                                        <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
+                                            <i class="fas fa-pen" aria-hidden="true"></i>
+                                        </a>
 
                                         {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
                                     </div>

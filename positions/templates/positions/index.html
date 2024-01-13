@@ -25,7 +25,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Název</th>
-                                <th scope="col" style="width: 40px"></th>
+                                <th scope="col" style="width: 90px"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -33,11 +33,11 @@
                                 <tr>
                                     <td><a href="{% url 'positions:detail' position.id %}">{{ position.name }}</a></td>
                                     <td>
-                                        <div class="btn-group">
-                                            <a class="btn btn-info btn-sm" href="{% url 'positions:detail' position.id %}">
+                                        <div class="btn-group d-flex">
+                                            <a class="btn btn-info btn-sm w-100" href="{% url 'positions:detail' position.id %}">
                                                 <i class="fas fa-info"></i>
                                             </a>
-                                            <a class="btn btn-success btn-sm" href="{% url 'positions:edit' position.id %}">
+                                            <a class="btn btn-success btn-sm w-100" href="{% url 'positions:edit' position.id %}">
                                                 <i class="fas fa-pen"></i>
                                             </a>
 
