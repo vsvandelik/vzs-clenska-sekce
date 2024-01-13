@@ -81,7 +81,7 @@ def get_one_time_events_menu_item(context):
             icon="fas fa-calendar",
             children=[
                 MenuItem("Moje akce", "one_time_events:index"),
-                MenuItem("Seznam všech akcí", "one_time_events:list-admin"),
+                MenuItem("Všechny akce", "one_time_events:list-admin"),
             ],
         )
 
@@ -100,7 +100,7 @@ def get_trainings_menu_item(context):
             icon="fas fa-dumbbell",
             children=[
                 MenuItem("Moje tréninky", "trainings:index"),
-                MenuItem("Seznam všech tréninků", "trainings:list-admin"),
+                MenuItem("Všechny tréninky", "trainings:list-admin"),
             ],
         )
 
