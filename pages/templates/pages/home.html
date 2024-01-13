@@ -4,7 +4,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <div class="row row-cols-3">
+    <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
 
         {% if not multiple_managed_people and not unsettled_transactions and not soon_expiring_qualifications and not soon_returning_equipment and not upcoming_onetimeevents_participant and not upcoming_onetimeevents_organizer and not upcoming_trainings_participant and not upcoming_trainings_coach %}
             <div class="col mx-auto text-center">

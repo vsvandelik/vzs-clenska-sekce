@@ -23,37 +23,37 @@
     </div>
     <div class="row">
         {% if person.groups.count %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/groups_card.html" %}
             </div>
         {% endif %}
         {% if person.managed_persons.count %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/managed_persons_card.html" %}
             </div>
         {% endif %}
         {% if person.managed_by.count %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/managing_me_persons_card.html" %}
             </div>
         {% endif %}
         {% if person.hourly_rates.count %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/hourly_rates.html" %}
             </div>
         {% endif %}
         {% if qualifications %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/features_assignment_card.html" with title="Kvalifikace"  texts=features_texts.qualifications items=qualifications %}
             </div>
         {% endif %}
         {% if permissions %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/features_assignment_card.html" with title="Oprávnění"  texts=features_texts.permissions  items=permissions %}
             </div>
         {% endif %}
         {% if equipments %}
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6 col-xl-4">
                 {% include "persons/my_profile_parts/features_assignment_card.html" with title="Zapůjčené vybavení"   texts=features_texts.equipments items=equipments %}
             </div>
         {% endif %}
