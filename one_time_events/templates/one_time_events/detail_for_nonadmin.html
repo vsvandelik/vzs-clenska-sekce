@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load events_template_tags %}
 {% load static %}
 {% block title %}
     Detail akce
@@ -9,8 +10,8 @@
         <div class="col-12">
             <div class="elevation-2 card">
                 <div class="card-header">
-                    <div class="card-title h5"><span
-                        style="line-height: 45px;font-size: 22.5px;">{{ event.name }}</span></div>
+                    <div class="card-title h5" style="line-height: 45px;font-size: 22.5px;"
+                    >{{ event.name }} <span class="text-muted">({% display_date_range event %})</span></div>
                 </div>
             </div>
             {% include 'one_time_events/detail_components/enroll_unenroll_button.html' %}
