@@ -59,9 +59,7 @@
                 <tbody>
                     {% for organizer_assignment in occurrence.organizeroccurrenceassignment_set.all %}
                         <tr>
-                            <td>
-                                <a href="{% url 'persons:detail' organizer_assignment.person.id %}">{{ organizer_assignment.person }}</a>
-                            </td>
+                            <td>{% render organizer_assignment.person "inline_with_year" %}</td>
                             <td>
                                 <a href="{% url 'positions:detail' organizer_assignment.position_assignment.position.id %}">{{ organizer_assignment.position_assignment.position }}</a>
                             </td>

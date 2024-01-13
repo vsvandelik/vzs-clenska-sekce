@@ -1,3 +1,4 @@
+{% load vzs_filters %}
 <div class="col-12 col-md-6">
     <div class="card">
         <div class="card-header">
@@ -14,9 +15,7 @@
                 <tbody>
                     {% for participant_assignment in occurrence.regular_present_participants_assignments_sorted %}
                         <tr>
-                            <td>
-                                <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
-                            </td>
+                            <td>{% render participant_assignment.person "inline_with_year" %}</td>
                             <td>
                                 {% if occurrence.is_opened %}
                                     <div class="btn-group">
