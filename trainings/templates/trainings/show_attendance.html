@@ -44,9 +44,7 @@
                             {% for participant_enrollment in event.trainingparticipantenrollment_set.all %}
                                 {% if participant_enrollment.state == participant_enrollment.State.APPROVED %}
                                     <tr>
-                                        <td>
-                                            <a href="{% url 'persons:detail' participant_enrollment.person.id %}">{{ participant_enrollment.person }}</a>
-                                        </td>
+                                        <td>{% render participant_enrollment.person "inline_with_year" %}</td>
                                         {% for occurrence in event.sorted_occurrences_list %}
                                             {% if occurrence.is_closed %}
                                                 {% with participant_attendance=participant_enrollment|participant_enrollment_2_attendance:occurrence %}
@@ -92,9 +90,7 @@
                         <tbody>
                             {% for coach_assignment in event.coachpositionassignment_set.all %}
                                 <tr>
-                                    <td>
-                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render coach_assignment.person "inline_with_year" %}</td>
                                     {% for occurrence in event.sorted_occurrences_list %}
                                         {% if occurrence.is_closed %}
                                             {% with coach_attendance=coach_assignment|get_coach_attendance:occurrence %}

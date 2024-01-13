@@ -1,0 +1,8 @@
+{% load vzs_filters %}
+
+{% perm_url "persons:detail" person.pk as perm %}
+{% if perm %}
+    <a href="{% url "persons:detail" person.pk %}">{{ person.first_name }} {{ person.last_name }} {% if person.date_of_birth %}<span class="text-muted font-weight-normal">({{ person.date_of_birth|date:"Y" }})</span>{% endif %}</a>
+{% else %}
+    {{ person.first_name }} {{ person.last_name }} {% if person.date_of_birth %}<span class="text-muted font-weight-normal">({{ person.date_of_birth|date:"Y" }})</span>{% endif %}
+{% endif %}

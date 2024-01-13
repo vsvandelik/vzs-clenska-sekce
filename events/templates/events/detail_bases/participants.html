@@ -17,7 +17,7 @@
                 <tbody>
                     {% for enrollment in enrollments %}
                         <tr>
-                            <td><a href="{% url 'persons:detail' enrollment.person.id %}">{{ enrollment.person }}</a></td>
+                            <td>{% render enrollment.person "inline_with_year" %}</td>
                             <td>{{ enrollment.created_datetime|datetime_precise }}</td>
                             <td>
                                 <div class="btn-group">

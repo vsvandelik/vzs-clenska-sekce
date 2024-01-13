@@ -29,6 +29,9 @@ class BulkTransaction(Model):
     Used to store the information that the transactions are related.
     """
 
+    class Meta:
+        ordering = ["-id"]
+
     reason = CharField(_("Popis transakce"), max_length=150)
     """
     The reason for the whole set of this bulk's sub-transactions.
@@ -55,6 +58,9 @@ class Transaction(ExportableCSVMixin, Model):
 
     Primary key represents the transaction variable symbol.
     """
+
+    class Meta:
+        ordering = ["-pk"]
 
     amount = IntegerField(_("Suma"))
     """

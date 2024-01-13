@@ -61,6 +61,19 @@ class EventForm(ModelForm):
             "participants_enroll_state": Select2Widget(),
         }
 
+    def _prepare_category_field(self, available_categories):
+        if "category" not in self.fields:
+            return
+
+        if len(available_categories) == 1:
+            self.fields["category"].choices = [
+                (available_categories[0], available_categories[0].label)
+            ]
+        else:
+            self.fields["category"].choices = [("", "---------")] + [
+                (pt, pt.label) for pt in available_categories
+            ]
+
 
 class AgeLimitForm(ModelForm):
     class Meta:

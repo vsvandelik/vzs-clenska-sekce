@@ -28,9 +28,9 @@ def bool_js(value, opposite=False):
         return "false"
 
 
-@register.simple_tag
-def render(instance, style, **kwargs):
-    return instance.render(style, **kwargs)
+@register.simple_tag(takes_context=True)
+def render(context, instance, style, **kwargs):
+    return instance.render(style, context=context, **kwargs)
 
 
 @register.filter

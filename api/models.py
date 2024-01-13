@@ -12,6 +12,9 @@ class Token(BaseToken):
     If ``key`` is not set, a random key will be generated on :func:`save`.
     """
 
+    class Meta:
+        ordering = ["-created"]
+
     name = CharField(_("Název"), max_length=50)
     """
     The name of the token.

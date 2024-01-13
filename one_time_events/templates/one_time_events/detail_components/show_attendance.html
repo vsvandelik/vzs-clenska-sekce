@@ -44,9 +44,7 @@
                             {% for participant_enrollment in event.onetimeeventparticipantenrollment_set.all %}
                                 {% if participant_enrollment.state == participant_enrollment.State.APPROVED %}
                                     <tr>
-                                        <td>
-                                            <a href="{% url 'persons:detail' participant_enrollment.person.id %}">{{ participant_enrollment.person }}</a>
-                                        </td>
+                                        <td>{% render participant_enrollment.person "inline_with_year" %}</td>
                                         {% for occurrence in event.sorted_occurrences_list %}
                                             {% if occurrence.is_approved %}
                                                 {% with participant_attendance=participant_enrollment|participant_enrollment_2_attendance:occurrence %}
@@ -90,9 +88,7 @@
                         <tbody>
                             {% for person in event.organizer_persons %}
                                 <tr>
-                                    <td>
-                                        <a href="{% url 'persons:detail' person.id %}">{{ person }}</a>
-                                    </td>
+                                    <td>{% render person "inline_with_year" %}</td>
                                     {% for occurrence in event.sorted_occurrences_list %}
                                         {% if occurrence.is_approved %}
                                             {% with organizer_attendance=occurrence|occurrence_person_2_organizer_assignment:person %}

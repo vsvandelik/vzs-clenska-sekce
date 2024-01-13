@@ -71,7 +71,7 @@ def render_menu(context):
 def get_one_time_events_menu_item(context):
     can_person_edit_one_time_events = (
         OneTimeEventAdminListView.view_has_permission_person(
-            "GET", context["active_person"]
+            "GET", context["active_person"], POST={}
         )
     )
 
@@ -91,7 +91,7 @@ def get_one_time_events_menu_item(context):
 
 def get_trainings_menu_item(context):
     can_person_edit_trainings = TrainingAdminListView.view_has_permission_person(
-        "GET", context["active_person"]
+        "GET", context["active_person"], POST={}
     )
 
     if can_person_edit_trainings:

@@ -1,4 +1,5 @@
 {% extends 'trainings_occurrences/detail_bases/attendance.html' %}
+{% load vzs_filters %}
 {% load static %}
 {% block location_text %}{{ event }} – {{ occurrence.datetime_start|date }}{% endblock %}
 {% block form_action %}{% url 'trainings:fill-attendance' event.id occurrence.id %}{% endblock %}
@@ -37,9 +38,7 @@
                         <tbody>
                             {% for participant_assignment in occurrence.regular_not_excused_participants_assignments_sorted %}
                                 <tr>
-                                    <td>
-                                        <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render participant_assignment.person "inline_with_year" %}</td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
                                             <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
@@ -75,9 +74,7 @@
                         <tbody>
                             {% for participant_assignment in occurrence.one_time_not_excused_participants_assignments_sorted %}
                                 <tr>
-                                    <td>
-                                        <a href="{% url 'persons:detail' participant_assignment.person.id %}">{{ participant_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render participant_assignment.person "inline_with_year" %}</td>
                                     <td>
                                         <div class="custom-control custom-checkbox">
                                             <input id="{{ participant_assignment.id }}_participant_checkbox" type="checkbox"
@@ -118,9 +115,7 @@
                         <tbody>
                             {% for coach_assignment in occurrence.regular_not_excused_coaches_assignments_sorted %}
                                 <tr {% if coach_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
-                                    <td>
-                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render coach_assignment.person "inline_with_year" %}</td>
                                     <td>
                                         <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
                                     </td>
@@ -160,9 +155,7 @@
                         <tbody>
                             {% for coach_assignment in occurrence.one_time_not_excused_coaches_assignments_sorted %}
                                 <tr {% if coach_assignment.is_transaction_settled %}class="bg-warning"{% endif %}>
-                                    <td>
-                                        <a href="{% url 'persons:detail' coach_assignment.person.id %}">{{ coach_assignment.person }}</a>
-                                    </td>
+                                    <td>{% render coach_assignment.person "inline_with_year" %}</td>
                                     <td>
                                         <a href="{% url 'positions:detail' coach_assignment.position_assignment.position.id %}">{{ coach_assignment.position_assignment.position }}</a>
                                     </td>
