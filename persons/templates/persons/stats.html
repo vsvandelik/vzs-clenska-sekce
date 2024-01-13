@@ -12,27 +12,29 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title h5">Nastavení rozsahu</div>
-                </div>
-                <form method="GET" action="{% url 'persons:stats' person.id %}">
-                    <div class="card-body">
-                        {{ form.date_start|as_crispy_field }}
-                        {{ form.date_end|as_crispy_field }}
-                    </div>
-                    <div class="card-footer text-center">
-                        <button type="submit" class="btn btn-primary">Zobrazit</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
                     <div class="card-title h5">Počty hodin organizování jednorázových událostí dle druhu</div>
                 </div>
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <form method="GET" action="{% url 'persons:stats' person.id %}">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.date_start|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.date_end|as_crispy_field }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">Zobrazit</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     <table class="table">
                         <thead>
                             <tr>
