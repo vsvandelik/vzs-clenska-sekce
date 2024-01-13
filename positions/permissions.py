@@ -1,3 +1,5 @@
+from one_time_events.models import OneTimeEvent
+from trainings.models import Training
 from users.permissions import PermissionRequiredMixin
 
 
@@ -7,12 +9,12 @@ class PositionPermissionMixin(PermissionRequiredMixin):
     """
 
     permissions_formula = [
-        ["komercni"],
-        ["kurz"],
-        ["prezentacni"],
-        ["pro-deti"],
-        ["spolecenska"],
-        ["lezecky"],
-        ["plavecky"],
-        ["zdravoveda"],
+        [OneTimeEvent.Category.COMMERCIAL],
+        [OneTimeEvent.Category.COURSE],
+        [OneTimeEvent.Category.PRESENTATION],
+        [OneTimeEvent.Category.FOR_CHILDREN],
+        [OneTimeEvent.Category.SOCIAL],
+        [Training.Category.CLIMBING],
+        [Training.Category.SWIMMING],
+        [Training.Category.MEDICAL],
     ]
