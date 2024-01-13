@@ -788,6 +788,9 @@ class TrainingParticipantEnrollment(ParticipantEnrollment):
         except TrainingWeekdays.DoesNotExist:
             return False
 
+    def participant_weekdays_as_list(self):
+        return self.weekdays.all().values_list("weekday", flat=True)
+
     def participant_attendance(self, occurrence):
         attendance = self.trainingparticipantattendance_set.filter(
             occurrence=occurrence
