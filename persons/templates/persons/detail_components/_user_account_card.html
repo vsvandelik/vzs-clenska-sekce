@@ -67,7 +67,7 @@
                 {% endifperm %}
 
                 {% if perm_generate_new_password %}
-                    <button type="submit" form="generate-new-password-form" class="btn btn-secondary">Vygenerovat nové heslo</button>
+                    <a href="#" data-toggle="modal" data-target="#generate-password-modal" class="btn btn-secondary">Vygenerovat nové heslo</button>
                 {% endif %}
 
                 {% ifperm "persons:user-delete-password" person.pk as perm %}
