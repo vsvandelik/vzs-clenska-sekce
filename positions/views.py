@@ -1,5 +1,5 @@
-from django.http import Http404
-from django.urls import reverse_lazy
+from django.http import Http404, HttpResponseRedirect
+from django.urls import reverse_lazy, resolve, reverse
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
@@ -161,6 +161,13 @@ class AddRemoveFeatureRequirementPositionMixin(
     """:meta private:"""
 
     success_message = "Změna vyžadovaných features uložena"
+
+    def form_invalid(self, form):
+        super().form_invalid(form)
+
+        return HttpResponseRedirect(
+            reverse("positions:detail", kwargs={"pk": self.object.pk})
+        )
 
 
 class AddFeatureRequirementPositionView(AddRemoveFeatureRequirementPositionMixin):

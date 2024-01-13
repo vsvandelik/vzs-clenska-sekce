@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 <div class="col-12 col-md-4">
     <div class="card">
-        <div class="card-header">
+        <div class="card-header border-bottom-0">
             <div class="card-title h5">Omezení na typ členství</div>
         </div>
         <div class="card-body {% if object.allowed_person_types.all %}p-0{% endif %}">

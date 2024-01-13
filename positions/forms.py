@@ -1,4 +1,5 @@
 from django.forms import ModelChoiceField, ModelForm
+from django.utils.translation import gettext_lazy as _
 
 from events.forms_bases import AgeLimitForm, AllowedPersonTypeForm, GroupMembershipForm
 from features.models import Feature
@@ -36,15 +37,13 @@ class AddRemoveFeatureRequirementPositionMixin(RelatedAddOrRemoveFormMixin):
 class AddFeatureRequirementPositionForm(
     RelatedAddMixin, AddRemoveFeatureRequirementPositionMixin
 ):
-    # TODO: error message
-    pass
+    error_message = _("Nepodařilo se přidat vlastnost, protože už je přidaná.")
 
 
 class RemoveFeatureRequirementPositionForm(
     RelatedRemoveMixin, AddRemoveFeatureRequirementPositionMixin
 ):
-    # TODO: error message
-    pass
+    error_message = _("Nepodařilo se odebrat vlastnost, protože není přiřazená.")
 
 
 class PositionAgeLimitForm(AgeLimitForm):
