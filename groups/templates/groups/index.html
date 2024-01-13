@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load vzs_filters %}
 
 {% block title %}Seznam všech skupin{% endblock %}
@@ -16,14 +17,50 @@
                 <div class="card-header">
                     <div class="card-title h5">Skupiny</div>
                 </div>
-                <div class="card-body">
-                    <ul>
-                        {% for group in groups %}
-                            <li><a href="{% url 'groups:detail' group.id %}">{{ group.name }}</a></li>
-                        {% endfor %}
-                    </ul>
+                <div class="card-body p-0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Název</th>
+                                <th scope="col">E-mailová adresa</th>
+                                <th scope="col">Počet členů</th>
+                                <th scope="col" style="width: 90px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for group in groups %}
+                                <tr>
+                                    <td class="align-middle">{{ group.name }}</td>
+                                    <td class="align-middle">{{ group.google_email|handle_missing }}</td>
+                                    <td class="align-middle">{{ group.members.count }}</td>
+                                    <td class="align-middle">
+                                        <div class="btn-group d-flex w-100">
+                                            {% ifperm 'groups:detail' group.id as perm %}
+                                                <a class="btn btn-info btn-sm w-100" href="{{ perm.url }}"><i class="fas fa-info"></i></a>
+                                            {% endifperm %}
+                                            {% ifperm "groups:edit" group.pk as perm %}
+                                                <a class="btn btn-success btn-sm w-100" href="{{ perm.url }}"><i class="fas fa-pen"></i></a>
+                                            {% endifperm %}
+                                            {% ifperm "groups:delete" group.id as perm %}
+                                                {% include "delete_button_icon.html" with id="delete-group-modal" pattern="groups:delete" object=group %}
+                                            {% endifperm %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+
+    {% include "modal_include.html" with id="delete-group-modal" %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "register_modal.js" %}"></script>
+    <script>
+        registerModal("delete-group-modal");
+    </script>
 {% endblock %}
