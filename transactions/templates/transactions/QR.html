@@ -16,6 +16,10 @@
                     <table class="mb-1 table">
                         <tbody>
                             <tr>
+                                <td class="text-nowrap text-bold">Číslo účtu:</td>
+                                <td class="w-100">{{ account }}</td>
+                            </tr>
+                            <tr>
                                 <td class="text-nowrap text-bold">Suma:</td>
                                 <td class="w-100">{{ transaction.amount|absolute }}</td>
                             </tr>
@@ -35,7 +39,6 @@
                     </table>
 
                     <div class="text-center">
-                        {% comment %} TODO: correct bank info {% endcomment %}
                         <img src="{% qr transaction %}">
                     </div>
                 </div>
