@@ -50,7 +50,7 @@
                                     <tr>
                                         <th scope="col">Jméno</th>
                                         <th scope="col">E-mail</th>
-                                        <th scope="col" style="width: 40px"></th>
+                                        <th scope="col" style="width: 90px"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -59,9 +59,9 @@
                                             <td><a href="{% url "persons:detail" person.pk %}">{% render person "inline" %}</a></td>
                                             <td>{% if person.email %}<a href="mailto:{{ person.email }}">{{ person.email }}</a>{% endif %}</td>
                                             <td>
-                                                <div class="btn-group">
-                                                    <a class="btn btn-info btn-sm" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
-                                                    <a class="btn btn-success btn-sm" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
+                                                <div class="btn-group d-flex">
+                                                    <a class="btn btn-info btn-sm w-100" href="{% url "persons:detail" person.pk %}"><i class="fas fa-info"></i></a>
+                                                    <a class="btn btn-success btn-sm w-100" href="{% url "persons:edit" person.pk %}"><i class="fas fa-pen"></i></a>
                                                     {% include "delete_button_icon.html" with id="delete-person-modal" pattern="persons:delete" object=person %}
                                                 </div>
                                             </td>
