@@ -15,7 +15,7 @@ from django.views.generic.list import ListView
 
 from persons.models import Person
 from persons.views import PersonPermissionMixin
-from vzs.mixin_extensions import MessagesMixin
+from vzs.mixins import MessagesMixin
 from vzs.utils import today
 
 from .forms import (
