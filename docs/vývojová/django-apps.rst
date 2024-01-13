@@ -293,6 +293,68 @@ Model také poskytuje také několik metod, které usnadní práci s modelem. V�
 --------------------------------------
 trainings
 --------------------------------------
+Aplikace :ref:`trainings` zahrnuje implementaci tréninků. Nachází se zde veškerá implementace obsahující pohledy, formuláře, pomocné funkce atd. Součástí aplikace je i několik druhů pohledů určených pro různé úrovně oprávnění. 
+
+Implementace transakcí týkajících se tréninků se nachází výhradně v aplikace :ref:`transactions`.
+
+Model
+^^^^^^^^^^^^^^^^^
+Vzhledem k tomu, že aplikace implementuje klíčovou funkcionalitu :term:`IS`, je model poměrně rozsáhlý. 
+
+Aplikace obsahuje modely:
+
+- :py:class:`~trainings.models.TrainingReplaceabilityForParticipants` (povolené náhrady tréninků)
+- :py:class:`~trainings.models.Training` (trénink)
+- :py:class:`~trainings.models.CoachPositionAssignment` (přiřazení trenéra k tréninkům)
+- :py:class:`~trainings.models.CoachOccurrenceAssignment` (přiřazení trenéra ke dni konání tréninku)
+- :py:class:`~trainings.models.TrainingOccurrence` (den konání tréninku)
+- :py:class:`~trainings.models.TrainingParticipantAttendance` (docházka účastníka na konkrétním dni tréninku)
+- :py:class:`~trainings.models.TrainingParticipantEnrollment` (přihláška účastníka na trénink)
+- :py:class:`~trainings.models.TrainingWeekdays` (dny v týdnu, ve které účastník řádně dochází na trénink)
+
+Konkrétně modely :py:class:`~trainings.models.Training`, :py:class:`~trainings.models.CoachOccurrenceAssignment`, :py:class:`~trainings.models.TrainingOccurrence` a :py:class:`~trainings.models.TrainingParticipantEnrollment` dědí z rodiče, který je polymorfním modelem. Ostatní modely nejsou polymorfní, ale specifické pouze pro tréninky.
+
+:py:class:`~trainings.models.TrainingReplaceabilityForParticipants`
+
+- :py:attr:`~trainings.models.TrainingReplaceabilityForParticipants.training_1` (první trénink pro vztah náhrady)
+- :py:attr:`~trainings.models.TrainingReplaceabilityForParticipants.training_2` (druhý trénink pro vztah náhrady)
+
+:py:class:`~trainings.models.Training` dědí z :py:class:`~events.models.Event`
+
+- :py:attr:`~trainings.models.Training.enrolled_participants` (přihlášení účastníci)
+- :py:attr:`~trainings.models.Training.coaches` (určení řádní trenéři)
+- :py:attr:`~trainings.models.Training.main_coach_assignment` (garantující trenér)
+- :py:attr:`~trainings.models.Training.category` (druh tréninku – lezecký, plavecký, zdravověda)
+- :py:attr:`~trainings.models.Training.po_from` (čas začátku tréninku v pondělí)
+- :py:attr:`~trainings.models.Training.po_to` (čas konce tréninku v pondělí)
+- :py:attr:`~trainings.models.Training.ut_from` (čas začátku tréninku v úterý)
+- :py:attr:`~trainings.models.Training.ut_to` (čas konce tréninku v úterý)
+- :py:attr:`~trainings.models.Training.st_from` (čas začátku tréninku ve středu)
+- :py:attr:`~trainings.models.Training.st_to` (čas konce tréninku ve středu)
+- :py:attr:`~trainings.models.Training.ct_from` (čas začátku tréninku ve čtvrtek)
+- :py:attr:`~trainings.models.Training.ct_to` (čas konce tréninku ve čtvrtek)
+- :py:attr:`~trainings.models.Training.pa_from` (čas začátku tréninku v pátek)
+- :py:attr:`~trainings.models.Training.pa_to` (čas konce tréninku v pátek)
+- :py:attr:`~trainings.models.Training.so_from` (čas začátku tréninku v sobotu)
+- :py:attr:`~trainings.models.Training.so_to` (čas konce tréninku v sobotu)
+- :py:attr:`~trainings.models.Training.ne_from` (čas začátku tréninku v neděli)
+- :py:attr:`~trainings.models.Training.ne_to` (čas konce tréninku v neděli)
+- další atributy z :py:class:`~events.models.Event`
+
+:py:class:`~trainings.models.CoachPositionAssignment`
+
+- :py:attr:`~trainings.models.CoachPositionAssignment.person` (osoba)
+- :py:attr:`~trainings.models.CoachPositionAssignment.training` (trénink)
+- :py:attr:`~trainings.models.CoachPositionAssignment.position_assignment` (pozice přiřazená ke tréninku)
+
+:py:class:`~trainings.models.CoachOccurrenceAssignment` dědí z :py:class:`~events.models.OrganizerAssignment`
+
+- A
+- další atributy z :py:class:`~events.models.OrganizerAssignment`
+
+
+.. image:: ../_static/trainings-model.png
+    :target: ../_static/trainings-model.png
 
 .. _transactions:
 
