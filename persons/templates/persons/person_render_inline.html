@@ -1,1 +1,8 @@
-<a href="{% url "persons:detail" person.pk %}">{{ person.first_name }} {{person.last_name}}</a>
+{% load vzs_filters %}
+
+{% perm_url "persons:detail" person.pk as perm %}
+{% if perm %}
+    <a href="{% url "persons:detail" person.pk %}">{{ person.first_name }} {{ person.last_name }}</a>
+{% else %}
+    {{ person.first_name }} {{ person.last_name }}
+{% endif %}

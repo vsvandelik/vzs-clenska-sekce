@@ -3,11 +3,6 @@
 {% load active_link_tags %}
 {% load vzs_filters %}
 
-{% perm_url "api:token:index" as perm_token_index %}
-{% perm_url "api:token:generate" as perm_token_generate %}
-{% perm_url "transactions:index" as perm_transactions_index %}
-{% perm_url "transactions:accounting-export" as perm_transactions_accounting_export %}
-
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
@@ -23,9 +18,7 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 <li class="nav-header nav-item text-uppercase">Menu</li>
-
                 {% render_menu %}
-
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

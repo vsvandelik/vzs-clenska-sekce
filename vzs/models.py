@@ -1,12 +1,14 @@
 from django.db.models import Model
+from django.template import RequestContext
 from django.template.loader import render_to_string
 
 
 class RenderableModelMixin:
-    def render(self, style, **kwargs):
+    def render(self, style, context: RequestContext, **kwargs):
         meta = self._meta
         template_name = f"{meta.app_label}/{meta.model_name}_render_{style}.html"
 
+        kwargs.setdefault("active_person", context["active_person"])
         kwargs.setdefault(meta.model_name, self)
 
         return render_to_string(template_name, kwargs)
