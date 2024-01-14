@@ -8,6 +8,9 @@ Pokud víte o nějaké chybě, máte nějaký námět na zlepšení neváhejte a
 
 Pokud rozumíte Pythonu, Djangu a rádi byste něco vylepšili sami, tak se domluvte s Vojtou Švandelíkem. Repozitář se zdrojovým kódem se nachází na GitHubu a momentálně je nastaven jako privátní. Po domluvě je možné získat přístup ke zdrojovému kódu. Bližší informace o licenci SW díla se nachází v sekci :doc:`../license`.
 
+
+.. _workflow:
+
 ----------------------
 Workflow
 ----------------------
@@ -57,3 +60,19 @@ Poté můžete pokračovat dle návodu:
 12. Upravte Váš kód dle požadavků. (Přidejte další commity do stejné branch).
 
 13. Správce provede merge do master branch.
+
+.. _dokumentace:
+----------------------
+Dokumentace
+----------------------
+Dokumentace, kterou právě čtete, je součástí projektu stejně jako zdrojový kód :term:`IS`. Po přípravě prostředí popsaného v předchozí části :ref:`workflow`, je možné provést sestavení dokumentace spuštěním následujících příkazů z adresáře :ref:`docs/`.
+
+.. code-block:: console
+
+    sphinx-apidoc -o _autodoc ..
+    make html
+
+
+Dokumentace se skládá pouze ze statických stránek, pro lokální prohlížení stačí otevřít soubor docs/_build/html/index.html v libovolném webovém prohlížeči.
+
+Licence i postup pro úpravu dokumentace je stejný jako v případě úprav zdrojového kódu. Vždy je potřeba se předem domluvit na konkrétní úpravě, na kterou se vytvoří vlastní issue na GitHubu.

@@ -201,7 +201,9 @@ Soubor popisující, jak sestavit docker image PostgreSQL s nastaveným ``LC_COL
 
 docs/
 ^^^^^^^^^^^^^^^^^^
-Zdrojový kód této dokumentace.
+Zdrojový kód dokumentace, kterou právě čtete. 
+
+Informace ohledně sestavení dokumentace se nachází v části :ref:`dokumentace`.
 
 .. _events/:
 
