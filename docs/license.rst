@@ -33,4 +33,4 @@ Znění
 Shrnutí
 **************
 
-:term:`IS` můžete bez omezení používat a upravovat. Je nutné mít na paměti, že :term:`IS` je poskytován bez jakékoliv záruky, autoři ani držitelé autorských práv neodpovídají za žádné škody nebo odpovědnost vyplývající z používání. Součástí :term:`IS` je vždy výše uvedené znění licence včetně seznamu všech jmen autorů a přispěvovatelů, které je možné najít na stránce :doc:`../contributors`.
+:term:`IS` můžete bez omezení používat a upravovat. Je nutné mít na paměti, že :term:`IS` je poskytován bez jakékoliv záruky, autoři ani držitelé autorských práv neodpovídají za žádné škody nebo odpovědnost vyplývající z používání. Součástí :term:`IS` je vždy výše uvedené znění licence včetně seznamu všech jmen autorů a přispěvatelů, které je možné najít na stránce :doc:`../contributors`.

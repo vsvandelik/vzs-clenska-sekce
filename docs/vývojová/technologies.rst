@@ -9,9 +9,9 @@ IS je standardní klient-server aplikací vytvořenou pomocí webového framewor
 ---------------------
 Python
 ---------------------
-Python je vysokoúrovňový interpretovaný programovací jazyk, který byl poprvé vydán v roce 1991 nizozemským programátorem Guido van Rossumem. Python je známý pro svou jednoduchou syntaxi, srozumitelnost, díky čemuž je oblíbeným jazykem pro začátečníky i zkušené programátory. Python se používá v řadě různých aplikací, včetně vývoje webových stránek, vědeckých výpočtů, analýzy dat aj. V současné době se Python může chlubit velkou komunitu vývojářů a uživatelů, díky čemuž je k dispozici mnoho knihoven a nástrojů třetích stran, které rozšiřují jeho možnosti [1]_.
+Python je vysokoúrovňový interpretovaný programovací jazyk, který byl poprvé vydán v roce 1991 nizozemským programátorem Guido van Rossumem. Python je známý pro svou jednoduchou syntaxi, srozumitelnost, díky čemuž je oblíbeným jazykem pro začátečníky i zkušené programátory. Python se používá v řadě různých aplikací, včetně vývoje webových stránek, vědeckých výpočtů, analýzy dat aj. V současné době se Python může chlubit velkou komunitou vývojářů a uživatelů, díky čemuž je k dispozici mnoho knihoven a nástrojů třetích stran, které rozšiřují jeho možnosti [1]_.
 
-Python využíváme kvůli volbě frameworku Django, které je v Pythonu vytvořené.
+Python využíváme kvůli volbě frameworku Django, který je v Pythonu vytvořený.
 
 .. [1] Zdroj: oficiální stránky Pythonu, odkaz: `<https://www.python.org>`_. 
 
@@ -19,15 +19,15 @@ Python využíváme kvůli volbě frameworku Django, které je v Pythonu vytvoř
 Django [2]_
 ---------------------
 
-Django populární open-source webový framework vydaný pod svobodnou licencí BSD 3-Clause [3]_. postavený na programovacím jazyku Python. Poprvé byl uvolněn v roce 2005 s cílem zjednodušit proces vytváření webových aplikací. 
+Django populární open-source webový framework vydaný pod svobodnou licencí BSD 3-Clause [3]_, postavený na programovacím jazyku Python. Poprvé byl uvolněn v roce 2005 s cílem zjednodušit proces vytváření webových aplikací.
 
-Jádrem Django je architektonický vzor MVC (model-view-controller), který pomáhá vytvářet udržovatelné webové aplikace. Django však svou implementaci tohoto vzoru označuje jako „model-view-template“ (MVT), kde vrstva šablony (angl. template) odděluje prezentační logiku od zbytku aplikace. 
+Jádrem Djanga je architektonický vzor MVC (model-view-controller), který pomáhá vytvářet udržovatelné webové aplikace. Django však svou implementaci tohoto vzoru označuje jako „model-view-template“ (MVT), kde vrstva šablony (angl. template) odděluje prezentační logiku od zbytku aplikace.
 
 Jednou z klíčových předností Django je důraz na rychlý vývoj a jednoduchost kódu. Dodržováním zásady DRY („Do Not Repeat Yourself“) podporuje Django psaní opakovatelně použitelného kódu, což vede ke zvýšení produktivity a snadnější údržbě aplikací v budoucnu. 
 
-Django následuje filozofii Python a stejně jako jazyk samotný obsahuje bohatou sadu funkcí a vlastností již v základní instalaci. Jako příklad můžeme uvést ORM (Object-Relational Mapping) pro práci s databázemi. ORM poskytuje abstrakční vrstvu, která vývojářům umožňuje komunikovat s databází pomocí Python, aniž by bylo nutné psát vlastní dotazy SQL. Aktuálně Django oficiálně podporuje několik DB systémů, konkrétně: PostgreSQL, MariaDB, MySQL, Oracle, SQLite. 
+Django následuje filozofii jazyka Python a stejně jako jazyk samotný obsahuje bohatou sadu funkcí a vlastností již v základní instalaci. Jako příklad můžeme uvést ORM (Object-Relational Mapping) pro práci s databázemi. ORM poskytuje abstrakční vrstvu, která vývojářům umožňuje komunikovat s databází pomocí jazyka Python, aniž by bylo nutné psát vlastní dotazy SQL. Aktuálně Django oficiálně podporuje několik DB systémů, konkrétně: PostgreSQL, MariaDB, MySQL, Oracle a SQLite.
 
-U Django hraje významnou roli také jeho silný ekosystém. Má aktivní komunitu, která přispívá k jeho vývoji a udržuje mnoho rozšiřujících balíčků, díky kterým je možné např. použít ORM Django k připojení se i na MSSQL databázi.
+U Djanga hraje významnou roli také jeho silný ekosystém. Má aktivní komunitu, která přispívá k jeho vývoji a udržuje mnoho rozšiřujících balíčků, díky kterým je možné např. použít ORM Django k připojení se i na MSSQL databázi.
 
 Framework Django je nejdůležitější závislostí :term:`IS`.
 
