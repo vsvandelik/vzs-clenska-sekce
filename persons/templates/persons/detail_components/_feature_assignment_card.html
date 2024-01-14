@@ -9,38 +9,42 @@
         {% if not items %}
             <p class="text-center">{{ no_items_message }}</p>
         {% else %}
-            <table class="table table-hover">
-                <tbody>
-                    {% for item in items %}
-                        <tr {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
-                            <td>{{ item.feature.name }}{% if item.date_expire and title == "Kvalifikace" %} <span class="text-muted">(skončila platnost)</span>{% endif %}</td>
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    {% if return_url %}
-                                        <a class="btn btn-info btn-sm" href="{% url return_url person=person.id pk=item.id %}"><i class="fas fa-download"></i></a>
-                                    {% endif %}
-                                    <a class="btn btn-success btn-sm" href="{% url edit_url person=person.id pk=item.id %}"><i class="fas fa-pen"></i></a>
-                                    <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url delete_url person.pk item.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %}
-                            <tr class="expandable-body">
-                                <td colspan="2">
-                                    {% if item.date_assigned %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_assigned }}:&nbsp;</strong>{{ item.date_assigned }}</p>{% endif %}
-                                    {% if item.date_expire %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_expire }}:&nbsp;</strong>{{ item.date_expire }}</p>{% endif %}
-                                    {% if item.code %}<p class="m-0 py-0"><strong>{{ texts.form_labels.code }}:&nbsp;</strong>{{ item.code }}</p>{% endif %}
-                                    {% if item.issuer %}<p class="m-0 py-0"><strong>{{ texts.form_labels.issuer }}:&nbsp;</strong>{{ item.issuer }}</p>{% endif %}
-                                    {% if item.transaction %}<p class="m-0 py-0"><strong>{{ texts.form_labels.fee }}:&nbsp;</strong>{{ item.transaction.amount|negate }} Kč ({% if not item.transaction.is_settled %}ne{% endif %}uhrazen)</p>{% endif %}
+            <div class=" table-responsive">
+                <table class="table table-hover">
+                    <tbody>
+                        {% for item in items %}
+                            <tr {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %} data-widget="expandable-table" aria-expanded="false"{% endif %}>
+                                <td>{{ item.feature.name }}{% if item.date_expire and title == "Kvalifikace" %} <span class="text-muted">(skončila platnost)</span>{% endif %}</td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        {% if return_url %}
+                                            <a class="btn btn-info btn-sm" href="{% url return_url person=person.id pk=item.id %}"><i class="fas fa-download"></i></a>
+                                        {% endif %}
+                                        <a class="btn btn-success btn-sm" href="{% url edit_url person=person.id pk=item.id %}"><i class="fas fa-pen"></i></a>
+                                        <a href="#" data-toggle="modal" data-target="#remove-features-assignment-modal" data-action="{% url delete_url person.pk item.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
                                 </td>
                             </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+                            {% if item.date_assigned or item.date_expire or item.code or item.issuer or item.transaction %}
+                                <tr class="expandable-body">
+                                    <td colspan="2">
+                                        {% if item.date_assigned %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_assigned }}:&nbsp;</strong>{{ item.date_assigned }}</p>{% endif %}
+                                        {% if item.date_expire %}<p class="m-0 py-0"><strong>{{ texts.form_labels.date_expire }}:&nbsp;</strong>{{ item.date_expire }}</p>{% endif %}
+                                        {% if item.code %}<p class="m-0 py-0"><strong>{{ texts.form_labels.code }}:&nbsp;</strong>{{ item.code }}</p>{% endif %}
+                                        {% if item.issuer %}<p class="m-0 py-0"><strong>{{ texts.form_labels.issuer }}:&nbsp;</strong>{{ item.issuer }}</p>{% endif %}
+                                        {% if item.transaction %}<p class="m-0 py-0"><strong>{{ texts.form_labels.fee }}:&nbsp;</strong>{{ item.transaction.amount|negate }} Kč ({% if not item.transaction.is_settled %}ne{% endif %}uhrazen)</p>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </div>
-    <div class="card-footer text-center">
-        <a href="{% url add_url person.id %}" class="btn-primary btn">Přidat {{ texts.name_4 }}</a>
-    </div>
+    {% ifperm add_url person.id as perm %}
+        <div class="card-footer text-center">
+            <a href="{{ perm.url }}" class="btn-primary btn">Přidat {{ texts.name_4 }}</a>
+        </div>
+    {% endifperm %}
 </div>

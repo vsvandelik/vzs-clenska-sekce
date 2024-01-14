@@ -1,10 +1,10 @@
 {% load vzs_filters %}
-<div class="col-12 col-md-6">
+<div class="col-12 col-xl-6">
     <div class="card">
         <div class="card-header border-0">
             <div class="card-title h5">Přehled</div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
             <table class="mb-1 table">
                 <tbody>
 
@@ -43,7 +43,7 @@
                         {% endwith %}
                     </tr>
                     <tr>
-                        <td class="text-nowrap text-bold">Standardní výše poplatku pro účastníky:</td>
+                        <td class="text-bold">Standardní výše poplatku pro účastníky:</td>
                         <td class="w-100">{{ event.default_participation_fee|money|handle_missing }}</td>
                     </tr>
                 </tbody>

@@ -49,6 +49,7 @@ from vzs.mixins import (
 )
 from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
+
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -69,12 +70,12 @@ from .forms import (
     TrainingCategoryForm,
 )
 from .mixins import (
-    InsertAvailableCategoriesIntoFormsKwargsMixin,
     BulkCreateDeleteOrganizerMixin,
+    InsertAvailableCategoriesIntoFormsKwargsMixin,
+    OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
     OneTimeEventParticipantEnrollmentCreateUpdateMixin,
     OrganizerForOccurrenceMixin,
     OrganizerSelectOccurrencesMixin,
-    OneTimeEventOccurrenceAttendanceCanBeFilledMixin,
 )
 from .models import (
     OneTimeEvent,
@@ -107,17 +108,17 @@ class OneTimeEventDetailView(EventDetailMixin):
 
     def get_context_data(self, **kwargs):
         """
-        *   ``active_person_can_enroll_organizer``: whether the active person
+        *   ``active_person_can_enroll_organizer`` - whether the active person
             can enroll as an organizer of the event
-        *   ``active_person_can_unenroll_organizer``: whether the active person
+        *   ``active_person_can_unenroll_organizer`` - whether the active person
             can unenroll as organizer of the event
-        *   ``active_person_is_organizer``: whether the active person
+        *   ``active_person_is_organizer`` - whether the active person
             is currently enrolled as an organizer of the event
-        *   ``active_person_participant_enrollment``: the active person's
+        *   ``active_person_participant_enrollment`` - the active person's
             participant enrollment
-        *   ``enrollment_states``: the values of ``ParticipantEnrollment.State``
-        *   ``map_is_available``: whether the embedded Google map is available
-        *   ``organizers_positions``: the organizers positions info
+        *   ``enrollment_states`` - the values of ``ParticipantEnrollment.State``
+        *   ``map_is_available`` - whether the embedded Google map is available
+        *   ``organizers_positions`` - the organizers positions info
         """
 
         active_person = self.request.active_person
@@ -1016,6 +1017,10 @@ class ApproveOccurrenceView(
     template_name = "one_time_events_occurrences/approve_occurrence.html"
 
     def get_context_data(self, **kwargs):
+        """
+        *   ``organizer_amounts``: the organizer reward mapping
+        """
+
         kwargs.setdefault("organizer_amounts", self.get_form().organizer_amounts())
         return super().get_context_data(**kwargs)
 

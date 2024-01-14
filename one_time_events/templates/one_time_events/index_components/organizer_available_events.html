@@ -20,10 +20,10 @@
                     <tbody>
                         {% for event in available_events_organizer %}
                             <tr>
-                                <td><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
-                                <td>{% display_date_range event %}</td>
+                                <td class="text-nowrap"><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
+                                <td class="text-nowrap">{% display_date_range event %}</td>
                                 <td>{{ event.location|handle_missing_empty }}</td>
-                                <td class="text-right">
+                                <td class="text-right text-nowrap">
                                     <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
                                     {% ifperm 'one_time_events:enroll-myself-organizer' event.id as perm %}
                                         <a class="btn btn-info btn-sm" href="{{ perm.url }}">

@@ -27,26 +27,26 @@
 
     <div class="row">
         {% if participant_enrolled_trainings %}
-            <div class="col-lg-6">
+            <div class="col-12 col-lg min-width-50">
                 {% include "trainings/index_components/participant_enrolled_trainings.html" %}
             </div>
         {% endif %}
 
         {% if coach_regular_trainings %}
-            <div class="col-lg-6">
+            <div class="col-12 col-lg min-width-50">
                 {% include "trainings/index_components/coach_regular_trainings.html" %}
             </div>
         {% endif %}
 
 
         {% if participant_upcoming_occurrences %}
-            <div class="col-lg-6">
+            <div class="col-12 col-lg min-width-50">
                 {% include "trainings/index_components/participant_upcoming_trainings.html" %}
             </div>
         {% endif %}
 
         {% if coach_upcoming_occurrences %}
-            <div class="col-lg-6">
+            <div class="col-12 col-lg min-width-50">
                 {% include "trainings/index_components/coach_upcoming_trainings.html" %}
             </div>
         {% endif %}

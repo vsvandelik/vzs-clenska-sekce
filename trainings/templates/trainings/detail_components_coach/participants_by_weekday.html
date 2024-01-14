@@ -5,7 +5,7 @@
         <div class="card-header border-bottom-0">
             <div class="card-title h5">Účastníci {{ weekday|weekday_pretty_full|lower }}</div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
             <table class="table table-striped">
                 <tbody>
                     {% for participant_enrollment in participants %}

@@ -26,16 +26,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-xl-6">
             <div class="card">
                 <div class="card-header border-0">
                     <div class="card-title h5">Parametry skupiny</div>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive">
                     <table class="mb-1 table">
                         <tbody>
                             <tr>
-                                <td class="text-nowrap text-bold">E-mailová adresa skupiny v Google Workspace:</td>
+                                <td class="text-bold">E-mailová adresa skupiny v Google Workspace:</td>
                                 <td class="w-100">
                                     {% if object.google_email %}
                                         <a href="mailto:{{ object.google_email }}">{{ object.google_email }}</a>
@@ -80,7 +80,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-xl-6">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title h5">Přidat členy</div>

@@ -666,7 +666,6 @@ class TrainingOccurrence(EventOccurrence):
 
     @staticmethod
     def get_upcoming_by_participant(person, ignore_excused=True):
-        # TODO: ignore un-approved enrollments
         pre_filter = TrainingOccurrence.objects.filter(
             datetime_start__gte=now(),
             participants=person,

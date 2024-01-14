@@ -35,22 +35,24 @@
                             </form>
                         </div>
                     </div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                {% for cat_stat in stats %}
-                                    <th scope="col">{{ cat_stat|index:0 }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                {% for cat_stat in stats %}
-                                    <td>{{ cat_stat|index:1 }}</td>
-                                {% endfor %}
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr class="text-nowrap">
+                                    {% for cat_stat in stats %}
+                                        <th scope="col">{{ cat_stat|index:0 }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for cat_stat in stats %}
+                                        <td>{{ cat_stat|index:1 }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

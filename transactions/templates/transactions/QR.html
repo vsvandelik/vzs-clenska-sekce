@@ -12,9 +12,13 @@
                 <div class="card-header border-0">
                     <div class="card-title h5">Transakce</div>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive">
                     <table class="mb-1 table">
                         <tbody>
+                            <tr>
+                                <td class="text-nowrap text-bold">Číslo účtu:</td>
+                                <td class="w-100">{{ account }}</td>
+                            </tr>
                             <tr>
                                 <td class="text-nowrap text-bold">Suma:</td>
                                 <td class="w-100">{{ transaction.amount|absolute }}</td>
@@ -35,7 +39,6 @@
                     </table>
 
                     <div class="text-center">
-                        {% comment %} TODO: correct bank info {% endcomment %}
                         <img src="{% qr transaction %}">
                     </div>
                 </div>

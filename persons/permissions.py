@@ -3,6 +3,7 @@ from functools import reduce
 from django.db.models import Q
 
 from persons.models import Person, get_active_user
+from trainings.models import Training
 from users.permissions import PermissionRequiredMixin
 
 
@@ -46,16 +47,28 @@ class PersonPermissionMixin(PermissionRequiredMixin):
             )
 
         if user.has_perm("bazenova_clenska_zakladna"):
-            # TODO: omezit jen na bazenove treninky
-            conditions.append(
-                Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
+            children = Q(
+                trainingparticipantenrollment__training__category=Training.Category.SWIMMING,
+                person_type=Person.Type.CHILD,
+            )
+            parents = Q(
+                managed_persons__in=Person.objects.filter(children),
+                person_type=Person.Type.PARENT,
             )
 
+            conditions.append(children | parents)
+
         if user.has_perm("lezecka_clenska_zakladna"):
-            # TODO: omezit jen na lezecke treninky
-            conditions.append(
-                Q(person_type__in=[Person.Type.CHILD, Person.Type.PARENT])
+            children = Q(
+                trainingparticipantenrollment__training__category=Training.Category.CLIMBING,
+                person_type=Person.Type.CHILD,
             )
+            parents = Q(
+                managed_persons__in=Person.objects.filter(children),
+                person_type=Person.Type.PARENT,
+            )
+
+            conditions.append(children | parents)
 
         if user.has_perm("dospela_clenska_zakladna"):
             conditions.append(
@@ -73,7 +86,7 @@ class PersonPermissionMixin(PermissionRequiredMixin):
         if not conditions:
             return queryset.none()
 
-        return queryset.filter(reduce(lambda x, y: x | y, conditions))
+        return queryset.filter(reduce(lambda x, y: x | y, conditions)).distinct()
 
     def _filter_queryset_by_permission(self, queryset=None):
         """:meta private:"""

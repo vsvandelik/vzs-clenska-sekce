@@ -40,7 +40,9 @@ class EventPosition(Model):
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(99)],
     )
-    group = ForeignKey("groups.Group", null=True, on_delete=SET_NULL)
+    group = ForeignKey(
+        "groups.Group", verbose_name=_("Skupina"), null=True, on_delete=SET_NULL
+    )
     allowed_person_types = ManyToManyField("events.EventPersonTypeConstraint")
 
     def required_qualifications(self):

@@ -15,7 +15,13 @@ class ErrorMessageMixin:
     def form_invalid(self, form):
         response = super().form_invalid(form)
 
-        error_message = self.get_error_message(form.errors)
+        errors_dict = form.errors.as_data()
+        if len(errors_dict) == 1 and "__all__" in errors_dict:
+            error_message = "<br>".join(
+                str(e.message) for e in list(errors_dict["__all__"])
+            )
+        else:
+            error_message = self.get_error_message(form.errors)
 
         if error_message:
             messages.error(self.request, error_message)

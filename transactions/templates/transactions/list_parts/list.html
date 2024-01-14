@@ -1,7 +1,7 @@
 {% load vzs_filters %}
 
 <div class="row">
-    <div class="col-6">
+    <div class="col-12 col-xl-6">
         <div class="card">
             <div class="card-header">
                 <div class="card-title h5">Dluhy</div>
@@ -9,7 +9,7 @@
             <div class="card-body">
                 <table class="table" id="transactions-debt-table">
                     <thead>
-                        <tr>
+                        <tr class="text-nowrap">
                             <th class="text-center">Zaplaceno</th>
                             <th>Suma</th>
                             <th>Popis</th>
@@ -44,7 +44,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6">
+    <div class="col-12 col-xl-6">
         <div class="card">
             <div class="card-header">
                 <div class="card-title h5">Odměny</div>
@@ -52,7 +52,7 @@
             <div class="card-body">
                 <table class="table" id="transactions-reward-table">
                     <thead>
-                        <tr>
+                        <tr class="text-nowrap">
                             <th>Suma</th>
                             <th>Popis</th>
                             <th>Datum splatnosti</th>
@@ -67,12 +67,15 @@
                                 <td>{{ transaction.date_due }}</td>
                                 <td>
                                     <div class="btn-group float-right">
-                                        {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
-                                        <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
-                                            <i class="fas fa-pen" aria-hidden="true"></i>
-                                        </a>
+                                        {% if edit %}
+                                            {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
+                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
 
-                                        {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>

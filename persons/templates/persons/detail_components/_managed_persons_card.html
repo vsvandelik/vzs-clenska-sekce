@@ -6,45 +6,49 @@
     </div>
     <div class="card-body p-0">
         {% if object.managed_persons.count %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Osoba spravuje</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for person in object.managed_persons.all %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td class="align-middle">{% render person "inline" %}</td>
-                            <td class="text-center">
-                                <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="managed_person" value="{{ person.pk }}">
-                                    <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
-                                </form>
-                            </td>
+                            <th>Osoba spravuje</th>
+                            <th></th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for person in object.managed_persons.all %}
+                            <tr>
+                                <td class="align-middle">{% render person "inline" %}</td>
+                                <td class="text-center">
+                                    <form method="post" action="{% url "persons:remove-managed-person" object.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="managed_person" value="{{ person.pk }}">
+                                        <button type="submit" name="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
 
         {% if object.managed_by.count %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Osoba je spravována</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for person in object.managed_by.all %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td class="align-middle">{% render person "inline" %}</td>
+                            <th>Osoba je spravována</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for person in object.managed_by.all %}
+                            <tr>
+                                <td class="align-middle">{% render person "inline" %}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
 
     </div>

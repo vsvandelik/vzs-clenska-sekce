@@ -10,20 +10,22 @@
         {% else %}
             <form method="post" action="{% url "persons:remove-from-group" person.pk %}">
                 {% csrf_token %}
-                <table class="table table-striped m-0">
-                    <tbody>
-                        {% for group in person.groups.all %}
-                            <tr>
-                                <td>
-                                    <a href="{% url "groups:detail" group.pk %}">{{ group.name }}</a>
-                                </td>
-                                <td class="text-center">
-                                    <button type="submit" name="group" class="btn btn-danger btn-sm" value="{{ group.pk }}"><i class="fas fa-trash-alt"></i></button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-striped m-0">
+                        <tbody>
+                            {% for group in person.groups.all %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url "groups:detail" group.pk %}">{{ group.name }}</a>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="submit" name="group" class="btn btn-danger btn-sm" value="{{ group.pk }}"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </form>
         {% endif %}
     </div>
