@@ -39,7 +39,7 @@ pro výpočet odměn na základně hodinových sazeb jednotlivých organizátor�
 akce navíc pole **Standardní výše poplatku pro účastníky**, které určuje, kolik budou účastníci
 za akci platit. Poplatek je ale možné dále individuálně změnit.
 
-U tréninků žádné speciální pole není. Jediné omezení je, že tréninky musejí probíhat alespoň
+U tréninků neexistuje žádné speciální pole. Jediné omezení je, že tréninky musejí probíhat alespoň
 po dobu 14 dní.
 
 Organizátorské pozice
@@ -55,10 +55,10 @@ odměnit organizátory nad rámec jejich standardních hodinových sazeb.
 Každá akce může mít neomezené množství pozic a je možné zadat, že na akci je kapacita
 pro více lidí na stejné pozici.
 
-Stavy akcí, docházka
---------------------
+Stavy akcí a docházka
+---------------------
 
-S akcemi je spojeno i schvalovací workflow. Každá akce může mít jeden ze tří stavů:
+S akcemi je spojen i schvalovací workflow. Každá akce může mít jeden ze tří stavů:
 
 - **neuzavřena** - akce prozatím neproběhla, či nebyla vyplněna docházka účastníků a organizátorů
 - **uzavřena** - akce již proběhla a docházka byla vyplněna
@@ -66,7 +66,7 @@ S akcemi je spojeno i schvalovací workflow. Každá akce může mít jeden ze t
 
 U tréninků se tyto stavy týkají jednotlivých výskytů tréninku.
 
-Docházku u tréninku vyplňuje garant tréninků (hlavní trenér). Schvalování následně provádí
+Docházku u tréninku vyplňuje garant tréninku (hlavní trenér). Schvalování následně provádí
 správce tréninků.
 
 U jednorázových akcí docházku i schvalování provádí správce akcí.
