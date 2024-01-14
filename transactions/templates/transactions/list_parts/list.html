@@ -26,15 +26,21 @@
                                 <td>{{ transaction.date_due }}</td>
                                 <td>
                                     <div class="btn-group float-right">
-                                        <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm {% if transaction.is_settled %}disabled{% endif %}" title="Informace o transakci vč. QR kódu">
-                                            <i class="fas fa-qrcode" aria-hidden="true"></i>
-                                        </a>
-                                        {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
-                                        <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
-                                            <i class="fas fa-pen" aria-hidden="true"></i>
-                                        </a>
+                                        {% if not edit and not transaction.is_settled %}
+                                            <a href="{% url "transactions:qr" transaction.pk %}" class="btn btn-info btn-sm {% if transaction.is_settled %}disabled{% endif %}" title="Informace o transakci vč. QR kódu">
+                                                <i class="fas fa-qrcode" aria-hidden="true"></i>
+                                            </a>
+                                        {% endif %}
 
-                                        {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+                                        {% if edit %}
+                                            {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
+                                            <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
+                                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                            </a>
+
+                                            {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
+
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -56,7 +62,9 @@
                             <th>Suma</th>
                             <th>Popis</th>
                             <th>Datum splatnosti</th>
-                            <th></th>
+                            {% if edit %}
+                                <th></th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -65,9 +73,10 @@
                                 <td>{{ transaction.amount }}</td>
                                 <td>{{ transaction.reason }}</td>
                                 <td>{{ transaction.date_due }}</td>
-                                <td>
-                                    <div class="btn-group float-right">
-                                        {% if edit %}
+
+                                {% if edit %}
+                                    <td>
+                                        <div class="btn-group float-right">
                                             {% perm_url "transactions:edit-from-person" transaction.pk as perm %}
                                             <a href="{{ perm.url }}" class="btn btn-success btn-sm {% if not perm %}disabled{% endif %}">
                                                 <i class="fas fa-pen" aria-hidden="true"></i>
@@ -75,9 +84,10 @@
 
                                             {% include "delete_button_icon.html" with id="delete-transaction-modal" pattern="transactions:delete" object=transaction %}
 
-                                        {% endif %}
-                                    </div>
-                                </td>
+                                        </div>
+                                    </td>
+                                {% endif %}
+
                             </tr>
                         {% endfor %}
                     </tbody>
