@@ -30,13 +30,13 @@ Více informací API, včetně příkladů použití, je možné se dozvědět n
 --------------------------------------
 events
 --------------------------------------
-Události jsou vždy jedním ze dvou druhů; buďto se jedná o jednorázové události, nebo tréninky. Většina operací prováděná nad událostmi bez ohledu na jejich druh má společný základ, který je implementován právě v aplikaci :ref:`events`. Specifická funkcionalita závislá na druhu události je potom zajištěna pomocí dědičnosti a nachází se v aplikacích :ref:`one_time_events`, nebo :ref:`trainings`.
+Události jsou vždy jedním ze dvou druhů; buďto se jedná o jednorázové události nebo tréninky. Většina operací prováděná nad událostmi bez ohledu na jejich druh má společný základ, který je implementován právě v aplikaci :ref:`events`. Specifická funkcionalita závislá na druhu události je potom zajištěna pomocí dědičnosti a nachází se v aplikacích :ref:`one_time_events`, nebo :ref:`trainings`.
 
 Součástí aplikace jsou template filtry specifické pro doménu událostí, které se nachází v souboru templatetags/events_template_tags.py. Více o template filtrech je možné se dočíst v části :doc:`./template-filters`.
 
 Formuláře patřící do této aplikace zpravidla implementují pouze společný základ pro jednorázové události a tréninky, konečná implementace využívaného formuláře se nachází v aplikacích :ref:`one_time_events` a :ref:`trainings`.
 
-Mezi pohledy implementované v této aplikaci v souboru views.py patří hlavně pohledy končící textem ``DeleteView``, které dle konvencí Djanga značí pohled, který maže objekt z databáze. Tuto funkcionalitu je možné implementovat na úrovni této aplikace, protože ``generic.DeleteView``, z kterého dědí ``DeleteView`` pohledy této aplikace, používá ke smazání metodu ``delete`` na modelu, která je plně polymorfní díky použití rozšíření :ref:`django-polymorphic`.
+Mezi pohledy implementovanými v této aplikaci v souboru views.py patří hlavně pohledy končící textem ``DeleteView``, které dle konvencí Djanga značí pohled, který maže objekt z databáze. Tuto funkcionalitu je možné implementovat na úrovni této aplikace, protože ``generic.DeleteView``, z kterého dědí ``DeleteView`` pohledy této aplikace, používá ke smazání metodu ``delete`` na modelu, která je plně polymorfní díky použití rozšíření :ref:`django-polymorphic`.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -81,7 +81,7 @@ Aplikace :ref:`events` obsahuje několik modelů z nichž všechny kromě :py:cl
 --------------------------------------
 features
 --------------------------------------
-Vlastnosti jsou jedním ze tří druhů. Vždy se jedná o kvalifikaci, oprávnění, nebo vybavení, ty se přiřazují osobám a definují tak kompetence osoby (např. možnost přihlášení na konkrétní pozici). Některé vlastnosti mohou být časově omezené. U vybavení se eviduje datum vrácení, protože Organizace vybavení půjčuje.
+Vlastnosti jsou tří druhů. Vždy se jedná buď o kvalifikaci, oprávnění nebo vybavení. Vlastnosti se přiřazují osobám a definují tak kompetence osoby (např. možnost přihlášení na konkrétní pozici). Některé vlastnosti mohou být časově omezené. U vybavení se eviduje datum vrácení, protože Organizace vybavení půjčuje.
 
 Tato aplikace definuje vlastnosti a poskytuje pohledy, formuláře a další nástroje pro jejich správu, včetně možnosti přiřazení vlastnosti ke konkrétní osobě.
 
@@ -97,8 +97,8 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 - :py:attr:`~features.models.Feature.never_expires` (flag, indikující, zda vlastnost nikdy neexpiruje)
 - :py:attr:`~features.models.Feature.fee` (poplatek za vlastnost, využíván jako poplatek za půjčení vybavení)
 - :py:attr:`~features.models.Feature.tier` (úroveň vlastnosti, využíváno u kvalifikací)
-- :py:attr:`~features.models.Feature.collect_issuers` (flag, indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění vydavatele)
-- :py:attr:`~features.models.Feature.collect_codes` (flag, indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění ID vlastnosti)
+- :py:attr:`~features.models.Feature.collect_issuers` (flag, indikující, zda při přiřazení vlastnosti k osobě bude možné vyplnění vydavatele)
+- :py:attr:`~features.models.Feature.collect_codes` (flag, indikující, zda při přiřazení vlastnosti k osobě bude možné vyplnění ID vlastnosti)
 
 :py:class:`~features.models.FeatureAssignment`
 
