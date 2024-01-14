@@ -15,7 +15,6 @@ Autoři & přispěvovatelé
    :maxdepth: 2
    :caption: Obsah:
 
-   _autodoc/modules
    terms.rst
    vývojová/index.rst
    uživatelská/index.rst
@@ -26,10 +25,10 @@ Autoři & přispěvovatelé
    contributors.rst
    future.rst
    license.rst
+   Generovaná dokumentace zdrojových kódů <_autodoc/modules>
 
 Index
 ==================
 
-* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
