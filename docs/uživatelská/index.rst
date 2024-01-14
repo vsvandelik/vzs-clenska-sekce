@@ -12,7 +12,6 @@ komplexnější funkcionality systému, jake je například :ref:`export účetn
 
    overview.rst
    events.rst
-   use-cases.rst
    export-for-accountant.rst
    groups-sync.rst
    payments-sync.rst
