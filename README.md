@@ -9,7 +9,7 @@ V současné době aplikace spuštěna na adrese https://vzs.svandelik.cz. Pro p
 aplikace je potřeba zadat testovací přihlašovací údaje:
 
 - E-mailová adresa: `admin@vzs.cz`
-- Heslo: *poskytnou autoři na vyžádání*
+- Heslo: *poskytnou autoři na vyžádání na e-mailové adrese [system@vzs-praha15.cz](mailto:system@vzs-praha15.cz)*
 
 ## Použité technologie
 
