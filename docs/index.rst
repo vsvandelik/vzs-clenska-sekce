@@ -12,11 +12,12 @@ Autoři & přispěvovatelé
    :members:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Obsah:
 
    terms.rst
    vývojová/index.rst
+   Generovaná dokumentace zdrojových kódů <_autodoc/modules>
    uživatelská/index.rst
    instalační/installation.rst
    team-work.rst
@@ -25,7 +26,6 @@ Autoři & přispěvovatelé
    contributors.rst
    future.rst
    license.rst
-   Generovaná dokumentace zdrojových kódů <_autodoc/modules>
 
 Index
 ==================
