@@ -4,6 +4,9 @@ Emailové notifikace
 
 Pokud je systém správně nakofigurován, posílá při některých událostech emailové notifikace.
 
+Ve většině případů se všechny e-mailové notifikace posílají na e-mailovou adresu osoby, které
+se týkají a také na e-mailovou adresu všech osob, které danou osobu spravují.
+
 Notifikace spojené s účtem
 --------------------------
 
