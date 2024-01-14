@@ -93,12 +93,12 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 
 - :py:attr:`~features.models.Feature.feature_type` (druh vlastnosti – kvalifikace, oprávnění, vybavení)
 - :py:attr:`~features.models.Feature.name` (název vlastnosti)
-- :py:attr:`~features.models.Feature.assignable` (flag indikující, zda je vlastnost přiřaditelná)
-- :py:attr:`~features.models.Feature.never_expires` (flag indikující, zda vlastnosti nikdy neexpiruje)
+- :py:attr:`~features.models.Feature.assignable` (flag, indikující, zda je vlastnost přiřaditelná)
+- :py:attr:`~features.models.Feature.never_expires` (flag, indikující, zda vlastnost nikdy neexpiruje)
 - :py:attr:`~features.models.Feature.fee` (poplatek za vlastnost, využíván jako poplatek za půjčení vybavení)
 - :py:attr:`~features.models.Feature.tier` (úroveň vlastnosti, využíváno u kvalifikací)
-- :py:attr:`~features.models.Feature.collect_issuers` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění vydavatele)
-- :py:attr:`~features.models.Feature.collect_codes` (flag indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění ID vlastnosti)
+- :py:attr:`~features.models.Feature.collect_issuers` (flag, indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění vydavatele)
+- :py:attr:`~features.models.Feature.collect_codes` (flag, indikující, zda při přiřazení vlastnosti k osobě bude vyžadováno vyplnění ID vlastnosti)
 
 :py:class:`~features.models.FeatureAssignment`
 
@@ -109,7 +109,7 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 - :py:attr:`~features.models.FeatureAssignment.date_returned` (datum vrácení – pouze pro vybavení)
 - :py:attr:`~features.models.FeatureAssignment.issuer` (vydavatel vlastnosti)
 - :py:attr:`~features.models.FeatureAssignment.code` (ID vlastnosti)
-- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag indikující, zda byl osobě odeslán notifikační email oznamující expiraci)
+- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag, indikující, zda byl osobě odeslán notifikační email oznamující expiraci)
 
 
 .. image:: ../_static/features-model.png
@@ -132,7 +132,7 @@ Mezi atributy definované modelem patří:
 
 - :py:attr:`~groups.models.Group.name` (jméno)
 - :py:attr:`~groups.models.Group.google_email` (emailová adresa skupiny uvnitř Google Workspace)
-- :py:attr:`~groups.models.Group.google_as_members_authority` (flag indikující, zda Google skupina s emailovou adresou :py:attr:`~groups.models.Group.google_email` je autoritou při synchronizaci osob)
+- :py:attr:`~groups.models.Group.google_as_members_authority` (flag, indikující, zda Google skupina s emailovou adresou :py:attr:`~groups.models.Group.google_email` je autoritou při synchronizaci osob)
 - :py:attr:`~groups.models.Group.members` (seznam členů skupiny)
 
 .. image:: ../_static/groups-model.png
@@ -145,7 +145,7 @@ one_time_events
 --------------------------------------
 Aplikace :ref:`one_time_events` obsahuje implementaci jednorázových událostí. Nachází se zde veškerá implementace zahrnující pohledy, formuláře, pomocné funkce atd. Součástí aplikace je i několik druhů pohledů určených pro různé úrovně oprávnění. 
 
-Implementace transakcí týkajících se jednorázových událostí se nachází výhradně v aplikace :ref:`transactions`.
+Implementace transakcí týkajících se jednorázových událostí se nachází výhradně v aplikaci :ref:`transactions`.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -251,7 +251,7 @@ Aplikace :ref:`persons` obsahuje dva modely a jeden vlastní Django Manager pro 
 - :py:attr:`~persons.models.Person.swimming_time` (čas nutný k uplavání 100m)
 - :py:attr:`~persons.models.Person.features` (přiřazené vlastnosti)
 - :py:attr:`~persons.models.Person.managed_persons` (spravované osoby)
-- :py:attr:`~persons.models.Person.is_deleted` (flag indikující, zda je osoba smazána)
+- :py:attr:`~persons.models.Person.is_deleted` (flag, indikující, zda je osoba smazána)
 
 
 :py:class:`~persons.models.PersonHourlyRate` (Sazby definující základní plat osoby za jednu hodinu organizátorské práce)
@@ -270,7 +270,7 @@ Aplikace :ref:`persons` obsahuje dva modely a jeden vlastní Django Manager pro 
 --------------------------------------
 positions
 --------------------------------------
-Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem i tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, které navíc specifikuje další atributy jako např. počet lidí, kteří jsou na pozici vyžadováni. Součástí aplikace je několik pohledů, šablon a formulářů pro správu pozic.
+Aplikace positions definuje pozice, které jsou přiřazeny k jednorázovým událostem a tréninkům pomocí :py:class:`~events.models.EventPositionAssignment`, to navíc specifikuje další atributy jako např. počet lidí, kteří jsou na pozici vyžadováni. Součástí aplikace je několik pohledů, šablon a formulářů pro správu pozic.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -295,7 +295,7 @@ trainings
 --------------------------------------
 Aplikace :ref:`trainings` zahrnuje implementaci tréninků. Nachází se zde veškerá implementace obsahující pohledy, formuláře, pomocné funkce atd. Součástí aplikace je i několik druhů pohledů určených pro různé úrovně oprávnění. 
 
-Implementace transakcí týkajících se tréninků se nachází výhradně v aplikace :ref:`transactions`.
+Implementace transakcí týkajících se tréninků se nachází výhradně v aplikaci :ref:`transactions`.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -405,11 +405,11 @@ Logika týkající se transakcí se často nachází na pomezí aplikací, např
 Model
 ^^^^^^^^^^^^^^^^^
 
-Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o: :py:class:`~transactions.models.BulkTransaction` (skupinu transakcí, které byly vytvořené v jedné dávce), :py:class:`~transactions.models.Transaction` (transakci), :py:class:`~transactions.models.FioTransaction` (reprezentace transakce z Fio API), :py:class:`~transactions.models.FioSettings` (singleton model ukládající informace vztažené k Fio)
+Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o: :py:class:`~transactions.models.BulkTransaction` (skupinu transakcí, které byly vytvořeny v jedné dávce), :py:class:`~transactions.models.Transaction` (transakci), :py:class:`~transactions.models.FioTransaction` (reprezentace transakce z Fio API), :py:class:`~transactions.models.FioSettings` (singleton model ukládající informace vztažené k Fio)
 
 :py:class:`~transactions.models.BulkTransaction`
 
-- :py:attr:`~transactions.models.BulkTransaction.reason` (důvod pro všechny transakce z jedné dávky)
+- :py:attr:`~transactions.models.BulkTransaction.reason` (důvod všech transakcí z jedné dávky)
 - :py:attr:`~transactions.models.BulkTransaction.event` (událost vůči které jsou transakce vztaženy)
 
 :py:class:`~transactions.models.Transaction`
@@ -421,7 +421,7 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 - :py:attr:`~transactions.models.Transaction.person` (osoba vůči které je transakce vztažena)
 - :py:attr:`~transactions.models.Transaction.event` (událost vůči které je transakce vztažena)
 - :py:attr:`~transactions.models.Transaction.feature_assignment` (vlastnost, vůči které je transakce vztažena)
-- :py:attr:`~transactions.models.Transaction.bulk_transaction` (hromadná transakce, které je tato transakce součástí)
+- :py:attr:`~transactions.models.Transaction.bulk_transaction` (hromadná transakce, tato transakce je její součástí)
 - :py:attr:`~transactions.models.Transaction.fio_transaction` (Fio transakce odpovídající transakci uvnitř :term:`IS`)
 
 :py:class:`~transactions.models.FioTransaction`
@@ -442,7 +442,7 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 --------------------------------------
 users
 --------------------------------------
-Tato aplikace obsahuje implementaci uživatelských účtů. Každá osoba evidovaná v :term:`IS` má právě jeden uživatelský účet, který ji může být zpřístupněn. Účet je zpřístupněný, pokud má nastavené heslo a je možné se k němu přihlásit. Osoba se pomocí svého uživatelského účtu může do :term:`IS` přihlásit (více viz :doc:`./authentication`) a následně dle svého oprávnění vidí, může pracovat a spravovat relavantní záležitosti (více viz :doc:`./authorization`). Osoba může spravovat více uživatelských účtů (např. rodič dítěte).
+Tato aplikace obsahuje implementaci uživatelských účtů. Každá osoba evidovaná v :term:`IS` má právě jeden uživatelský účet, který ji může být zpřístupněn. Účet je zpřístupněn, pokud má nastavené heslo a je možné se k němu přihlásit. Osoba se pomocí svého uživatelského účtu může do :term:`IS` přihlásit (více viz :doc:`./authentication`) a následně dle svého oprávnění vidí, může pracovat a spravovat relavantní záležitosti (více viz :doc:`./authorization`). Osoba může spravovat více uživatelských účtů (např. rodič dítěte).
 
 Model
 ^^^^^^^^^^^^^^^^^
