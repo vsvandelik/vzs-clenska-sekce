@@ -1,24 +1,62 @@
-# Členská sekce vodní záchranné služby Praha 15
+# Členská sekce Vodní záchranné služby Praha 15
 
-## Informace k pre-commit hooks
+Informační systém pro neziskovou organizaci Vodní záchranná služba ČČK Praha 15, který 
+umožňuje správu členů, akcí, tréninků pro děti a dalších souvisejících agend.
 
--   Před prací se zdrojovým kódem je nutné nainstalovat závislosti z `requirements_dev.txt`
--   Po provedení `git clone` je nutné spustit příkaz `pre-commit install`, který aktivuje hook pro automatické formátování kódu, které se provádí s příkazem `git commit`, před provedením commitu
--   Pokud hooky doběhnou s chybou, je to v pořádku. Chybu je možné ignorovat, jenom je nutné znovu provést `git add` a `git commit`, následně je možné provést `git push`
-- Manuálně spustit všechny hooks je možné provedením příkazu `pre-commit run --all-files`
+## Použité technologie
 
-### djhtml a Windows
-Je potřeba nastavit Systémovou proměnnou `PYTHONUTF8=1`. To je možné přes GUI "Edit the system environment variables" nebo v příkazové řádce, která musí být spuštěna jako správce, příkazem `setx /m PYTHONUTF8 1`. Jinak to nefunguje a píše nějaké errory s Unicode a neznámými znaky.
+- Python s frameworkem Django
+- Bootstrap
+- AdminLTE
 
-## Informace k front-endu
+## Instalace
 
-- Pro zprovoznění frontendových závislostí je třeba mít nainstalované `node.js` a zavolat příkaz `npm install`, který nainstaluje závislosti vydefinované v souboru `package.json`.
+Prerekvizity:
+- Python ≥ 3.11
+- Node.js ≥ 17.0.0
 
-## Generovani dokumentace
-
-Ve slozce `docs`:
+1. Překopírujeme soubor ``.env.dist`` do ``.env`` a provedeme nastavení proměnných dle nápovědy u každé proměnné. Doporučujeme vycházet z následujícího nastavení proměnných, pokud jiné hodnoty nejsou k dispozici.
 
 ```
-sphinx-apidoc -o _autodoc ..
-make html
+DEBUG=True 
+SECRET_KEY=django-insecure
+GOOGLE_DOMAIN= 
+FIO_TOKEN= 
 ```
+
+2. Nainstalujeme závislosti nutné ke spuštění, spustíme migrace a lokální webový server
+
+```console
+npm install
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 8080
+```
+
+Pro kompletní postup instalace na lokálním i produkčním prostředí doporučujeme nahlédnout do [instalační dokumentace](https://vsvandelik.github.io/vzs-clenska-sekce/instala%C4%8Dn%C3%AD/installation.html).
+
+## Přispívání
+
+Kompletní postup pro přispívání do projektu je dostupný v [dokumentaci pro přispěvatele](https://vsvandelik.github.io/vzs-clenska-sekce/v%C3%BDvojov%C3%A1/contribute.html).
+
+## Dokumentace
+
+Dokumentace je dostupná na adrese [https://vsvandelik.github.io/vzs-clenska-sekce](https://vsvandelik.github.io/vzs-clenska-sekce).
+
+## Autoři
+
+Systém vznikl jako projekt na Matematicko-fyzikální fakultě Univerzity Karlovy v rámci 
+předmětu Týmový projekt. 
+
+Autoři projektu jsou:
+- [Peter Fačko](https://github.com/papundekel)
+- [Jakub Levý](https://github.com/jakublevy)
+- [Vojtěch Švandelík](https://github.com/vsvandelik)
+
+Projekt by nevznikl bez velké podpory a směřování supervizora projektu [RNDr. Martina Svobody, Ph.D.](https://www.ksi.mff.cuni.cz/~svoboda/) a bez 
+podpory organizace [Vodní záchranná služba ČČK Praha 15](https://vodnizachranar.cz/), zastoupenou Lukášem Kordíkem, předsedou organizace.
+
+## Licence
+
+Tento projekt je licencován pod licencí MIT - pro více informací viz soubor [LICENSE](LICENSE.txt).
+
