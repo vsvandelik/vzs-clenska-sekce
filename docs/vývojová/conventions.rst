@@ -1,12 +1,12 @@
 ***************************************
 Konvence
 ***************************************
-Na této stránce rozvedeme jednotlivé konvence, které jsou dodržovány.
+Na této stránce rozvedeme jednotlivé konvence, které jsou v projektu dodržovány.
 
 ----------------
 Jmenné konvence
 ----------------
-Následující tabulka shrnuje jmenné konvence, které jsou používány a doporučujeme se jich držet i v nadcházejícím vývoji.
+Následující tabulka shrnuje jmenné konvence, které jsou používány a doporučujeme se jich držet i v následném vývoji.
 
 .. list-table::
    :widths: 25 25
@@ -21,7 +21,7 @@ Následující tabulka shrnuje jmenné konvence, které jsou používány a dopo
    * - HTML id atributů
      - kebab-case
 
-U HTML id atributů platí výjimka pro prvky automaticky generované Djangem při použití formulářů. Django pro atribut id používá konvenci snake_case, kterou jsme se rozhodli ponechat. To umožňuje rozpoznat, zda se jedná o automaticky generovaný prvek, či nikoliv.
+U HTML id atributů platí výjimka pro prvky automaticky generované Djangem při použití formulářů. Django pro atribut id používá konvenci snake_case, kterou jsme se rozhodli ponechat. To umožňuje rozpoznat, zda se jedná o automaticky generovaný prvek či nikoliv.
 
 
 -----------------

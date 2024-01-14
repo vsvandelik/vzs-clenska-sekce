@@ -4,7 +4,7 @@ Jak přispět
 
 Rádi bychom vám vyjádřili své díky za to, že alespoň zvažujete přispět a zlepšit tak chod :term:`Organizace`.
 
-Pokud víte o nějaké chybě, máte nějaký námět na zlepšení neváhejte a kontaktujte správce Vojtěcha Švandelíka.
+Pokud víte o nějaké chybě či máte nějaký námět na zlepšení neváhejte a kontaktujte správce Vojtěcha Švandelíka.
 
 Pokud rozumíte Pythonu, Djangu a rádi byste něco vylepšili sami, tak se domluvte s Vojtěchem Švandelíkem. Repozitář se zdrojovým kódem se nachází na GitHubu a momentálně je nastaven jako privátní. Po domluvě je možné získat přístup ke zdrojovému kódu. Bližší informace o licenci SW díla se nachází v sekci :doc:`../license`.
 
@@ -73,6 +73,6 @@ Dokumentace, kterou právě čtete, je součástí projektu stejně jako zdrojov
     make html
 
 
-Dokumentace se skládá pouze ze statických stránek, pro lokální prohlížení stačí otevřít soubor docs/_build/html/index.html v libovolném webovém prohlížeči.
+Dokumentace se skládá pouze ze statických stránek, pro lokální prohlížení stačí otevřít soubor ``docs/_build/html/index.html`` v libovolném webovém prohlížeči.
 
 Licence i postup pro úpravu dokumentace je stejný jako v případě úprav zdrojového kódu. Vždy je potřeba se předem domluvit na konkrétní úpravě, na kterou se vytvoří vlastní issue na GitHubu.

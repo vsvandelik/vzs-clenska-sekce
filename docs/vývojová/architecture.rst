@@ -3,13 +3,13 @@
 ***************************************
 Architektura
 ***************************************
-:term:`IS` je vytvořen jako monolitická MVC aplikace, která se skládá z back-endu a front-endu. Back-end využívá framework Django, frontend využívá šablonovací nástroj Jinja a další populární knihovny viz :ref:`technologies`.
+:term:`IS` je vytvořen jako monolitická MVC aplikace, která se skládá z back-endu a front-endu. Back-end využívá framework Django, front-end využívá šablonovací nástroj Jinja a další populární knihovny viz :ref:`technologies`.
 
 
 ---------------------
 Back-end
 ---------------------
-Framework Django je velice komplexní framework, který definuje řadu konvencí, které určují jak by se framework měl používat. Jako příklad můžeme uvést např. rozdělení do Django aplikací a přesně daná struktura každé aplikace. Při vývoji jsme se snažili o maximální možné dodržení konvencí Djanga. V budoucím vývoji doporučujeme se těchto konvencí držet taktéž, protože bez jejich dodržování ztrácí použití Djanga svoje výhody oproti konkurenčním frameworkům. Navíc se kód stane značně nepřehledným pro osoby, které mají s vývojem aplikací v Djangu zkušenosti.
+Framework Django je velice komplexní framework, který definuje řadu konvencí, které určují, jak by se framework měl používat. Jako příklad můžeme uvést např. rozdělení do Django aplikací a přesně daná struktura každé aplikace. Při vývoji jsme se snažili o maximální možné dodržení konvencí Djanga. V budoucím vývoji doporučujeme se těchto konvencí držet taktéž, protože bez jejich dodržování ztrácí použití Djanga svoje výhody oproti konkurenčním frameworkům. Navíc se kód stane značně nepřehledným pro osoby, které mají s vývojem aplikací v Djangu zkušenosti.
 
 Back-end se dělí na 12 Django aplikací.
 
@@ -40,6 +40,6 @@ Další informace o front-endu se nachází na zvláštní stránce :ref:`front-
 ---------------------
 Databáze
 ---------------------
-O komunikaci s databází se stará Django ORM (objektové relační mapování), díky kterému se nemusíme psát ručně SQL dotazy a kontrolovat kompatibilitu napříč DB systémy. Při :ref:`Lokálním debug spuštění <local-debug>` se standardně používá SQLite databáze, při :ref:`Produkčním nasazení <production>` se používá PostgreSQL.
+O komunikaci s databází se stará Django ORM (objektové relační mapování), díky kterému nemusíme psát ručně SQL dotazy a kontrolovat kompatibilitu napříč DB systémy. Při :ref:`Lokálním debug spuštění <local-debug>` se standardně používá SQLite databáze, při :ref:`Produkčním nasazení <production>` se používá PostgreSQL.
 
 Další informace o databázi se nachází na zvláštní stránce :ref:`db`.

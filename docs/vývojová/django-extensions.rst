@@ -36,7 +36,7 @@ Bližší informace o použití Cronu viz :ref:`funkce_volane_daemonem_cron`.
 ----------------------
 django-crispy-forms
 ----------------------
-Umožňuje flexibilnější nastavení renderování Django forem. :term:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
+Umožňuje flexibilnější nastavení renderování Django formulářů. :term:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
 
 .. _django-environ:
 

@@ -18,7 +18,7 @@ Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující
 ---------------------
 Migrace
 ---------------------
-S modely aplikací úzce souvisí migrace. Pokud aplikace pracuje s modely, obsahují i adresář migrations/, ve kterém se nachází migrace. Migrace jsou očíslované soubory, které popisují změny databázového schématu.
+S modely aplikací úzce souvisí migrace. Pokud aplikace pracuje s modely, obsahuje i adresář ``migrations/``, ve kterém se nachází migrace. Migrace jsou očíslované soubory, které popisují změny databázového schématu.
 
 Pokud v aplikaci upravíme model, musíme spustit příkaz ``python ./manage.py makemigrations``, který vytvoří migrační soubory. Pro aplikaci migrací a změnu databázového schématu musíme spustit ještě příkaz ``python ./manage.py migrate``.
 
@@ -29,4 +29,4 @@ Výhodou tohoto přístupu je, že nám téměř odpadá starost s databázemi, 
 ---------------------
 Polymorfní modely
 ---------------------
-Události, pro které bylo potřeba vytvořit model, mohou být jedním ze dvou možných druhů. Může se jednat o jednorázové události, nebo tréninky, které se konají opakovaně. Mezi jednorázovými události a tréninky je však mnoho různých i společných vlastností, některé společné vlastnosti ale mohou obsahovat různé hodnoty v závislosti na druhu události. Z tohoto důvodu nebyly pro událost vytvořeny standardní modely, ale bylo použito rozšíření `django-polymorphic <https://github.com/jazzband/django-polymorphic>`_, které implementuje plně polymorfní modely. 
+Události, pro které bylo potřeba vytvořit model, mohou být jedním ze dvou možných druhů. Může se jednat o jednorázové události nebo tréninky, které se konají opakovaně. Mezi jednorázovými události a tréninky je však mnoho různých i společných vlastností, některé společné vlastnosti ale mohou obsahovat různé hodnoty v závislosti na druhu události. Z tohoto důvodu nebyly pro událost vytvořeny standardní modely, ale bylo použito rozšíření `django-polymorphic <https://github.com/jazzband/django-polymorphic>`_, které implementuje plně polymorfní modely.

@@ -37,8 +37,8 @@ Tak je umožněno uživateli přepnutím aktivní osoby interagovat se systémem
 Pro vyžadování povolení ve views je nutné dědit třídu
 ``users.permissions.PermissionRequiredMixin``.
 Tato třída rozšiřuje třídu ``django.contrib.auth.mixins.PermissionRequiredMixin`` tak,
-aby bylo možné vyžadovat různá povolení pro různé HTTP metody
-a také aby se dal testovat přístup k view bez zaslání HTTP requestu.
+aby bylo možné vyžadovat různá povolení pro různé HTTP metody,
+a také, aby se dal testovat přístup k view bez zaslání HTTP requestu.
 
 Pro snadné vyžadování povolení slouží class variables ``permissions_formula``,
 ``permissions_formula_GET`` a ``permissions_formula_POST``.

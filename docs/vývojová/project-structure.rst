@@ -92,7 +92,7 @@ Adresář obsahující testovací data a skripty pro zálohu a obnovení databá
 
 data/db.json
 ^^^^^^^^^^^^^
-Testovací data, více informací o použití testovací dat viz :ref:`testing`.
+Testovací data, více informací o použití testovacích dat viz :ref:`testing`.
 
 
 .. _data/db-backup.bat:
@@ -410,7 +410,7 @@ Zde si popíšeme jak zhruba vypadá struktura libovolné Django aplikace :term:
 
 management/
 ^^^^^^^^^^^^^^^^^^
-Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Django příkazy, které interagují s aplikací. Bližší informace ohledně vytvoření vlastního Django příkazu jsou k dispozici na stránce :ref:`vytvoreni_vlastniho_django_prikazu`.
+Součástí je vždy podadresář ``commands/``, který sdružuje vlastní Django příkazy, které interagují s aplikací, pro spuštění z příkazové řádky / terminálu. Bližší informace ohledně vytvoření vlastního Django příkazu jsou k dispozici na stránce :ref:`vytvoreni_vlastniho_django_prikazu`.
 
 :term:`IS` obsahuje několik vlastních Django příkazů. Kompletní seznam je k dispozici na stránce :ref:`vlastni_django_prikazy`.
 
@@ -424,7 +424,7 @@ Soubory popisující migrace modelu aplikace. Migrace představují způsob, jak
 
 static/
 ^^^^^^^^^^^^^^^^^^
-Sdružuje statický obsah (CSS, JS, obrázky, ...) používané pouze touto aplikací.
+Sdružuje statický obsah (CSS, JS, obrázky, ...) používaný pouze touto aplikací.
 
 .. _templates_app/:
 
@@ -468,7 +468,7 @@ Obsahuje modely aplikace včetně metod, která nad nimi operují.
 
 permissions.py
 ^^^^^^^^^^^^^^^^^^
-Třídy a metody pracující s oprávněními aplikované na pohledy aplikace.
+Třídy a metody pracující s oprávněními aplikovanými na pohledy aplikace.
 
 .. _urls.py:
 
@@ -486,4 +486,4 @@ Různé pomocné funkce, které aplikace využívá. Aplikace :ref:`events` nap�
 
 views.py
 ^^^^^^^^^^^^^^^^^^
-Jednotlivé pohledy ke kterým je možné přistoupit z URL vzorů definovaných v souboru :ref:`urls.py`
+Jednotlivé pohledy, ke kterým je možné přistoupit z URL vzorů definovaných v souboru :ref:`urls.py`

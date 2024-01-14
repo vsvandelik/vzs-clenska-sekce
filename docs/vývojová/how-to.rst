@@ -38,7 +38,7 @@ Příklad
 
 Napojení JS na zobrazení modálního okna
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Nyní zbývá poslední krok a tím je spuštění JS. Při zobrazení modálního okna se musí odeslat request na URL endpoint definovaný v atributu ``data-action`` a vložit odpověď do modálního okna. To je možné provést jednoduše předpřipravenou funkcí ``registerModal(id)``.
+Nyní zbývá poslední krok a tím je spuštění JS. Při zobrazení modálního okna se musí odeslat request na URL endpoint definovaný v atributu ``data-action`` a vložit odpověď do modálního okna. To je možné provést jednoduše předpřipravenou Javascript funkcí ``registerModal(id)``.
 
 Příklad:
 
@@ -63,6 +63,11 @@ Příklad použití:
         <script>datatableEnable("tokens-table", [0, 1], [0, 1, 2]);</script>
     {% endblock %}
 
+Pokud chceme tabulku udělat responzivní, můžeme tagu ``table`` přidat třídu ``responsive``. Ta způsobí, že pokud se
+tabulka nevejde na obrazovku, schovají se některé sloupce. Primárně se skrývají sloupce zprava,
+pokud chceme nastavit jiné sloupce, můžeme tagům ``th`` přidat atribut ``data-priority`` s číselnou hodnotou.
+Čím větší číslo, tím menší priorita a tím spíše se sloupec skryje.
+
 .. _Select2_example:
 
 -------------------------------
@@ -70,7 +75,7 @@ Příklad použití:
 -------------------------------
 Pokud vytvoříme formulářové pole, které bude mít na výběr více položek. Django použije jako widget k renderování buďto radio button nebo select box v závislosti na počtu položek. Pokud chceme definovat použití Select2, musíme explicitně nastavit widget.
 
-Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutíme použití Select2.
+Příklad: Máme formulář s jedním políčkem ``group``, u kterého vynutíme použití Select2.
 
 .. code-block:: python
 
@@ -80,6 +85,8 @@ Příklad: Máme formulář s jedním políčkem ``"group"``, u kterého vynutí
         widgets = {
             "group": Select2Widget(),
         }
+
+V případě seznamu na výběr osoby je možné využít ``persons.widgets.PersonSelectWidget``.
 
 .. _vytvoreni_vlastniho_django_prikazu:
 
@@ -99,6 +106,8 @@ Soubory implementující příkazy musí vycházet z následující šablony. P�
             # TODO: implement this function
             pass
 
+Více informací o vytváření vlastních příkazů je možné nalézt v dokumentaci `Django <https://docs.djangoproject.com/en/5.0/howto/custom-management-commands/>`_.
+
 .. _vytvoreni_vlastniho_filtru:
 
 -------------------------------
@@ -106,7 +115,7 @@ Vytvoření vlastního filtru
 -------------------------------
 Nejprve je nutné se rozhodnout, zda filtr, který chceme vytvořit je obecný nebo specifický. Více informací o typech filtrů se nachází v dokumentu :doc:`./template-filters`.
 
-Obecné filtry patří do souboru templatetags/vzs_filters.py aplikace :ref:`vzs`. Specifické filtry patří do konkrétní aplikace, která je bude využívat. Jako adresář doporučujeme opět použít templatetags/ a jako název souboru s filtry např. filters.py. 
+Obecné filtry patří do souboru ``templatetags/vzs_filters.py`` aplikace :ref:`vzs`. Specifické filtry patří do konkrétní aplikace, která je bude využívat. Jako adresář doporučujeme opět použít ``templatetags/`` a jako název souboru s filtry např. ``filters.py``.
 
 Poté je potřeba se rozhodnout, zda chceme vytvořit template filtr, template tag, inclusion tag, nebo simple tag. Mezi těmito primitivy jsou drobné rozdíly, většinou se hodí template filtr, doporučujeme si přečíst `stránku na stackoverflow <https://stackoverflow.com/questions/5586774/django-template-filters-tags-simple-tags-and-inclusion-tags>`_, kde jsou rozdíly detailně popsány.
 
@@ -129,6 +138,8 @@ Příklad použití:
         <li>Jméno: {{ person.first_name|addstr:' '|addstr:person.last_name }}</li>
         ...
     </ul>
+
+Více informací o vytváření vlastních filtrů je možné nalézt v dokumentaci `Django <https://docs.djangoproject.com/en/5.0/howto/custom-template-tags/>`_.
 
 .. _funkce_volane_daemonem_cron:
 
