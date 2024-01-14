@@ -11,8 +11,10 @@ komplexnější funkcionality systému, jake je například :ref:`export účetn
    :caption: Obsah:
 
    overview.rst
+   events.rst
    use-cases.rst
    export-for-accountant.rst
    groups-sync.rst
+   payments-sync.rst
    email-notifications.rst
    data-conversion.rst
