@@ -3,6 +3,14 @@
 Informační systém pro neziskovou organizaci Vodní záchranná služba ČČK Praha 15, který 
 umožňuje správu členů, akcí, tréninků pro děti a dalších souvisejících agend.
 
+## Demo
+
+V současné době aplikace spuštěna na adrese https://vzs.svandelik.cz. Pro přihlášení do 
+aplikace je potřeba zadat testovací přihlašovací údaje:
+
+- E-mailová adresa: `admin@vzs.cz`
+- Heslo: *poskytnou autoři na vyžádání*
+
 ## Použité technologie
 
 - Python s frameworkem Django
@@ -10,28 +18,6 @@ umožňuje správu členů, akcí, tréninků pro děti a dalších souvisejíc�
 - AdminLTE
 
 ## Instalace
-
-Prerekvizity:
-- Python ≥ 3.11
-- Node.js ≥ 17.0.0
-
-1. Překopírujeme soubor ``.env.dist`` do ``.env`` a provedeme nastavení proměnných dle nápovědy u každé proměnné. Doporučujeme vycházet z následujícího nastavení proměnných, pokud jiné hodnoty nejsou k dispozici.
-
-```
-DEBUG=True 
-SECRET_KEY=django-insecure
-GOOGLE_DOMAIN= 
-FIO_TOKEN= 
-```
-
-2. Nainstalujeme závislosti nutné ke spuštění, spustíme migrace a lokální webový server
-
-```console
-npm install
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver 8080
-```
 
 Pro kompletní postup instalace na lokálním i produkčním prostředí doporučujeme nahlédnout do [instalační dokumentace](https://vsvandelik.github.io/vzs-clenska-sekce/instala%C4%8Dn%C3%AD/installation.html).
 
