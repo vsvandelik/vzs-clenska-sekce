@@ -13,10 +13,10 @@ Skupinový e-shop
 Napojení na evidenční systém Prezidia VZS ČČK
 *********************************************
 
-Jakmile k tomu systém Prezidia Vodní záchranné služby ČČK uzpůsobený, bude možné napojit :term:`IS`
-na tento systém a automaticky předávat informace o členech mezi těmito systémy.
+Jakmile k tomu systém Prezidia Vodní záchranné služby ČČK bude uzpůsobený, bude možné napojit :term:`IS`
+na tento systém a automaticky předávat informace o členech mezi těmito dvěma systémy.
 
-V současné době probíhají implementační práce na straně systému Prezidia, aby tento systém
+Aktuálně probíhají implementační práce na straně systému Prezidia, aby tento systém
 umožnil napojení prostřednictvím API.
 
 ***************************
@@ -25,7 +25,7 @@ Generování pracovních smluv
 
 V současné době je možné generovat a spravovat pracovní smlouvy pouze ručně z administrativních
 a legislativních důvodů. Pokud se zjednoduší a sjednotí procesy vytváření pracovních smluv, bude možné
-tyto smlouvy generovat automaticky.
+tyto smlouvy generovat (a potažmo si schvalovat) automaticky.
 
 **********************************
 Automatické přihlašování na závody
