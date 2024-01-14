@@ -62,7 +62,7 @@ S akcemi je spojen i schvalovací workflow. Každá akce může mít jeden ze t�
 
 - **neuzavřena** - akce prozatím neproběhla, či nebyla vyplněna docházka účastníků a organizátorů
 - **uzavřena** - akce již proběhla a docházka byla vyplněna
-- **zpracována** - správce zkontrolovat docházku a zadal organizátorům odměny do systému
+- **zpracována** - správce zkontroloval docházku a zadal organizátorům odměny do systému
 
 U tréninků se tyto stavy týkají jednotlivých výskytů tréninku.
 

@@ -18,8 +18,8 @@ MS Excel v české lokalizaci.
 
 Ve vyexportovaném souboru je každá osoba s nějakou odměnou na více řádcích.
 Na prvním řádku je uvedeno jméno osoby a celková částka, kterou má dostat. Na dalších řádcích
-je potom odměna rozepsána po jednotlivých typech akcích (je tedy například možné, kolik si
-daná osoba vydělala za trénování dětí). Tento rozklad se zobrazí jen v případě, že má osoba
+je potom odměna rozepsána po jednotlivých typech akcích (je tedy například možné zjistit, kolik si
+daná osoba vydělala za trénování dětí na plaveckých trénincích). Tento rozklad se zobrazí jen v případě, že má osoba
 zadanou hodinovou sazbu za daný typ akce.
 
 Příklad vyexportovaného souboru:
