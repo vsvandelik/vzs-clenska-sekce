@@ -16,10 +16,10 @@ Každá akce se skládá z několika částí:
 - seznam organizátorských pozic (řidič, vedoucí, ...)
 - seznam organizátorů (jaký den je kdo organizátorem na jaké pozici)
 
-Základním rozdílem mezi účastníky a organizátory je především v tom, že účastníci za svou
+Základní rozdíl mezi účastníky a organizátory je především v tom, že účastníci za svou
 účast typicky platí (lze ale nastavit i nulový poplatek) a přihlašují se vždy na celou dobu.
 
-Organizátoři se naopak přihlašují na vždy na konkrétní pozice, mohou se přihlásit jen
+Organizátoři se naopak přihlašují vždy na konkrétní pozice, mohou se přihlásit jen
 na část akce (v případě vícedenní akce) a za svou účast naopak typicky dostávají plat (ale
 ten opět může být nulový).
 
