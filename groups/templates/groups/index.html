@@ -30,7 +30,7 @@
                         <tbody>
                             {% for group in groups %}
                                 <tr>
-                                    <td class="align-middle">{{ group.name }}</td>
+                                    <td class="align-middle"><a href="{% url "groups:detail" group.pk %}">{{ group.name }}</a></td>
                                     <td class="align-middle">{{ group.google_email|handle_missing }}</td>
                                     <td class="align-middle">{{ group.members.count }}</td>
                                     <td class="align-middle">

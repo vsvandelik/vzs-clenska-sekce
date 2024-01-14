@@ -5,7 +5,7 @@ function selectPerson(e) {
     const button = $(e.target);
     const tr = button.parent().parent();
     const personPK = parseInt(button.val());
-    const personName = button.parent().prev().text();
+    const personName = button.parent().prev().prev().text();
 
     if (!selectedPersonsListArray.includes(personPK)) {
         selectedPersonsListArray.push(personPK);

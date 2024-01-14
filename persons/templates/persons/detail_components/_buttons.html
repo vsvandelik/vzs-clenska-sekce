@@ -7,7 +7,9 @@
     {% include "delete_button_text.html" with id="delete-person-modal" additional_text="osobu" %}
 </div>
 <div class="btn-group-md btn-group mb-3 elevation-2">
-    <a href="{% url 'persons:transaction-list' person.id %}" class="btn btn-info">Transakce</a>
+    {% ifperm 'persons:transaction-list' person.id as perm %}
+        <a href="{{ perm.url }}" class="btn btn-info">Transakce</a>
+    {% endifperm %}
     {% ifperm 'persons:transaction-add' person.id as perm %}
         <a href="{{ perm.url }}" class="btn btn-info">Přidat transakci</a>
     {% endifperm %}
