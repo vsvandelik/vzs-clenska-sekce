@@ -23,8 +23,11 @@ Ohledně záležitostí spojených s transakcemi jsou posílány e-maily v pří
 - notifikace pro správce transakcí o neúspěšně spárované transakci s bankovním výpisem
 - notifikace pro osobu o nové transakci
 
-Notifikace spojené s vlastnostmi (kvalifikace, oprávnění, zapůjčené vybavení)
-----------------------------------------------------------------------------
+Notifikace spojené s vlastnostmi
+--------------------------------
+
+Ohledně záležitostí spojených s vlastnostmi osoby, kterými jsou kvalifikace,
+oprávnění a zapůjčení vybavení, jsou posílány e-maily v případě:
 
 - blíží se expirace / doba vrácení
 

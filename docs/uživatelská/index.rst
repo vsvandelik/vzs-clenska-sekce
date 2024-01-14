@@ -2,9 +2,17 @@
 Uživatelská dokumentace
 ##########################
 
-V uživatelské dokumentaci se jednak dozvíte základní vlastnosti aplikace, jednak na několika
-případech ukážeme, jakým způsobem lze systém používat a jednak zde najdete návody na
-komplexnější funkcionality systému, jake je například :ref:`export účetních podkladů <export-podkladu>`.
+Tato uživatelská dokumentace je určena pro osoby, které se systémem budou pracovat
+poprvé a potřebují se zorientovat. Některé informace jsou zaměřeny na běžné uživatele,
+zatímco další poslouží především administrátorům systému.
+
+Dokumentace si neklade za cíl podrobně popsat všechny aspekty systému z uživatelské perspektivy,
+protože aplikace je dostatečně intuitivní a většina funkcionalit je dostupná přímo v aplikaci.
+Cílem tohoto dokumentu je spíše vysvětlit základní principy fungování systému, které mohou
+být v některých případech nejasné na první pohled.
+
+Text je strukturován do několika kapitol, které zahrnují obecný popis systému a akcí.
+Dále najdete oddíly věnované specifičtějším funkcím systému.
 
 .. toctree::
    :maxdepth: 1
