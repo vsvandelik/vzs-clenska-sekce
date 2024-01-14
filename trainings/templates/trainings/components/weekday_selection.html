@@ -7,7 +7,7 @@
     <div class="card-body">
         <div class="row">
             {% for weekday in event.weekdays_list %}
-                <div class="col-sm-6 col-md-4 col-lg-3 col-12">
+                <div class="col-sm-6 col-lg-4 col-xl-3 col-12">
                     {% with approved_participants_length=event|approved_enrollments_by_weekday:weekday|length %}
                         {% if event.capacity is None %}
                             {% with full=False %}

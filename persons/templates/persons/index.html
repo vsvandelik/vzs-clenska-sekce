@@ -19,21 +19,17 @@
         </div>
     {% endifperm %}
 
+    <div class="d-block d-md-none">
+        {% include "persons/index_buttons.html" with btnClass="mb-3" %}
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <div class="card-title h5">Osoby</div>
-                    <div class="card-tools ml-auto">
-                        {% if filtered_get %}
-                            <a class="btn btn-info btn-sm" href="{% url "persons:add-bulk-transaction" %}?{{ filtered_get }}">Zadat vyfiltrovaným platbu</a>
-                            {% include "persons/render_send_email_button.html" %}
-                            <a class="btn btn-info btn-sm" href="{% url "persons:export" %}?{{ filtered_get }}">Vyexportovat vyfiltrované</a>
-                        {% else %}
-                            <a class="btn btn-info btn-sm" href="{% url "persons:add-bulk-transaction" %}">Zadat všem platbu</a>
-                            {% include "persons/render_send_email_button.html" %}
-                            <a class="btn btn-info btn-sm" href="{% url "persons:export" %}">Vyexportovat všechny</a>
-                        {% endif %}
+                    <div class="card-tools ml-auto d-none d-md-block">
+                        {% include "persons/index_buttons.html" with btnClass="btn-sm" %}
                     </div>
                 </div>
                 <div class="card-body">
@@ -45,13 +41,13 @@
                     </div>
                     <div class="row">
                         <div class="col-12">
-                            <table class="table table-hover table-striped" id="persons-table">
+                            <table class="table responsive table-hover table-striped" id="persons-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Jméno</th>
-                                        <th scope="col">Rok narození</th>
+                                        <th scope="col" data-priority="1">Jméno</th>
+                                        <th scope="col" data-priority="2">Rok narození</th>
                                         <th scope="col">E-mail</th>
-                                        <th scope="col" style="width: 90px"></th>
+                                        <th scope="col"  data-priority="3" style="width: 90px"></th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -25,7 +25,7 @@
                             <tr>
                                 <th>Název</th>
                                 <th>Token</th>
-                                <th>Čas vytvoření</th>
+                                <th class="text-nowrap">Čas vytvoření</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -34,7 +34,7 @@
                                 <tr>
                                     <td>{{ token.name }}</td>
                                     <td>{{ token.key }}</td>
-                                    <td>{{ token.created }}</td>
+                                    <td class="text-nowrap">{{ token.created }}</td>
                                     <td>
                                         <div class="btn-group">
                                             {% include "delete_button_icon.html" with id="delete-token-modal" pattern="api:token:delete" object=token %}

@@ -6,13 +6,13 @@
 {% endblock %}
 
 {% block modal_body %}
-    <form method="post" action="{% url "persons:add-to-group" person.id %}">
+    <form method="post" action="{% url "persons:add-to-group" person.id %}" class="position-relative w-100">
         {% csrf_token %}
         <table class="table table-striped" id="add-to-group-table">
             <thead>
                 <tr>
-                    <th>Skupina</th>
-                    <th></th>
+                    <th scope="col">Skupina</th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>

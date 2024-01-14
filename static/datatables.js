@@ -1,13 +1,13 @@
 $.extend($.fn.dataTable.defaults, {
     language: {
         url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/cs.json',
-    }
+    },
 });
 
-$.fn.dataTable.moment( 'D. M. YYYY', 'cs' );
-$.fn.dataTable.moment( 'D. M. YYYY HH:mm', 'cs' );
-$.fn.dataTable.moment( 'D. M. YYYY HH:mm:ss', 'cs' );
-$.fn.dataTable.moment( 'HH:mm', 'cs' );
+$.fn.dataTable.moment('D. M. YYYY', 'cs');
+$.fn.dataTable.moment('D. M. YYYY HH:mm', 'cs');
+$.fn.dataTable.moment('D. M. YYYY HH:mm:ss', 'cs');
+$.fn.dataTable.moment('HH:mm', 'cs');
 
 function datatableEnable(id, searchableColumns, orderableColumns, order = [], searchable = true) {
     if (!window.initializedDataTables) {
@@ -25,7 +25,10 @@ function datatableEnable(id, searchableColumns, orderableColumns, order = [], se
             "lengthMenu": [[10, 100, -1], [10, 100, "Vše"]],
             "stateSave": true,
             "stateDuration": -1,
-            "searching": searchable
+            "searching": searchable,
+            "initComplete": function (settings, json) {
+                $("#" + id).wrap("<div style='overflow:auto; width:100%;position:relative;'></div>");
+            },
         });
     });
 }

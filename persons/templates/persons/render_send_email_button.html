@@ -1,13 +1,13 @@
 {% if persons|length > 30 %}
 
-    <a class="btn btn-info btn-sm" href="#" id="copy-mails-to-clipboard">Zkopírovat emaily do schránky</a>
+    <a class="btn btn-info {{ btnClass }}" href="#" id="copy-mails-to-clipboard">Zkopírovat emaily do schránky</a>
 
 {% else %}
 
     {% if filtered_get %}
-        <a class="btn btn-info btn-sm" href="{% url "persons:send-mail" %}?{{ filtered_get }}">Poslat vyfiltrovaným e-mail</a>
+        <a class="btn btn-info {{ btnClass }}" href="{% url "persons:send-mail" %}?{{ filtered_get }}">Poslat vyfiltrovaným e-mail</a>
     {% else %}
-        <a class="btn btn-info btn-sm" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
+        <a class="btn btn-info {{ btnClass }}" href="{% url "persons:send-mail" %}">Poslat všem e-mail</a>
     {% endif %}
 
 {% endif %}

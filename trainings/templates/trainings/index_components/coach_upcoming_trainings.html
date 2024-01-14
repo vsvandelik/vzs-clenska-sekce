@@ -5,7 +5,7 @@
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-12">
+            <div class="col-12 table-responsive">
                 <table id="upcoming-trainings-coach-occurrences" class="table table-hover table-striped">
                     <thead>
                         <tr>
@@ -20,10 +20,10 @@
                         {% for occurrence in coach_upcoming_occurrences %}
                             <tr>
                                 <td>{{ occurrence.event.name }}</td>
-                                <td>{{ occurrence.datetime_start|date:"l" }}</td>
-                                <td>{{ occurrence.datetime_start|date:"d. m. Y" }}</td>
-                                <td>{{ occurrence.datetime_start|date:"H:i" }} - {{ occurrence.datetime_end|date:"H:i" }}</td>
-                                <td class="text-center">
+                                <td class="text-nowrap">{{ occurrence.datetime_start|date:"l" }}</td>
+                                <td class="text-nowrap">{{ occurrence.datetime_start|date:"d. m. Y" }}</td>
+                                <td class="text-nowrap">{{ occurrence.datetime_start|date:"H:i" }} - {{ occurrence.datetime_end|date:"H:i" }}</td>
+                                <td class="text-center text-nowrap">
                                     {% if occurrence.excused %}omluven/a{% endif %}
                                     {% ifperm 'trainings:excuse-myself-coach' occurrence.event.id occurrence.id as perm %}
                                         <a data-toggle="modal"

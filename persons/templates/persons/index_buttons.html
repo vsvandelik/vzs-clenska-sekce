@@ -1,0 +1,9 @@
+{% if filtered_get %}
+    <a class="btn btn-info {{ btnClass }}" href="{% url "persons:add-bulk-transaction" %}?{{ filtered_get }}">Zadat vyfiltrovaným platbu</a>
+    {% include "persons/render_send_email_button.html" %}
+    <a class="btn btn-info {{ btnClass }}" href="{% url "persons:export" %}?{{ filtered_get }}">Vyexportovat vyfiltrované</a>
+{% else %}
+    <a class="btn btn-info {{ btnClass }}" href="{% url "persons:add-bulk-transaction" %}">Zadat všem platbu</a>
+    {% include "persons/render_send_email_button.html" %}
+    <a class="btn btn-info {{ btnClass }}" href="{% url "persons:export" %}">Vyexportovat všechny</a>
+{% endif %}

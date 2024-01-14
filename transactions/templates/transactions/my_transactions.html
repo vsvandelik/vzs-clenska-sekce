@@ -6,7 +6,7 @@
 {% block title %}Moje transakce{% endblock %}
 
 {% block subcontent %}
-    {% include "transactions/list_parts/list.html" %}
+    {% include "transactions/list_parts/list.html" with edit=False %}
 {% endblock %}
 
 {% block scripts %}

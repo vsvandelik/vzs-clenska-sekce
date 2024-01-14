@@ -4,7 +4,7 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <div class="row row-cols-3">
+    <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-3">
 
         {% if not multiple_managed_people and not unsettled_transactions and not soon_expiring_qualifications and not soon_returning_equipment and not upcoming_onetimeevents_participant and not upcoming_onetimeevents_organizer and not upcoming_trainings_participant and not upcoming_trainings_coach %}
             <div class="col mx-auto text-center">
@@ -13,49 +13,49 @@
         {% endif %}
 
         {% if multiple_managed_people %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/multiple_persons_using_tip.html" %}
             </div>
         {% endif %}
 
         {% if unsettled_transactions %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/unsettled_transactions.html" %}
             </div>
         {% endif %}
 
         {% if soon_expiring_qualifications %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/soon_expiring_features.html" with features=soon_expiring_qualifications title="Kvalifikace končící v 90 dnech" name_col="Název kvalifikace" date_col="Datum platnosti" %}
             </div>
         {% endif %}
 
         {% if soon_returning_equipment %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/soon_expiring_features.html" with features=soon_returning_equipment title="Výpůjčky končící ve 30 dnech" name_col="Položka" date_col="Datum vrácení" %}
             </div>
         {% endif %}
 
         {% if upcoming_onetimeevents_participant %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/upcoming_one_time_events.html" with title="Nadcházejí účastnící se akce" events=upcoming_onetimeevents_participant %}
             </div>
         {% endif %}
 
         {% if upcoming_onetimeevents_organizer %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/upcoming_one_time_events.html" with title="Nadcházejí organizující akce" events=upcoming_onetimeevents_organizer %}
             </div>
         {% endif %}
 
         {% if upcoming_trainings_participant %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/upcoming_trainings.html" with title="Nadcházejí účastnící se trénink" occurrences=upcoming_trainings_participant %}
             </div>
         {% endif %}
 
         {% if upcoming_trainings_coach %}
-            <div class="col">
+            <div class="col min-width-25">
                 {% include "pages/home_parts/upcoming_trainings.html" with title="Nadcházejí trénující trénink" occurrences=upcoming_trainings_coach %}
             </div>
         {% endif %}

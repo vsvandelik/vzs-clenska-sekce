@@ -21,24 +21,22 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_groups_membership_card.html" %}
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_managed_persons_card.html" %}
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_hourly_rates_card.html" %}
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_feature_assignment_card.html" with title="Kvalifikace" no_items_message="Žádná kvalifikace není přiřazena." texts=features_texts.qualifications items=qualifications edit_url='persons:qualifications:edit' delete_url="persons:qualifications:delete" add_url='persons:qualifications:add' %}
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_feature_assignment_card.html" with title="Oprávnění" no_items_message="Žádné oprávnění není přiřazeno." texts=features_texts.permissions items=permissions edit_url='persons:permissions:edit' delete_url="persons:permissions:delete" add_url='persons:permissions:add' %}
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6 col-xl-4">
             {% include "persons/detail_components/_feature_assignment_card.html" with title="Zapůjčené vybavení" no_items_message="Žádné vybavení není přiřazeno." texts=features_texts.equipments items=equipments edit_url='persons:equipments:edit' delete_url="persons:equipments:delete" add_url='persons:equipments:add' return_url='persons:equipments-return' %}
         </div>
     </div>
