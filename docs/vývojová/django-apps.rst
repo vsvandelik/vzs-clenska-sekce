@@ -222,7 +222,7 @@ Model je určen k ukládání statických stránek. Každá stránka obsahuje:
 --------------------------------------
 persons
 --------------------------------------
-Aplikace :ref:`persons` obsahuje implementaci správy členské základny. Konkrétně se jedná o formuláře, pohledy a nástroje pro správu osob, kteří mají nějaký vztah k :ref:`Organizaci <Organizace>`.
+Aplikace :ref:`persons` obsahuje implementaci správy členské základny. Konkrétně se jedná o formuláře, pohledy a nástroje pro správu osob, kteří mají nějaký vztah k :term:`Organizaci <Organizace>`.
 
 Model
 ^^^^^^^^^^^^^^^^^
