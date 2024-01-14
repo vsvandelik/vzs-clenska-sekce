@@ -330,7 +330,7 @@ class EventOccurrence(PolymorphicModel):
         return self.event.can_user_manage(user)
 
     def can_user_fill_attendance(self, user):
-        return self.can_user_manage(user)  # TODO: implement
+        return self.can_user_manage(user)
 
 
 class EventPositionAssignment(Model):

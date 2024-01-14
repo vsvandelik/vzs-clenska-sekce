@@ -106,7 +106,6 @@ class User(RenderableModelMixin, AbstractUser, PermissionsMixin):
         # If clean_fields() fails because there is a required field missing,
         # clean() gets called anyways and raises an exception
         # which doesn't get handled properly
-        # TODO: find out if there is not a better way to do this
 
         if not hasattr(self, "person"):
             return

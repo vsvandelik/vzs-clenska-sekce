@@ -27,6 +27,7 @@ from persons.views import PersonPermissionMixin
 from trainings.models import Training
 from users.permissions import LoginRequiredMixin
 from vzs.mixins import InsertRequestIntoModelFormKwargsMixin
+from vzs.settings import FIO_ACCOUNT_PRETTY
 from vzs.utils import export_queryset_csv, filter_queryset, reverse_with_get_params
 from .forms import (
     TransactionAccountingExportPeriodForm,
@@ -241,6 +242,7 @@ class TransactionQRView(LoginRequiredMixin, DetailView):
         """
 
         kwargs.setdefault("person", self.object.person)
+        kwargs.setdefault("account", FIO_ACCOUNT_PRETTY)
 
         return super().get_context_data(**kwargs)
 
