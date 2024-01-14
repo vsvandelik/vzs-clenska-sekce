@@ -70,7 +70,7 @@ Přihlášení na trénink ve veřejné části systému
 ----------------------------------------------
 (str. 19; "Dítě, které prozatím není v systému, si ve veřejné části IS vyplní přihlášku, kde si vybere, kam chce docházet, a zároveň si i vytvoří uživatelský Účet. ")
 
-Toto chování nebylo po dohodě s organizací implementováno, protože to odporuje reálnému procesu v organizaci, kdy administrátoři zakládají osoby ručně, až po návštěve dítěte na prvním ukázkovém tréninku.
+Toto chování nebylo po dohodě s organizací implementováno, protože to odporuje reálnému procesu v organizaci, kdy administrátoři zakládají osoby ručně, až po návštěvě dítěte na prvním ukázkovém tréninku.
 
 Rozdělení na Django aplikace
 ----------------------------

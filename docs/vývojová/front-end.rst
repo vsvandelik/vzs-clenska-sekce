@@ -10,7 +10,7 @@ Bootstrap
 ----------------------------------------
 Zásadním front-endovým frameworkem, který byl použit je Bootstrap. Použití Bootstrapu na jedné straně spočívá v tom, že hlavní šablona :ref:`admin-lte` ho vyžaduje jako svoji závislost. Na druhé straně Bootstrap definuje lépe vypadající výchozí verzi téměř každé existující komponenty. Bez předchozího vzdělání v oblasti UX je velmi obtížné a časově náročné dosáhnout podobných kvalit, proto je Bootstrap použit téměř ve všech komponentách všech HTML šablon. Při vytváření nových šablon je doporučeno používat Bootstrap v maximální možné míře.
 
-Jako příklad použití Bootstrapu uvedeme použití modálního okna. Modální okno se používá při mazání komplexnějších objektů pro potvrzení smazání (např. mazání organizátorských pozic). Obsah zprávy o potvrzení smazání objektu však závisí na konkrétním objektu, který chceme smazat. Tento problém je řešen kombinací Javascriptu, který pošle GET požadavek, jehož odpoveď se zobrazí uvnitř modálního okna.
+Jako příklad použití Bootstrapu uvedeme použití modálního okna. Modální okno se používá při mazání komplexnějších objektů pro potvrzení smazání (např. mazání organizátorských pozic). Obsah zprávy o potvrzení smazání objektu však závisí na konkrétním objektu, který chceme smazat. Tento problém je řešen kombinací Javascriptu, který pošle GET požadavek, jehož odpověď se zobrazí uvnitř modálního okna.
 
 :ref:`Příklady použití modálních oken Bootstrapu. <Bootstrap_modals_example>`
 
@@ -55,4 +55,4 @@ Při návrhu nového select boxu doporučuje používat Select2 pouze pro select
 ----------------------------------------
 FontAwesome
 ----------------------------------------
-Pro účely zobrazení symbolů jsou používány ikonky z projektu FontAwesome. Zásadní výhodou oproti použití Unicode symbolů je garance, že FontAwesome ikonky vypadají na všech platformách stejně. Z těchto důvodu je doporučeno vždy upřednostit FontAwesome ikonku a pokud možno nepoužívat Unicode symboly.
+Pro účely zobrazení symbolů jsou používány ikonky z projektu FontAwesome. Zásadní výhodou oproti použití Unicode symbolů je garance, že FontAwesome ikonky vypadají na všech platformách stejně. Z těchto důvodu je doporučeno vždy upřednostnit FontAwesome ikonku a pokud možno nepoužívat Unicode symboly.

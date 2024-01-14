@@ -1,7 +1,7 @@
-Vítejte na dokumentaci :term:`IS` VZS Praha 15
+Dokumentace :term:`IS` VZS Praha 15
 ================================================
 
-Právě se nacházíte na hlavní stránce a současně i rozcestíku dokumentace k :term:`IS` VZS Praha 15. Pokud tu jste poprvé doporučujeme nahlédnout do obsahu a vybrat si konkrétní stránku, která Vás zajímá. Doufáme, že Vám dokumentace bude užitečná, pokud se rozhodnete něco upravit, nezapomeňte aktualizovat i tuto dokumentaci, aby mohla být užitečná i dalším osobám.
+Právě se nacházíte na hlavní stránce a současně i rozcestníku dokumentace k :term:`IS` VZS Praha 15. Pokud tu jste poprvé doporučujeme nahlédnout do obsahu a vybrat si konkrétní stránku, která vás zajímá. Doufáme, že vám dokumentace bude užitečná, pokud se rozhodnete něco upravit, nezapomeňte aktualizovat i tuto dokumentaci, aby mohla být užitečná i dalším osobám.
 
 Děkujeme
 

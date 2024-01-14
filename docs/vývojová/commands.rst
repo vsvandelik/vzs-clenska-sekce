@@ -3,7 +3,7 @@
 ***************************************
 Vlastní Django příkazy
 ***************************************
-Tato stránka obsahuje seznam všech vytvořenych vlastních Django příkazů včetně jejich popisu.
+Tato stránka obsahuje seznam všech vytvořených vlastních Django příkazů včetně jejich popisu.
 
 .. list-table::
    :widths: 10 40 40

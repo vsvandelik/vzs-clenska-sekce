@@ -6,4 +6,4 @@ Práce v týmu započala dle specifikace, brzy jsme ovšem zjistili, že dělen�
 
 Během vývoje se ukázala potřeba použít Github Actions pro automatickou kontrolu běhu migrací, automatický deployment dokumentace na GitHub Pages apod.
 
-Při dokončování projektu se pečlivě rozplánovali zbývající týdny a rozdělila se práce mezi jednotlivé členy týmu dle jejich časových možností.
+Při dokončování projektu se pečlivě rozplánovaly zbývající týdny a rozdělila se práce mezi jednotlivé členy týmu dle jejich časových možností.

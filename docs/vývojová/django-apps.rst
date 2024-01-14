@@ -23,7 +23,7 @@ Mezi další důležité atributy, které jsou obsaženy v rodiči, patří:
 .. image:: ../_static/api-model.png
     :target: ../_static/api-model.png
 
-Více informací API, včetně příkladů použítí, je možné se dozvědět na zvláštní stránce :doc:`./api`.
+Více informací API, včetně příkladů použití, je možné se dozvědět na zvláštní stránce :doc:`./api`.
 
 .. _events:
 
@@ -36,7 +36,7 @@ Součástí aplikace jsou template filtry specifické pro doménu událostí, kt
 
 Formuláře patřící do této aplikace zpravidla implementují pouze společný základ pro jednorázové události a tréninky, konečná implementace využívaného formuláře se nachází v aplikacích :ref:`one_time_events` a :ref:`trainings`.
 
-Mezi pohledy implementované v této aplikaci v souboru views.py patří hlavně pohledy končící textem ``DeleteView``, které dle konvencní Djanga značí pohled, který maže objekt z databáze. Tuto funkcionalitu je možné implementovat na úrovni této aplikace, protože ``generic.DeleteView``, z kterého dědí ``DeleteView`` pohledy této aplikace, používá ke smazání metodu ``delete`` na modelu, která je plně polymorfní díky použití rozšíření :ref:`django-polymorphic`.
+Mezi pohledy implementované v této aplikaci v souboru views.py patří hlavně pohledy končící textem ``DeleteView``, které dle konvencí Djanga značí pohled, který maže objekt z databáze. Tuto funkcionalitu je možné implementovat na úrovni této aplikace, protože ``generic.DeleteView``, z kterého dědí ``DeleteView`` pohledy této aplikace, používá ke smazání metodu ``delete`` na modelu, která je plně polymorfní díky použití rozšíření :ref:`django-polymorphic`.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -57,7 +57,7 @@ Aplikace :ref:`events` obsahuje několik modelů z nichž všechny kromě :py:cl
 - :py:attr:`~events.models.Event.date_start` (datum začátku)
 - :py:attr:`~events.models.Event.date_end` (datum konce)
 - :py:attr:`~events.models.Event.positions` (přiřazené pozice)
-- :py:attr:`~events.models.Event.participants_enroll_state` (výchozí stav, který je aplikovan na nové účastníky)
+- :py:attr:`~events.models.Event.participants_enroll_state` (výchozí stav, který je aplikován na nové účastníky)
 - :py:attr:`~events.models.Event.capacity` (maximální počet účastníků)
 - :py:attr:`~events.models.Event.min_age` (minimální věk účastníků)
 - :py:attr:`~events.models.Event.max_age` (maximální věk účastníků)
@@ -109,7 +109,7 @@ Aplikace features obsahuje dva modely, konkrétně se jedná o :py:class:`~featu
 - :py:attr:`~features.models.FeatureAssignment.date_returned` (datum vrácení – pouze pro vybavení)
 - :py:attr:`~features.models.FeatureAssignment.issuer` (vydavatel vlastnosti)
 - :py:attr:`~features.models.FeatureAssignment.code` (ID vlastnosti)
-- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag, indikující, zda byl osobě odeslán notifikační email oznamující expiraci)
+- :py:attr:`~features.models.FeatureAssignment.expiry_email_sent` (flag, indikující, zda byl osobě odeslán notifikační e-mail oznamující expiraci)
 
 
 .. image:: ../_static/features-model.png
@@ -398,9 +398,9 @@ Transakce definují platební styk mezi :term:`Organizací <Organizace>` a osobu
 
 IS umožňuje ruční vytváření a editaci transakcí, zpravidla jsou však transakce vytvářeny automaticky jako součást jiné práce s :term:`IS`, např. schválení přihlášky vytvoří transakci typu dluh, zapsání prezence organizátora vytvoří transakci typu odměna. 
 
-Logika týkající se transakcí se často nachází na pomezí aplikací, např. vytvoření transakce schválením přihlášky události. Abychom předešli rozptýlení kódu po celém Django projektu, bylo určena, že veškerá logika, která se týká transakcí, je strikně umístěna v této aplikaci, pro účely lepší přehlednosti.
+Logika týkající se transakcí se často nachází na pomezí aplikací, např. vytvoření transakce schválením přihlášky události. Abychom předešli rozptýlení kódu po celém Django projektu, bylo určena, že veškerá logika, která se týká transakcí, je striktně umístěna v této aplikaci, pro účely lepší přehlednosti.
 
-:term:`Organizace` má účet vedený u Fio banky, která nabízí svým klientům API, `odkaz <https://www.fio.cz/docs/cz/API_Bankovnictvi.pdf>`_. Pro Python existuje implementace v balíčku :ref:`fiobank`, která je závislostí :term:`IS`. Toto API je zejména využíváno pro kontrolu příchozích plateb a synchronizaci stavu transakcní uvnitř :term:`IS` vůči skutečném stavu na bankovním účtu.
+:term:`Organizace` má účet vedený u Fio banky, která nabízí svým klientům API, `odkaz <https://www.fio.cz/docs/cz/API_Bankovnictvi.pdf>`_. Pro Python existuje implementace v balíčku :ref:`fiobank`, která je závislostí :term:`IS`. Toto API je zejména využíváno pro kontrolu příchozích plateb a synchronizaci stavu transakcí uvnitř :term:`IS` vůči skutečném stavu na bankovním účtu.
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -442,7 +442,7 @@ Aplikace :ref:`transactions` obsahuje několik modelů, konkrétně se jedná o:
 --------------------------------------
 users
 --------------------------------------
-Tato aplikace obsahuje implementaci uživatelských účtů. Každá osoba evidovaná v :term:`IS` má právě jeden uživatelský účet, který ji může být zpřístupněn. Účet je zpřístupněn, pokud má nastavené heslo a je možné se k němu přihlásit. Osoba se pomocí svého uživatelského účtu může do :term:`IS` přihlásit (více viz :doc:`./authentication`) a následně dle svého oprávnění vidí, může pracovat a spravovat relavantní záležitosti (více viz :doc:`./authorization`). Osoba může spravovat více uživatelských účtů (např. rodič dítěte).
+Tato aplikace obsahuje implementaci uživatelských účtů. Každá osoba evidovaná v :term:`IS` má právě jeden uživatelský účet, který ji může být zpřístupněn. Účet je zpřístupněn, pokud má nastavené heslo a je možné se k němu přihlásit. Osoba se pomocí svého uživatelského účtu může do :term:`IS` přihlásit (více viz :doc:`./authentication`) a následně dle svého oprávnění vidí, může pracovat a spravovat relevantní záležitosti (více viz :doc:`./authorization`). Osoba může spravovat více uživatelských účtů (např. rodič dítěte).
 
 Model
 ^^^^^^^^^^^^^^^^^
@@ -479,6 +479,6 @@ Aplikace :ref:`users` obsahuje tři modely a vlastní Django Manager pro model :
 --------------------------------------
 vzs
 --------------------------------------
-Aplikace :ref:`vzs` má speciální postavení, jedná se o první a tudíž výchozí aplikaci celého projektu. Její součástí není konkrétní specifická funkcionalita, tato aplikace pouze sdržuje nezařaditelný společný kód, různé pomocné funkce a nachází se zde konfigurace celého projektu.
+Aplikace :ref:`vzs` má speciální postavení, jedná se o první a tudíž výchozí aplikaci celého projektu. Její součástí není konkrétní specifická funkcionalita, tato aplikace pouze sdružuje nezařaditelný společný kód, různé pomocné funkce a nachází se zde konfigurace celého projektu.
 
 Aplikace nevyužívá konkrétní model, v souboru ``models.py`` se nachází pouze několik obecných ``Mixin`` tříd, např. :py:class:`~vzs.models.ExportableCSVMixin`, které je možné použít na libovolný model a zajistit tak funkci exportu do formátu CSV.

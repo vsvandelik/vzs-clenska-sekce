@@ -71,7 +71,7 @@ Nyní je možné spustit webový server Djanga.
 ***************************************
 Lokální test produkčního nasazení
 ***************************************
-Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použítí všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
+Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použití všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
 
 
 -------------------

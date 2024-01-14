@@ -234,7 +234,7 @@ Django aplikace :ref:`groups`.
 
 node_modules/
 ^^^^^^^^^^^^^^^^^^
-Adresář Node.js obsahující frontendové závislosti.
+Adresář Node.js obsahující front-endové závislosti.
 
 .. _one_time_events/:
 
@@ -342,7 +342,7 @@ Python skript vytvořený Djangem při vytváření nového projektu. Slouží k
 
 package.json
 ^^^^^^^^^^^^^^^^^^
-Manifest Node.js projektu, který definuje frontendové závislosti (Bootstrap, Select2, jQuery, ...)
+Manifest Node.js projektu, který definuje front-endové závislosti (Bootstrap, Select2, jQuery, ...)
 
 .. _package-lock.json:
 

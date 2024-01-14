@@ -18,7 +18,7 @@ Pro rámcovou představu celého modelu sem přikládáme obrázek zobrazující
 ---------------------
 Migrace
 ---------------------
-S modely aplikací úzce souvisí migrace. Pokud aplikace pracuje s modely, obsahuji i adresář migrations/, ve kterém se nachází migrace. Migrace jsou očíslované soubory, které popisují změny databázového schématu.
+S modely aplikací úzce souvisí migrace. Pokud aplikace pracuje s modely, obsahují i adresář migrations/, ve kterém se nachází migrace. Migrace jsou očíslované soubory, které popisují změny databázového schématu.
 
 Pokud v aplikaci upravíme model, musíme spustit příkaz ``python ./manage.py makemigrations``, který vytvoří migrační soubory. Pro aplikaci migrací a změnu databázového schématu musíme spustit ještě příkaz ``python ./manage.py migrate``.
 

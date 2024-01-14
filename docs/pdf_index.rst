@@ -6,7 +6,7 @@ Kromě výše uvedených částí jsou v dokumentu popsány i základní informa
 při řešení projektu a další aspekty přímo související s předmětem Softwarový projekt.
 
 Tento dokument ve formátu `pdf` je pouze sekundárním zobrazením dokumentace, které slouží
-pouze pro účely obhajoby projektu na KDSS MFF. Primární verze dokumentace je udržována ve
+pouze pro účely obhajoby projektu na Katedře distribuovaných a spolehlivých systémů MFF UK. Primární verze dokumentace je udržována ve
 formě webové stránky na adrese https://vsvandelik.github.io/vzs-clenska-sekce/. Z toho důvodu
 se předem omlouváme za případné typografické chyby, které mohou být v této sekundární verzi.
 

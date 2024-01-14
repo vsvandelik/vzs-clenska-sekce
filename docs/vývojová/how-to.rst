@@ -137,7 +137,7 @@ Příklad použití:
 -------------------------------
 Libovolná funkce může být periodicky volána Cronem. Nicméně všechny funkce, které jsou volány Cronem jsou jednořádkové funkce spouštějící Django příkaz. Je doporučeno se této konvence držet při přidávání dalších funkcí pro Cron. Výhoda tohoto přístupu spočívá v tom, že je možné kdykoliv ručně příkaz spustit pomocí standardních nástrojů Djanga (``python ./manage.py <název příkazu>``).
 
-Příkazy implementující funkcionalitu by se měly nacházet v aplikaci, která úsce souvisí s významem příkazu. Např. příkaz kontrolující, zda trenér nezapomněl uzavřít trénink se nachází v aplikaci :ref:`trainings`. To stejné platí i pro jednořádkové funkce, které volá Cron. Standardně je umisťujeme do vlastního souboru cron.py.
+Příkazy implementující funkcionalitu by se měly nacházet v aplikaci, která úzce souvisí s významem příkazu. Např. příkaz kontrolující, zda trenér nezapomněl uzavřít trénink se nachází v aplikaci :ref:`trainings`. To stejné platí i pro jednořádkové funkce, které volá Cron. Standardně je umisťujeme do vlastního souboru cron.py.
 
 Definice intervalů volání a konkrétních cron jobů se nachází uvnitř aplikace :ref:`vzs` v souboru settings.py jako proměnná ``CRONJOBS``.
 
