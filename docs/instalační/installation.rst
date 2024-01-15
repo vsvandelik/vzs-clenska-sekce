@@ -41,6 +41,7 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
     SECRET_KEY=django-insecure
     GOOGLE_DOMAIN= 
     FIO_TOKEN= 
+    #ALLOWED_HOSTS...
 
 
 2. Vytvoříme virtuální prostředí
@@ -64,7 +65,10 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
     npm install
     pip install -r requirements.txt
 
-5. Spustíme migrace
+5. Přidáme Google klíče ``secrets_file.json`` a ``service_account_file.json`` do adresáře ``google_integration``. Pokud tytou soubory nemáte k dispozici,
+odeberte ze zde dostupných souborů koncovku ``.dist``.
+
+6. Spustíme migrace
 
 .. code-block:: console
 
@@ -100,6 +104,8 @@ Před vytvořením docker image je nutné provést konfiguraci.
     SECRET_KEY=django-insecure
     GOOGLE_DOMAIN=
     FIO_TOKEN=
+    #ALLOWED_HOSTS...
+    #STATIC_ROOT...
 
     REDIS_ENABLE=True
     REDIS_LOCATION=redis://redis:6379/2
@@ -143,6 +149,7 @@ Před vytvořením docker image je nutné provést konfiguraci.
         reverse_proxy vzs-clenska-sekce-backend:8080
     }
 
+5. Přidáme Google klíče ``secrets_file.json`` a ``service_account_file.json`` do adresáře ``google_integration``.
 
 Poté můžeme sestavit docker image projektu.
 
@@ -201,6 +208,8 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 
 - Do proměnných ``REDIS_PASSWORD`` a ``SQL_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
 
+- Proměnnou ``STATIC_ROOT`` doporučujeme zakomentovat, případně provést adekvátní změny v souborech ``docker-compose.yml`` a ``Dockerfile``.
+
 Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
 
 Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``docker/.env_psql`` na
@@ -238,6 +247,8 @@ Posledním souborem ke konfiguraci je ``docker/Caddyfile``, kde nastavíme rever
     }
 
 První řádek obsahující doménu a druhý řádek obsahující email vhodně upravíme, email můžeme vynechat, pokud máme definovanou proměnnou ``EMAIL`` v ``docker/.env_caddy``.
+
+Do složky ``google_integration`` je nutné přidat soubory ``secrets_file.json`` a ``service_account_file.json``.
 
 Poté můžeme sestavit docker image projektu.
 
