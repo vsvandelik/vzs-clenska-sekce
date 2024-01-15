@@ -49,7 +49,6 @@ from vzs.mixins import (
 )
 from vzs.settings import GOOGLE_MAPS_API_KEY
 from vzs.utils import date_pretty, export_queryset_csv, send_notification_email
-
 from .forms import (
     ApproveOccurrenceForm,
     BulkAddOrganizerToOneTimeEventForm,
@@ -244,10 +243,14 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
         active_person = self.request.active_person
 
         enrolled_events = OneTimeEvent.get_upcoming_by_participant(active_person)
-        for enrolled_event in enrolled_events:
-            enrolled_event.enrollment = enrolled_event.get_participant_enrollment(
-                active_person
-            )
+        for event in enrolled_events:
+            event.enrollment = event.get_participant_enrollment(active_person)
+
+        substitute_events = OneTimeEvent.get_upcoming_by_participant(
+            active_person, ParticipantEnrollment.State.SUBSTITUTE
+        )
+        for event in substitute_events:
+            event.enrollment = event.get_participant_enrollment(active_person)
 
         available_events = OneTimeEvent.get_available_events_by_participant(
             active_person
@@ -262,6 +265,7 @@ class OneTimeEventListView(LoginRequiredMixin, generic.ListView):
 
         kwargs.setdefault("upcoming_events_participant", enrolled_events)
         kwargs.setdefault("available_events_participant", available_events)
+        kwargs.setdefault("substitute_events_participant", substitute_events)
 
     def _add_upcoming_events_organizer_kwargs(self, kwargs):
         """:meta private:"""

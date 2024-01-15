@@ -35,6 +35,12 @@
     </div>
 
     <div class="row">
+        {% if substitute_events_participant %}
+            <div class="col-12 col-lg min-width-50">
+                {% include "one_time_events/index_components/participant_substitute_events.html" %}
+            </div>
+        {% endif %}
+
         {% if available_events_participant %}
             <div class="col-12 col-lg min-width-50">
                 {% include "one_time_events/index_components/participant_available_events.html" %}
