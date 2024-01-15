@@ -32,9 +32,9 @@ language = "cs"
 # Rinoh configuration
 rinoh_documents = [
     dict(
-        doc="index",
+        doc="pdf_index",
         target="vzs-clenska-sekce",
-        title="VZS Členská sekce",
+        title="Členská sekce Vodní záchranné služby Praha 15",
         subtitle="Dokumentace",
         template="article",
     )
