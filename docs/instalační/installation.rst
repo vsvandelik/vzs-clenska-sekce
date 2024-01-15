@@ -199,9 +199,7 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 
 - Proměnná ``FIO_TOKEN`` by měla obsahovat API token od Fio banky. Bez jejího korektního nastavení nebudou fungovat transakce.
 
-- Do proměnné ``REDIS_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
-
-- Do proměnné ``SQL_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
+- Do proměnných ``REDIS_PASSWORD`` a ``SQL_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
 
 Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
 
