@@ -300,7 +300,7 @@ SELECT2_CSS = ["/static/select2/dist/css/select2.min.css"]
 SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
 SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
-if os.environ.get("REDIS_ENABLE"):
+if os.environ.get("REDIS_ENABLE") == "True":
     SELECT2_CACHE_BACKEND = "default"
     CACHES = {
         "default": {

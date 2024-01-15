@@ -10,6 +10,7 @@ Tato stránka obsahuje seznam všech použitých Django rozšíření včetně k
 - :ref:`django-polymorphic`
 - :ref:`django-macros`
 - :ref:`django-mptt`
+- :ref:`django-redis`
 - :ref:`django-select2`
 - :ref:`django-tempus-dominus`
 - :ref:`django-tinymce`
@@ -65,6 +66,14 @@ django-macros je užitečné, pokud máme části Jinja šablony, kterou chceme 
 django-mptt
 -----------------
 Kvalifikace, oprávnění a vybavení jsou stromová data, která se mohou nekonečně větvit, pro jednodušší práci a renderování těchto dat slouží balíček django-mptt.
+
+.. _django-redis:
+
+-----------------
+django-redis
+-----------------
+Balíček :ref:`django-select2` vyžaduje implementaci cache pro správnou funkcionalitu Select2 widgetů. V produkčním prostředí využíváma jako cache Redis.
+
 
 .. _django-select2:
 

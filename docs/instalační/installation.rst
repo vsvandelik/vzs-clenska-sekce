@@ -13,6 +13,18 @@ Lokální debug spuštění
 ***************************************
 Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
 
+--------------------------------------
+Upozornění
+--------------------------------------
+Při :ref:`local-debug` můžete narazit na dva nedostatky.
+
+1. Abecední řazení neodpovídá českým konvencím. To je způsobeno použití SQLite databáze, která řadí znaky dle pořadí definované v UTF-8.
+2. Select2 widgety mohou být pomalejší. To je způsobeno neexistencí cache, která je vyžadována balíčkem :ref:`django-select2`.
+
+Tyto nedostatky nejsou přítomné v produkčním prostředí (:ref:`local-production`, :ref:`production`), kde se používá PostgreSQL jako databázový server a Redis pro implementaci cache.
+
+Dále nedoporučujeme provádět SQL operace nad obrovským počtem dat, tyto operace jsou řádově pomalejší při použití SQLite oproti databázovým serverům, které jsou určené pro produkční prostředí a zvládají paralelní přístupy.
+
 -------------------
 Prerekvizity
 -------------------
@@ -65,10 +77,11 @@ Nyní je možné spustit webový server Djanga.
      python ./manage.py runserver 8080
 
 
+.. _local-production:
 ***************************************
 Lokální test produkčního nasazení
 ***************************************
-Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použití všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
+Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použití všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy, Redis) vyjma HTTPS.
 
 
 -------------------
@@ -88,6 +101,10 @@ Před vytvořením docker image je nutné provést konfiguraci.
     GOOGLE_DOMAIN=
     FIO_TOKEN=
 
+    REDIS_ENABLE=True
+    REDIS_LOCATION=redis://redis:6379/2
+    REDIS_PASSWORD=secret-password
+
     SQL_ENGINE=django.db.backends.postgresql
     SQL_DATABASE=vzs-clenska-sekce
     SQL_USER=vzs
@@ -103,7 +120,14 @@ Před vytvořením docker image je nutné provést konfiguraci.
     POSTGRES_PASSWORD=supersecret
     POSTGRES_DB=vzs-clenska-sekce
 
-3. Nastavíme konfigurační soubor ``docker/Caddyfile`` pro reverzní proxy Caddy
+3. Nastavíme proměnné o stejných hodnotách i z pohledu Redis. Soubor ``docker/.env_redis`` by měl vypadat takto
+
+.. code-block:: console
+
+    REDIS_PASSWORD=secret-password
+
+
+4. Nastavíme konfigurační soubor ``docker/Caddyfile`` pro reverzní proxy Caddy
 
 .. code-block:: console
 
@@ -155,6 +179,9 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
     SECRET_KEY=
     GOOGLE_DOMAIN=
     FIO_TOKEN=
+    REDIS_ENABLE=True
+    REDIS_LOCATION=redis://redis:6379/2
+    REDIS_PASSWORD=
     SQL_ENGINE=django.db.backends.postgresql
     SQL_DATABASE=vzs-clenska-sekce
     SQL_USER=vzs
@@ -172,7 +199,9 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 
 - Proměnná ``FIO_TOKEN`` by měla obsahovat API token od Fio banky. Bez jejího korektního nastavení nebudou fungovat transakce.
 
-- Proměnnou ``SQL_PASSWORD`` je vhodné rozumně nastavit, doporučujeme program ``pwgen``.
+- Do proměnné ``REDIS_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
+
+- Do proměnné ``SQL_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
 
 Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
 
@@ -186,6 +215,8 @@ Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``docker
 
 - Proměnnou ``POSTGRES_PASSWORD`` nastavíme na stejnou hodnotu jako proměnnou ``SQL_PASSWORD`` ze souboru ``.env``
 
+Dále upravíme soubor ``docker/.env_redis``, kde nastavíme proměnnou ``REDIS_PASSWORD`` na stejnou hodnotu jako proměnnou stejného jména ze souboru ``.env``
+
 Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``docker/.env_caddy`` nastavíme na 
 
 .. code-block:: console
@@ -193,7 +224,7 @@ Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``doc
     LOG_FILE=/data/access.log
     EMAIL=
 
-Do proměnné ``EMAIL`` doplníme email, který chceme používat pro ACME challenge při získávání HTTPS certifikátu.
+Do proměnné ``EMAIL`` doplníme email, který chceme používat jako výchozí pro ACME challenge při získávání HTTPS certifikátu.
 
 Posledním souborem ke konfiguraci je ``docker/Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``docker/Caddyfile`` upravíme na
 
@@ -208,7 +239,7 @@ Posledním souborem ke konfiguraci je ``docker/Caddyfile``, kde nastavíme rever
     reverse_proxy vzs-clenska-sekce-backend:8080
     }
 
-První řádek obsahující doménu a druhý řádek obsahující email vhodně upravíme.
+První řádek obsahující doménu a druhý řádek obsahující email vhodně upravíme, email můžeme vynechat, pokud máme definovanou proměnnou ``EMAIL`` v ``docker/.env_caddy``.
 
 Poté můžeme sestavit docker image projektu.
 
@@ -218,6 +249,6 @@ Poté můžeme sestavit docker image projektu.
 
     docker\docker-build.bat  (Windows)
 
-Projekt pro svoji funkčnost vyžaduje otevření pouze portu 80 a 443, je nutné zakázat přístup z Internetu zejména na port 5432 (PostgreSQL) a port 8080 (Gunicorn). Doporučujeme použít program ``ufw``.
+Projekt pro svoji funkčnost vyžaduje otevření pouze portu 80 a 443, je nutné zakázat přístup z Internetu zejména na port 5432 (PostgreSQL), 8080 (Gunicorn) a 6379 (Redis). Doporučujeme použít program ``ufw``.
 
 Pomocí příkazu ``docker compose up`` z adresáře docker je možné vytvořit kontejnery a spustit server.
