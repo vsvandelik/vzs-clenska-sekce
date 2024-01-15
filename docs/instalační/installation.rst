@@ -154,12 +154,10 @@ Před vytvořením docker image je nutné provést konfiguraci.
 Poté můžeme sestavit docker image projektu.
 
 .. code-block:: console
-    
-    cd docker
 
-    ./docker-build.sh  (Linux)
+    ./docker/docker-build.sh  (Linux)
 
-    .\docker-build.bat  (Windows)
+    docker\docker-build.bat  (Windows)
 
 
 Nyní můžeme celý projekt spustit jedním příkazem, nutné spouštět z adresáře docker.
