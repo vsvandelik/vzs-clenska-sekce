@@ -3,7 +3,7 @@
 
 <div class="card">
     <div class="card-header d-flex align-items-center border-0">
-        <div class="card-title h5">Přihlášené akce jako účastník</div>
+        <div class="card-title h5">Akce, kde jste náhradníkem (čekáte na schválení)</div>
     </div>
     <div class="card-body p-0">
         <div class="row">
@@ -18,18 +18,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for event in upcoming_events_participant %}
+                        {% for event in substitute_events_participant %}
                             <tr>
                                 <td class="text-nowrap"><a href="{% url 'one_time_events:detail' event.id %}">{{ event.name }}</a></td>
                                 <td class="text-nowrap">{% display_date_range event %}</td>
                                 <td>{{ event.location|handle_missing_empty }}</td>
                                 <td class="text-right text-nowrap">
                                     {% ifperm 'events:unenroll-myself-participant' event.enrollment.id as perm %}
-                                        <a class="btn btn-info btn-sm"
-                                           data-target="#unenroll-myself-participant-modal"
-                                           data-toggle="modal"
-                                           data-action="{{ perm.url }}">Odhlásit se
-                                        </a>
+                                        <a class="btn btn-info btn-sm" data-toggle="modal" data-target="#unenroll-myself-participant-modal" data-action="{{ perm.url }}">Odhlásit se</a>
                                     {% endifperm %}
                                     <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
                                 </td>

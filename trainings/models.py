@@ -323,9 +323,9 @@ class Training(Event):
         )
 
     @staticmethod
-    def get_unfinished_trainings_by_participant(person):
+    def get_unfinished_trainings_by_participant(person, state):
         enrolled_trainings_id = TrainingParticipantEnrollment.objects.filter(
-            person=person, state=ParticipantEnrollment.State.APPROVED
+            person=person, state=state
         ).values_list("training", flat=True)
 
         return Training.objects.filter(

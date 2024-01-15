@@ -204,11 +204,11 @@ class OneTimeEvent(Event):
         ).exists() or super().can_person_interact_with(person)
 
     @staticmethod
-    def get_upcoming_by_participant(person):
+    def get_upcoming_by_participant(person, state=ParticipantEnrollment.State.APPROVED):
         return OneTimeEvent.objects.filter(
             date_start__gte=today(),
             onetimeeventparticipantenrollment__person=person,
-            onetimeeventparticipantenrollment__state=ParticipantEnrollment.State.APPROVED,
+            onetimeeventparticipantenrollment__state=state,
         ).order_by("date_start")
 
     @staticmethod

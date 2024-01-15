@@ -38,7 +38,6 @@
             </div>
         {% endif %}
 
-
         {% if participant_upcoming_occurrences %}
             <div class="col-12 col-lg min-width-50">
                 {% include "trainings/index_components/participant_upcoming_trainings.html" %}
@@ -52,6 +51,12 @@
         {% endif %}
     </div>
 
+    {% if participant_substitute_trainings %}
+        <div class="row">
+            {% include "trainings/index_components/participant_substitute_trainings.html" %}
+        </div>
+    {% endif %}
+
     {% if participant_available_trainings %}
         <div class="row">
             {% include "trainings/index_components/participant_available_trainings.html" %}
@@ -59,6 +64,7 @@
     {% endif %}
 
     {% include "modal_include.html" with id="enroll-myself-participant-modal" %}
+    {% include "modal_include.html" with id="unenroll-myself-participant-modal" %}
     {% include "modal_include.html" with id="excuse-myself-coach-modal" %}
 {% endblock %}
 
@@ -71,6 +77,7 @@
     <script src="{% static "register_modal.js" %}"></script>
     <script>
         registerModal('enroll-myself-participant-modal')
+        registerModal('unenroll-myself-participant-modal')
         registerModal('excuse-myself-coach-modal')
     </script>
 {% endblock %}
