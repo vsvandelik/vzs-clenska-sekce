@@ -24,7 +24,6 @@
                                 <td class="text-nowrap">{% display_date_range event %}</td>
                                 <td>{{ event.location|handle_missing_empty }}</td>
                                 <td class="text-right text-nowrap">
-                                    <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
                                     {% ifperm 'one_time_events:enroll-myself-participant' event.id as perm %}
                                         {% if event.active_person_can_enroll %}
                                             <form method="POST" action="{{ perm.url }}" class="d-inline">
@@ -36,6 +35,7 @@
                                                data-action="{{ perm.url }}" class="btn btn-info btn-sm">Přihlásit se</a>
                                         {% endif %}
                                     {% endifperm %}
+                                    <a class="btn btn-info btn-sm" href="{% url 'one_time_events:detail' event.id %}">Více informací</a>
                                 </td>
                             </tr>
                         {% endfor %}
