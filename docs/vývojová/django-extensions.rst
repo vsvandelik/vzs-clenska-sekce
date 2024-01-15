@@ -20,7 +20,7 @@ Tato stránka obsahuje seznam všech použitých Django rozšíření včetně k
 ------------------------
 django-active-links
 ------------------------
-django-active-links nabízí jednoduchý způsob, kterým je možné zvýrazit aktivní záložku v menu. Zvýraznění aktivních položek na levém bočním panelu závisí na tomto balíku.
+django-active-links nabízí jednoduchý způsob, kterým je možné zvýraznit aktivní záložku v menu. Zvýraznění aktivních položek na levém bočním panelu závisí na tomto balíku.
 
 .. _django-crontab:
 
@@ -36,7 +36,7 @@ Bližší informace o použití Cronu viz :ref:`funkce_volane_daemonem_cron`.
 ----------------------
 django-crispy-forms
 ----------------------
-Umožnuje flexibilnější nastavení renderování Django forem. :term:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
+Umožňuje flexibilnější nastavení renderování Django formulářů. :term:`IS` konkrétně používá nastavení ``CRISPY_TEMPLATE_PACK = "bootstrap4"``, které aplikuje Bootstrap 4 na všechny formulářové prvky. Více informací o formulářích se nachází na zvláštní stránce :doc:`./forms`.
 
 .. _django-environ:
 

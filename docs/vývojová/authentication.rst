@@ -15,17 +15,17 @@ Model obsahuje pouze šifrované heslo a foreign key na osobu, který je zárove
 Při autentizaci uživatele se používá e-mail, který je obsažen v modelu osoby,
 jakož i všechny ostatní údaje o dané osobě.
 
---------
-Backendy
---------
+---------
+Back-endy
+---------
 
-Django poskytuje ve svém autentizačním frameworku koncept backendů.
+Django poskytuje ve svém autentizačním frameworku koncept back-endů.
 Na začátku autentizace uživatele se posbírají potřebné parametry,
 podle kterých je možné identifikovat a autentizovat uživatele.
 Entita, která zajistí tuto identifikaci a autentizaci se nazývá backend.
 Proces úspěšné autentizace vrací instanci uživatele.
 
-:term:`IS` používá dva backendy. Jeden ověřuje na základě e-mailu a hesla,
+:term:`IS` používá dva back-endy. Jeden ověřuje na základě e-mailu a hesla,
 druhý na základě Google OAuth2 protokolu.
 
 ``PasswordBackend``
@@ -73,7 +73,7 @@ lze přidat takto::
 
     user = authenticate(request, code=code)
 
-Tento backend autentizuje uživatele na základě tokenu,
+Tento backend ověřuje uživatele na základě tokenu,
 který je zaslán v GET requestu od Google autentizačního serveru.
 
 Používá knihovny `google-auth <https://google-auth.readthedocs.io/en/latest/>`_
@@ -97,7 +97,7 @@ Postup celé autentizace je následující:
     Tato autentizace vrátí informace o uživateli - zejména e-mail.
     Úspěšná Google autentizace v kombinaci s uživatelským účtem
     pro osobu s daným e-mailem znamená,
-    že uživatel je podle tohoto backendu autentizován.
+    že uživatel je podle tohoto back-endu autentizován.
 
 :term:`IS` používá při nepovoleném přístupu na stránku, která vyžaduje přihlášení,
 přesměrování na původní stránku pomocí použití

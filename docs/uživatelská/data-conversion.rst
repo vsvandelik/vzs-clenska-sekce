@@ -18,7 +18,7 @@ Postup převodu
 1. Z databáze starého systému stáhněte tabulku `uzivatel` ve formátu CSV. Kódování zvolte
    UTF-8 a jako oddělovač znaků použijte symbol čárky (,).
 
-2. Spustťe konverzní skript:
+2. Spusťte konverzní skript:
 
 .. code-block:: console
 

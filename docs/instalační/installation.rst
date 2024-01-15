@@ -57,8 +57,6 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 .. code-block:: console
 
     python ./manage.py migrate
-    
-|
 
 Nyní je možné spustit webový server Djanga.
 
@@ -67,11 +65,10 @@ Nyní je možné spustit webový server Djanga.
      python ./manage.py runserver 8080
 
 
-    
 ***************************************
 Lokální test produkčního nasazení
 ***************************************
-Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použítí všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
+Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použití všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
 
 
 -------------------

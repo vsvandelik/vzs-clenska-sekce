@@ -29,7 +29,7 @@ Závazky za tréninky
 
 Zvolili jsme obecnější řešení, které umožňuje dynamický počet plateb za tréninky během roku.
 
-Statický typy jednorázových událostí
+Statické typy jednorázových událostí
 ------------------------------------
 (str. 14; "Typy se budou evidovat dynamicky v IS.")
 
@@ -70,13 +70,13 @@ Přihlášení na trénink ve veřejné části systému
 ----------------------------------------------
 (str. 19; "Dítě, které prozatím není v systému, si ve veřejné části IS vyplní přihlášku, kde si vybere, kam chce docházet, a zároveň si i vytvoří uživatelský Účet. ")
 
-Toto chování nebylo po dohodě s organizací implementováno, protože to odporuje reálnému procesu v organizaci, kdy administrátoři zakládají osoby ručně, až po návštěve dítěte na prvním ukázkovém tréninku.
+Toto chování nebylo po dohodě s organizací implementováno, protože to odporuje reálnému procesu v organizaci, kdy administrátoři zakládají osoby ručně, až po návštěvě dítěte na prvním ukázkovém tréninku.
 
 Rozdělení na Django aplikace
 ----------------------------
 (str. 28; "...je možné IS rozdělit na tři aplikace: Users, Members a Events.")
 
-Nakonec jsme :term:IS rozdělili na více aplikací, aby byla možná lepší distribuce práce a přehlednost kódu. Výsledným počtem je 11 aplikací.
+Nakonec jsme IS rozdělili na více aplikací, aby byla možná lepší distribuce práce a přehlednost kódu. Výsledným počtem je 12 aplikací.
 
 Datový model
 ------------
@@ -89,9 +89,3 @@ Use-cases
 (str. 30)
 
 Podobně jako u datového modelu, i zde došlo k větším úpravám. Myšlenka všech scénářů zůstala zachována, ale podoba a umístění tlačítek a celkový proces byl upraven, aby lépe odpovídal výslednému systému.
-
-Harmonogram
------------
-(str. 40)
-
-Došlo k významnému zpoždění v harmonogramu. Zdržení bylo způsobeno především časovým vytížením některých členů projektového týmu v průběhu letních prázdnin a podzimu.

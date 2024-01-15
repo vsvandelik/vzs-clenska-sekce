@@ -48,7 +48,7 @@ python-dateutil přináší pokročilejší funkce pro práci s daty a časy. :t
 -----------------------------------------------------
 Závislosti definované v souboru requirements_dev.txt
 -----------------------------------------------------
-Zde jsou obsaženy závislosti, které nejsou nutné pro spuštění projektu ale jsou povinné pro vývoj. Konkrétně se jedná o:
+Zde jsou obsaženy závislosti, které nejsou nutné pro spuštění projektu, ale jsou povinné pro vývoj. Konkrétně se jedná o:
 
 - :ref:`Genderize`
 - :ref:`pre-commit`
@@ -59,7 +59,7 @@ Zde jsou obsaženy závislosti, které nejsou nutné pro spuštění projektu al
 
 Genderize
 ^^^^^^^^^^
-Balíček implementující API služby `<https://genderize.io>`_, která na základě křestního jména predikuje pohlaví osoby. Tato funkcionalita se využívá při převodu dat ze starého systému. Pro více informací o převodu dat ze starého systému navštivte stránku :doc:`../uživatelská/data-conversion`.
+Balíček implementující API služby `<https://genderize.io>`_, která na základě křestního jména predikuje pohlaví osoby. V případě platného předplatného k této službě, je možné tuto funkcionalitu využít při převodu dat ze starého systému. Pro více informací o převodu dat ze starého systému navštivte stránku :doc:`../uživatelská/data-conversion`.
 
 .. _pre-commit:
 
@@ -77,7 +77,7 @@ rinohtype slouží ke zpracování dokumentů. Jeho výstupem jsou dokumenty ve 
 
 sphinx
 ^^^^^^^^^^^
-sphinx je univerzální nástroj pro vytváření dokumentace určený výhradně pro projekty vytvořené v Pythonu. Tato dokumentace je napsána v reStructuredText souborech za pomocí nástroje sphinx, který do dokumentace navíc přidá anotace z kódu.
+sphinx je univerzální nástroj pro vytváření dokumentace určený především pro projekty vytvořené v Pythonu. Tato dokumentace je napsána v reStructuredText souborech za pomocí nástroje sphinx, který do dokumentace navíc přidá anotace z kódu.
 
 .. _dependencies_from_requirements_prod.txt:
 

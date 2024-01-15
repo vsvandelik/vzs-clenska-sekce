@@ -8,4 +8,4 @@ Vyjma výše uvedených osob přispěli do :term:`IS` vývojem funkcí, hlášen
 
 |
 
-Pokud jste se na :term:`IS` jakkoliv podíleli a nejste v seznamu uvedeni, moc se omlouváme a rádi Vás přidáme. Kontaktujte nás na system@vzs-praha15.cz.
+Pokud jste se na :term:`IS` jakkoliv podíleli a nejste v seznamu uvedeni, moc se omlouváme a rádi vás přidáme. Kontaktujte nás na system@vzs-praha15.cz.
