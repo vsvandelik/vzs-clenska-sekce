@@ -17,3 +17,4 @@ django-mptt
 django-polymorphic
 djangorestframework
 django-crontab
+django-redis

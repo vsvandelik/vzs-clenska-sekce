@@ -300,6 +300,19 @@ SELECT2_CSS = ["/static/select2/dist/css/select2.min.css"]
 SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
 SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
+if os.environ.get("REDIS_ENABLE"):
+    SELECT2_CACHE_BACKEND = "default"
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get("REDIS_LOCATION"),
+            "OPTIONS": {
+                "PASSWORD": os.environ.get("REDIS_PASSWORD"),
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+        },
+    }
+
 # Constants
 ADMIN_EMAIL = "system@vzs-praha15.cz"
 VALUE_MISSING_HTML = '<i class="fas fa-times"></i>'
