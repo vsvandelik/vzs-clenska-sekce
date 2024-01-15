@@ -1,6 +1,7 @@
+__pycache__
 .git
 .github
 .idea
-__pycache__
-node_modules
 db.sqlite3
+node_modules
+venv
