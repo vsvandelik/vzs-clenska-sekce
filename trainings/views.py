@@ -311,8 +311,16 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
             active_person
         )
         enrolled_trainings = Training.get_unfinished_trainings_by_participant(
-            active_person
+            active_person, ParticipantEnrollment.State.APPROVED
         )
+        substitute_trainings = Training.get_unfinished_trainings_by_participant(
+            active_person, ParticipantEnrollment.State.SUBSTITUTE
+        )
+        for substitute_training in substitute_trainings:
+            substitute_training.enrollment = (
+                substitute_training.get_participant_enrollment(active_person)
+            )
+
         upcoming_occurrences = TrainingOccurrence.get_upcoming_by_participant(
             active_person, False
         ).all()
@@ -329,6 +337,7 @@ class TrainingListView(LoginRequiredMixin, generic.ListView):
             )
 
         kwargs.setdefault("participant_enrolled_trainings", enrolled_trainings)
+        kwargs.setdefault("participant_substitute_trainings", substitute_trainings)
         kwargs.setdefault("participant_available_trainings", available_trainings)
         kwargs.setdefault("participant_upcoming_occurrences", upcoming_occurrences)
 
