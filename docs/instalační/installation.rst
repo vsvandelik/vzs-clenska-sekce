@@ -1,19 +1,23 @@
 ##########################
 Instalační dokumentace
 ##########################
+
 V tomto dokumentu jsou detailně popsány všechny scénáře spouštění a nasazení projektu včetně produkčního nasazení.
 
 V celém tomto dokumentu předpokládáme, že se v terminálu nacházíme v kořenovém adresáři projektu.
+
+.. _local-debug:
 
 ***************************************
 Lokální debug spuštění
 ***************************************
 Lokální debug spuštění je vhodné, pokud nám stačí projekt spustit na lokálním prostředí. Je nutné si uvědomit, že při tomto spuštění je použit vestavěný webový server Djanga, který není určen pro produkční nasazení a SQLite, jehož použití není optimální při paralelních přístupech.
 
+-------------------
 Prerekvizity
-------------
+-------------------
 - Python ≥ 3.11 
-- ``pip``
+- Node.js ≥ 17.0.0
 
 Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislosti.
 
@@ -45,30 +49,31 @@ Před prvním spuštění je nutné provést konfiguraci a nainstalovat závislo
 
 .. code-block:: console
 
+    npm install
     pip install -r requirements.txt
 
 5. Spustíme migrace
 
 .. code-block:: console
 
-    python manage.py migrate
-|
+    python ./manage.py migrate
 
 Nyní je možné spustit webový server Djanga.
 
 .. code-block:: console
 
-     python manage.py runserver 8080
+     python ./manage.py runserver 8080
 
 
-    
 ***************************************
 Lokální test produkčního nasazení
 ***************************************
-Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použítí všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
+Tento druh spuštění je vhodný v případě, kdy chceme otestovat funkčnost projektu při použití všech částí produkčního nasazení (Gunicorn, PostgreSQL, Caddy) vyjma HTTPS.
 
+
+-------------------
 Prerekvizity
-------------
+-------------------
 - docker ≥ 1.13.1
 
 
@@ -90,7 +95,7 @@ Před vytvořením docker image je nutné provést konfiguraci.
     SQL_HOST=db
     SQL_PORT=5432
 
-2. Nastavíme proměnné o stejných hodnotách i z pohledu PostgreSQL. Soubor ``.env_psql`` by měl vypadat takto
+2. Nastavíme proměnné o stejných hodnotách i z pohledu PostgreSQL. Soubor ``docker/.env_psql`` by měl vypadat takto
 
 .. code-block:: console
 
@@ -98,7 +103,7 @@ Před vytvořením docker image je nutné provést konfiguraci.
     POSTGRES_PASSWORD=supersecret
     POSTGRES_DB=vzs-clenska-sekce
 
-3. Nastavíme konfigurační soubor ``Caddyfile`` pro reverzní proxy Caddy
+3. Nastavíme konfigurační soubor ``docker/Caddyfile`` pro reverzní proxy Caddy
 
 .. code-block:: console
 
@@ -119,24 +124,27 @@ Poté můžeme sestavit docker image projektu.
 
 .. code-block:: console
 
-    ./docker-build.sh  (Linux)
+    ./docker/docker-build.sh  (Linux)
 
-    docker-build.bat  (Windows)
+    docker\docker-build.bat  (Windows)
 
 
-Nyní můžeme celý projekt spustit jedním příkazem
+Nyní můžeme celý projekt spustit jedním příkazem, nutné spouštět z adresáře docker.
 
 .. code-block:: console
 
     docker compose up
+
+.. _production:
 
 ***************************************
 Produkční nasazení
 ***************************************
 Zde si popíšeme, co všechno je potřeba udělat, abychom mohli projekt bezpečně vystavit na Internet.
 
+-------------------
 Prerekvizity
-------------
+-------------------
 - docker ≥ 1.13.1
 
 Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze souboru ``.env.dist`` doplníme zbylé nevyplněné proměnné.
@@ -168,7 +176,7 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 
 Hodnoty dalších proměnných nedoporučujeme bezdůvodně měnit.
 
-Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_psql`` na
+Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``docker/.env_psql`` na
 
 .. code-block:: console
 
@@ -178,7 +186,7 @@ Přesuneme se k proměnným PostgreSQL serveru. Upravíme obsah souboru ``.env_p
 
 - Proměnnou ``POSTGRES_PASSWORD`` nastavíme na stejnou hodnotu jako proměnnou ``SQL_PASSWORD`` ze souboru ``.env``
 
-Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``.env_caddy`` nastavíme na 
+Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``docker/.env_caddy`` nastavíme na 
 
 .. code-block:: console
 
@@ -187,7 +195,7 @@ Poslední částí konfigurace je nastavení reverzní proxy Caddy. Soubor ``.en
 
 Do proměnné ``EMAIL`` doplníme email, který chceme používat pro ACME challenge při získávání HTTPS certifikátu.
 
-Posledním souborem ke konfiguraci je ``Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``Caddyfile`` upravíme na
+Posledním souborem ke konfiguraci je ``docker/Caddyfile``, kde nastavíme reverzní proxy na naši doménu a server pro statické soubory. Obsah souboru ``docker/Caddyfile`` upravíme na
 
 .. code-block:: console
 
@@ -206,10 +214,10 @@ Poté můžeme sestavit docker image projektu.
 
 .. code-block:: console
 
-    ./docker-build.sh  (Linux)
+    ./docker/docker-build.sh  (Linux)
 
-    docker-build.bat  (Windows)
+    docker\docker-build.bat  (Windows)
 
 Projekt pro svoji funkčnost vyžaduje otevření pouze portu 80 a 443, je nutné zakázat přístup z Internetu zejména na port 5432 (PostgreSQL) a port 8080 (Gunicorn). Doporučujeme použít program ``ufw``.
 
-Pomocí příkazu ``docker compose up`` je možné vytvořit kontejnery a spustit server.
+Pomocí příkazu ``docker compose up`` z adresáře docker je možné vytvořit kontejnery a spustit server.
