@@ -34,6 +34,7 @@ SECRET_KEY = env.str("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 # Application definition
 
@@ -300,14 +301,14 @@ SELECT2_CSS = ["/static/select2/dist/css/select2.min.css"]
 SELECT2_JS = ["/static/select2/dist/js/select2.min.js"]
 SELECT2_I18N_PATH = "/static/select2/dist/js/i18n"
 
-if os.environ.get("REDIS_ENABLE") == "True":
+if env.bool("REDIS_ENABLE", default=False):
     SELECT2_CACHE_BACKEND = "default"
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": os.environ.get("REDIS_LOCATION"),
+            "LOCATION": env.get_value("REDIS_LOCATION", default="redis://redis:6379/2"),
             "OPTIONS": {
-                "PASSWORD": os.environ.get("REDIS_PASSWORD"),
+                "PASSWORD": env.get_value("REDIS_PASSWORD", default=""),
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             },
         },
