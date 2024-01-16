@@ -186,6 +186,8 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
     SECRET_KEY=
     GOOGLE_DOMAIN=
     FIO_TOKEN=
+    ALLOWED_HOSTS=
+    CSRF_TRUSTED_ORIGINS=
     REDIS_ENABLE=True
     REDIS_LOCATION=redis://redis:6379/2
     REDIS_PASSWORD=
@@ -205,6 +207,10 @@ Nejprve se pustíme do konfigurace. Nahradíme obsah souboru ``.env`` obsahem ze
 - Proměnnou ``GOOGLE_DOMAIN`` není nutné vyplňovat, ale bez jejího nastavení na doménu pro Google Workspace nebude fungovat synchronizace skupin.
 
 - Proměnná ``FIO_TOKEN`` by měla obsahovat API token od Fio banky. Bez jejího korektního nastavení nebudou fungovat transakce.
+
+- Proměnnou ``ALLOWED_HOSTS`` je nutné nastavit na URL adresu bez schématu, kde webová aplikace poběží, např. ``example.com``.
+
+- Proměnnou ``CSRF_TRUSTED_ORIGINS`` je nutné nastavit na URL adresu se schématem, kde webová aplikace poběží, např. ``https://example.com``.
 
 - Do proměnných ``REDIS_PASSWORD`` a ``SQL_PASSWORD`` je vhodné nastavit rozumně silné heslo, doporučujeme použít program ``pwgen``.
 

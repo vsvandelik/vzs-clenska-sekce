@@ -23,6 +23,7 @@ services:
     command: sh -c "python3 manage.py collectstatic --clear --no-input && python3 manage.py makemigrations && python3 manage.py migrate"
     volumes:
       - staticfiles:/usr/src/app/staticfiles
+      - ../.env:/usr/src/app/.env
     depends_on:
       - db
 

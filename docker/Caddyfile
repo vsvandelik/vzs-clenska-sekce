@@ -6,8 +6,9 @@
 # Replace for production
 # vzs.svandelik.cz:443 {
 http://localhost:80 {
-  # uncomment and fill for automatic https
-  # tls email@email.cz
+   # uncomment and fill for automatic https
+   # tls email@email.cz
+
     handle_path /static/* {
         root * /var/www/staticfiles
         file_server
